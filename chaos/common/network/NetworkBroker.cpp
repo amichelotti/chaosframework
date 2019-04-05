@@ -75,15 +75,15 @@ void NetworkBroker::init(void *initData) {
     }
     MB_LAPP << "Configuration:"<<globalConfiguration->getCompliantJSONString();
     //---------------------------- D I R E C T I/O ----------------------------
-    bool enable_direct_io_server = GlobalConfiguration::getInstance()->getSystemFeature()[SystemFeatureDirectIOServer].asBool() && globalConfiguration->hasKey(InitOption::OPT_DIRECT_IO_IMPLEMENTATION);
-    bool enable_direct_io_client = GlobalConfiguration::getInstance()->getSystemFeature()[SystemFeatureDirectIOClient].asBool() && globalConfiguration->hasKey(InitOption::OPT_DIRECT_IO_IMPLEMENTATION);
+    bool enable_direct_io_server = GlobalConfiguration::getInstance()->getSystemFeature()[SystemFeatureDirectIOServer].asBool() && GlobalConfiguration::getInstance()->hasOption(InitOption::OPT_DIRECT_IO_IMPLEMENTATION);
+    bool enable_direct_io_client = GlobalConfiguration::getInstance()->getSystemFeature()[SystemFeatureDirectIOClient].asBool() && GlobalConfiguration::getInstance()->hasOption(InitOption::OPT_DIRECT_IO_IMPLEMENTATION);
     
     //manage the direct-io system
     if(enable_direct_io_server ||
        enable_direct_io_client) {
         MB_LAPP  << "Setup DirectIO sublayer";
         if(enable_direct_io_server) {
-            string direct_io_server_impl = globalConfiguration->getStringValue(common::direct_io::DirectIOConfigurationKey::DIRECT_IO_IMPL_TYPE)+"DirectIOServer";
+            string direct_io_server_impl =  GlobalConfiguration::getInstance()->getOption<string>(InitOption::OPT_DIRECT_IO_IMPLEMENTATION)+"DirectIOServer";
             MB_LAPP  << "Trying to initilize DirectIO Server: " << direct_io_server_impl;
             direct_io_server = ObjectFactoryRegister<common::direct_io::DirectIOServer>::getInstance()->getNewInstanceByName(direct_io_server_impl);
             if(!direct_io_server) throw CException(-2, "Error creating direct io server implementation", __PRETTY_FUNCTION__);
@@ -97,11 +97,10 @@ void NetworkBroker::init(void *initData) {
             }
             direct_io_server->setHandler(direct_io_dispatcher);
             StartableService::initImplementation(direct_io_server, static_cast<void*>(globalConfiguration), direct_io_server->getName(), __PRETTY_FUNCTION__);
-            
         }
         
         if(enable_direct_io_client) {
-            string direct_io_client_impl = globalConfiguration->getStringValue(common::direct_io::DirectIOConfigurationKey::DIRECT_IO_IMPL_TYPE) + "DirectIOClient";
+            string direct_io_client_impl = GlobalConfiguration::getInstance()->getOption<string>(InitOption::OPT_DIRECT_IO_IMPLEMENTATION) + "DirectIOClient";
             MB_LAPP  << "Trying to initilize DirectIO Client: " << enable_direct_io_client;
             direct_io_client = ObjectFactoryRegister<common::direct_io::DirectIOClient>::getInstance()->getNewInstanceByName(direct_io_client_impl);
             if(!direct_io_client) throw CException(-3, "Error creating direct io client implementation", __PRETTY_FUNCTION__);
@@ -114,8 +113,8 @@ void NetworkBroker::init(void *initData) {
     //---------------------------- D I R E C T I/O ----------------------------
     
     //---------------------------- E V E N T ----------------------------
-    bool enable_event_server = GlobalConfiguration::getInstance()->getSystemFeature()[SystemFeatureDirectIOServer].asBool() &&!GlobalConfiguration::getInstance()->getOption<bool>(InitOption::OPT_EVENT_DISABLE);
-    bool enable_event_client = GlobalConfiguration::getInstance()->getSystemFeature()[SystemFeatureDirectIOClient].asBool() &&!GlobalConfiguration::getInstance()->getOption<bool>(InitOption::OPT_EVENT_DISABLE);
+    bool enable_event_server = GlobalConfiguration::getInstance()->getSystemFeature()[SystemFeatureEventServer].asBool() && !GlobalConfiguration::getInstance()->getOption<bool>(InitOption::OPT_EVENT_DISABLE);
+    bool enable_event_client = GlobalConfiguration::getInstance()->getSystemFeature()[SystemFeatureEventClient].asBool() && !GlobalConfiguration::getInstance()->getOption<bool>(InitOption::OPT_EVENT_DISABLE);
     if(enable_event_server ||
        enable_event_client) {
         MB_LAPP  << "Setup Event sublayer";

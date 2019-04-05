@@ -46,14 +46,14 @@ namespace ext_unt = chaos::common::external_unit;
 #define _DIRECT_IO_SERVICE_PORT		30175
 
 GlobalConfiguration::GlobalConfiguration():
-desc("!CHAOS Framework Allowed options"){}
-
-GlobalConfiguration::~GlobalConfiguration(){
+desc("!CHAOS Framework Allowed options"){
     map_system_feature[SystemFeatureDirectIOClient] = CDataVariant(false);
     map_system_feature[SystemFeatureDirectIOServer] = CDataVariant(false);
     map_system_feature[SystemFeatureEventClient] = CDataVariant(false);
     map_system_feature[SystemFeatureEventServer] = CDataVariant(false);
 }
+
+GlobalConfiguration::~GlobalConfiguration(){}
 
 void GlobalConfiguration::preParseStartupParameters()  {
     try{

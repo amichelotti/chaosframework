@@ -51,11 +51,19 @@ WaitSemaphore ChaosMetadataService::waitCloseSemaphore;
 #define LCND_LAPP   INFO_LOG(ChaosMetadataService)
 #define LCND_LDBG   DBG_LOG(ChaosMetadataService)
 #define LCND_LERR   ERR_LOG(ChaosMetadataService)
+
+ChaosMetadataService::ChaosMetadataService() {
+    setSystemFeature(SystemFeatureDirectIOServer, true);
+}
+
+ChaosMetadataService::~ChaosMetadataService() {}
+
 //! C and C++ attribute parser
 /*!
  Specialized option for startup c and cpp program main options parameter
  */
 void ChaosMetadataService::init(int argc, const char* argv[])  {
+    //mds need to use the directio server
     ChaosCommon<ChaosMetadataService>::init(argc, argv);
 }
 //!stringbuffer parser
