@@ -71,6 +71,12 @@ namespace chaos {
                 int sendEchoMessage(chaos::common::data::CDWUniquePtr data,
                                     chaos::common::data::CDWUniquePtr& result);
                 
+                //!Return the mds build info
+                int getBuildInfo(chaos::common::data::CDWUniquePtr& result);
+
+                 //!Return the mds build info
+                int getProcessInfo(chaos::common::data::CDWUniquePtr& result);
+                
                 //! Send Unit server registration to MDS
                 /*!
                  Perform the registration of the unit server
@@ -264,7 +270,7 @@ namespace chaos {
                 
                 //!search for chaos node
                 int searchNode(const std::string& unique_id_filter,
-                               unsigned int node_type_filter,
+                               chaos::NodeType::NodeSearchType node_type_filter,
                                bool alive_only,
                                unsigned int last_node_sequence_id,
                                unsigned int page_length,

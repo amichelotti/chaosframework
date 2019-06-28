@@ -19,8 +19,8 @@
  * permissions and limitations under the Licence.
  */
 
-#ifndef __CHAOSFramework_E927A5B7_1CA0_802F_AA20_DD63646EA30A_MongoDBObjectStorageDataAccess_h
-#define __CHAOSFramework_E927A5B7_1CA0_802F_AA20_DD63646EA30A_MongoDBObjectStorageDataAccess_h
+#ifndef __CHAOSFramework_E927A5B7_1CA0_802F_AA20_DD63646EA30A_MongoDBObjectStorageDataAccessSC_h
+#define __CHAOSFramework_E927A5B7_1CA0_802F_AA20_DD63646EA30A_MongoDBObjectStorageDataAccessSC_h
 
 #include "../abstraction/ObjectStorageDataAccess.h"
 #include "../object_storage_types.h"
@@ -41,18 +41,14 @@ namespace chaos {
             namespace mongodb_3 {
                 class NewMongoDBObjectStorageDriver;
                 
-                typedef struct {
-                    bsoncxx::builder::basic::document index_document;
-                    bsoncxx::builder::basic::document data_document;
-                } DaqBlob;
-                
-                typedef ChaosSharedPtr<DaqBlob> DaqBlobShrdPtr;
-                
+               
+                    typedef ChaosSharedPtr<bsoncxx::builder::basic::document> BlobShrdPtr;
+
+                 CHAOS_DEFINE_LOCKABLE_OBJECT(std::set<BlobShrdPtr>, BlobSetL);
                 //! define a lockable seet for betch entries
-                CHAOS_DEFINE_LOCKABLE_OBJECT(std::set<DaqBlobShrdPtr>, DaqBlobSetL);
                 
                 //! Data Access for producer manipulation data
-                class MongoDBObjectStorageDataAccess:
+                class MongoDBObjectStorageDataAccessSC:
                 public metadata_service::object_storage::abstraction::ObjectStorageDataAccess,
                 public chaos::common::async_central::TimerHandler {
                     friend class NewMongoDBObjectStorageDriver;
@@ -64,16 +60,16 @@ namespace chaos {
                     uint64_t            batch_size_limit;
                     int32_t             push_timeout_multiplier;
                     int32_t             push_current_step_left;
-                    DaqBlobSetL         batch_set;
+                    BlobSetL         batch_set;
                     uint32_t            write_timeout,read_timeout;
                     mongocxx::write_concern       write_options;
                     std::future<void> current_push_future;
                 protected:
-                    MongoDBObjectStorageDataAccess(mongocxx::pool& _pool_ref);
-                    ~MongoDBObjectStorageDataAccess();
+                    MongoDBObjectStorageDataAccessSC(mongocxx::pool& _pool_ref);
+                    ~MongoDBObjectStorageDataAccessSC();
                     
 
-                    void executePush(std::set<DaqBlobShrdPtr>&& _batch_element_to_store);
+                    void executePush(std::set<BlobShrdPtr>&& _batch_element_to_store);
                     //!TimeOutHnadler inherited
                     void timeout();
                     
@@ -129,4 +125,4 @@ namespace chaos {
     }
 }
 
-#endif /* __CHAOSFramework_E927A5B7_1CA0_802F_AA20_DD63646EA30A_MongoDBObjectStorageDataAccess_h */
+#endif /* __CHAOSFramework_E927A5B7_1CA0_802F_AA20_DD63646EA30A_MongoDBObjectStorageDataAccessSC_h */

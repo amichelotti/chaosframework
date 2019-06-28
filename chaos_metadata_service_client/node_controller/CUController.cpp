@@ -661,6 +661,23 @@ int CUController::echoTest(CDWUniquePtr echo_data,
     return err;
 }
 
+int CUController::getBuildInfo(chaos::common::data::CDWUniquePtr& build_info,
+                               uint32_t timeout) {
+    int err = -1;
+    CDWUniquePtr data;
+    ChaosUniquePtr<MessageRequestFuture> result = deviceChannel->buildInfo();
+    if(result.get() == NULL) return err;
+    if(result->wait(timeout)) {
+        err = result->getError();
+        if(err == 0) {
+            build_info = result->detachResult();
+        }
+    }else{
+        err = -2;
+    }
+    return err;
+}
+
 ChaosUniquePtr<MessageRequestFuture> CUController::sendCustomRequestWithFuture(const std::string& action_name,
                                                                                common::data::CDWUniquePtr request_date) {
     return deviceChannel->sendCustomRequestWithFuture(action_name,
@@ -1194,7 +1211,7 @@ int CUController::getSnapshotList(ChaosStringVector& snapshot_list) {
 }
 
 int CUController::searchNode(const std::string& unique_id_filter,
-                             unsigned int node_type_filter,
+                             chaos::NodeType::NodeSearchType node_type_filter,
                              bool alive_only,
                              unsigned int last_node_sequence_id,
                              unsigned int page_length,

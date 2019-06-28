@@ -407,7 +407,12 @@ namespace chaos {
                  the returned object is not own by requester but only by DeviceController isntance
                  \deprecated use new api getCurrentDatasetForDomain
                  */
+
+#ifndef _WIN32
                 __attribute__((__deprecated__))
+#else
+				[[deprecated]]
+#endif
                 chaos::common::data::CDataWrapper * getLiveCDataWrapperPtr();
                 
                 //!return the last fetched dataset for the domain
@@ -456,6 +461,10 @@ namespace chaos {
                 int echoTest(chaos::common::data::CDWUniquePtr echo_data,
                              chaos::common::data::CDWUniquePtr& echo_data_result,
                              uint32_t timeout = RpcConfigurationKey::GlobalRPCTimeoutinMSec);
+                
+                //! Send a request for the build info
+                int getBuildInfo(chaos::common::data::CDWUniquePtr& build_info,
+                                 uint32_t timeout = RpcConfigurationKey::GlobalRPCTimeoutinMSec);
                 
                 void setQueryOnIndex(bool use_index);
                 
@@ -510,7 +519,7 @@ namespace chaos {
                 int getSnapshotList(ChaosStringVector& snapshot_list);
                 
                 int searchNode(const std::string& unique_id_filter,
-                               unsigned int node_type_filter,
+                               chaos::NodeType::NodeSearchType node_type_filter,
                                bool alive_only,
                                unsigned int last_node_sequence_id,
                                unsigned int page_length,

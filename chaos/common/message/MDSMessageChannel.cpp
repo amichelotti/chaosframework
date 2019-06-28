@@ -91,6 +91,35 @@ int MDSMessageChannel::sendEchoMessage(CDWUniquePtr data, CDWUniquePtr& result) 
     return err;
 }
 
+int MDSMessageChannel::getBuildInfo(CDWUniquePtr& result) {
+    int err = 0;
+    CDWUniquePtr data;
+    ChaosUniquePtr<MultiAddressMessageRequestFuture> request_future = sendRequestWithFuture(NodeDomainAndActionRPC::RPC_DOMAIN,
+                                                                                            NodeDomainAndActionRPC::ACTION_GET_BUILD_INFO,
+                                                                                            MOVE(data));
+    if(request_future->wait()) {
+        result = MOVE(request_future->detachResult());
+    } else {
+        result.reset();
+        err = request_future->getError();
+    }
+    return err;
+}
+int MDSMessageChannel::getProcessInfo(CDWUniquePtr& result) {
+    int err = 0;
+    CDWUniquePtr data;
+    ChaosUniquePtr<MultiAddressMessageRequestFuture> request_future = sendRequestWithFuture(NodeDomainAndActionRPC::RPC_DOMAIN,
+                                                                                            NodeDomainAndActionRPC::ACTION_GET_PROCESS_INFO,
+                                                                                            MOVE(data));
+    if(request_future->wait()) {
+        result = MOVE(request_future->detachResult());
+    } else {
+        result.reset();
+        err = request_future->getError();
+    }
+    return err;
+}
+
 //! Send unit server CU states to MDS
 int MDSMessageChannel::sendUnitServerCUStates(CDWUniquePtr device_dataset,
                                               bool requestCheck,
@@ -637,7 +666,7 @@ int MDSMessageChannel::removeVariable(const std::string& variable_name,
 }
 
 int MDSMessageChannel::searchNode(const std::string& unique_id_filter,
-                                  unsigned int node_type_filter,
+                                  chaos::NodeType::NodeSearchType node_type_filter,
                                   bool alive_only,
                                   unsigned int last_node_sequence_id,
                                   unsigned int page_length,
@@ -646,7 +675,7 @@ int MDSMessageChannel::searchNode(const std::string& unique_id_filter,
     int err = ErrorCode::EC_NO_ERROR;
     ChaosUniquePtr<chaos::common::data::CDataWrapper> message(new CDataWrapper());
     message->addStringValue("unique_id_filter", unique_id_filter);
-    message->addInt32Value("node_type_filter", node_type_filter);
+    message->addInt32Value("node_type_filter", (int32_t)node_type_filter);
     message->addInt32Value("last_node_sequence_id", last_node_sequence_id);
     message->addBoolValue("alive_only", alive_only);
     message->addInt32Value("result_page_length", page_length);

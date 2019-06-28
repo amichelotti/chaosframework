@@ -244,7 +244,7 @@ int MongoDBNodeDataAccess::updateNode(chaos::common::data::CDataWrapper& node_de
         
         
         
-        DEBUG_CODE(MDBNDA_DBG<<log_message("updateUS",
+        DEBUG_CODE(MDBNDA_DBG<<log_message("updateNode",
                                            "update",
                                            DATA_ACCESS_LOG_2_ENTRY("Query",
                                                                    "Update",
@@ -254,7 +254,7 @@ int MongoDBNodeDataAccess::updateNode(chaos::common::data::CDataWrapper& node_de
         if((err = connection->update(MONGO_DB_COLLECTION_NAME(MONGODB_COLLECTION_NODES),
                                      query,
                                      update))) {
-            MDBNDA_ERR << "Error updating unit server";
+            MDBNDA_ERR << "Error updating NODE:"<<node_description.getCompliantJSONString();
         }
     } catch (const mongo::DBException &e) {
         MDBNDA_ERR << e.what();
@@ -285,7 +285,7 @@ int MongoDBNodeDataAccess::checkNodePresence(bool& presence,
         if((err = connection->findOne(result,
                                       MONGO_DB_COLLECTION_NAME(MONGODB_COLLECTION_NODES),
                                       q))){
-            MDBNDA_ERR << "Error sercing unit server unit server" << node_unique_id;
+            MDBNDA_ERR << "Error searching NODE:" << node_unique_id<<" type:"<<node_unique_type;
         }
         presence = !result.isEmpty();
     } catch (const mongo::DBException &e) {
@@ -373,7 +373,7 @@ int MongoDBNodeDataAccess::deleteNode(const std::string& node_unique_id,
         
         if((err = connection->remove(MONGO_DB_COLLECTION_NAME(MONGODB_COLLECTION_NODES),
                                      q))){
-            MDBNDA_ERR << "Error deleting unit server" << node_unique_id;
+            MDBNDA_ERR << "Error deleting NODE:" << node_unique_id;
         }
     } catch (const mongo::DBException &e) {
         MDBNDA_ERR << e.what();
@@ -384,7 +384,7 @@ int MongoDBNodeDataAccess::deleteNode(const std::string& node_unique_id,
 
 int MongoDBNodeDataAccess::searchNode(chaos::common::data::CDataWrapper **result,
                                       const std::string& criteria,
-                                      uint32_t search_type,
+                                      chaos::NodeType::NodeSearchType search_type,
                                       bool alive_only,
                                       uint32_t last_unique_id,
                                       uint32_t page_length) {
@@ -408,15 +408,21 @@ int MongoDBNodeDataAccess::searchNode(chaos::common::data::CDataWrapper **result
     //filter on type
     if(search_type>0) {
         switch(search_type) {
-            case 1:
+            case chaos::NodeType::NodeSearchType::node_type_us:
                 type_of_node = chaos::NodeType::NODE_TYPE_UNIT_SERVER;
                 break;
-            case 2:
+            case chaos::NodeType::NodeSearchType::node_type_cu:
                 type_of_node = chaos::NodeType::NODE_TYPE_CONTROL_UNIT;
                 break;
-            case 3:
+            case chaos::NodeType::NodeSearchType::node_type_agent:
                 type_of_node = chaos::NodeType::NODE_TYPE_AGENT;
                 break;
+            case chaos::NodeType::NodeSearchType::node_type_cds:
+                type_of_node = chaos::NodeType::NODE_TYPE_DATA_SERVICE;
+                break;
+            case chaos::NodeType::NodeSearchType::node_type_wan:
+                type_of_node = chaos::NodeType::NODE_TYPE_WAN_PROXY;
+                break;    
             default:
                 break;
         }
@@ -740,7 +746,7 @@ int MongoDBNodeDataAccess::setCommand(chaos::common::data::CDataWrapper& command
                                      query,
                                      update,
                                      true))) {
-            MDBNDA_ERR << "Error updating unit server:" << err;
+            MDBNDA_ERR << "Error updating NODE command:" << command.getCompliantJSONString()<<" err:"<<err;
         }
         
     } catch (const mongo::DBException &e) {
@@ -1029,7 +1035,7 @@ int MongoDBNodeDataAccess::addAgeingManagementDataToNode(const std::string& cont
         if((err = connection->update(MONGO_DB_COLLECTION_NAME(MONGODB_COLLECTION_NODES),
                                      query,
                                      update))) {
-            MDBNDA_DBG << CHAOS_FORMAT("Error %1% completing control unit %2% with ageing management information", %err%control_unit_id);
+            MDBNDA_DBG << CHAOS_FORMAT("Error %1% completing NODE %2% with ageing management information", %err%control_unit_id);
         }
     } catch (const mongo::DBException &e) {
         MDBNDA_ERR << e.what();

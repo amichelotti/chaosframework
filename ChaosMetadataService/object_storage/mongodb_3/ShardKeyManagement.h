@@ -47,6 +47,17 @@ namespace chaos {
         namespace object_storage {
             namespace mongodb_3 {
                 
+                class DaqZonedInfo {
+                    bsoncxx::builder::basic::document index_zone_doc;
+                    bsoncxx::builder::basic::document data_zone_doc;
+                public:
+                    DaqZonedInfo();
+                    DaqZonedInfo(DaqZonedInfo&& i) noexcept = default;
+                    bsoncxx::builder::basic::document& getIndexDocument();
+                    bsoncxx::builder::basic::document& getDataDocument();
+                };
+                
+                
                 //!class for the managem of sharding random value for a single key
                 class KeyRNDShardInfo {
                     //random generation deifnition
@@ -102,9 +113,9 @@ namespace chaos {
                     void setZoneAlias(const std::string& new_zone_alias);
 
                     //!return a new bson object for the managed zone
-                    bsoncxx::builder::basic::document getNewDataPack(const std::string& key,
-                                                  const int64_t now_in_ms,
-                                                  const uint32_t new_size_byte);
+                    DaqZonedInfo getNewDataPack(const std::string& key,
+                                                const int64_t now_in_ms,
+                                                const uint32_t new_size_byte);
                 };
             }
         }

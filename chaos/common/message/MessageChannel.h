@@ -208,6 +208,12 @@ if(x->hasKey(RpcActionDefinitionKey::CS_CMDM_ACTION_MESSAGE)) x->getCSDataValue(
                 ChaosUniquePtr<MessageRequestFuture> echoTest(const std::string &remote_host,
                                                              chaos::common::data::CDWUniquePtr echo_data);
                 
+                //!Send a request for the build info
+                ChaosUniquePtr<MessageRequestFuture> requestBuildInfo(const std::string &remote_host);
+
+                 //!Send a request for the process info
+                ChaosUniquePtr<MessageRequestFuture> requestProcessInfo(const std::string &remote_host);
+                
                 //! get the rpc published host and port
                 void getRpcPublishedHostAndPort(std::string &rpc_published_host_port);
             };

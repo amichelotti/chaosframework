@@ -265,6 +265,9 @@ int main(int argc, const char* argv[]) {
         ChaosMetadataServiceClient::getInstance()->getNewCUController(device_id, &controller);
 
         if(!controller) throw CException(4, "Error allocating decive controller", "device controller creation");
+//        CDWUniquePtr build_info;
+//        controller->getBuildInfo(build_info);
+//        std::cout << build_info->getJSONString() << std::endl;
 //        controller->setQueryOnIndex(true);
         ChaosStringSet search_tags;
         chaos::common::io::QueryCursor *query_cursor = NULL;
@@ -324,9 +327,9 @@ int main(int argc, const char* argv[]) {
                            last_sid >= sid) {
                             std::cout << " [SEQERR] ";
                         }
-                        if(last_sid!=0 &&
+                        if(last_rid < rid &&
                            last_sid+1 != sid) {
-                            std::cout << " [SEQERR + 1] ";
+                            std::cout << " [SEQERR] ";
                         }
                         last_rid = rid;
                         last_sid = sid;

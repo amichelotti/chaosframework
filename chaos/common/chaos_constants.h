@@ -173,7 +173,7 @@ namespace chaos {
         	static const unsigned int CUTimersTimeoutinMSec                     = 5000;
         	static const unsigned int PerformanceManagerTimersTimeoutinMSec     = 5000;
 
-		    static const unsigned int ObjectStorageTimeoutinMSec                = 5000;
+		    static const unsigned int ObjectStorageTimeoutinMSec                = 50000;
             static const unsigned int ChacheTimeoutinMSec                       = 5000;
             //!time to wait for queue can accept new data to push in object storage
             /*!
@@ -334,6 +334,19 @@ namespace chaos {
          A DAQ unit node is a tipical !CHAOS node that acquires data without any command
          */
         static const char * const NODE_SUBTYPE_DAQ_CONTROL_UNIT    = "nt_daq_unit";
+        typedef enum  {
+            //!Search us
+            node_type_us = 1,
+            //!Search cu
+            node_type_cu = 2,
+            //!search agent
+            node_type_agent = 3,
+            //!search cds
+            node_type_cds = 4,
+            //!search wan
+            node_type_wan = 5
+
+        } NodeSearchType;
     }
     /** @} */ // end of NodeType
     
@@ -440,6 +453,11 @@ namespace chaos {
         
         //! perform an echo test. Return as is the input datapach as output
         static const char * const ACTION_CHECK_DOMAIN                               = "checkDomain";
+        
+        //! get the build information form node instance
+        static const char * const ACTION_GET_BUILD_INFO                             = "getBuildInfo";
+            //! get the process information form node instance
+        static const char * const ACTION_GET_PROCESS_INFO                             = "getProcessInfo";
     }
     /** @} */ // end of NodeDomainAndActionRPC
     

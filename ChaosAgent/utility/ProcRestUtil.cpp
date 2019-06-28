@@ -33,12 +33,11 @@
 #include <sys/errno.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+
 using namespace std;
 using namespace chaos::common;
 using namespace chaos::agent::utility;
 using namespace chaos::service_common::data::agent;
-
-
 std::string ProcRestUtil::normalizeName(const std::string& node_name) {
     std::string result = node_name;
     boost::replace_all(result,"/","_");
@@ -78,7 +77,9 @@ void ProcRestUtil::launchProcess(const AgentAssociation& node_association_info) 
             init_file_stream << CHAOS_FORMAT("%1%=",%InitOption::OPT_LOG_ON_SYSLOG) << std::endl;
         }
         if(ChaosAgent::getInstance()->settings.enable_us_logging) {
-            init_file_stream << CHAOS_FORMAT("%1%=",%InitOption::OPT_LOG_ON_FILE) << std::endl;
+            init_file_stream << CHAOS_FORMAT("%1%=true",%InitOption::OPT_LOG_ON_FILE) << std::endl;
+            init_file_stream << CHAOS_FORMAT("%1%=%2%/%3%.log",%InitOption::OPT_LOG_FILE%INIT_FILE_PATH()%ProcRestUtil::normalizeName(node_association_info.associated_node_uid))<< std::endl;
+
         }
         
         if(node_association_info.log_on_mds){

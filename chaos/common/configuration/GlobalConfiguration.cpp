@@ -120,6 +120,13 @@ void GlobalConfiguration::parseStringStream(std::istream &sStreamOptions)  {
     parseParameter(po::parse_config_file(sStreamOptions, desc));
 }
 
+CDataWrapper& GlobalConfiguration::getBuildInfoRef() {
+    return build_info;
+}
+chaos::common::utility::process::ProcessInfo&  GlobalConfiguration::getProcessInfoRef(){
+    return pinfo;
+}
+
 int32_t GlobalConfiguration::filterLogLevel(string& levelStr)  {
     chaos::common::log::level::LogSeverityLevel level = chaos::common::log::level::LSLInfo;
     

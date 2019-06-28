@@ -302,6 +302,7 @@ SET(cnd_src  ${cnd_src}	object_storage/mongodb/MongoDBObjectStorageDataAccess.cp
 
 #mongodb new driver version
 SET(cnd_src  ${cnd_src} object_storage/mongodb_3/MongoDBObjectStorageDataAccess.cpp
+                        object_storage/mongodb_3/MongoDBObjectStorageDataAccessSC.cpp
                         object_storage/mongodb_3/NewMongoDBObjectStorageDriver.cpp
                         object_storage/mongodb_3/ShardKeyManagement.cpp)
 
@@ -326,7 +327,7 @@ SET(cnd_src  ${cnd_src}	batch/agent/AgentAckCommand.cpp
 
 SET(cnd_src  ${cnd_src}	batch/node/UpdatePropertyCommand.cpp
                         batch/node/SubmitBatchCommand.cpp
-                        batch/node/SendRpcCommand.cpp)
+                        batch/node/SendRpcCommand.cpp batch/node/NodeAckCommand.cpp)
 
 SET(cnd_src  ${cnd_src}	batch/unit_server/UnitServerAckBatchCommand.cpp
                         batch/unit_server/LoadUnloadControlUnit.cpp)
