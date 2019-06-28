@@ -62,10 +62,19 @@ git_checkout(){
 	ok_mesg "[$dir] checkout $2"
 	if git pull ;then
 	    ok_mesg "[$dir] synchronize"
+	   
 	else
 	    nok_mesg "[$dir] synchronize"
 	    return 1
 	fi
+	if git pull origin $2;then
+	    ok_mesg "[$dir] synchronize with origin"
+	   
+	else
+	    nok_mesg "[$dir] synchronize with origin"
+
+	fi
+	
     else
 	error_mesg "[$dir] checking out $2"
 	return 1
@@ -253,11 +262,23 @@ for dir in ${on_dir[@]}; do
 
 	    if [ -n "$mesg" ]; then
 		if git_checkout $dir $2; then
+		    
 		    if git merge -m "$mesg" --no-ff $1;then
 			info_mesg "[$dir] merge " "done"
 		    else
 			error_mesg "[$dir] error merging $1 -> $2, skipping merge"
 		    fi
+		    if git push origin $2;then
+			info_mesg "[$dir] push origin $2 " "done"
+		    else
+			error_mesg "[$dir] error pushing $2 -> origin, skipping merge"
+		    fi
+		    if git checkout $1;then
+			info_mesg "[$dir] back into branch $1 " "done"
+		    else
+			error_mesg "[$dir] error back into branch $1 , skipping merge"
+		    fi
+
 		fi
 	    fi
 	    ;;
