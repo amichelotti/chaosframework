@@ -167,7 +167,9 @@ pool_ref(_pool_ref),
 curret_batch_size(0),
 batch_size_limit(DEFAULT_BATCH_SIZE_IN_BYTE),
 push_timeout_multiplier(DEFAULT_BATCH_TIMEOUT_MULTIPLIER),
-push_current_step_left(push_timeout_multiplier),write_timeout(common::constants::ObjectStorageTimeoutinMSec),read_timeout(common::constants::ObjectStorageTimeoutinMSec){
+push_current_step_left(push_timeout_multiplier),
+write_timeout(common::constants::ObjectStorageTimeoutinMSec),
+read_timeout(common::constants::ObjectStorageTimeoutinMSec){
     //get client the connection
     auto client = pool_ref.acquire();
     
@@ -284,7 +286,7 @@ int MongoDBObjectStorageDataAccessSC::pushObject(const std::string&            k
      
     //check if we need to push or wait timeout or other incoming data
     curret_batch_size += stored_object.getBSONRawSize();
-     BlobSetLWriteLock wl = batch_set.getWriteLockObject();
+    BlobSetLWriteLock wl = batch_set.getWriteLockObject();
     batch_set().insert(current_data);
     return err;
 }
@@ -564,14 +566,19 @@ int MongoDBObjectStorageDataAccessSC::findObject(const std::string&             
         auto opts  = options::find{};
         //set page len
         opts.limit(page_len);
+        opts.hint(hint(make_document(kvp(std::string(chaos::DataPackCommonKey::DPCK_DEVICE_ID),1),
+                                     kvp(std::string(chaos::ControlUnitDatapackCommonKey::RUN_ID),1),
+                                     kvp(std::string(chaos::DataPackCommonKey::DPCK_SEQ_ID),1),
+                                     kvp(std::string(chaos::DataPackCommonKey::DPCK_TIMESTAMP),1),
+                                     kvp(std::string(chaos::DataPackCommonKey::DPCK_DATASET_TAGS),1))));
         //set read form secondary
         read_preference secondary;
         secondary.mode(read_preference::read_mode::k_nearest);
         opts.read_preference(secondary).max_time(std::chrono::milliseconds(read_timeout));
         opts.read_preference(secondary).batch_size(30);
-        
         opts.sort(make_document(kvp(std::string(chaos::ControlUnitDatapackCommonKey::RUN_ID), 1),
                                 kvp(std::string(chaos::DataPackCommonKey::DPCK_SEQ_ID), 1)));
+        
         
         
         DEBUG_CODE(DBG<<log_message("findObject", "find", DATA_ACCESS_LOG_1_ENTRY("Query", bsoncxx::to_json(builder.view()))));
@@ -630,6 +637,11 @@ int MongoDBObjectStorageDataAccessSC::findObjectIndex(const DataSearch& search,
         
         auto opts  = options::find{};
         opts.limit(search.page_len);
+        opts.hint(hint(make_document(kvp(std::string(chaos::DataPackCommonKey::DPCK_DEVICE_ID),1),
+                                     kvp(std::string(chaos::ControlUnitDatapackCommonKey::RUN_ID),1),
+                                     kvp(std::string(chaos::DataPackCommonKey::DPCK_SEQ_ID),1),
+                                     kvp(std::string(chaos::DataPackCommonKey::DPCK_TIMESTAMP),1),
+                                     kvp(std::string(chaos::DataPackCommonKey::DPCK_DATASET_TAGS),1))));
         read_preference secondary;
         secondary.mode(read_preference::read_mode::k_nearest);
         opts.read_preference(secondary).max_time(std::chrono::milliseconds(read_timeout));

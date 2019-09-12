@@ -332,8 +332,10 @@ SET( CMAKE_CHAOS  $ENV{CHAOS_CMAKE_FLAGS})
 
 #ADD_DEFINITIONS(-O2)
 
+  
 #set(FrameworkLib $ENV{CHAOS_LINK_LIBRARY})
 #separate_arguments(FrameworkLib)
+
 
 INCLUDE_DIRECTORIES(. ${PROJECT_SOURCE_DIR} ${CMAKE_INSTALL_PREFIX}/include)
 LINK_DIRECTORIES(${CMAKE_LIBRARY_OUTPUT_DIRECTORY} ${CMAKE_INSTALL_PREFIX}/lib ${CMAKE_INSTALL_PREFIX}/lib64)
@@ -392,8 +394,8 @@ if(LIB_NEED)
   #  include_directories(${Boost_INCLUDE_DIRS})
 else()
   MESG("boost not found in ${CMAKE_INSTALL_PREFIX}/lib downloading...")
-#  boostInstall(${BOOST_VERSION} ${BOOST_MINOR_VERSION} http://download.sourceforge.net/project/boost/boost/1.${BOOST_VERSION}.${BOOST_MINOR_VERSION} "${CHAOS_BOOST_FLAGS}")
-  boostInstall(${BOOST_VERSION} ${BOOST_MINOR_VERSION}  https://sourceforge.net/projects/boost/files/boost/1.${BOOST_VERSION}.${BOOST_MINOR_VERSION} "${CHAOS_BOOST_FLAGS}")
+  boostInstall(${BOOST_VERSION} ${BOOST_MINOR_VERSION}  https://dl.bintray.com/boostorg/release/1.${BOOST_VERSION}.${BOOST_MINOR_VERSION}/source "${CHAOS_BOOST_FLAGS}")
+#  boostInstall(${BOOST_VERSION} ${BOOST_MINOR_VERSION}  https://sourceforge.net/projects/boost/files/boost/1.${BOOST_VERSION}.${BOOST_MINOR_VERSION} "${CHAOS_BOOST_FLAGS}")
 endif()
 
 
