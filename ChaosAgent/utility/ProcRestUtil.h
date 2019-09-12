@@ -21,9 +21,9 @@
 
 #ifndef __CHAOSFramework_D11D47EC_B834_406C_897C_8191C80B6D8B_ProcRestUtil_h
 #define __CHAOSFramework_D11D47EC_B834_406C_897C_8191C80B6D8B_ProcRestUtil_h
+#include <RestProcessManager.h>
 
 #include "../ChaosAgent.h"
-#include <RestProcessManager.h>
 
 #include <cstdio>
 #include <string>

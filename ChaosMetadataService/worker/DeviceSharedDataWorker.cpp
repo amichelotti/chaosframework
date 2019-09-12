@@ -21,7 +21,6 @@
 
 #include "../ChaosMetadataService.h"
 #include "DeviceSharedDataWorker.h"
-#include "../cache_system/CacheDriverMetricCollector.h"
 #include "../DriverPoolManager.h"
 #include <chaos/common/utility/UUIDUtil.h>
 #include <chaos/common/utility/TimingUtil.h>
@@ -58,7 +57,8 @@ void DeviceSharedDataWorker::init(void *init_data)  {
 
 void DeviceSharedDataWorker::deinit()  {
     DataWorker::deinit();
-    global_object_storage_driver->deinit();
+    if(global_object_storage_driver.get())
+        global_object_storage_driver->deinit();
 }
 
 void DeviceSharedDataWorker::executeJob(WorkerJobPtr job_info, void* cookie) {
