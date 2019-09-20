@@ -324,6 +324,8 @@
 		32571D9C1C7C901A0001D884 /* BatchCommandLoggingChannel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 32571D9A1C7C901A0001D884 /* BatchCommandLoggingChannel.cpp */; };
 		32571D9D1C7C901A0001D884 /* BatchCommandLoggingChannel.h in Headers */ = {isa = PBXBuildFile; fileRef = 32571D9B1C7C901A0001D884 /* BatchCommandLoggingChannel.h */; };
 		32571DA11C7C91090001D884 /* batch_command.h in Headers */ = {isa = PBXBuildFile; fileRef = 32571D9F1C7C91090001D884 /* batch_command.h */; };
+		3257FDED2334CDE00078D91B /* AbstractMetricManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3257FDEB2334CDE00078D91B /* AbstractMetricManager.cpp */; };
+		3257FDEE2334CDE00078D91B /* AbstractMetricManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 3257FDEC2334CDE00078D91B /* AbstractMetricManager.h */; };
 		3258AEEA1935C34000A66D44 /* URL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3258AEE81935C34000A66D44 /* URL.cpp */; };
 		3258AEEB1935C34000A66D44 /* URL.h in Headers */ = {isa = PBXBuildFile; fileRef = 3258AEE91935C34000A66D44 /* URL.h */; };
 		325963981D216BD800D94853 /* LoadInstanceOnUnitServer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 325963961D216BD800D94853 /* LoadInstanceOnUnitServer.cpp */; };
@@ -1650,6 +1652,8 @@
 		32571D9A1C7C901A0001D884 /* BatchCommandLoggingChannel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BatchCommandLoggingChannel.cpp; sourceTree = "<group>"; };
 		32571D9B1C7C901A0001D884 /* BatchCommandLoggingChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BatchCommandLoggingChannel.h; sourceTree = "<group>"; };
 		32571D9F1C7C91090001D884 /* batch_command.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = batch_command.h; sourceTree = "<group>"; };
+		3257FDEB2334CDE00078D91B /* AbstractMetricManager.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = AbstractMetricManager.cpp; sourceTree = "<group>"; };
+		3257FDEC2334CDE00078D91B /* AbstractMetricManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AbstractMetricManager.h; sourceTree = "<group>"; };
 		3258AEE81935C34000A66D44 /* URL.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = URL.cpp; sourceTree = "<group>"; };
 		3258AEE91935C34000A66D44 /* URL.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = URL.h; sourceTree = "<group>"; };
 		325963961D216BD800D94853 /* LoadInstanceOnUnitServer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = LoadInstanceOnUnitServer.cpp; sourceTree = "<group>"; };
@@ -5772,6 +5776,8 @@
 		32EBDEF31B4E586000278C42 /* metric */ = {
 			isa = PBXGroup;
 			children = (
+				3257FDEB2334CDE00078D91B /* AbstractMetricManager.cpp */,
+				3257FDEC2334CDE00078D91B /* AbstractMetricManager.h */,
 				323595E622ECBC3200CFB66C /* MetricManager.cpp */,
 				323595E722ECBC3200CFB66C /* MetricManager.h */,
 				32EBDEF81B4E58F300278C42 /* MetricCollector.cpp */,
@@ -6105,6 +6111,7 @@
 				32661C761AA867E100F1A721 /* MessageRequestFuture.h in Headers */,
 				325DE9F215EC031E00D6F34E /* EventChannel.h in Headers */,
 				32995C4B1BB2FF2600F68148 /* CheckList.h in Headers */,
+				3257FDEE2334CDE00078D91B /* AbstractMetricManager.h in Headers */,
 				3244D11E15ECC25800FE2F86 /* AlertEventChannel.h in Headers */,
 				325CA6BC15EE10B3007FCC12 /* EventAction.h in Headers */,
 				3206CE701FA767AC0059A4A4 /* bson-decimal128.h in Headers */,
@@ -7070,6 +7077,7 @@
 				327967D515E029C70003C6DA /* AsioImplEventServer.cpp in Sources */,
 				327967D915E030C40003C6DA /* AsioEventHandler.cpp in Sources */,
 				32DF603715E14C7700312C94 /* NamedService.cpp in Sources */,
+				3257FDED2334CDE00078D91B /* AbstractMetricManager.cpp in Sources */,
 				32E45C0F22B02F03000B5DB1 /* ProcessInfo.cpp in Sources */,
 				32DF603B15E14D5F00312C94 /* AlertEventDescriptor.cpp in Sources */,
 				3206CE741FA767AC0059A4A4 /* bson-writer.c in Sources */,
