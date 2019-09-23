@@ -45,14 +45,27 @@ namespace chaos {
                 class NewMongoDBObjectStorageDriver;
                 
                 typedef ChaosSharedPtr<bsoncxx::builder::basic::document> BlobShrdPtr;
-
-                 CHAOS_DEFINE_LOCKABLE_OBJECT(std::set<BlobShrdPtr>, BlobSetL);
+                
+                CHAOS_DEFINE_LOCKABLE_OBJECT(std::set<BlobShrdPtr>, BlobSetL);
                 //! define a lockable seet for betch entries
+                
+                
+#if CHAOS_PROMETHEUS
+                template<typename ReturnType>
+                ReturnType computeTimeForOperationInGauge(chaos::common::metric::GaugeUniquePtr& gauge,
+                                                          std::function<ReturnType()> function) {
+                    boost::posix_time::ptime start = boost::posix_time::second_clock::local_time();
+                    ReturnType ret = function();
+                    boost::posix_time::ptime end = boost::posix_time::second_clock::local_time();
+                    (*gauge) = (end - start).total_milliseconds();
+                    return ret;
+                }
+#endif
                 
                 //! Data Access for producer manipulation data
                 class MongoDBObjectStorageDataAccessSC:
                 public metadata_service::object_storage::abstraction::ObjectStorageDataAccess,
-                public chaos::common::metric::MetricCollectorIO {
+                public chaos::common::async_central::TimerHandler {
                     friend class NewMongoDBObjectStorageDriver;
                     mongocxx::pool&     pool_ref;
                     ShardKeyManagement  shrd_key_manager;
@@ -75,15 +88,17 @@ namespace chaos {
                     chaos::common::metric::GaugeUniquePtr gauge_write_rate_uptr;
                     double current_read_data;
                     chaos::common::metric::GaugeUniquePtr gauge_read_rate_uptr;
+                    chaos::common::metric::GaugeUniquePtr gauge_insert_time_uptr;
+                    chaos::common::metric::GaugeUniquePtr gauge_query_time_uptr;
 #endif
                 protected:
                     MongoDBObjectStorageDataAccessSC(mongocxx::pool& _pool_ref);
                     ~MongoDBObjectStorageDataAccessSC();
                     
-
+                    
                     void executePush(std::set<BlobShrdPtr>&& _batch_element_to_store);
                     //!TimeOutHnadler inherited
-                    void fetchMetricForTimeDiff(uint64_t time_diff);
+                    void timeout();
                     
                     inline chaos::common::data::CDWShrdPtr getDataByID(mongocxx::database& db,
                                                                        const std::string& _id);
