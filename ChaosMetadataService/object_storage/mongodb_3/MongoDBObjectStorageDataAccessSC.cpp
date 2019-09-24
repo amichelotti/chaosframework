@@ -174,11 +174,8 @@ push_timeout_multiplier(DEFAULT_BATCH_TIMEOUT_MULTIPLIER),
 push_current_step_left(push_timeout_multiplier),
 write_timeout(common::constants::ObjectStorageTimeoutinMSec),
 read_timeout(common::constants::ObjectStorageTimeoutinMSec),
-search_hint_name("paged_daq_seq_search_index") {
-#if CHAOS_PROMETHEUS
-    current_write_data = 0;
-    current_read_data = 0;
-#endif
+search_hint_name(""),
+search_hint_name_tag(""){
     //get client the connection
     auto client = pool_ref.acquire();
     
@@ -186,9 +183,9 @@ search_hint_name("paged_daq_seq_search_index") {
     auto db = (*client)[MONGODB_DB_NAME];
     
     //data collection
-    initShardIndex(db, MONGODB_DAQ_COLL_NAME);
-    initSearchIndex(db, MONGODB_DAQ_COLL_NAME);
-    initAgeingIndex(db, MONGODB_DAQ_COLL_NAME);
+    //initShardIndex(db, MONGODB_DAQ_COLL_NAME);
+    //initSearchIndex(db, MONGODB_DAQ_COLL_NAME);
+    //initAgeingIndex(db, MONGODB_DAQ_COLL_NAME);
     MapKVP& obj_stoarge_kvp = metadata_service::ChaosMetadataService::getInstance()->setting.object_storage_setting.key_value_custom_param;
     if(obj_stoarge_kvp.count("wtimeout")) {
         write_timeout=strtoul(obj_stoarge_kvp["wtimeout"].c_str(),0,0);
@@ -224,12 +221,15 @@ search_hint_name("paged_daq_seq_search_index") {
         search_hint_name = obj_stoarge_kvp["hint_name"];
         DBG<<"Defined Hint:\""<<search_hint_name<<"\"";
     }
-    
+    if(obj_stoarge_kvp.count("hint_name_tag")) {
+        search_hint_name_tag = obj_stoarge_kvp["hint_name_tag"];
+        DBG<<"Defined Hint For Tag Search:\""<<search_hint_name_tag<<"\"";
+    }
     // allocate metrics
 #if CHAOS_PROMETHEUS
-    MetricManager::getInstance()->createGaugeFamily("mds_mongodb_io_rate", "Measure the data rate for the data sent and read from mongodb database [byte]");
-    gauge_write_rate_uptr = MetricManager::getInstance()->getNewGaugeFromFamily("mds_mongodb_io_rate", {{"type","write_byte_sec"}});
-    gauge_read_rate_uptr = MetricManager::getInstance()->getNewGaugeFromFamily("mds_mongodb_io_rate", {{"type","read_byte_sec"}});
+    MetricManager::getInstance()->createCounterFamily("mds_mongodb_io_data", "Measure the data rate for the data sent and read from mongodb database [byte]");
+    counter_write_data_uptr = MetricManager::getInstance()->getNewCounterFromFamily("mds_mongodb_io_data", {{"type","write_byte"}});
+    counter_read_data_uptr = MetricManager::getInstance()->getNewCounterFromFamily("mds_mongodb_io_data", {{"type","read_byte"}});
     
     MetricManager::getInstance()->createGaugeFamily("mds_mongodb_operation_time", "Measure the time spent by mongo db to complete operation [milliseconds]");
     gauge_insert_time_uptr = MetricManager::getInstance()->getNewGaugeFromFamily("mds_mongodb_operation_time", {{"type","insert_time"}});
@@ -274,6 +274,7 @@ void MongoDBObjectStorageDataAccessSC::executePush(std::set<BlobShrdPtr>&& _batc
                                                                                                                [&bulk_data_write]() -> mongocxx::stdx::optional<result::bulk_write> {
                                                                                                                    return bulk_data_write.execute();
                                                                                                                });
+        (*counter_write_data_uptr) += curren_data_to_send;
 #else
         auto bulk_data_result = bulk_data_write.execute();
 #endif
@@ -337,12 +338,6 @@ int MongoDBObjectStorageDataAccessSC::pushObject(const std::string&             
 }
 
 void MongoDBObjectStorageDataAccessSC::timeout() {
-#if CHAOS_PROMETHEUS
-    //    if(sec == 0) return;
-    (*gauge_write_rate_uptr) = current_write_data; current_write_data = 0;
-    (*gauge_read_rate_uptr) = current_read_data; current_read_data = 0;
-#endif
-    //
     if(push_current_step_left) {
         push_current_step_left--;
         return;
@@ -381,7 +376,7 @@ CDWShrdPtr MongoDBObjectStorageDataAccessSC::getDataByID(mongocxx::database& db,
             //we have found data
             auto daq_data_view = result_find->view()[MONGODB_DAQ_DATA_FIELD];
 #if CHAOS_PROMETHEUS
-            current_read_data += daq_data_view.get_value().get_document().value.length();
+            (*counter_read_data_uptr) += daq_data_view.get_value().get_document().value.length();
 #endif
             result = ChaosMakeSharedPtr<CDataWrapper>((const char *)daq_data_view.get_value().get_document().value.data());
         } else {
@@ -424,7 +419,7 @@ VectorObject MongoDBObjectStorageDataAccessSC::getDataByID(mongocxx::database& d
         for(auto && document : cursor){
             auto daq_data_view = document[MONGODB_DAQ_DATA_FIELD];
 #if CHAOS_PROMETHEUS
-            current_read_data += daq_data_view.get_value().get_document().value.length();
+            (*counter_read_data_uptr) += daq_data_view.get_value().get_document().value.length();
 #endif
             result.push_back(ChaosMakeSharedPtr<CDataWrapper>((const char *)daq_data_view.get_value().get_document().value.data()));
         }
@@ -606,18 +601,18 @@ int MongoDBObjectStorageDataAccessSC::findObject(const std::string&             
         auto opts  = options::find{};
         //set page len
         opts.limit(page_len);
-        //        opts.hint(hint(make_document(kvp(std::string(chaos::DataPackCommonKey::DPCK_DEVICE_ID),1),
-        //                                     kvp(std::string(chaos::ControlUnitDatapackCommonKey::RUN_ID),1),
-        //                                     kvp(std::string(chaos::DataPackCommonKey::DPCK_SEQ_ID),1),
-        //                                     kvp(std::string(chaos::DataPackCommonKey::DPCK_TIMESTAMP),1),
-        //                                     kvp(std::string(chaos::DataPackCommonKey::DPCK_DATASET_TAGS),1))));
-        opts.hint(hint(search_hint_name));
+        if(meta_tags.size()) {
+            if(search_hint_name.size()){opts.hint(hint(search_hint_name));}
+        } else {
+            if(search_hint_name_tag.size()){opts.hint(hint(search_hint_name_tag));}
+        }
         //set read form secondary
         read_preference secondary;
-        secondary.mode(read_preference::read_mode::k_nearest);
+        secondary.mode(read_preference::read_mode::k_primary_preferred);
         opts.read_preference(secondary).max_time(std::chrono::milliseconds(read_timeout));
         opts.read_preference(secondary).batch_size(30);
-        opts.sort(make_document(kvp(std::string(chaos::ControlUnitDatapackCommonKey::RUN_ID), 1),
+        opts.sort(make_document(kvp(std::string(chaos::DataPackCommonKey::DPCK_DEVICE_ID), 1),
+                                kvp(std::string(chaos::ControlUnitDatapackCommonKey::RUN_ID), 1),
                                 kvp(std::string(chaos::DataPackCommonKey::DPCK_SEQ_ID), 1)));
         
         
@@ -641,7 +636,7 @@ int MongoDBObjectStorageDataAccessSC::findObject(const std::string&             
                !element.get_document().view().empty()){
                 CDWShrdPtr new_obj(new CDataWrapper((const char *)element.get_document().view().data()));
 #if CHAOS_PROMETHEUS
-                current_read_data += new_obj->getBSONRawSize();
+                (*counter_read_data_uptr) += new_obj->getBSONRawSize();
 #endif
                 found_object_page.push_back(new_obj);
             }
@@ -690,17 +685,18 @@ int MongoDBObjectStorageDataAccessSC::findObjectIndex(const DataSearch& search,
         
         auto opts  = options::find{};
         opts.limit(search.page_len);
-        //        opts.hint(hint(make_document(kvp(std::string(chaos::DataPackCommonKey::DPCK_DEVICE_ID),1),
-        //                                     kvp(std::string(chaos::ControlUnitDatapackCommonKey::RUN_ID),1),
-        //                                     kvp(std::string(chaos::DataPackCommonKey::DPCK_SEQ_ID),1),
-        //                                     kvp(std::string(chaos::DataPackCommonKey::DPCK_TIMESTAMP),1),
-        //                                     kvp(std::string(chaos::DataPackCommonKey::DPCK_DATASET_TAGS),1))));
-        opts.hint(hint(search_hint_name));
+
+        if(search.meta_tags.size()) {
+            if(search_hint_name.size()){opts.hint(hint(search_hint_name));}
+        } else {
+            if(search_hint_name_tag.size()){opts.hint(hint(search_hint_name_tag));}
+        }
         
         read_preference secondary;
-        secondary.mode(read_preference::read_mode::k_nearest);
+        secondary.mode(read_preference::read_mode::k_primary_preferred);
         opts.read_preference(secondary).max_time(std::chrono::milliseconds(read_timeout));
-        opts.sort(make_document(kvp(std::string(chaos::ControlUnitDatapackCommonKey::RUN_ID), 1),
+        opts.sort(make_document(kvp(std::string(chaos::DataPackCommonKey::DPCK_DEVICE_ID), 1),
+                                kvp(std::string(chaos::ControlUnitDatapackCommonKey::RUN_ID), 1),
                                 kvp(std::string(chaos::DataPackCommonKey::DPCK_SEQ_ID), 1)));
         
         DEBUG_CODE(DBG<<log_message("findObject", "find", DATA_ACCESS_LOG_2_ENTRY("Query",
@@ -769,7 +765,7 @@ int MongoDBObjectStorageDataAccessSC::getObjectByIndex(const CDWShrdPtr& index,
             auto result_view = result.value().view()[MONGODB_DAQ_DATA_FIELD];
             found_object = ChaosMakeSharedPtr<CDataWrapper>((const char *)result_view.raw());
 #if CHAOS_PROMETHEUS
-            current_read_data += found_object->getBSONRawSize();
+            (*counter_read_data_uptr) += found_object->getBSONRawSize();
 #endif
         } else {
             //create empty object for not found data
