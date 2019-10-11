@@ -307,6 +307,12 @@ void ChaosAbstractCommon::init(void *init_data) {
                                                                                                     NodeDomainAndActionRPC::RPC_DOMAIN,
                                                                                                     NodeDomainAndActionRPC::ACTION_GET_PROCESS_INFO,
                                                                                                     "Return the process info of current chaos node instance");
+
+        AbstActionDescShrPtr action_description3 = addActionDescritionInstance<ChaosAbstractCommon>(this,
+                                                                                                    &ChaosAbstractCommon::nodeShutDown,
+                                                                                                    NodeDomainAndActionRPC::RPC_DOMAIN,
+                                                                                                    NodeDomainAndActionRPC::ACTION_NODE_SHUTDOWN,
+                                                                                                    "Shutdown node immediately");
         
         AbstActionDescShrPtr actionDescription3 = addActionDescritionInstance<ChaosAbstractCommon>(this,
                                                                                                    &ChaosAbstractCommon::_registrationAck,
@@ -383,4 +389,19 @@ CDWUniquePtr ChaosAbstractCommon::getBuildInfo(CHAOS_UNUSED CDWUniquePtr data) {
 CDWUniquePtr ChaosAbstractCommon::getProcessInfo(CHAOS_UNUSED CDWUniquePtr data) {
     return GlobalConfiguration::getInstance()->getProcessInfoRef().fullStat();
     
+}
+CDWUniquePtr ChaosAbstractCommon::nodeShutDown(CHAOS_UNUSED CDWUniquePtr data) {
+    if(data->hasKey("kill") &&
+       data->isBoolValue("kill") &&
+       data->getBoolValue("kill")) {
+        int32_t timeout = CDW_GET_INT32_WITH_DEFAULT(data, "timeout", 5);
+        LAPP_ << "SHUTDOWN COMMAND:"<<data->getCompliantJSONString()<<" ABOUT TO EXIT IN:"<<timeout<< " seconds";
+
+        stop();
+        deinit();
+        
+        sleep(timeout);
+        exit(0);
+    }
+    return CDWUniquePtr();   
 }
