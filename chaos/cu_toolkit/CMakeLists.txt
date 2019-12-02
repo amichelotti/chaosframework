@@ -78,7 +78,8 @@ SET(cu_lib_src ${cu_lib_src}
         control_manager/execution_pool/ExecutionPool.cpp)
 
 IF (WIN32)
-SET(BUILD_FORCE_STATIC 1)
+#SET(BUILD_FORCE_STATIC 1)
+set (BOOST_LIBPATH  ${CMAKE_INSTALL_PREFIX}/boostinstall/lib )
 SET (ALL_WINDOWS_LIBS "DbgHelp.lib Netapi32.lib Iphlpapi.lib -LIBPATH:${BOOST_LIBPATH}  chaos_common")
 ELSE()
 SET (ALL_WINDOWS_LIBS )
@@ -96,7 +97,6 @@ IF (BUILD_FORCE_STATIC)
 
 
 SET(chaos_cutoolkit_lib ${CMAKE_INSTALL_PREFIX}/lib)
-MESSAGE("ALEDEBUG chaos_cutoolkit_lib :" ${chaos_cutoolkit_lib})
 set (BOOST_LIBPATH  ${CMAKE_INSTALL_PREFIX}/boostinstall/lib )
 
 

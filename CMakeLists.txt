@@ -46,6 +46,8 @@ option(CHAOS_AGENT "Chaos Agent Service" ON)
 option(CHAOS_DATA_EXPORT "Chaos Data Export" ON)
 option(CHAOS_EXAMPLES "Chaos Examples" ON)
 endif(WIN32)
+
+
 option(CHAOS_CCS "Chaos CCS Compile needs qt5.6-static-x86_64 installed" OFF)
 if(NOT QMAKE_PATH)
   set(QMAKE_PATH /usr/local/chaos/qt-56/bin)
@@ -83,16 +85,21 @@ IF (CHAOS_ONLY_DEPENDECY OR
     CHAOS_ARCHITECTURE_TEST)
   #google test
    MESG("Add google Test as external project")
+
   IF(WIN32)
+   #set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
    ExternalProject_Add(
      googletest
      GIT_REPOSITORY https://github.com/google/googletest.git
 	 GIT_TAG release-1.10.0
+	
+
      PREFIX "${CMAKE_BINARY_DIR}/ext_dep/googletest-prefix"
      SOURCE_DIR "${CMAKE_BINARY_DIR}/ext_dep/googletest-src"
      BINARY_DIR "${CMAKE_BINARY_DIR}/ext_dep/googletest-build"
+	 
      CMAKE_ARGS
-      -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}  -DCMAKE_BUILD_TYPE=Release
+      -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}  -DCMAKE_BUILD_TYPE=Debug -Dgtest_force_shared_crt=ON
      LOG_DOWNLOAD ON
      LOG_CONFIGURE ON
      LOG_BUILD ON)
@@ -104,7 +111,7 @@ IF (CHAOS_ONLY_DEPENDECY OR
      ExternalProject_Get_Property(googletest binary_dir)
      set(GTEST_LIBRARY_DIR ${binary_dir})
      ExternalProject_Get_Property(googletest binary_dir)
-     set(GTEST_LIBRARY_PATH ${binary_dir}/${CMAKE_FIND_LIBRARY_PREFIXES}gtest.a)
+     set(GTEST_LIBRARY_PATH ${binary_dir}/${CMAKE_FIND_LIBRARY_PREFIXES}gtestd.lib)
 
      MESG("${GTEST_INCLUDE_DIR}")
      MESG("${GTEST_LIBRARY_DIR}")

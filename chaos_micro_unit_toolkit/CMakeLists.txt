@@ -7,7 +7,7 @@ include_directories(${ALL_WINDOWS_INCLUDE_DIR})
 INCLUDE_DIRECTORIES(${CMAKE_INSTALL_PREFIX}/boostinstall/include/boost-1_70)
 link_directories(${CMAKE_CURRENT_BINARY_DIR}/boostinstall/lib)
 
-SET(BUILD_FORCE_STATIC 1)
+#SET(BUILD_FORCE_STATIC 1)
 
 else()
 include_directories(../)
@@ -58,7 +58,9 @@ ENDIF ()
 
 
 if(WIN32)
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} chaos_common ${ALL_WINDOWS_LIBPATH} )
+set (BOOST_LIBPATH  ${CMAKE_INSTALL_PREFIX}/boostinstall/lib )
+SET (ALL_WINDOWS_LIBS "DbgHelp.lib Netapi32.lib Iphlpapi.lib -LIBPATH:${BOOST_LIBPATH}  chaos_common")
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} chaos_common ${ALL_WINDOWS_LIBS} )
 else()
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} pthread)
 endif()

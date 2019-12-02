@@ -134,7 +134,7 @@ SET(mcl_src ${mcl_src}      monitor_system/MonitorManager.cpp
                             monitor_system/QuantumTSTaggedAttributeHandler.cpp)
 
 IF (WIN32)
-SET(BUILD_FORCE_STATIC 1)
+#SET(BUILD_FORCE_STATIC 1)
 ENDIF(WIN32)
 
 IF (BUILD_FORCE_STATIC)
@@ -146,7 +146,9 @@ ENDIF ()
 
 
 IF (WIN32)
-TARGET_LINK_LIBRARIES(${PROJECT_NAME}  chaos_common    ${ALL_WINDOWS_LIBPATH}   )
+set (BOOST_LIBPATH  ${CMAKE_INSTALL_PREFIX}/boostinstall/lib )
+SET (ALL_WINDOWS_LIBS "DbgHelp.lib Netapi32.lib Iphlpapi.lib -LIBPATH:${BOOST_LIBPATH}  chaos_common")
+TARGET_LINK_LIBRARIES(${PROJECT_NAME}  chaos_common    ${ALL_WINDOWS_LIBS}   )
 ELSE()
 TARGET_LINK_LIBRARIES(${PROJECT_NAME}  chaos_common ${FrameworkLib})
 ENDIF()
