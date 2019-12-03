@@ -2,11 +2,12 @@ cmake_minimum_required(VERSION 2.8)
 MESSAGE("framework CMakeLists")
 IF(WIN32)
 add_definitions(-D_WIN32_WINNT=0x601)
-#include(config/CMakeChaosWin.txt)
-macro (MESG parm)
-  SET(WHERE ${CMAKE_CURRENT_LIST_DIR})
-  MESSAGE(STATUS "[${WHERE}] ${parm}")
-endmacro()
+
+#set(GIT_VERSION_STRING "2.24.0")
+
+set(CHAOS_STATIC OFF)
+include(config/CMakeChaosWin.txt)
+
 ELSE(WIN32)
 include(config/CMakeChaos.txt)
 ENDIF(WIN32)
@@ -17,7 +18,7 @@ include(ExternalProject)
 
 #find git
 find_package(Git REQUIRED)
-
+MESSAGE("Git Version String " ${GIT_VERSION_STRING})
 #clear var
 unset(CMAKE_CXX_COMPILER_WORKS CACHE)
 unset(CMAKE_CXX_COMPILER_WORKS)
