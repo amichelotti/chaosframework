@@ -46,6 +46,12 @@ IF (CHAOS_TARGET)
      ENDIF()
 
 if(WIN32)
+if (NOT( EXISTS ${CMAKE_INSTALL_PREFIX}/boostinstall/))
+set(WINBOOSTRELOAD ON)
+ELSE()
+set(WINBOOSTRELOAD OFF)
+ENDIF()
+if (WINBOOSTRELOAD)
 MESG("Configure libBoost as CMake")
 	ExternalProject_Add(
 	 boost
@@ -64,6 +70,7 @@ MESG("Configure libBoost as CMake")
     LOG_BUILD 1
     LOG_INSTALL 1
 	)
+ENDIF(WINBOOSTRELOAD)	
 MESSAGE("Configure JsonCpp as CMake External Project")
 ExternalProject_Add(
 	 jsonCpp
@@ -448,7 +455,9 @@ endif()
 
 IF (WIN32)
 add_dependencies(${PROJECT_NAME} libzmq)
+if ( WINBOOSTRELOAD)
 add_dependencies(${PROJECT_NAME} boost)
+ENDIF()
 add_dependencies(${PROJECT_NAME} jsonCpp)
 ENDIF()
 
