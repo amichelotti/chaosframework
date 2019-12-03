@@ -5,8 +5,12 @@ add_definitions(-D_WIN32_WINNT=0x601)
 
 #set(GIT_VERSION_STRING "2.24.0")
 
-set(CHAOS_STATIC OFF)
+set(CHAOS_STATIC ON)
 include(config/CMakeChaosWin.txt)
+macro (MESG parm)
+  SET(WHERE ${CMAKE_CURRENT_LIST_DIR})
+  MESSAGE(STATUS "[${WHERE}] ${parm}")
+endmacro()
 
 ELSE(WIN32)
 include(config/CMakeChaos.txt)
