@@ -86,9 +86,7 @@ IF (CHAOS_ONLY_DEPENDECY OR
    ExternalProject_Add(
      googletest
      GIT_REPOSITORY https://github.com/google/googletest.git
-	 GIT_TAG release-1.10.0
-	
-
+  	 GIT_TAG release-1.10.0
      PREFIX "${CMAKE_BINARY_DIR}/ext_dep/googletest-prefix"
      SOURCE_DIR "${CMAKE_BINARY_DIR}/ext_dep/googletest-src"
      BINARY_DIR "${CMAKE_BINARY_DIR}/ext_dep/googletest-build"
@@ -98,6 +96,7 @@ IF (CHAOS_ONLY_DEPENDECY OR
      LOG_DOWNLOAD ON
      LOG_CONFIGURE ON
      LOG_BUILD ON)
+	 
      # Specify include dir
      ExternalProject_Get_Property(googletest source_dir)
      set(GTEST_INCLUDE_DIR ${source_dir}/include)
