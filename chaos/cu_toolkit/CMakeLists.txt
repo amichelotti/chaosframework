@@ -79,6 +79,7 @@ SET(cu_lib_src ${cu_lib_src}
 
 IF (WIN32)
 #SET(BUILD_FORCE_STATIC 1)
+#MESSAGE("ALEDEBUG Wingeneral is " ${WINGENERAL})
 set (BOOST_LIBPATH  ${CMAKE_INSTALL_PREFIX}/boostinstall/lib )
 SET (ALL_WINDOWS_LIBS "DbgHelp.lib Netapi32.lib Iphlpapi.lib -LIBPATH:${BOOST_LIBPATH}  chaos_common")
 ELSE()

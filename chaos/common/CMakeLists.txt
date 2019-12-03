@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 project(chaos_common)
 #### required libraries
 MESSAGE(" CMAKELIST framework/chaos/common")
-MESSAGE ("CHAOS_TARGET:" ${CHAOS_TARGET})
+
 if(WIN32)
 set(CMAKE_SUPPRESS_REGENERATION true)
 ELSE(WIN32)
@@ -483,7 +483,15 @@ IF(CHAOS_PROMETHEUS)
 ENDIF(CHAOS_PROMETHEUS)
 
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${BUILD_LIBRARY})
+#configure_file(${CMAKE_CURRENT_BINARY_DIR}/chaos_commmon.lib ${CMAKE_INSTALL_PREFIX}/lib/chaos_commmon.lib COPYONLY) 
 
+MESSAGE("CURRENT BIN DIR " ${CMAKE_CURRENT_BINARY_DIR})
+#add_custom_command(
+	    
+ #       OUTPUT ${CMAKE_INSTALL_PREFIX}/lib/chaos_commmon.lib
+  #      COMMAND ${CMAKE_COMMAND} -E copy
+   #             ${CMAKE_CURRENT_BINARY_DIR}/chaos_commmon.lib
+    #            ${CMAKE_INSTALL_PREFIX}/lib/chaos_commmon.lib)
 FILE(GLOB files "external_unit/*.h")
 INSTALL(FILES ${files} DESTINATION include/chaos/common/external_unit)
 

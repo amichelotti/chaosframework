@@ -74,12 +74,7 @@ ENDIF()
 endif()
 #########
 
-#IF(CHAOS_ARCHITECTURE_TEST)
-#    SET (CMAKE_BUILD_TYPE Debug)
-#    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fprofile-arcs -ftest-coverage")
-#    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -fprofile-arcs -ftest-coverage")
-#    set (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -fprofile-arcs -ftest-coverage")
-#ENDIF()
+
 
 IF (CHAOS_ONLY_DEPENDECY OR
     CHAOS_ARCHITECTURE_TEST)
