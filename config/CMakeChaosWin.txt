@@ -5,7 +5,10 @@ macro (MESG parm)
   SET(WHERE ${CMAKE_CURRENT_LIST_DIR})
   MESSAGE(STATUS "[${WHERE}] ${parm}")
 endmacro()
-
+#unreferenced local variable 
+add_definitions(-wd"4101")
+#macro redefinition 
+add_definitions(-wd"4005")
 ### options and configuration variables ####
 
 IF(NOT CHAOS_VERSION_MAJOR)
