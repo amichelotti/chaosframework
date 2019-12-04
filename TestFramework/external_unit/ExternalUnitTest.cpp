@@ -21,7 +21,11 @@
 
 #include "ExternalUnitTest.h"
 
-
+#ifdef _WIN32
+#define RETRYMAX 50
+#else
+#define RETRYMAX 1000
+#endif
 
 using namespace chaos::common::data;
 using namespace chaos::common::utility;
@@ -108,7 +112,7 @@ TEST_F(ExternalUnitTest, WrongEndpoint) {
                                                           "application/bson-json",
                                                           "ws://localhost:" HTTP_ADAPTER_DEFAULT_PORT "/badendpoint");
   while (ExternalUnitClientEndpoint::isOnline() == false) {
-    ASSERT_LE(retry++, 1000);
+    ASSERT_LE(retry++, RETRYMAX);
 #ifdef _WIN32
     Sleep(500);
 #else
@@ -116,7 +120,7 @@ TEST_F(ExternalUnitTest, WrongEndpoint) {
 #endif
   }
   while (ExternalUnitClientEndpoint::getAcceptedState() != -1) {
-    ASSERT_LE(retry++, 1000);
+    ASSERT_LE(retry++, RETRYMAX);
 #ifdef _WIN32
     Sleep(500);
 #else
@@ -125,7 +129,7 @@ TEST_F(ExternalUnitTest, WrongEndpoint) {
   }
 
   while (ExternalUnitClientEndpoint::isOnline() == true) {
-    ASSERT_LE(retry++, 1000);
+    ASSERT_LE(retry++, RETRYMAX);
 #ifdef _WIN32
     Sleep(500);
 #else
@@ -150,7 +154,7 @@ TEST_F(ExternalUnitTest, Echo) {
                                                           "ws://localhost:" HTTP_ADAPTER_DEFAULT_PORT "/echo");
   while (ExternalUnitClientEndpoint::isOnline() == false ||
          ExternalUnitClientEndpoint::getAcceptedState() != 1) {
-    ASSERT_LE(retry++, 1000);
+    ASSERT_LE(retry++, RETRYMAX);
 #ifdef _WIN32
     Sleep(500);
 #else

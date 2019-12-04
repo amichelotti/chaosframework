@@ -9,6 +9,9 @@ endmacro()
 add_definitions(-wd"4101")
 #macro redefinition 
 add_definitions(-wd"4005")
+#removing warnings for not safe function (as sprintf sscanf etc)
+add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+
 ### options and configuration variables ####
 
 IF(NOT CHAOS_VERSION_MAJOR)

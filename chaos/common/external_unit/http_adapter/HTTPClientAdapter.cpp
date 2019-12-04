@@ -70,12 +70,9 @@ void HTTPClientAdapter::poller() {
 #ifndef _WIN32
             usleep(rest_poll_time);
 #else
-			unsigned long msecToWait = (int) (rest_poll_time / 1000);
-			msecToWait = (msecToWait > 1) ? msecToWait : 1;
-			Sleep(msecToWait);
-
+			boost::this_thread::sleep_for(boost::chrono::microseconds(rest_poll_time));
 #endif
-            if(poll_counter++ % (rest_poll_time)*10000000){performReconnection();}
+			if (poll_counter++ % (rest_poll_time) * 10000000) { performReconnection(); }
         }
         
         //check connection close opcode
@@ -139,10 +136,13 @@ int HTTPClientAdapter::addNewConnectionForEndpoint(ExternalUnitClientEndpoint *e
                                              "ChaosExternalUnit",
                                              web_socket_option);
         ci->ext_unit_conn->online = true;
+		if (conn == NULL)
+			return -3;
         conn->user_data = new ConnectionMetadata<HTTPClientAdapter>(ci->ext_unit_conn->connection_identifier, this);
     } catch(chaos::CException& ex) {
         return -2;
     }
+	 
     return 0;
 }
 

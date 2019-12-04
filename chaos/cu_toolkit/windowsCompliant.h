@@ -3,10 +3,9 @@
 #ifndef UNIFIED_SLEEP
 #define UNIFIED_SLEEP
 #define sleep(a) Sleep(a * 1000)
-#define usleep(a)                               \
+#define usleep(microsec)                               \
   {                                             \
-    int ms = ((a / 1000) > 1) ? (a / 1000) : 1; \
-    Sleep(ms);                                  \
+    boost::this_thread::sleep_for(boost::chrono::microseconds(microsec));\
   }
 
 #endif
