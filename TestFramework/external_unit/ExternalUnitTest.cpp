@@ -110,7 +110,7 @@ TEST_F(ExternalUnitTest, WrongEndpoint) {
   ExternalUnitManager::getInstance()->initilizeConnection(*this,
                                                           "http",
                                                           "application/bson-json",
-                                                          "ws://localhost:" HTTP_ADAPTER_DEFAULT_PORT "/badendpoint");
+                                                          "ws://127.0.0.1:" HTTP_ADAPTER_DEFAULT_PORT "/badendpoint");
   while (ExternalUnitClientEndpoint::isOnline() == false) {
     ASSERT_LE(retry++, RETRYMAX);
 #ifdef _WIN32
@@ -151,7 +151,7 @@ TEST_F(ExternalUnitTest, Echo) {
   ExternalUnitManager::getInstance()->initilizeConnection(*this,
                                                           "http",
                                                           "application/bson-json",
-                                                          "ws://localhost:" HTTP_ADAPTER_DEFAULT_PORT "/echo");
+                                                          "ws://127.0.0.1:" HTTP_ADAPTER_DEFAULT_PORT "/echo");
   while (ExternalUnitClientEndpoint::isOnline() == false ||
          ExternalUnitClientEndpoint::getAcceptedState() != 1) {
     ASSERT_LE(retry++, RETRYMAX);
@@ -192,7 +192,7 @@ TEST_F(ExternalUnitTest, Reconnection) {
   ASSERT_EQ(ExternalUnitManager::getInstance()->initilizeConnection(*this,
                                                                     "http",
                                                                     "application/bson-json",
-                                                                    "ws://localhost:" HTTP_ADAPTER_DEFAULT_PORT "/test"),
+                                                                    "ws://127.0.0.1:" HTTP_ADAPTER_DEFAULT_PORT "/test"),
             0);
   //wait connection
   while (ExternalUnitClientEndpoint::isOnline() == false ||
