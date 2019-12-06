@@ -3,7 +3,7 @@ MESSAGE("framework CMakeLists")
 IF(WIN32)
 add_definitions(-D_WIN32_WINNT=0x601)
 
-#set(GIT_VERSION_STRING "2.24.0")
+
 
 set(CHAOS_STATIC ON)
 include(config/CMakeChaosWin.txt)
