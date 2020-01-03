@@ -24,20 +24,13 @@
 #include <map>
 #include <string>
 #include <boost/thread/mutex.hpp>
-
-
-#include <chaos/common/direct_io/DirectIO.h>
-#include <chaos/common/data/CDataWrapper.h>
 #include <chaos/common/action/DeclareAction.h>
 #include <chaos/common/action/EventAction.h>
-#include <chaos/common/network/CNodeNetworkAddress.h>
 #include <chaos/common/event/event.h>
-#include <chaos/common/network/NetworkForwardInfo.h>
-#include <chaos/common/network/PerformanceManagment.h>
+//#include <chaos/common/network/NetworkForwardInfo.h>
+//#include <chaos/common/network/PerformanceManagment.h>
 #include <chaos/common/utility/StartableService.h>
-#include <chaos/common/message/MessageRequestDomain.h>
-#include <chaos/common/direct_io/DirectIO.h>
-
+#include <chaos/common/network/CNodeNetworkAddress.h>
 
 namespace chaos {
 	
@@ -46,8 +39,14 @@ namespace chaos {
 	class AbstractEventDispatcher;
 	class RpcClient;
 	class RpcServer;
-
 	namespace common {
+		namespace direct_io{
+			class DirectIOClient;
+			class DirectIODispatcher;
+			class DirectIOServer;
+			class DirectIOServerEndpoint;
+		}
+
         namespace event {
             namespace channel {
                 class AlertEventChannel;
@@ -65,6 +64,7 @@ namespace chaos {
 			class DeviceMessageChannel;
             class DeviceMessageChannelListener;
 			class PerformanceNodeChannel;
+			class MessageRequestDomain;
 		}
 
 		namespace network {
@@ -79,7 +79,7 @@ namespace chaos {
 				DEVICE,             /*!< Identify a device specific channel used to send data pack to the target control unit */
 				PERFORMANCE         /*!< Identify a performance specific channel used to send and receive various performance information and test between two chaos node using directio system */
 			} EntityType;
-			
+            
 			//! Message Broker
 			/*!
 			 The NetworkBroker is the manager for the message in chaos framework. It contains the reference to
@@ -91,7 +91,7 @@ namespace chaos {
 			public chaos::common::utility::Singleton<NetworkBroker> {
 				friend class chaos::common::utility::Singleton<NetworkBroker>;
 				//! performance session managment
-				chaos::common::network::PerformanceManagment performance_session_managment;
+//				chaos::common::network::PerformanceManagment performance_session_managment;
 				
                 //! point to current host and port
                 std::string published_host_and_port;
@@ -138,7 +138,7 @@ namespace chaos {
 				boost::mutex muext_map_event_channel_access;
 
                     //! global shared message request domain
-                chaos::common::message::MessageRequestDomainSHRDPtr global_request_domain;
+                ChaosSharedPtr<chaos::common::message::MessageRequestDomain> global_request_domain;
 
 				//! private raw channel creation
 				/*!
@@ -305,8 +305,13 @@ namespace chaos {
 				/*!
 				 Performe the creation of metadata server
 				 */
-                chaos::common::message::MDSMessageChannel *getMetadataserverMessageChannel(chaos::common::message::MessageRequestDomainSHRDPtr shared_request_domain = chaos::common::message::MessageRequestDomainSHRDPtr());
+                chaos::common::message::MDSMessageChannel *getMetadataserverMessageChannel(ChaosSharedPtr<chaos::common::message::MessageRequestDomain> shared_request_domain = ChaosSharedPtr<chaos::common::message::MessageRequestDomain>());
 
+                //!Metadata server channel creation
+                /*!
+                 Performe the creation of metadata server
+                 */
+                chaos::common::message::MDSMessageChannel *getMetadataserverMessageChannel(const VectorNetworkAddress& endpoints ,ChaosSharedPtr<chaos::common::message::MessageRequestDomain> shared_request_domain = ChaosSharedPtr<chaos::common::message::MessageRequestDomain>());
 				
 				//!Device channel creation
 				/*!

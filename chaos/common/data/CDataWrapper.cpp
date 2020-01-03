@@ -19,7 +19,6 @@
  */
 #include <chaos/common/global.h>
 #include <chaos/common/chaos_constants.h>
-#include <chaos/common/data/CDataVariant.h>
 #include <chaos/common/data/CDataWrapper.h>
 
 #include <boost/lexical_cast.hpp>
@@ -61,6 +60,9 @@ keyfound=bson_iter_find_case(&element_found, key.c_str());
 
 #define GET_VALUE(t,c) \
 if(keyfound&& (c(&element_found))){return bson_iter_##t (&element_found);}
+
+#define GET_VALUE_AS_STRING(t,c) \
+if(keyfound&& (c(&element_found))){std::stringstream ss;ss<<bson_iter_##t (&element_found);return ss.str();}
 
 static void bsonDeallocator(bson_t* bson) {if(bson){bson_destroy(bson);}}
 
@@ -271,6 +273,15 @@ CDWUniquePtr CDataWrapper::getCSDataValue(const std::string& key) const{
         return CDWUniquePtr(new CDataWrapper());
     }
 }
+ChaosUniquePtr<chaos::common::data::CDataWrapper> CDataWrapper::getCSProjection(const std::vector<std::string>&keys) const{
+    CDWUniquePtr ret(new CDataWrapper());
+    for(std::vector<std::string>::const_iterator i=keys.begin();i!=keys.end();i++){
+        copyKeyTo(*i,*ret.get());
+    }
+    return ret;
+
+}
+
 std::string CDataWrapper::getJsonValue(const std::string& key) const{
     ChaosUniquePtr<CDataWrapper> tmp=getCSDataValue(key);
     if(tmp.get()){
@@ -281,9 +292,20 @@ std::string CDataWrapper::getJsonValue(const std::string& key) const{
 
 //get string value
 string  CDataWrapper::getStringValue(const std::string& key) const{
-    FIND_AND_CHECK(key, BSON_ITER_HOLDS_UTF8){
+    {
+        FIND_AND_CHECK(key, BSON_ITER_HOLDS_UTF8){
         return std::string(bson_iter_utf8(&element_found, NULL));
     }
+    }
+    INIT_ITERATOR(key);
+
+    GET_VALUE_AS_STRING(int32,BSON_ITER_HOLDS_INT32);
+    GET_VALUE_AS_STRING(double,BSON_ITER_HOLDS_DOUBLE);
+    GET_VALUE_AS_STRING(int64,BSON_ITER_HOLDS_INT64);
+    GET_VALUE_AS_STRING(bool,BSON_ITER_HOLDS_BOOL);
+    GET_VALUE_AS_STRING(date_time,BSON_ITER_HOLDS_DATE_TIME);
+
+
     return std::string();
 }
 
@@ -297,6 +319,8 @@ int32_t CDataWrapper::getInt32Value(const std::string& key) const{
     INIT_ITERATOR(key);
     GET_VALUE(int32,BSON_ITER_HOLDS_INT32);
     GET_VALUE(bool,BSON_ITER_HOLDS_BOOL);
+    GET_VALUE(double,BSON_ITER_HOLDS_DOUBLE);
+
     CW_CAST_EXCEPTION(int32);
 }
 //add a integer value
@@ -683,16 +707,18 @@ void CDataWrapper::setSerializedData(const char* bson_data) {
 
 //reinitialize the object with bson data
 void CDataWrapper::setSerializedJsonData(const char* json_data) {
-    bson_error_t err;
-    size_t len = (size_t)strlen(json_data);
-    bson =ALLOCATE_BSONT(bson_new_from_json((const uint8_t*)json_data,
-                                            len,
-                                            &err));
-    if(bson==NULL){
-        std::stringstream ss;
-        ss<<"cannot serialize json:'"<<json_data<<"'";
-        throw CException(1, ss.str(), __PRETTY_FUNCTION__);
+  bson_error_t err;
+  size_t       len = (size_t)strlen(json_data);
+  if (len) {
+    bson = ALLOCATE_BSONT(bson_new_from_json((const uint8_t*)json_data,
+                                             len,
+                                             &err));
+    if (bson == NULL) {
+      std::stringstream ss;
+      ss << "cannot serialize json:'" << json_data << "'";
+      throw CException(1, ss.str(), __PRETTY_FUNCTION__);
     }
+  }
 }
 
 //append all elemento of an
@@ -779,16 +805,25 @@ CDataVariant CDataWrapper::getVariantValue(const std::string& key) const{
         case  chaos::DataType::TYPE_DOUBLE:
             return CDataVariant(getDoubleValue(key));
             break;
-        case  chaos::DataType::TYPE_STRING:
-            return CDataVariant(getStringValue(key));
-            break;
+        case chaos::DataType::TYPE_STRING:
+            return  CDataVariant(getStringValue(key));
+        case chaos::DataType::TYPE_CLUSTER:
+            if(isStringValue(key)){
+                return CDataVariant(getValueType(key),(const void *)getStringValue(key).c_str(),(uint32_t)getStringValue(key).size()+1);
+            } else {
+                return CDataVariant(MOVE(getCSDataValue(key)));
+
+            }
+          
+       
         case  chaos::DataType::TYPE_BYTEARRAY:
             return CDataVariant(getBinaryValueAsCDataBuffer(key));
             break;
         default:
-            return CDataVariant();
             break;
     }
+    return CDataVariant();
+
 }
 
 //------------------------checking utility
@@ -989,6 +1024,30 @@ int CDataWrapper::setBson(const bson_iter_t *v ,const void* val){
     }
     return -1;
 }
+int CDataWrapper::setValue(const std::string& key,const void* val,size_t size){
+     bson_iter_t it;
+     bson_iter_init(&it, static_cast<bson_t*>(bson.get()));
+    if(bson_iter_find_case(&it, key.c_str()) == false)
+        return -1;
+    return setBson(&it,val,size);
+}
+
+             
+int CDataWrapper::setBson(const bson_iter_t *v ,const void* val,size_t size){
+    if(ITER_TYPE(v)== BSON_TYPE_BINARY){
+         bson_value_t *vv = (bson_value_t *)bson_iter_value((bson_iter_t *)v);
+        // without check is more useful, the programmer must be aware of the preallocated data size
+       /* if(size>=vv->value.v_binary.data_len){
+            std::stringstream ss;
+            ss<<"size bigger than prellocated:"<<vv->value.v_binary.data_len;
+            throw CException(1, ss.str(), __PRETTY_FUNCTION__);
+        }*/
+        memcpy((void*)(v->raw + v->d3), (void*)val,size);
+        vv->value.v_binary.data_len=size;
+        return vv->value.v_binary.data_len;
+    }
+    return -1;
+}
 int CDataWrapper::setBson(const bson_iter_t *v ,const CDataWrapper* val){
     if(ITER_TYPE(v)== BSON_TYPE_DOCUMENT){
         const bson_value_t *vv = bson_iter_value((bson_iter_t *)v);
@@ -1061,6 +1120,7 @@ string CMultiTypeDataArrayWrapper::getStringElementAtIndex(const int pos) const{
     }
     return std::string(values[pos]->value.v_utf8.str, values[pos]->value.v_utf8.len);
 }
+
 
 double CMultiTypeDataArrayWrapper::getDoubleElementAtIndex(const int pos) const{
     if(values[pos]->value_type != BSON_TYPE_DOUBLE){

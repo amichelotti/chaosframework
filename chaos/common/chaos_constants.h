@@ -21,7 +21,6 @@
 #ifndef ChaosFramework_ConstrolSystemConstants_h
 #define ChaosFramework_ConstrolSystemConstants_h
 
-#include <chaos/common/chaos_errors.h>
 #include <chaos/common/batch_command/BatchCommandConstants.h>
 #include <chaos/common/external_unit/external_unit_constants.h>
 
@@ -38,8 +37,8 @@ namespace chaos {
     namespace InitOption{
         //! for print the help
         static const char * const	OPT_HELP                            = "help";
+        //! Show the version 
         static const char * const	OPT_VERSION                         = "version";
-
         //! config file parameter
         static const char * const   OPT_CONF_FILE						= "conf-file";
         //! Specify when the log must be forwarded on console
@@ -90,6 +89,8 @@ namespace chaos {
         static const char * const   OPT_EVENT_DISABLE                   = "event-disable";
         //! Specify the metadata address for the metadataserver
         static const char * const   OPT_METADATASERVER_ADDRESS          = "metadata-server";
+        //! Enable autoconfiguration for mds endpoint
+        static const char * const   OPT_METADATASERVER_AUTO_CONF        = "metadata-server-auto-conf";
         //! Specify the ip where publish the framework
         static const char * const   OPT_PUBLISHING_IP                   = "publishing-ip";
         //! use the interface name to determinate the ip where publish itself
@@ -110,13 +111,19 @@ namespace chaos {
         static const char * const   OPT_SCRIPT_VM_KV_PARAM              = "script-vm-kvp";
         //!rest poll time us
         static const char * const   OPT_REST_POLL_TIME_US               = "rest-poll-us";
+        //!data directory for storage and checkpoint of nodes
+        static const char * const   OPT_DATA_DIR                        = "data-dir";
+
 #if CHAOS_PROMETHEUS
         //! config file parameter
         static const char * const   OPT_METRIC_ENABLE                   = "enable_metric";
         //! config file parameter
         static const char * const   OPT_METRIC_WEB_SERVER_PORT           = "metrics-http-port";
 #endif
+        //! optional description of the node
+        static const char * const   OPT_NODE_DESC						= "node-desc";
 
+        
     }
     /** @} */ // end of ParamOption
     
@@ -156,17 +163,17 @@ namespace chaos {
         }
     }
     namespace common {
-    	namespace constants {
-    		// hearth beat timers
-        	static const unsigned int HBTimersTimeoutinMSec                     = 5000;
-        	static const unsigned int AgentTimersTimeoutinMSec                  = 5000;
-        	static const unsigned int CUTimersTimeoutinMSec                     = 5000;
-        	static const unsigned int PerformanceManagerTimersTimeoutinMSec     = 5000;
-
-		    static const unsigned int ObjectStorageTimeoutinMSec                = 50000;
+        namespace constants {
+            // hearth beat timers
+            static const unsigned int HBTimersTimeoutinMSec                     = 5000;
+            static const unsigned int AgentTimersTimeoutinMSec                  = 5000;
+            static const unsigned int CUTimersTimeoutinMSec                     = 5000;
+            static const unsigned int PerformanceManagerTimersTimeoutinMSec     = 5000;
+            
+            static const unsigned int ObjectStorageTimeoutinMSec                = 50000;
             static const unsigned int ChacheTimeoutinMSec                       = 5000;
             static const unsigned int MetricCollectorTimeoutinMSec              = 1000;
-
+            
             //!time to wait for queue can accept new data to push in object storage
             /*!
              Mds when receive a new dataset to store on history, it is push on hst sublayer
@@ -175,8 +182,8 @@ namespace chaos {
              is nto accepted by sublayer.
              */
             static const unsigned int MDSHistoryQueuePushTimeoutinMSec          = 60000;
-    	}
-
+        }
+        
     };
     /** @defgroup NodeDefinitionKey !CHAOS node key description
      *  This is the collection of the key for the general node information
@@ -219,7 +226,7 @@ namespace chaos {
         //! identify the node rpc address[string:string]
         /*!
          Permit to assciate to the node the address of the rpc interface
-         hta is given by the network brocker where the node si attacched.
+         that is given by the network broker where the node si attacched.
          */
         static const char * const NODE_RPC_ADDR         = "ndk_rpc_addr";
         
@@ -245,15 +252,15 @@ namespace chaos {
         
         //! is the hartbeat of the node for the current request[uint64]
         static const char * const NODE_TIMESTAMP        = "ndk_heartbeat";
-
+        
         //! brief node description  [string]
-        static const char * const NODE_DESC       = "ndk_desc";
-
+        static const char * const NODE_DESC             = "ndk_desc";
+        
         //! brief node custom configuration parameters [CDataWrapper]
-        static const char * const NODE_CUSTOM_PARAM       = "ndk_custom_param";
+        static const char * const NODE_CUSTOM_PARAM     = "ndk_custom_param";
         
         //! brief node host name [string]
-        static const char * const NODE_HOST_NAME       = "ndk_host_name";
+        static const char * const NODE_HOST_NAME        = "ndk_host_name";
     }
     /** @} */ // end of NodeDefinitionKey
     
@@ -283,8 +290,8 @@ namespace chaos {
          other chaos node.
          */
         static const char * const NODE_TYPE_CONTROL_UNIT    = "nt_control_unit";
-
-       
+        
+        
         //! identify an user itnerface node
         /*!
          An user interface is a node that can control other nodes and show
@@ -321,7 +328,7 @@ namespace chaos {
         static const char * const NODE_SUBTYPE_REALTIME_CONTROL_UNIT        = "nt_rt_cu";
         static const char * const NODE_SUBTYPE_BATCH_CONTROL_UNIT           = "nt_sc_cu";
         static const char * const NODE_SUBTYPE_PROXY_CONTROL_UNIT           = "nt_proxy_cu";
-          //! identify a DAQ unit node
+        //! identify a DAQ unit node
         /*!
          A DAQ unit node is a tipical !CHAOS node that acquires data without any command
          */
@@ -337,12 +344,12 @@ namespace chaos {
             node_type_cds = 4,
             //!search wan
             node_type_wan = 5
-
+            
         } NodeSearchType;
     }
     /** @} */ // end of NodeType
     
-
+    
     
     /** @defgroup NodeStateFlagDefinitionKey constant for serialization of the status flag
      *  @{
@@ -389,7 +396,7 @@ namespace chaos {
         //!define the key that contains the rate of the output dataset pushes per second[double]
         static const char * const CU_HEALT_OUTPUT_DATASET_PUSH_RATE  = "cuh_dso_prate";
         static const char * const CU_HEALT_OUTPUT_DATASET_PUSH_SIZE  = "cuh_dso_size";
-
+        
         
     }
     /** @} */ // end of NodeHealtDefinitionValue
@@ -448,9 +455,9 @@ namespace chaos {
         
         //! get the build information form node instance
         static const char * const ACTION_GET_BUILD_INFO                             = "getBuildInfo";
-            //! get the process information form node instance
+        //! get the process information form node instance
         static const char * const ACTION_GET_PROCESS_INFO                             = "getProcessInfo";
-           //! shutdown chaos process
+        //! shutdown chaos process
         static const char * const ACTION_NODE_SHUTDOWN                           = "nodeShutDown";
     }
     /** @} */ // end of NodeDomainAndActionRPC
@@ -646,7 +653,7 @@ namespace chaos {
          store another datapack into the live system[uint64]
          */
         static const char * const DS_STORAGE_LIVE_TIME                              = "dsndk_storage_live_time";
-
+        
     }
     /** @} */ // end of DataServiceNodeDefinitionKey
     
@@ -668,7 +675,11 @@ namespace chaos {
             //!the datapack is publish in live shared memory
             DSStorageTypeLive = 2,
             //!datapack is published and stored in live and history
-            DSStorageTypeLiveHistory = 3
+            DSStorageTypeLiveHistory = 3,
+            //!datapack into file (shared FS)
+            DSStorageTypeFile = 4,
+            //!datapack into Remote Queue (i.e Kafka)
+            DSStorageTypeRQ = 8     
         } DSStorageType;
     }
     /** @} */ // end of DataServiceNodeDefinitionType
@@ -703,6 +714,9 @@ namespace chaos {
         
         //! The version of the driver to use[strig]
         static const char * const CONTROL_UNIT_DRIVER_DESCRIPTION_INIT_PARAMETER	= "cudk_driver_description_init_parameter";
+
+        //! The information coming from the driver
+        static const char * const CONTROL_UNIT_DRIVER_INFO	                        = "cudk_driver_info";
         
         //!key for dataset description (array of per-attribute document)
         static const char * const CONTROL_UNIT_DATASET_DESCRIPTION                  = "cudk_ds_desc";
@@ -728,7 +742,7 @@ namespace chaos {
         //!key representing the type of parameter
         static const char * const CONTROL_UNIT_DATASET_ATTRIBUTE_TYPE               = "cudk_ds_attr_type";
         
-        //!key for the units ofr the attrbiute (ampere, volts)
+        //!key for the units ofr the attribute (ampere, volts)
         static const char * const CONTROL_UNIT_DATASET_ATTRIBUTE_UNIT               = "cudk_ds_attr_unit";
         
         //!key representing the name of the parameter
@@ -736,13 +750,22 @@ namespace chaos {
         
         //!key representig the information for the parameter
         static const char * const CONTROL_UNIT_DATASET_ATTRIBUTE_DIRECTION          = "cudk_ds_attr_dir";
-        
+
+         //!key representing the information of the eventual increment/error on attribute
+        static const char * const CONTROL_UNIT_DATASET_ATTRIBUTE_INCREMENT          = "cudk_ds_attr_inc";
+
+         //!key representing the conversion factor for the attribute the unit of the given CU
+        static const char * const CONTROL_UNIT_DATASET_ATTRIBUTE_CONVFACT          = "cudk_ds_attr_convfact";
+         //!key representing the offset the attribute
+        static const char * const CONTROL_UNIT_DATASET_ATTRIBUTE_OFFSET             = "cudk_ds_attr_offset";
         //!key representing the value max size where need (type different from raw data type ex: int32)
         static const char * const CONTROL_UNIT_DATASET_VALUE_MAX_SIZE               = "cudk_ds_max_size";
         
         //!key representing the default value
         static const char * const CONTROL_UNIT_DATASET_DEFAULT_VALUE                = "cudk_default_value";
-        
+        //!key representing the initialization of the dataset
+
+        static const char * const CONTROL_UNIT_DATASET_INITIALIZATION               = "cudk_ds_init";
         //!key representing the default value
         static const char * const CONTROL_UNIT_DATASET_MAX_RANGE                    = "cudk_ds_max_range";
         
@@ -794,7 +817,7 @@ namespace chaos {
             DSStorageBurstTypeNPush,
             DSStorageBurstTypeMSec
         } DSStorageBurstType;
-
+        
         typedef enum SetpointState {
             //!no storage behaviour defined
             SetpointErrorException = -100,
@@ -939,7 +962,7 @@ namespace chaos {
             TYPE_STRING,
             //!byte array variable length
             TYPE_BYTEARRAY,
-
+            
             TYPE_CLUSTER,
             //!modifier to be ored to normal data types
             TYPE_ACCESS_ARRAY=0x100,
@@ -1182,16 +1205,16 @@ namespace chaos {
     namespace MetadataServerNodeDefinitionKeyRPC {
         
         //! the key for the node registration[specific bson pack for every kind of node]
-        static const char * const ACTION_REGISTER_NODE            = "mdsndk_rpc_a_reg_node";
+        static const char * const ACTION_REGISTER_NODE          = "mdsndk_rpc_a_reg_node";
         
         //! key that idetify the result of the node registration[int32]
-        static const char * const PARAM_REGISTER_NODE_RESULT      = "mdsndk_rpc_p_reg_result";
+        static const char * const PARAM_REGISTER_NODE_RESULT    = "mdsndk_rpc_p_reg_result";
         
         //! the key for the control unit load completion registration
-        static const char * const ACTION_NODE_LOAD_COMPLETION     = "mdsndk_rpc_a_load_completion_node";
+        static const char * const ACTION_NODE_LOAD_COMPLETION   = "mdsndk_rpc_a_load_completion_node";
         
         //! the key for the node health status
-        static const char * const ACTION_NODE_HEALTH_STATUS         = "mdsndk_rpc_a_health_status";
+        static const char * const ACTION_NODE_HEALTH_STATUS     = "mdsndk_rpc_a_health_status";
     }
     /** @} */ // end of NodeDomainAndActionRPC
     
@@ -1287,9 +1310,9 @@ namespace chaos {
         static const char * const DPCK_SEQ_ID                          = "dpck_seq_id";
         //!this define the acquisition timestamp of the data represented by the dataset[uint64_t]
         static const char * const DPCK_TIMESTAMP                       = "dpck_ats";//chaos::NodeDefinitionKey::NODE_TIMESTAMP;
-        //!this define a custom counter often used for the hig resolution timestamp imformation
+                                                                                    //!this define a custom counter often used for the hig resolution timestamp imformation
         static const char * const DPCK_HIGH_RESOLUTION_TIMESTAMP       = "dpck_hr_ats";//chaos::NodeDefinitionKey::NODE_TIMESTAMP;
-        //!define the type of the dataset uint32_t [output(0) - input(1) - custom(2) - system(3) - ....others int32_t]
+                                                                                       //!define the type of the dataset uint32_t [output(0) - input(1) - custom(2) - system(3) - ....others int32_t]
         static const char * const DPCK_DATASET_TYPE                    = "dpck_ds_type";
         //!define the list of tags associated to the datapack
         static const char * const DPCK_DATASET_TAGS                    = "dpck_ds_tag";
@@ -1310,9 +1333,9 @@ namespace chaos {
         //!define tags associated to the dataset[array of string]
         static const char * const DPCK_DATASET_TAG                    = "dpck_ds_tag";
     }
-
-
-
+    
+    
+    
     /** @defgroup NodeHealtDefinitionKey !CHAOS node healt key description
      *  @{
      */
@@ -1344,7 +1367,7 @@ namespace chaos {
         static const char * const NODE_HEALT_LAST_ERROR_DOMAIN          = "nh_led";
     }
     /** @} */ // end of NodeHealtDefinitionKey
-
+    
     /** @defgroup NodeHealtDefinitionValue !CHAOS node healt standard value
      *  @{
      */
@@ -1380,7 +1403,7 @@ namespace chaos {
         static const char * const NODE_HEALT_STATUS_FERROR      = "Fatal Error";
     }
     /** @} */ // end of NodeHealtDefinitionValue
-
+    
     /** @defgroup DataPackKey Chaos Data Pack output attirbute
      This is the collection of the standard key that are contained into the output
      attribute data pack that describe a producer state
@@ -1389,7 +1412,7 @@ namespace chaos {
     //! Namespace for standard constant used for output attribute of a producer
     namespace DataPackOutputKey {
         //!this define key associated to the trigger
-        static const char * const DPOK_TRIGGER_CODE                   = "dpok_trigger_key";
+        static const char * const DPOK_TRIGGER_CODE             = "dpok_trigger_key";
     }
     /** @} */ // end of DataPackKey
     
@@ -1410,10 +1433,10 @@ namespace chaos {
         static const char * const DP_SYS_RUN_UNIT_ID		= "dp_sys_ru_id";
         
         //!is the busy flag
-        static const char * const DP_SYS_QUEUED_CMD          = "dp_sys_que_cmd";
+        static const char * const DP_SYS_QUEUED_CMD         = "dp_sys_que_cmd";
         
         //!is the warning
-        static const char * const DP_SYS_STACK_CMD         = "dp_sys_stack_cmd";
+        static const char * const DP_SYS_STACK_CMD          = "dp_sys_stack_cmd";
     }
     /** @} */ // end of DataPackSystemKey
     
@@ -1443,10 +1466,12 @@ namespace chaos {
         static const char * const VALUE_MAX_SIZE                    = "ds_max_size";
         //!key representing the default value
         static const char * const DEFAULT_VALUE                     = "ds_default_value";
-        //!key representing the default value
+        //!key representing the maximum value
         static const char * const MAX_RANGE                         = "ds_max_range";
-        //!key representing the default value
+        //!key representing the minimum value
         static const char * const MIN_RANGE                         = "ds_min_range";
+        //!key representing the significant increment (0 means digital or NA)
+        static const char * const DEFAULT_INC                       = "ds_value_inc";
     }
     /** @} */ // end of DatasetDefinitionkey
     
@@ -1465,10 +1490,19 @@ namespace chaos {
         static const char * const CU_ALARM_DATASET_POSTFIX  = "_w";
         static const char * const HEALTH_DATASET_POSTFIX    = NodeHealtDefinitionKey::HEALT_KEY_POSTFIX;
     }
+      namespace DataPackID {
+        static const char * const OUTPUT_DATASET_ID   = "output";
+        static const char * const INPUT_DATASET_ID     = "input";
+        static const char * const CUSTOM_DATASET_ID    = "custom";
+        static const char * const SYSTEM_DATASETID    = "system";
+        static const char * const DEV_ALARM_DATASET_ID = "device_alarms";
+        static const char * const CU_ALARM_DATASET_ID  = "cu_alarms";
+        static const char * const HEALTH_DATASET_ID    = "health";
+    }
     /** @} */ // end of DataPackPrefixID
-    #define DPCK_LAST_DATASET_INDEX	 6
+#define DPCK_LAST_DATASET_INDEX	 6
     /** @} */ // end of DataPackCommonKey
-
+    
     //! return the postfix of the dataset type
     static inline const char * const datasetTypeToPostfix(unsigned int ds_type) {
         switch(ds_type) {
@@ -1483,7 +1517,7 @@ namespace chaos {
                 //!Integer 16 bit length
             case DataPackCommonKey::DPCK_DATASET_TYPE_SYSTEM:
                 return DataPackPrefixID::SYSTEM_DATASET_POSTFIX;
-
+                
             case DataPackCommonKey::DPCK_DATASET_TYPE_HEALTH:
                 return DataPackPrefixID::HEALTH_DATASET_POSTFIX;
                 //!Integer 32 bit length
@@ -1496,7 +1530,7 @@ namespace chaos {
                 return "";
         }
     }
-
+    
     //! return the type of the dataset postfix
     static inline const int datasetTypeToPostfix(const std::string& ds_postfix) {
         if(ds_postfix.compare(DataPackPrefixID::OUTPUT_DATASET_POSTFIX) == 0){return DataPackCommonKey::DPCK_DATASET_TYPE_OUTPUT;}
@@ -1508,46 +1542,46 @@ namespace chaos {
         if(ds_postfix.compare(DataPackPrefixID::HEALTH_DATASET_POSTFIX) == 0){return DataPackCommonKey::DPCK_DATASET_TYPE_HEALTH;}
         return -1;
     }
-
+    
     static inline const char* datasetTypeToHuman(unsigned int domain) {
         switch (domain) {
             case DataPackCommonKey::DPCK_DATASET_TYPE_OUTPUT:
-                return "output";
+                return DataPackID::OUTPUT_DATASET_ID;
             case DataPackCommonKey::DPCK_DATASET_TYPE_INPUT:
-                return "input";
+                return DataPackID::INPUT_DATASET_ID;
             case DataPackCommonKey::DPCK_DATASET_TYPE_CUSTOM:
-                return "custom";
+                return DataPackID::CUSTOM_DATASET_ID;
             case DataPackCommonKey::DPCK_DATASET_TYPE_SYSTEM:
-                return "system";
+                return DataPackID::SYSTEM_DATASETID;
             case DataPackCommonKey::DPCK_DATASET_TYPE_HEALTH:
-                return "health";
+                return DataPackID::HEALTH_DATASET_ID;
             case DataPackCommonKey::DPCK_DATASET_TYPE_DEV_ALARM:
-                return "device_alarms";
+                return DataPackID::DEV_ALARM_DATASET_ID;
             case DataPackCommonKey::DPCK_DATASET_TYPE_CU_ALARM:
-                return "cu_alarms";
+                return DataPackID::CU_ALARM_DATASET_ID;
             default:
                 return "unknown";
         }
     }
     static inline unsigned int HumanTodatasetType(const std::string& domain) {
-            if(domain == "output")
-                return DataPackCommonKey::DPCK_DATASET_TYPE_OUTPUT;
-            if(domain=="input")
-                return DataPackCommonKey::DPCK_DATASET_TYPE_INPUT;
-            if(domain=="custom")
-                return DataPackCommonKey::DPCK_DATASET_TYPE_CUSTOM;
-            if(domain=="system")
-                return DataPackCommonKey::DPCK_DATASET_TYPE_SYSTEM;
-            if(domain=="health")
-                return DataPackCommonKey::DPCK_DATASET_TYPE_HEALTH;
-            if(domain=="device_alarms")
-                return DataPackCommonKey::DPCK_DATASET_TYPE_DEV_ALARM;
-            if(domain=="cu_alarms")
-                return DataPackCommonKey::DPCK_DATASET_TYPE_CU_ALARM;
+        if(domain == DataPackID::OUTPUT_DATASET_ID)
             return DataPackCommonKey::DPCK_DATASET_TYPE_OUTPUT;
-
-        }
-
+        if(domain==DataPackID::INPUT_DATASET_ID)
+            return DataPackCommonKey::DPCK_DATASET_TYPE_INPUT;
+        if(domain==DataPackID::CUSTOM_DATASET_ID)
+            return DataPackCommonKey::DPCK_DATASET_TYPE_CUSTOM;
+        if(domain==DataPackID::SYSTEM_DATASETID)
+            return DataPackCommonKey::DPCK_DATASET_TYPE_SYSTEM;
+        if(domain==DataPackID::HEALTH_DATASET_ID)
+            return DataPackCommonKey::DPCK_DATASET_TYPE_HEALTH;
+        if(domain==DataPackID::DEV_ALARM_DATASET_ID)
+            return DataPackCommonKey::DPCK_DATASET_TYPE_DEV_ALARM;
+        if(domain==DataPackID::CU_ALARM_DATASET_ID)
+            return DataPackCommonKey::DPCK_DATASET_TYPE_CU_ALARM;
+        return DataPackCommonKey::DPCK_DATASET_TYPE_OUTPUT;
+        
+    }
+    
     /** @defgroup RpcActionDefinitionKey Action Rpc Protocol key
      *  This is the collection of the key used for the intere rpc protocol
      *  @{

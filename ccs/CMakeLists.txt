@@ -1,6 +1,8 @@
-cmake_minimum_required(VERSION 2.8.11)
+cmake_minimum_required(VERSION 3.0.0)
 
 project(ccs)
+
+option(CHAOS_PROMETHEUS "Enable Prometheus metrics support" OFF)
 
 MESSAGE(">>Find the Qt5 library")
 FIND_PACKAGE(Qt5Widgets REQUIRED)
@@ -8,6 +10,19 @@ FIND_PACKAGE(Qt5Core REQUIRED)
 FIND_PACKAGE(Qt5Sql REQUIRED)
 FIND_PACKAGE(Qt5Gui REQUIRED)
 FIND_PACKAGE(Qt5PrintSupport REQUIRED)
+FIND_PACKAGE(Qt5Qml REQUIRED)
+FIND_PACKAGE(Qt5UiTools REQUIRED)
+FIND_PACKAGE(Qt5Designer REQUIRED)
+
+# Get Qt root directory
+get_property(_filepath TARGET "Qt5::Core" PROPERTY LOCATION_RELEASE)
+get_filename_component(_dir ${_filepath} PATH)
+IF(UNIX AND NOT APPLE)
+    set(QT_ROOT_DIR "${_dir}/..")
+ELSE()
+    set(QT_ROOT_DIR "${_dir}/../..")    
+ENDIF()
+SET(QT_PLUGINS_DIR ${QT_ROOT_DIR}/plugins)
 
 # set(QT_USE_QTSQL 1)
 SET(CMAKE_CXX_STANDARD 11)
@@ -28,12 +43,17 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
+
+MESSAGE(">>QT Directory: " ${CMAKE_PREFIX_PATH})
 MESSAGE(">>QT Version: " ${Qt5Widgets_VERSION})
 MESSAGE(">>QT WIDGET DIR: " ${Qt5Widgets_INCLUDE_DIRS})
 MESSAGE(">>QT GUI DIR: " ${Qt5Gui_INCLUDE_DIRS})
 MESSAGE(">>QT SQL DIR: " ${Qt5Sql_INCLUDE_DIRS})
 MESSAGE(">>QT SQL DIR: " ${Qt5PrintSupport_INCLUDE_DIRS})
 MESSAGE(">>QT LIB DIR: " ${Qt5Widgets_LIBRARIES})
+MESSAGE(">>QT QML DIR: " ${Qt5Qml_LIBRARIES})
+MESSAGE(">>QT UITOOLS DIR: " ${Qt5UiTools_LIBRARIES})
+MESSAGE(">>QT Plugins DIR: " ${QT_PLUGINS_DIR})
 
 SET(QT_QMAKE_EXECUTABLE ${QT_ROOT_DIR}/gcc_64/bin/qmake)
 MESSAGE(STATUS "QT_QMAKE_EXECUTABLE: " ${QT_QMAKE_EXECUTABLE})
@@ -42,49 +62,20 @@ MESSAGE(STATUS "QT_QMAKE_EXECUTABLE: " ${QT_QMAKE_EXECUTABLE})
 INCLUDE_DIRECTORIES(${Qt5Widgets_INCLUDE_DIRS})
 INCLUDE_DIRECTORIES(${Qt5Sql_INCLUDE_DIRS})
 INCLUDE_DIRECTORIES(${Qt5PrintSupport_INCLUDE_DIRS})
+INCLUDE_DIRECTORIES(${Qt5Qml_INCLUDE_DIRS})
+INCLUDE_DIRECTORIES(${Qt5UiTools_INCLUDE_DIRS})
+INCLUDE_DIRECTORIES(${Qt5Designer_INCLUDE_DIRS})
 INCLUDE_DIRECTORIES(${QT_INCLUDE_DIR_QtCore})
 INCLUDE_DIRECTORIES(${QT_INCLUDE_DIR})
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_LIST_DIR}/../usr/local/include)
 LINK_DIRECTORIES(${CMAKE_CURRENT_LIST_DIR}/../usr/local/lib)
 
-#INCLUDE_DIRECTORIES("${PROJECT_SOURCE_DIR}")
-
-
-#MESSAGE( STATUS "QT_INCLUDE_DIR:         " ${QT_INCLUDE_DIR})
-
-# INCLUDE_DIRECTORIES(${QT_INCLUDE_DIR}/QtCore)
-# INCLUDE_DIRECTORIES(${QT_INCLUDE_DIR}/QtWidgets)
-# INCLUDE_DIRECTORIES(${QT_INCLUDE_DIR}/QtGui)
-# INCLUDE_DIRECTORIES(${QT_INCLUDE_DIR}/QtPrintSupport)
-# INCLUDE_DIRECTORIES(${QT_INCLUDE_DIR}/QtSql)
-
-# MESSAGE(">>qt5_wrap_cpp")
-# qt5_wrap_cpp(ccs_include_moc
-#              monitor/handler/healt/HealtHeartbeatHandler.h
-#              monitor/handler/healt/HealtStatusHandler.h
-#              monitor/handler/system/SystemControlUnitRunScheduleDelay.h
-#              monitor/handler/AbstractAttributeHandler.h
-#               monitor/handler/AbstractTSTaggedAttributeHandler.h
-#               monitor/handler/MonitorBinaryAttributeHandler.h
-#               monitor/handler/MonitorBoolAttributeHandler.h
-#               monitor/handler/MonitorDoubleAttributeHandler.h
-#               monitor/handler/MonitorInt32AttributeHandler.h
-#               monitor/handler/MonitorInt64AttributeHandler.h
-#               monitor/handler/MonitorStringAttributeHandler.h
-#               monitor/handler/MonitorTSTaggedBinaryAttributeHandler.h
-#               monitor/handler/MonitorTSTaggedDoubleAttributeHandler.h
-#               monitor/handler/MonitorTSTaggedInt32AttributeHandler.h
-#               monitor/handler/MonitorTSTaggedInt64AttributeHandler.h
-#               monitor/handler/MonitorTSTaggedStringAttributeHandler.h
-#               monitor/handler/MonitorTSTaggetBoolAttributeHandler.h)
-
-
-MESSAGE(">>Tell CMake to create the helloworld executable")
+MESSAGE(">>Tell CMake to create the ccs executable")
 
 QT5_WRAP_CPP(HEADERS_MOC ${QT_HEADERS})
 QT5_ADD_RESOURCES(RESOURCES_RCC ${RESOURCES})
 
-set(sources
+set(CCS_SOURCE
     main.cpp
     MainController.cpp
     GlobalServices.cpp
@@ -161,81 +152,51 @@ set(sources
     external_lib/QtNodeEditor/StyleCollection.cpp
     language_editor/CLINGLanguageSupport.cpp
     language_editor/JsonEditor.cpp
-    # language_editor/JsonEditor.ui
     language_editor/LuaLanguageSupport.cpp
     language_editor/ScriptEditor.cpp
-    # language_editor/ScriptEditor.ui
     log_browser/ApplicationErrorLogging.cpp
-    # log_browser/ApplicationErrorLogging.ui
     log_browser/LogBrowser.cpp
-    # log_browser/LogBrowser.ui
     logic/property_switch/MultiPropertyLogicSwitch.cpp
     logic/property_switch/SwitchAggregator.cpp
     node/agent/AgentEditor.cpp
-    # node/agent/AgentEditor.ui
     node/agent/AgentNodeAssociationEditor.cpp
-    # node/agent/AgentNodeAssociationEditor.ui
     node/agent/AgentSetting.cpp
-    # node/agent/AgentSetting.ui
     node/connection_manager/ConnectionEditor.cpp
-    # node/connection_manager/ConnectionEditor.ui
     node/connection_manager/model/ControlUnitNodeDataModel.cpp
     node/control_unit/AttributeValueRangeDialog.cpp
-    # node/control_unit/AttributeValueRangeDialog.ui
     node/control_unit/CommandTemplateInstanceEditor.cpp
-    # node/control_unit/CommandTemplateInstanceEditor.ui
     node/control_unit/ControlUnitCommandTemplateEditor.cpp
-    # node/control_unit/ControlUnitCommandTemplateEditor.ui
     node/control_unit/ControlUnitEditor.cpp
-    # node/control_unit/ControlUnitEditor.ui
     node/control_unit/ControUnitInstanceEditor.cpp
-    # node/control_unit/ControUnitInstanceEditor.ui
     node/control_unit/DriverDescriptionInputDialog.cpp
-    # node/control_unit/DriverDescriptionInputDialog.ui
     node/data_service/CreateEditDataService.cpp
-    # node/data_service/CreateEditDataService.ui
     node/data_service/DataServiceEditor.cpp
-    # node/data_service/DataServiceEditor.ui
     node/unit_server/UnitServerEditor.cpp
-    # node/unit_serverUnitServerEditor.ui
     plot/AbstractBinaryPlotAdapter.cpp
     plot/BufferPlot.cpp
-    # plot/BufferPlot.ui
     plot/NodeAttributePlotting.cpp
-    # plot/NodeAttributePlotting.ui
     preference/PreferenceDialog.cpp
-    # preference/PreferenceDialog.ui
     preference/PreferenceManager.cpp
     preference/PreferenceMDSHostListModel.cpp
     preference/SelectNetworkDomain.cpp
-    # preference/SelectNetworkDomain.ui
     presenter/PresenterWidget.cpp
     script/CreateNewScriptDialog.cpp
-    # script/CreateNewScriptDialog.ui
     script/ScriptDescriptionWidget.cpp
-    # script/ScriptDescriptionWidget.ui
     script/ScriptInstanceManagerWidget.cpp
-    # script/ScriptInstanceManagerWidget.ui
     script/ScriptManager.cpp
-    # script/ScriptManager.ui
     script/editor/CodeEditor.cpp
     search/SearchNodeResult.cpp
-    # search/searchnoderesult.ui
     snapshot/NewSnapshot.cpp
-    # snapshot/NewSnapshot.ui
     snapshot/NodeInSnapshotTableModel.cpp
     snapshot/NodeListModel.cpp
     snapshot/SnapshotManager.cpp
-    # snapshot/SnapshotManager.ui
     snapshot/SnapshotTableModel.cpp
     status_manager/StatusManager.cpp
     tree_group/AddNewDomain.cpp
-    # tree_group/AddNewDomain.ui
     tree_group/DomainListModel.cpp
     tree_group/GroupTreeItem.cpp
     tree_group/GroupTreeModel.cpp
     tree_group/TreeGroupManager.cpp
-    # tree_group/TreeGroupManager.ui
     monitor/healt/HealtMonitorWidget.cpp
     monitor/healt/HealtPresenterWidget.cpp
     monitor/healt/HealtWidgetsListPresenteWidget.cpp
@@ -280,40 +241,112 @@ set(sources
     widget/WidgetDynamicList.cpp
     widget/StorageBurst.cpp
     widget/CLedIndicatorCUBusy.cpp
-    resources.qrc
-    ${ccs_include_moc}
+    widget/designer/ChaosUISynopticLoaderWindow.cpp
+    widget/designer/ScriptSignalDialog.cpp
+    widget/designer/CUNodeRoot.cpp
+    widget/designer/ChaosBaseUI.cpp
+    widget/designer/ChaosBaseDatasetUI.cpp
+    widget/designer/ChaosBaseDatasetAttributeUI.cpp
+    widget/designer/ChaosBaseCommandButtonUI.cpp
+    theme/theme.qrc
+    # ${ccs_include_moc}
 )
 
-add_executable(ccs
-        ${sources}
-        #${SRCS}
-        #${HEADERS}
-        ${ccs_include_moc}
-        ${UIS_HDRS}
+MESSAGE(">>Tell CMake to create the chaos custom widget library")
+set(CUSTOM_WIDGET_SOURCE
+    designerplugin/ChaosCustomDesignerWidget/CDatasetAttributeLabelMenu.cpp
+    designerplugin/ChaosCustomDesignerWidget/CChangeSetGlobalCommitPlugin.cpp
+    designerplugin/ChaosCustomDesignerWidget/CDatasetAttributeHealthLabelPlugin.cpp
+    designerplugin/ChaosCustomDesignerWidget/CDatasetAttributeImagePlugin.cpp
+    designerplugin/ChaosCustomDesignerWidget/CDatasetAttributeLabelDialog.cpp
+    designerplugin/ChaosCustomDesignerWidget/CDatasetAttributeLabelPlugin.cpp
+    designerplugin/ChaosCustomDesignerWidget/CDatasetAttributeSetValueComboBoxDialog.cpp
+    designerplugin/ChaosCustomDesignerWidget/CDatasetAttributeSetValueComboBoxMenuExtension.cpp
+    designerplugin/ChaosCustomDesignerWidget/CDatasetAttributeSetValueComboBoxPlugin.cpp
+    designerplugin/ChaosCustomDesignerWidget/CDatasetAttributeSetValueLineEditPlugin.cpp
+    designerplugin/ChaosCustomDesignerWidget/CUOnlineLedIndicatorPlugin.cpp
+    designerplugin/ChaosCustomDesignerWidget/ChaosWidgets.cpp
+    theme/theme.qrc)
 
+set(CUSTOM_WIDGET_SOURCE ${CUSTOM_WIDGET_SOURCE}
+    widget/designer/ChaosBaseUI.cpp
+    widget/designer/ChaosBaseDatasetUI.cpp
+    widget/designer/ChaosBaseDatasetAttributeUI.cpp
+    widget/designer/ChaosBaseCommandButtonUI.cpp
+    widget/designer/ui/CChangeSetGlobalCommit.cpp
+    widget/designer/ui/CDatasetAttributeHealthLabel.cpp
+    widget/designer/ui/CDatasetAttributeImage.cpp
+    widget/designer/ui/CDatasetAttributeLabel.cpp
+    widget/designer/ui/CDatasetAttributeSetValueComboBox.cpp
+    widget/designer/ui/CDatasetAttributeSetValueLineEdit.cpp
+    widget/designer/ui/CUOnlineLedIndicator.cpp)
+
+IF(UNIX AND NOT APPLE)
+        MESSAGE(">>Add Linux Exacutable")
+        LINK_DIRECTORIES(${CMAKE_CURRENT_LIST_DIR}/../usr/local/lib64)
+        ADD_EXECUTABLE(ccs
+                        ${CCS_SOURCE}
+                        # ${ccs_include_moc}
+                        ${UIS_HDRS})
+        # ADD_LIBRARY(ChaosCustomDesignerWidget SHARED ${CUSTOM_WIDGET_SOURCE})
+        install (TARGETS ccs RUNTIME DESTINATION RUNTIME DESTINATION bin)
+        # install(TARGETS ChaosCustomDesignerWidget DESTINATION ${QT_PLUGINS_DIR}/designer)
+ELSE()
+        #get deployer
+        get_target_property(_qmake_executable Qt5::qmake IMPORTED_LOCATION)
+        get_filename_component(_qt_bin_dir "${_qmake_executable}" DIRECTORY)
+        find_program(MACDEPLOYQT_EXECUTABLE macdeployqt HINTS "${_qt_bin_dir}")
+        
+        MESSAGE(">>Add OSX Exacutable")
+        MESSAGE(">>Mac deployer ${MACDEPLOYQT_EXECUTABLE}")
+        #Bundle (OSX)
+        # the property added to Info.plist
+        SET(MACOSX_BUNDLE_ICON_FILE chaos.icns)
+
+        # And this part tells CMake where to find and install the file itself
+        set(CHAOS_ICON ${CMAKE_CURRENT_SOURCE_DIR}/chaos.icns)
+        set_source_files_properties(${CHAOS_ICON} PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
+        file(GLOB_RECURSE RES_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/theme/*")
+        SET_SOURCE_FILES_PROPERTIES(${RES_SOURCES} PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
+        ADD_EXECUTABLE(ccs
+                        MACOSX_BUNDLE
+                        ${CHAOS_ICON}
+                        ${CCS_SOURCE}
+                        # ${ccs_include_moc}
+                        ${RES_SOURCES}
+                        ${UIS_HDRS})
+        INSTALL( TARGETS ccs DESTINATION ${CMAKE_SOURCE_DIR})
+
+        ADD_CUSTOM_COMMAND(TARGET ccs POST_BUILD
+                            COMMAND "${MACDEPLOYQT_EXECUTABLE}"
+                                    "$<TARGET_FILE_DIR:ccs>/../.."
+                                    "-libpath=${CMAKE_CURRENT_LIST_DIR}/../usr/local/lib"
+                                    -always-overwrite
+                            COMMENT "Running macdeployqt..."
 )
+ENDIF()
 
+# set(CP_LINK_LIB   Qt5::Core Qt5::Designer)
+
+set(CCS_LINK_LIB    Qt5::Core
+                    Qt5::Gui
+                    Qt5::Sql
+                    Qt5::Widgets
+                    Qt5::PrintSupport
+                    Qt5::Qml
+                    Qt5::UiTools
+                    chaos_common
+                    chaos_metadata_service_client
+                    zmq)
+IF (CHAOS_PROMETHEUS)
+    MESSAGE(">>Enable prometheus supports")
+    set(CCS_LINK_LIB    ${CCS_LINK_LIB}
+                        prometheus-cpp-core
+                        prometheus-cpp-pull)
+ENDIF()
 
 MESSAGE(">>Target libraries")
-target_link_libraries(ccs
-                      Qt5::Core
-                      Qt5::Gui
-                      Qt5::Sql
-                      Qt5::Widgets
-                      Qt5::PrintSupport
-                      chaos_common
-                      chaos_metadata_service_client
-                      zmq
-                      boost_chrono
-                      boost_log
-                      boost_log_setup
-                      boost_system
-                      boost_thread
-                      boost_program_options
-                      boost_regex
-                      boost_filesystem
-                      #mongoose
-                      jsoncpp)
-
-
+target_link_libraries(ccs ${CCS_LINK_LIB})
+# target_link_libraries(ChaosCustomDesignerWidget ${CP_LINK_LIB})
+add_subdirectory(designerplugin/ChaosCustomDesignerWidget)
 MESSAGE(">>END")

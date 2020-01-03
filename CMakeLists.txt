@@ -1,7 +1,18 @@
 cmake_minimum_required(VERSION 2.8)
 MESSAGE("framework CMakeLists")
+
+# workaround for issues with MacOS 10.15 Catalina and stack_not_16_byte_aligned_error issues
+# set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-stack-check -fno-stack-protector")
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-stack-check -fno-stack-protector")
+
+
 IF(WIN32)
-include(config/CMakeChaosWin.txt)
+add_definitions(-D_WIN32_WINNT=0x601)
+#include(config/CMakeChaosWin.txt)
+macro (MESG parm)
+  SET(WHERE ${CMAKE_CURRENT_LIST_DIR})
+  MESSAGE(STATUS "[${WHERE}] ${parm}")
+endmacro()
 ELSE(WIN32)
 include(config/CMakeChaos.txt)
 ENDIF(WIN32)
@@ -29,6 +40,12 @@ option(CHAOS_DATA_EXPORT "Chaos Data Export" OFF)
 option(CHAOS_EXAMPLES "Chaos Examples" OFF)
 #warning possibile perdita di dati spento.
 add_definitions(-wd"4267")
+
+
+SET (ALL_WINDOWS_LIBPATH "DbgHelp.lib Netapi32.lib Iphlpapi.lib")
+
+
+
 else (WIN32)
 option(CHAOS_MDS "Chaos Data Service" ON)
 option(CHAOS_AGENT "Chaos Agent Service" ON)
@@ -71,21 +88,20 @@ endif()
 IF (CHAOS_ONLY_DEPENDECY OR
     CHAOS_ARCHITECTURE_TEST)
   #google test
-  MESG("Add google Test as external project")
-  ExternalProject_Add(
+   MESG("Add google Test as external project")
+  IF(WIN32)
+   ExternalProject_Add(
      googletest
      GIT_REPOSITORY https://github.com/google/googletest.git
-     GIT_TAG release-1.8.0
+	 GIT_TAG release-1.10.0
      PREFIX "${CMAKE_BINARY_DIR}/ext_dep/googletest-prefix"
      SOURCE_DIR "${CMAKE_BINARY_DIR}/ext_dep/googletest-src"
      BINARY_DIR "${CMAKE_BINARY_DIR}/ext_dep/googletest-build"
      CMAKE_ARGS
-      -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
+      -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}  -DCMAKE_BUILD_TYPE=Release
      LOG_DOWNLOAD ON
      LOG_CONFIGURE ON
      LOG_BUILD ON)
-
-
      # Specify include dir
      ExternalProject_Get_Property(googletest source_dir)
      set(GTEST_INCLUDE_DIR ${source_dir}/include)
@@ -100,6 +116,36 @@ IF (CHAOS_ONLY_DEPENDECY OR
      MESG("${GTEST_LIBRARY_DIR}")
      MESG("${GTEST_LIBRARY_PATH}")
      MESG("${GTEST_LIBRARY}")
+  ELSE(WIN32)
+ 
+  ExternalProject_Add(
+     googletest
+     GIT_REPOSITORY https://github.com/google/googletest.git
+	 GIT_TAG release-1.8.0
+     PREFIX "${CMAKE_BINARY_DIR}/ext_dep/googletest-prefix"
+     SOURCE_DIR "${CMAKE_BINARY_DIR}/ext_dep/googletest-src"
+     BINARY_DIR "${CMAKE_BINARY_DIR}/ext_dep/googletest-build"
+     CMAKE_ARGS
+      -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
+     LOG_DOWNLOAD ON
+     LOG_CONFIGURE ON
+     LOG_BUILD ON)
+     # Specify include dir
+     ExternalProject_Get_Property(googletest source_dir)
+     set(GTEST_INCLUDE_DIR ${source_dir}/include)
+
+     # Library
+     ExternalProject_Get_Property(googletest binary_dir)
+     set(GTEST_LIBRARY_DIR ${binary_dir})
+     ExternalProject_Get_Property(googletest binary_dir)
+     set(GTEST_LIBRARY_PATH ${binary_dir}/${CMAKE_FIND_LIBRARY_PREFIXES}gtest.a)
+
+     MESG("${GTEST_INCLUDE_DIR}")
+     MESG("${GTEST_LIBRARY_DIR}")
+     MESG("${GTEST_LIBRARY_PATH}")
+     MESG("${GTEST_LIBRARY}")
+
+   ENDIF(WIN32)
 ENDIF()
 
 IF (USE_GPT)
@@ -135,7 +181,7 @@ IF (CHAOS_PROMETHEUS)
   ExternalProject_Add(
   prometheus
   GIT_REPOSITORY https://github.com/jupp0r/prometheus-cpp.git
-  GIT_TAG master
+  GIT_TAG v0.8.0
   PREFIX "${CMAKE_BINARY_DIR}/ext_dep/prometheus-prefix"
   SOURCE_DIR "${CMAKE_BINARY_DIR}/ext_dep/prometheus-src"
   BINARY_DIR "${CMAKE_BINARY_DIR}/ext_dep/prometheus-src"
@@ -173,7 +219,7 @@ if(NOT CHAOS_ONLY_DEPENDECY)
 
   MESG("Configure Chaos Micro Unit Toolkit")
   ADD_SUBDIRECTORY(chaos_micro_unit_toolkit)
-  
+
 endif()
 
 IF (CHAOS_AGENT AND NOT CHAOS_ONLY_DEPENDECY)

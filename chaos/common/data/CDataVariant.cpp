@@ -21,7 +21,7 @@
 
 #include <chaos/common/data/CDataVariant.h>
 #include <chaos/common/exception/CException.h>
-
+#include <chaos/common/data/CDataWrapper.h>
 #include <sstream>
 
 using namespace chaos;
@@ -195,6 +195,9 @@ CDataVariant::CDataVariant(CDataWrapper *buffer_value):
 type(DataType::TYPE_CLUSTER),
 _internal_variant(ChaosSharedPtr<CDataWrapper>(buffer_value)) { }
 
+CDataVariant::CDataVariant(CDWUniquePtr buffer_value):type(DataType::TYPE_CLUSTER),
+_internal_variant(ChaosSharedPtr<CDataWrapper>(buffer_value.release())) { }
+
 CDataVariant::CDataVariant(const CDataVariant& to_copy):
 type(to_copy.type),
 _internal_variant(to_copy._internal_variant) { }
@@ -264,6 +267,9 @@ CDataVariant& CDataVariant::operator=(const CDataVariant& rhs) {
 int32_t CDataVariant::asInt32() const {
     return  boost::apply_visitor( int32_t_visitor(), _internal_variant );
 }
+char CDataVariant::asChar() const {
+    return  boost::apply_visitor( int32_t_visitor(), _internal_variant );
+}
 
 CDataVariant::operator int32_t() const {
     return asInt32();
@@ -285,6 +291,10 @@ CDataVariant::operator int64_t() const {
     return asInt64();
 }
 
+CDataVariant::operator char() const {
+    return asChar();
+}
+
 uint64_t CDataVariant::asUInt64() const {
     return  boost::apply_visitor( uint64_t_visitor(), _internal_variant );
 }
@@ -292,6 +302,7 @@ uint64_t CDataVariant::asUInt64() const {
 CDataVariant::operator uint64_t() const {
     return asUInt64();
 }
+
 
 double CDataVariant::asDouble() const {
     return  boost::apply_visitor(double_visitor(), _internal_variant );

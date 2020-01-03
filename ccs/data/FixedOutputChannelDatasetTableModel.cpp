@@ -1,6 +1,7 @@
 #include "FixedOutputChannelDatasetTableModel.h"
 
 #include <QDateTime>
+#include <QDataStream>
 
 using namespace chaos::common::data;
 
@@ -9,13 +10,9 @@ FixedOutputChannelDatasetTableModel::FixedOutputChannelDatasetTableModel(const Q
                                                                          QObject *parent):
     ChaosAbstractDataSetTableModel(node_uid,
                                    dataset_type,
-                                   parent) {
+                                   parent) {}
 
-}
-
-FixedOutputChannelDatasetTableModel::~FixedOutputChannelDatasetTableModel() {
-
-}
+FixedOutputChannelDatasetTableModel::~FixedOutputChannelDatasetTableModel() {}
 
 void FixedOutputChannelDatasetTableModel::updateData(const QSharedPointer<chaos::common::data::CDataWrapper>& _dataset) {
     //call superclas method taht will emit dataChagned
@@ -83,6 +80,49 @@ void FixedOutputChannelDatasetTableModel::updateData(const QSharedPointer<chaos:
     endResetModel();
 }
 
+Qt::ItemFlags FixedOutputChannelDatasetTableModel::flags(const QModelIndex &index) const {
+    Qt::ItemFlags defaultFlags = ChaosAbstractDataSetTableModel::flags(index);
+    if(index.isValid()) {
+        return defaultFlags | Qt::ItemIsDragEnabled;
+    }
+    return defaultFlags;
+}
+
+Qt::DropActions FixedOutputChannelDatasetTableModel::supportedDragActions() const {
+    return Qt::CopyAction;
+}
+
+QStringList FixedOutputChannelDatasetTableModel::mimeTypes() const {
+    QStringList types;
+    //specify the mime operatioan for uid,dataset,and attribute
+    types << "application/chaos-uid-dataset-attribute";
+    return types;
+}
+
+QMimeData *FixedOutputChannelDatasetTableModel::mimeData(const QModelIndexList &indexes) const {
+    QMimeData *mimeData = new QMimeData();
+    QByteArray encodedData;
+
+    QDataStream stream(&encodedData, QIODevice::WriteOnly);
+
+    foreach (const QModelIndex &index, indexes) {
+        if (index.isValid()) {
+            QSharedPointer<CDataWrapper> element = vector_doe[index.row()];
+            if(element->hasKey(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_NAME)) {
+                //add node ui
+                stream << node_uid;
+                //add dataset
+                stream << chaos::DataPackCommonKey::DPCK_DATASET_TYPE_OUTPUT;
+                //add attribute name
+                stream << QString::fromStdString(element->getStringValue(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_NAME));
+            }
+        }
+    }
+
+    mimeData->setData("application/chaos-uid-dataset-attribute", encodedData);
+    return mimeData;
+}
+
 int FixedOutputChannelDatasetTableModel::getRowCount() const {
     return vector_doe.size();
 }
@@ -142,7 +182,11 @@ QVariant FixedOutputChannelDatasetTableModel::getCellData(int row, int column) c
                 result = QString("Double");
                 break;
             case chaos::DataType::TYPE_BYTEARRAY:
-                result = QString("Binary");
+                if(element->hasKey(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_BINARY_SUBTYPE)) {
+                    result = QString("Binary[s]");
+                } else {
+                    result = QString("Binary");
+                }
                 break;
 
             default:
@@ -170,10 +214,11 @@ QVariant FixedOutputChannelDatasetTableModel::getCellData(int row, int column) c
     return result;
 }
 
-QString FixedOutputChannelDatasetTableModel::getSubTypeForCode(int subtype) const {
+QString FixedOutputChannelDatasetTableModel::getSubTypeForCode(QSharedPointer<CDataWrapper> element) const {
     QString result = "...";
-    bool is_unsigned = ((subtype&chaos::DataType::SUB_TYPE_UNSIGNED) == chaos::DataType::SUB_TYPE_UNSIGNED);
-    int real_subtype = is_unsigned?(subtype^chaos::DataType::SUB_TYPE_UNSIGNED):subtype;
+    int subtype = element->getInt32Value(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_BINARY_SUBTYPE);
+    bool is_unsigned = CHAOS_SUBTYPE_IS_UNSIGNED(subtype);//((subtype&chaos::DataType::SUB_TYPE_UNSIGNED) == chaos::DataType::SUB_TYPE_UNSIGNED);
+    int real_subtype = CHAOS_SUBTYPE_UNWRAP(subtype);//is_unsigned?(subtype^chaos::DataType::SUB_TYPE_UNSIGNED):subtype;
     switch (real_subtype) {
     case chaos::DataType::SUB_TYPE_BOOLEAN:
         result = QString("boolean");
@@ -197,7 +242,8 @@ QString FixedOutputChannelDatasetTableModel::getSubTypeForCode(int subtype) cons
         result = QString("Double");
         break;
     case chaos::DataType::SUB_TYPE_MIME:
-        result = QString("MIME");
+        //in this case i have another key in dataset description
+        result = QString("MIME[%1]").arg(element->getStringValue(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_BINARY_MIME_DESCRIPTION).c_str());
         break;
     case chaos::DataType::SUB_TYPE_STRING:
         result = QString("String");
@@ -234,15 +280,15 @@ QVariant FixedOutputChannelDatasetTableModel::getTooltipTextForData(int row, int
                     if(element->isVectorValue(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_BINARY_SUBTYPE)) {
                         QString composed_subtype_desc;
                         //we a structure
-                       CMultiTypeDataArrayWrapperSPtr sub_type_list = element->getVectorValue(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_BINARY_SUBTYPE);
+                        CMultiTypeDataArrayWrapperSPtr sub_type_list = element->getVectorValue(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_BINARY_SUBTYPE);
                         for(int idx = 0;
                             idx < sub_type_list->size();
                             idx++) {
-                            sub_type_desription.append(QString("- %1\n").arg(getSubTypeForCode(element->getInt32Value(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_BINARY_SUBTYPE))));
+                            sub_type_desription.append(QString("- %1\n").arg(getSubTypeForCode(element)));
                         }
                     } else {
                         //we have a single subtype
-                        sub_type_desription.append(QString("- %1\n").arg(getSubTypeForCode(element->getInt32Value(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_BINARY_SUBTYPE))));
+                        sub_type_desription.append(QString("- %1\n").arg(getSubTypeForCode(element)));
                     }
                     sub_type_desription.resize(sub_type_desription.size()-1);
                     result = sub_type_desription;
@@ -278,4 +324,9 @@ QVariant FixedOutputChannelDatasetTableModel::getTextAlignForData(int row, int c
     }
 
     return result;
+}
+
+bool FixedOutputChannelDatasetTableModel::isCellSelectable(const QModelIndex &index) const {
+    Q_UNUSED(index)
+    return true;
 }

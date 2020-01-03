@@ -48,7 +48,7 @@ namespace chaos {
 #ifdef OLD_PROCESS_MANAGEMENT
             common::utility::InizializableServiceContainer<external_command_pipe::ExternaCommandExecutor> external_cmd_executor;
 #else
-            ChaosSharedPtr <utility::ProcRestUtil> procRestUtil;
+            static ChaosSharedPtr <utility::ProcRestUtil> procRestUtil;
             public:
             ChaosSharedPtr <utility::ProcRestUtil> getProcessManager();
 
@@ -56,8 +56,9 @@ namespace chaos {
         private:
             ChaosAgent();
             ~ChaosAgent();
-            static void signalHanlder(int signal_number);
         public:
+                    static void signalHanlder(int signal_number);
+
             ChaosAgentSettings settings;
             void init(int argc, const char* argv[]);
             void init(istringstream &initStringStream);

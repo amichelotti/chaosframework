@@ -93,7 +93,7 @@ namespace chaos {
          Constructor di default per i
          */
         RpcClient(const std::string& alias);
-        
+        virtual ~RpcClient();
         virtual void setServerHandler(RpcServerHandler *_server_handler);
         
         //! return the numebr of message that are waiting to be sent
@@ -102,6 +102,10 @@ namespace chaos {
          of internal queue message
          */
         virtual uint64_t getMessageQueueSize();
+        
+        //! Set dinamically the synchronousRpcFeautres
+        void setSynchronousRPCState(bool _syncrhonous_call);
+        bool getynchronousRPCState()const;
     };
 }
 #endif

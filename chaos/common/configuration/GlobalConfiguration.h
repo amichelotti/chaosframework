@@ -77,9 +77,6 @@ x = getOption<t>(y);\
 bool x;\
 x = hasOption(y);
     
-    CHAOS_DEFINE_VECTOR_FOR_TYPE(chaos::common::network::CNetworkAddress, VectorMetadatserver);
-    CHAOS_DEFINE_MAP_FOR_TYPE(std::string, std::string, MapStrKeyStrValue);
-    
     /*
      Central class for all CHOAS framework configuraitons
      */
@@ -126,6 +123,7 @@ x = hasOption(y);
 //                             const std::string& regex);
     public:
         void loadStartupParameter(int, const char* argv[]);
+        void loadStartupParameterFromEnv();
         void loadStreamParameter(std::istream &config_file);
         void scanOption();
         void checkDefaultOption();
@@ -297,6 +295,9 @@ x = hasOption(y);
         
         //!return the hostname of the host that run chaos node
         std::string getHostname();
+
+        //!return the optional description of the node
+        std::string getDesc();
         
         /*
          return the address of metadataserver
@@ -306,7 +307,7 @@ x = hasOption(y);
         /*
          return the address list of multiple configured metadataserver
          */
-        VectorMetadatserver getMetadataServerAddressList();
+        chaos::common::network::VectorNetworkAddress getMetadataServerAddressList();
         
         /*
          return the address of metadataserver

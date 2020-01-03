@@ -3,6 +3,7 @@ project(chaos_common)
 #### required libraries
 MESSAGE(" CMAKELIST framework/chaos/common")
 MESSAGE ("CHAOS_TARGET:" ${CHAOS_TARGET})
+
 if(WIN32)
 set(CMAKE_SUPPRESS_REGENERATION true)
 ELSE(WIN32)
@@ -44,6 +45,50 @@ IF (CHAOS_TARGET)
 	 LOG_CONFIGURE ON
 	 LOG_BUILD ON)
      ENDIF()
+
+if(WIN32)
+MESG("Configure libBoost as CMake")
+	ExternalProject_Add(
+	 boost
+	 GIT_REPOSITORY https://github.com/boostorg/boost.git
+	 PREFIX ${CMAKE_CURRENT_BINARY_DIR}/boost
+	GIT_TAG boost-1.70.0
+    GIT_PROGRESS 1
+    BUILD_IN_SOURCE 1
+    UPDATE_COMMAND ""
+    CONFIGURE_COMMAND bootstrap.bat
+    BUILD_COMMAND b2 link=static install --prefix=${CMAKE_INSTALL_PREFIX}/boostinstall
+    INSTALL_COMMAND b2 install --prefix=${CMAKE_INSTALL_PREFIX}/boostinstall
+    LOG_DOWNLOAD 1
+    LOG_UPDATE 1
+    LOG_CONFIGURE 1
+    LOG_BUILD 1
+    LOG_INSTALL 1
+	)
+MESSAGE("Configure JsonCpp as CMake External Project")
+ExternalProject_Add(
+	 jsonCpp
+	 GIT_REPOSITORY https://github.com/open-source-parsers/jsoncpp
+	 
+	 GIT_TAG 1.9.2
+     GIT_PROGRESS 1
+     PREFIX "${CMAKE_BINARY_DIR}/ext_dep/libjsoncpp-prefix"
+	 SOURCE_DIR "${CMAKE_BINARY_DIR}/ext_dep/libjsoncpp-src"
+	 BINARY_DIR "${CMAKE_BINARY_DIR}/ext_dep/libjsoncpp-build"
+	  
+     CMAKE_ARGS
+	  -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}  -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+	 
+	 LOG_DOWNLOAD 1
+    LOG_UPDATE 1
+    LOG_CONFIGURE 1
+    LOG_BUILD 1
+    LOG_INSTALL 1
+	)
+
+
+
+ENDIF(WIN32)
 
 
 IF (CLING_VIRTUAL_MACHINE_ENABLE)
@@ -171,23 +216,16 @@ SET(common_lib_src ${common_lib_src}
                     data/entity/Entity.cpp data/broker/DataBroker.cpp
                     data/broker/publisher/PublisherDataService.cpp
                     data/broker/reader/ReaderDataService.cpp
-                    data/cache/FastHash.cpp
-                    data/cache/DataCache.cpp
-                    data/cache/LFDataCache.cpp)
+                    data/cache/FastHash.cpp)
 
 SET(common_lib_src ${common_lib_src}
                     debug/tracey.cpp)
 
 SET(common_lib_src ${common_lib_src}
-                    data/cache/ChannelValueAccessor.cpp
-                    data/cache/KeyGroupCache.cpp
                     data/cache/AttributeValue.cpp
                     data/cache/AttributeCache.cpp
                     data/cache/AbstractSharedDomainCache.cpp
                     data/cache/AttributeValueSharedCache.cpp)
-
-SET(common_lib_src ${common_lib_src}
-                    memory/ManagedMemory.cpp)
 
 SET(common_lib_src ${common_lib_src}
                     dispatcher/DefaultEventDispatcher.cpp
@@ -344,6 +382,8 @@ SET(common_lib_src ${common_lib_src}
                     trigger/AbstractSubject.cpp
                     trigger/TriggerExecutionEnviroment.cpp
                     trigger/trigger_types.cpp)
+SET(common_lib_src ${common_lib_src}
+                    thread/WaitSemaphore.cpp)
 
 IF(CHAOS_PROMETHEUS)
 MESG("Add source code for metrics: ${CHAOS_PROMETHEUS}")  
@@ -367,6 +407,9 @@ SET(common_lib_src ${common_lib_src}
 #compile lua chaos vm and core files
 if (WIN32)
 INCLUDE_DIRECTORIES( ../../ script/lua/core ${ALL_WINDOWS_INCLUDE_DIR})
+
+INCLUDE_DIRECTORIES(${CMAKE_INSTALL_PREFIX}/boostinstall/include/boost-1_70)
+link_directories(${CMAKE_CURRENT_BINARY_DIR}/boostinstall/lib)
 else(WIN32)
 INCLUDE_DIRECTORIES(script/lua/core ./chaos/common ./chaos/common/metadata_logging ../../)
 endif(WIN32)
@@ -386,23 +429,29 @@ ENDIF()
 IF (NOT DEFINED BUILD_FORCE_STATIC)
 
 ENDIF ()
+IF (WIN32)
+SET(BUILD_FORCE_STATIC 1)
+ENDIF(WIN32)
 
 IF (BUILD_FORCE_STATIC  )
   ADD_LIBRARY(${PROJECT_NAME} STATIC ${common_lib_src})
-ELSE ()
+ELSE (BUILD_FORCE_STATIC)
   ADD_LIBRARY(${PROJECT_NAME} SHARED ${common_lib_src})
   set_target_properties(${PROJECT_NAME} PROPERTIES VERSION 1.0.0 SOVERSION 1)
-ENDIF ()
+ENDIF (BUILD_FORCE_STATIC)
+
+
+
 
 IF (CHAOS_PROMETHEUS)
 add_dependencies(${PROJECT_NAME} prometheus)
 endif()
 
-#IF (NOT WIN32)
-#add dependency to libzmq
-
+IF (WIN32)
 add_dependencies(${PROJECT_NAME} libzmq)
-#ENDIF(NOT WIN32)
+add_dependencies(${PROJECT_NAME} boost)
+add_dependencies(${PROJECT_NAME} jsonCpp)
+ENDIF()
 
 IF (CLING_VIRTUAL_MACHINE)
   add_dependencies(${PROJECT_NAME} cling)
@@ -411,8 +460,16 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE CLING_VIRTUAL_MACHINE=${CLING
 
 
 SET(BUILD_LIBRARY ${FrameworkLib})
+IF(WIN32)
+MESSAGE("ALEDEBUG CMAKE_INSTALL_PREFIX" ${CMAKE_INSTALL_PREFIX} )
+set (BOOST_LIBPATH  ${CMAKE_INSTALL_PREFIX}/boostinstall/lib )
+SET (ZMQ_LIBPATH ${CMAKE_INSTALL_PREFIX}/lib)
+SET(BUILD_LIBRARY ${BUILD_LIBRARY} jsoncpp.lib)
+SET(BUILD_LIBRARY ${BUILD_LIBRARY} libzmq-mt-4_3_1)
+SET(BUILD_LIBRARY ${BUILD_LIBRARY} -LIBPATH:${BOOST_LIBPATH} )
+ELSE(WIN32)
 SET(BUILD_LIBRARY ${BUILD_LIBRARY} libzmq.a)
-
+ENDIF(WIN32)
 IF(CLING_VIRTUAL_MACHINE)
   MESSAGE(STATUS "LINKING clingIntepreter")
   SET(BUILD_LIBRARY ${BUILD_LIBRARY} clingInterpreter)
@@ -567,4 +624,4 @@ INSTALL(FILES ${files} DESTINATION include/chaos/common/script/lua/core)
 
 INSTALL(TARGETS ${PROJECT_NAME}
         DESTINATION "lib"
-        PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ)
+        PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ WORLD_EXECUTE)

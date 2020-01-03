@@ -138,7 +138,7 @@ int QueryDataConsumer::consumePutEvent(const std::string& key,
     }
     
     if(!err &&
-       (storage_type & DataServiceNodeDefinitionType::DSStorageTypeHistory)) {
+       (storage_type & (DataServiceNodeDefinitionType::DSStorageTypeHistory|DataServiceNodeDefinitionType::DSStorageTypeFile))) {
         //compute the index to use for the data worker
         uint32_t index_to_use = device_data_worker_index++ % ChaosMetadataService::getInstance()->setting.worker_setting.instances;
         CHAOS_ASSERT(device_data_worker[index_to_use].get())
@@ -153,6 +153,7 @@ int QueryDataConsumer::consumePutEvent(const std::string& key,
             DEBUG_CODE(DBG << "Error pushing data into worker queue");
         }
     }
+    
     return err;
 }
 
@@ -186,6 +187,7 @@ int QueryDataConsumer::consumeHealthDataEvent(const std::string& key,
 int QueryDataConsumer::consumeDataCloudQuery(DirectIODeviceChannelHeaderOpcodeQueryDataCloud& query_header,
                                              const std::string& search_key,
                                              const ChaosStringSet& meta_tags,
+                                             const ChaosStringSet& projection_keys,
                                              const uint64_t search_start_ts,
                                              const uint64_t search_end_ts,
                                              SearchSequence& last_element_found_seq,
@@ -196,6 +198,7 @@ int QueryDataConsumer::consumeDataCloudQuery(DirectIODeviceChannelHeaderOpcodeQu
     ObjectStorageDataAccess *obj_storage_da = DriverPoolManager::getInstance()->getObjectStorageDrv().getDataAccess<object_storage::abstraction::ObjectStorageDataAccess>();
     if((err = obj_storage_da->findObject(search_key,
                                          meta_tags,
+                                         projection_keys,
                                          search_start_ts,
                                          search_end_ts,
                                          query_header.field.record_for_page,
@@ -210,6 +213,7 @@ int QueryDataConsumer::consumeDataCloudQuery(DirectIODeviceChannelHeaderOpcodeQu
 int QueryDataConsumer::consumeDataIndexCloudQuery(opcode_headers::DirectIODeviceChannelHeaderOpcodeQueryDataCloud& query_header,
                                                   const std::string& search_key,
                                                   const ChaosStringSet& meta_tags,
+                                                  const ChaosStringSet& projection_keys,
                                                   const uint64_t search_start_ts,
                                                   const uint64_t search_end_ts,
                                                   opcode_headers::SearchSequence& last_element_found_seq,
@@ -219,6 +223,7 @@ int QueryDataConsumer::consumeDataIndexCloudQuery(opcode_headers::DirectIODevice
     DataSearch search;
     search.key = search_key;
     search.meta_tags = meta_tags;
+    search.projection_keys = projection_keys;
     search.timestamp_from = search_start_ts;
     search.timestamp_to = search_end_ts;
     search.page_len = query_header.field.record_for_page;
