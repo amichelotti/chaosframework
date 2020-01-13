@@ -34,6 +34,7 @@
 #include <chaos/common/data/entity_db/EntityDB.h>
 
 #define CUSCHEMA_DEFAULT_STRING_LENGHT 4096
+
 namespace chaos {
     namespace common {
         namespace data {
@@ -64,6 +65,11 @@ namespace chaos {
                 string increment;
                 //! units info
                 string unit;
+                 //! conversion factor
+                string convf;
+                //! conversion offset
+                string offset;
+               
                 //!Type of the value
                 DataType::DataType valueType;
                 //!Type of binary

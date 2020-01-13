@@ -192,15 +192,16 @@ int initialize_from_old_mds(std::string conf){
 				for(int attr=0;(attr_l.get() !=NULL) && (attr<attr_l->size());attr++){
 					ChaosUniquePtr<CDataWrapper> attr_w(attr_l->getCDataWrapperElementAtIndex(attr));
 
-					GET_CONFIG_STRING(attr_w,ds_attr_name);
+					/*GET_CONFIG_STRING(attr_w,ds_attr_name);
 					GET_CONFIG_STRING(attr_w,ds_default_value);
 					GET_CONFIG_STRING(attr_w,ds_max_range);
 					GET_CONFIG_STRING(attr_w,ds_min_range);
 					GET_CONFIG_STRING(attr_w,cudk_ds_attr_inc);
 					GET_CONFIG_STRING(attr_w,cudk_ds_attr_unit);
+					*/
+					//std::cout<<"adding attribute:"<<attr_w->getJSONString()<<std::endl;
+					cud.addAttributeConfig(*attr_w.get());
 
-
-					cud.addAttributeConfig(ds_attr_name,ds_default_value,ds_max_range,ds_min_range);
 				}
 
 				EXECUTE_CHAOS_API(api_proxy::control_unit::SetInstanceDescription,3000,cud);

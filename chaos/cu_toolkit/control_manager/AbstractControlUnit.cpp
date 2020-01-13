@@ -24,12 +24,11 @@
 #include <chaos/common/healt_system/HealtManager.h>
 #include <chaos/common/property/property.h>
 #include <chaos/common/utility/UUIDUtil.h>
-
+#include <chaos/common/configuration/GlobalConfiguration.h>
 #include <chaos/cu_toolkit/command_manager/CommandManager.h>
 #include <chaos/cu_toolkit/control_manager/AbstractControlUnit.h>
 #include <chaos/cu_toolkit/data_manager/DataManager.h>
-#include <chaos/cu_toolkit/driver_manager/DriverManager.h>
-
+#include <chaos/cu_toolkit/driver_manager/DriverManager.h> 
 #include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid.hpp>             // uuid class
@@ -279,6 +278,19 @@ bool PushStorageBurst::active(void* data __attribute__((unused))) {
         return control_unit_param;
     }
     
+    int AbstractControlUnit::getCUParam(chaos::common::data::CDataWrapper&p){
+         try{
+            if(control_unit_param!=""){
+                p.reset();
+                p.setSerializedJsonData(control_unit_param.c_str());
+                return 0;
+            }
+    } catch(...){
+
+    }
+    return -1;
+    }
+
     const bool AbstractControlUnit::isCUParamInJson() {
         return is_control_unit_json_param;
     }
@@ -554,7 +566,12 @@ bool PushStorageBurst::active(void* data __attribute__((unused))) {
                             int32_t attrType = elementDescription->getInt32Value(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_TYPE);
                             string attrValue = elementDescription->getStringValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_DEFAULT_VALUE);
                             cu_ds_init->addCSDataValue(attrName,*elementDescription);
+                            if((attrValue=="" ||attrValue=="NA")&&(attrType!=DataType::TYPE_STRING)){
+                                // not valid value not initialize 
+                                    ACULDBG_ << "skipped initialization of:"<<attrName<<" to:'"<<attrValue<<"' not valid for not string type";
 
+                                    continue;
+                            }
                             switch(attrType) {
                                 case DataType::TYPE_BOOLEAN:
                                     cdw_unique_ptr->addBoolValue(attrName, CDataVariant(attrValue).asBool());
