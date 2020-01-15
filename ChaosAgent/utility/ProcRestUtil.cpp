@@ -19,7 +19,6 @@
  * permissions and limitations under the Licence.
  */
 
-
 #include "ProcRestUtil.h"
 #include "../ChaosAgent.h"
 #include <chaos/common/global.h>
@@ -36,19 +35,20 @@
 using namespace std;
 using namespace chaos::common;
 using namespace chaos::agent::utility;
+using namespace chaos::common::network;
 using namespace chaos::service_common::data::agent;
 std::string ProcRestUtil::normalizeName(const std::string& node_name) {
     std::string result = node_name;
     boost::replace_all(result,"/","_");
     return result;
 }
+
 void ProcRestUtil::launchProcess(const AgentAssociation& node_association_info) {
     int pid = 0;
     std::string exec_command;
     boost::filesystem::path init_file;
     boost::filesystem::path queue_file;
     try{
-
         if(checkProcessAlive(node_association_info) == true) return;
         exec_command = COMPOSE_NODE_LAUNCH_CMD_LINE(node_association_info);
         init_file = CHAOS_FORMAT("%1%/%2%", %INIT_FILE_PATH()%INIT_FILE_NAME(node_association_info));
@@ -88,8 +88,8 @@ void ProcRestUtil::launchProcess(const AgentAssociation& node_association_info) 
         init_file_stream << CHAOS_FORMAT("unit-server-alias=%1%",%node_association_info.associated_node_uid) << std::endl;
         
         //append metadata server from agent configuration
-        VectorMetadatserver mds_vec = GlobalConfiguration::getInstance()->getMetadataServerAddressList();
-        for(VectorMetadatserverIterator mds_it = mds_vec.begin(),
+        VectorNetworkAddress mds_vec = GlobalConfiguration::getInstance()->getMetadataServerAddressList();
+        for(VectorNetworkAddressIterator mds_it = mds_vec.begin(),
             end = mds_vec.end();
             mds_it != end;
             mds_it++) {

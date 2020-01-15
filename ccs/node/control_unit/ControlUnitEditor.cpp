@@ -60,10 +60,18 @@ void ControlUnitEditor::initUI() {
     ui->pushButtonEditInstance->setEnabled(false);
     //add model to table
     ui->tableViewOutputChannel->setModel(&dataset_output_table_model);
+    ui->tableViewOutputChannel->setSelectionBehavior(QAbstractItemView::SelectRows);
+    ui->tableViewOutputChannel->setSelectionMode(QAbstractItemView::SingleSelection);
+    ui->tableViewOutputChannel->setDragEnabled(true);
+    ui->tableViewOutputChannel->setDragDropMode(QTableView::DragOnly);
     ui->tableViewOutputChannel->setColumnToContents(0, true);
     ui->tableViewOutputChannel->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 
     ui->tableViewInputChannels->setModel(&dataset_input_table_model);
+    ui->tableViewInputChannels->setSelectionBehavior(QAbstractItemView::SelectRows);
+    ui->tableViewInputChannels->setSelectionMode(QAbstractItemView::SingleSelection);
+    ui->tableViewInputChannels->setDragEnabled(true);
+    ui->tableViewInputChannels->setDragDropMode(QTableView::DragOnly);
     ui->tableViewInputChannels->setColumnToContents(0, true);
     ui->tableViewInputChannels->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 
@@ -205,7 +213,15 @@ void ControlUnitEditor::initUI() {
     //reset the splitter in mode to hide the lists
     on_checkBoxShowAlarms_clicked();
     ui->listViewAlarm->setModel(&alarm_list_model);
+    ui->listViewAlarm->setSelectionBehavior(QAbstractItemView::SelectRows);
+    ui->listViewAlarm->setSelectionMode(QAbstractItemView::SingleSelection);
+    ui->listViewAlarm->setDragEnabled(true);
+    ui->listViewAlarm->setDragDropMode(QTableView::DragOnly);
     ui->listViewWarning->setModel(&warning_list_model);
+    ui->listViewWarning->setSelectionBehavior(QAbstractItemView::SelectRows);
+    ui->listViewWarning->setSelectionMode(QAbstractItemView::SingleSelection);
+    ui->listViewWarning->setDragEnabled(true);
+    ui->listViewWarning->setDragDropMode(QTableView::DragOnly);
     //manage command stat
     ui->widgetCommandStatistic->setVisible(false);
     //busy flag

@@ -1,6 +1,9 @@
+ccs/designerplugin/ChaosCustomDesignerWidget/ChaosCustomDesignerWidget_autogen
+ccs/designerplugin/ChaosCustomDesignerWidget/compile_commands.json
 .devcontainer
 *.pro.user*
 cmake-build-debug
+feature/ccs-synoptic-viewer
 ccs/qrc_*
 ccs/compile_commands.json
 .scannerwork

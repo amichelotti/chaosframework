@@ -27,6 +27,8 @@
 #include <chaos/common/data/CDataBuffer.h>
 #include <json/json.h>
 
+#include <chaos/common/data/CDataVariant.h>
+
 #include <boost/scoped_ptr.hpp>
 
 #include <boost/shared_ptr.hpp>
@@ -49,7 +51,6 @@ namespace chaos {
         namespace data {
             using namespace std;
             class CDataWrapper;
-            class CDataVariant;
             /*!
              Class to read the and arry of multivalue
              */
@@ -103,6 +104,8 @@ namespace chaos {
                 int setBson(const bson_iter_t *,const bool& val);
                 int setBson(const bson_iter_t * ,const std::string& val);
                 int setBson(const bson_iter_t * ,const void* val);
+                int setBson(const bson_iter_t *v ,const void* val,size_t size);
+
                 int setBson(const bson_iter_t *v ,const CDataWrapper* val);
 
             public:
@@ -117,6 +120,12 @@ namespace chaos {
                 void addCSDataValue(const std::string&, const CDataWrapper&);
                 //get a csdata value
                 ChaosUniquePtr<chaos::common::data::CDataWrapper> getCSDataValue(const std::string&) const;
+                void getCSDataValue(const std::string&,chaos::common::data::CDataWrapper&) const;
+
+
+                //get a projection of a vector of keys
+                ChaosUniquePtr<chaos::common::data::CDataWrapper> getCSProjection(const std::vector<std::string>&) const;
+
                 //add a string value
                 //void addStringValue(const char *, const char *);
                 //add a string value
@@ -190,6 +199,7 @@ namespace chaos {
 std::stringstream ss;\
 ss<<"cannot get or cast to '" << #type<<"'";\
 throw chaos::CException(-2, ss.str(), __PRETTY_FUNCTION__);
+                int setValue(const std::string& key,const void* val,size_t size);
 
                 template<typename T>
                 int setValue(const std::string& key,const T& val){
@@ -236,23 +246,29 @@ throw chaos::CException(-2, ss.str(), __PRETTY_FUNCTION__);
                 }
                 template<typename T>
                 T getValue(const std::string& key) const{
+
                     T v;
                     if(hasKey(key) == false) {throw chaos::CException(-1, "Key not present", __PRETTY_FUNCTION__);}
-                    switch(getValueType(key)){
+                    v=(T)getVariantValue(key);
+                   /* switch(getValueType(key)){
                         case chaos::DataType::TYPE_BOOLEAN:{
-                            v = static_cast<T>(getBoolValue(key));
+                            v = getVariantValue(key).asBool();
                             break;
                         }
                         case chaos::DataType::TYPE_INT32:{
-                            v = static_cast<T>(getInt32Value(key));
+                            v = getVariantValue(key).asInt32();
                             break;
                         }
                         case chaos::DataType::TYPE_INT64:{
-                            v = static_cast<T>(getInt64Value(key));
+                            v = getVariantValue(key).asInt64();
                             break;
                         }
                         case chaos::DataType::TYPE_DOUBLE:{
-                            v = static_cast<T>(getDoubleValue(key));
+                            v = getVariantValue(key).asDouble();
+                            break;
+                        }
+                        case chaos::DataType::TYPE_STRING:{
+                            v = getVariantValue(key).asString();
                             break;
                         }
                         default:{
@@ -260,7 +276,7 @@ throw chaos::CException(-2, ss.str(), __PRETTY_FUNCTION__);
                             ss<<"cannot get key\""<<key<<"\" to type:"<<getValueType(key);
                             throw chaos::CException(-2,ss.str(),__PRETTY_FUNCTION__);
                         }
-                    }
+                    }*/
                     return v;
                 }
                 //return the binary data value
@@ -294,6 +310,8 @@ throw chaos::CException(-2, ss.str(), __PRETTY_FUNCTION__);
                 void getAllKey(ChaosStringVector& contained_key) const;
                 //return all key contained into the object
                 void getAllKey(ChaosStringSet& contained_key) const;
+                ChaosStringVector getAllKey() const;
+
                 //return all key contained into the object
                 uint32_t getValueSize(const std::string& key) const;
                 //! get raw value ptr address
@@ -346,7 +364,8 @@ throw chaos::CException(-2, ss.str(), __PRETTY_FUNCTION__);
                 int32_t getInt32ElementAtIndex(const int) const;
                 int64_t getInt64ElementAtIndex(const int) const;
                 bool getBoolElementAtIndex(const int) const;
-
+              
+               
                 ChaosUniquePtr<CDataWrapper> getCDataWrapperElementAtIndex(const int) const;
                 std::string getJSONString();
                 std::string getCanonicalJSONString();
@@ -375,6 +394,21 @@ throw chaos::CException(-2, ss.str(), __PRETTY_FUNCTION__);
                     ss<<"type at index ["<<pos<<"] cannot convert, typeid:"<<values[pos]->value_type;
                     throw CException(1, ss.str(), __PRETTY_FUNCTION__);
                     return 0;
+                }
+
+                operator std::vector<std::string>(){
+                    std::vector<std::string> ret;
+                    for(int cnt=0;cnt<size();cnt++){
+                        ret.push_back(getStringElementAtIndex(cnt));
+                    }
+                    return ret;
+                }
+                 operator std::set<std::string>(){
+                    std::set<std::string> ret;
+                    for(int cnt=0;cnt<size();cnt++){
+                        ret.insert(getStringElementAtIndex(cnt));
+                    }
+                    return ret;
                 }
                 const char * getRawValueAtIndex(const int key,uint32_t& size) const;
                 size_t size() const;

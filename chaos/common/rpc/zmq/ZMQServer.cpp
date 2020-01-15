@@ -20,8 +20,10 @@
  */
 
 #include <chaos/common/global.h>
+#include <chaos/common/rpc/ChaosRpc.h>
 #include <chaos/common/rpc/zmq/ZMQServer.h>
 #include <chaos/common/rpc/zmq/ZmqMemoryManagement.h>
+#include <chaos/common/rpc/RpcServerHandler.h>
 #include <chaos/common/chaos_constants.h>
 #include <chaos/common/exception/exception.h>
 
@@ -64,7 +66,10 @@ void ZMQServer::init(void *init_data) {
     try {
         run_server = true;
         
-        port_number = adapterConfiguration->getInt32Value(InitOption::OPT_RPC_SERVER_PORT);
+        if(!port_number) {
+            //no one has set alternate port number so use the default
+            port_number = adapterConfiguration->getInt32Value(InitOption::OPT_RPC_SERVER_PORT);
+        }
         
         thread_number = adapterConfiguration->getInt32Value(InitOption::OPT_RPC_SERVER_THREAD_NUMBER);
         
@@ -116,12 +121,10 @@ void ZMQServer::stop() {
 void ZMQServer::deinit() {
     run_server = false;
     ZMQS_LAPP << "Stopping thread";
-    //wiath all thread
+    //wait all thread
     zmq_ctx_shutdown(zmq_context);
-    
     thread_group.join_all();
     zmq_ctx_destroy(zmq_context);
-    
     ZMQS_LAPP << "Thread stopped";
 }
 #define ZMQ_DO_AGAIN(x) do{x}while(err == EAGAIN);
@@ -217,7 +220,7 @@ void ZMQServer::worker() {
             
             //read message
             err = zmq_msg_init(&request);
-            ZMQS_LDBG << "Wait for message";
+           // ZMQS_LDBG << "Wait for message";
             err = zmq_msg_recv(&request, receiver, 0);
             if(run_server==0){
                 // no error should be issued on normal exit
@@ -235,14 +238,14 @@ void ZMQServer::worker() {
                     CDWShrdPtr result_data_pack;
                     message_data.reset(new CDataWrapper((const char*)zmq_msg_data(&request)));
                     //dispatch the command
-                    if(message_data->hasKey("seq_id")){
-                        seq_id=message_data->getInt64Value("seq_id");
+                    if(message_data->hasKey(RPC_SEQ_KEY)){
+                        seq_id=message_data->getInt64Value(RPC_SEQ_KEY);
                     }
-                    const std::string msg_desc = message_data->getCompliantJSONString();
-                    ZMQS_LDBG << "Message Received seq_id:"<<seq_id << "desc:"<<msg_desc;
+                    const std::string msg_desc = message_data->getJSONString();
+                     DEBUG_CODE(ZMQS_LDBG << "Message Received seq_id:"<<seq_id << " desc:"<<msg_desc;);
 
-                    if(message_data->hasKey("syncrhonous_call") &&
-                       message_data->getBoolValue("syncrhonous_call")) {
+                    if(message_data->hasKey(RPC_SYNC_KEY) &&
+                       message_data->getBoolValue(RPC_SYNC_KEY)) {
                         result_data_pack = command_handler->executeCommandSync(MOVE(message_data));
                     } else {
                         result_data_pack = command_handler->dispatchCommand(MOVE(message_data));
@@ -255,7 +258,7 @@ void ZMQServer::worker() {
                         ZMQS_LERR << "ERROR:"<<msg_desc;
                         
                     }
-                    result_data_pack->addInt64Value("seq_id",seq_id);
+                    result_data_pack->addInt64Value(RPC_SEQ_KEY,seq_id);
                     err = zmq_msg_init_data(&response,
                                             (void*)result_data_pack->getBSONRawData(),
                                             result_data_pack->getBSONRawSize(),

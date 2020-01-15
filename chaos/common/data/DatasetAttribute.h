@@ -39,6 +39,10 @@ namespace chaos {
                     std::string                                     description;
                     std::string                                     min_value;
                     std::string                                     max_value;
+                    std::string                                     inc;
+                    std::string                                     unit;
+                    std::string                                     conv;
+                    std::string                                     off;
                     std::string                                     default_value;
                     chaos::DataType::DataSetAttributeIOAttribute    direction;
                     chaos::DataType::DataType                       type;
@@ -51,13 +55,15 @@ namespace chaos {
                     direction(chaos::DataType::Bidirectional),
                     type(chaos::DataType::TYPE_UNDEFINED),
                     binary_subtype_list(),
-                    binary_cardinality(0){}
+                    binary_cardinality(0),inc("0"){}
                     
                     DatasetAttribute(const DatasetAttribute& copy_src):
                     name(copy_src.name),
                     description(copy_src.description),
                     direction(copy_src.direction),
                     type(copy_src.type),
+                    inc(copy_src.inc),
+                    unit(copy_src.unit),
                     binary_subtype_list(copy_src.binary_subtype_list),
                     binary_cardinality(copy_src.binary_cardinality){}
                     
@@ -66,6 +72,8 @@ namespace chaos {
                         description = rhs.description;
                         direction = rhs.direction;
                         type = rhs.type;
+                        inc=rhs.inc;
+                        unit=rhs.unit;
                         binary_subtype_list = rhs.binary_subtype_list;
                         binary_cardinality = rhs.binary_cardinality;
                         return *this;
@@ -97,6 +105,11 @@ namespace chaos {
                         dataWrapped().min_value = CDW_GET_SRT_WITH_DEFAULT(serialized_data, chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_MIN_RANGE, "");
                         dataWrapped().max_value = CDW_GET_SRT_WITH_DEFAULT(serialized_data, chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_MAX_RANGE, "");
                         dataWrapped().default_value = CDW_GET_SRT_WITH_DEFAULT(serialized_data, chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_DEFAULT_VALUE, "");
+                        dataWrapped().inc = CDW_GET_SRT_WITH_DEFAULT(serialized_data, chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_INCREMENT, "0");
+                        dataWrapped().unit = CDW_GET_SRT_WITH_DEFAULT(serialized_data, chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_UNIT, "NA");
+                        dataWrapped().conv = CDW_GET_SRT_WITH_DEFAULT(serialized_data, chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_CONVFACT, "1");
+                        dataWrapped().off = CDW_GET_SRT_WITH_DEFAULT(serialized_data, chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_OFFSET, "0");
+
                         dataWrapped().binary_cardinality = CDW_GET_INT32_WITH_DEFAULT(serialized_data, chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_BINARY_CARDINALITY, 0);
                         
                         if(dataWrapped().type == DataType::TYPE_BYTEARRAY) {
@@ -127,6 +140,12 @@ namespace chaos {
                         data_serialized->addStringValue(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_MIN_RANGE, dataWrapped().min_value);
                         data_serialized->addStringValue(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_MAX_RANGE, dataWrapped().max_value);
                         data_serialized->addStringValue(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_DEFAULT_VALUE, dataWrapped().default_value);
+                        data_serialized->addStringValue(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_INCREMENT, dataWrapped().inc);
+                        data_serialized->addStringValue(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_UNIT, dataWrapped().unit);
+                        
+                        data_serialized->addStringValue(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_CONVFACT, dataWrapped().conv);
+                        data_serialized->addStringValue(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_OFFSET, dataWrapped().off);
+
                         data_serialized->addInt32Value(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_BINARY_CARDINALITY, dataWrapped().binary_cardinality);
                         if((dataWrapped().type == DataType::TYPE_BYTEARRAY) &&
                            dataWrapped().binary_subtype_list.size()) {

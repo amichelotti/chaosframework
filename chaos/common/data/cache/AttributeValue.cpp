@@ -112,6 +112,7 @@ bool AttributeValue::setStringValue(const std::string& value,
     std::strncpy(static_cast<char*>(value_buffer),
                  value.c_str(),
                  size);
+   // AVLDBG_<<" SET STRING VALUE:"<<static_cast<char*>(value_buffer)<<" size:"<<size<< " original size:"<<value.size();
     return true;
 }
 
@@ -120,7 +121,9 @@ bool AttributeValue::setStringValue(const std::string& value,
  ---------------------------------------------------------------------------------*/
 bool AttributeValue::setValue(CDataWrapper& attribute_value,
                               bool tag_has_changed) {
+  //  AVLDBG_<<" SET VALUE:"<<attribute_value.getJSONString();
 	attribute_value.copyAllTo(cdvalue);
+    setStringValue(attribute_value.getCompliantJSONString(),tag_has_changed,true);
 	//set the relative field for set has changed
 	if(tag_has_changed) sharedBitmapChangedAttribute->set(index);
 	 return true;
@@ -167,13 +170,13 @@ bool AttributeValue::setValue(const CDataVariant& attribute_value,
             break;
         }
         case DataType::TYPE_CLUSTER:
+
         case DataType::TYPE_STRING: {
             const std::string value = attribute_value.asString();
-            if(!grow((uint32_t)value.size())) return false;
+            if(!grow((uint32_t)value.size()+1)) return false;
             //copy string to buffer
-            std::memcpy(value_buffer,
-                        value.c_str(),
-                        value.size());
+            std::strncpy((char*)value_buffer,
+                        value.c_str(),value.size()+1);
             break;
         }
             
@@ -258,12 +261,12 @@ bool AttributeValue::isGood() {
 /*---------------------------------------------------------------------------------
  
  ---------------------------------------------------------------------------------*/
-CDataWrapper *AttributeValue::getValueAsCDatawrapperPtr(bool from_json) {
-    CDataWrapper *result = NULL;
+CDWUniquePtr AttributeValue::getValueAsCDatawrapperPtr(bool from_json) {
+    CDWUniquePtr result;
     if(!from_json) {
-        result = new CDataWrapper((const char *)value_buffer);
+        result.reset(new CDataWrapper((const char *)value_buffer));
     } else {
-        result = new CDataWrapper();
+        result.reset(new CDataWrapper());
         result->setSerializedJsonData((const char *)value_buffer);
     }
     return result;
@@ -272,7 +275,7 @@ CDataWrapper *AttributeValue::getValueAsCDatawrapperPtr(bool from_json) {
 /*---------------------------------------------------------------------------------
  
  ---------------------------------------------------------------------------------*/
-void AttributeValue::writeToCDataWrapper(CDataWrapper& data_wrapper) {
+void AttributeValue::writeToCDataWrapper( CDataWrapper& data_wrapper) {
     switch(type) {
         case chaos::DataType::TYPE_BYTEARRAY:{
             switch(sub_type.size()) {
@@ -288,8 +291,12 @@ void AttributeValue::writeToCDataWrapper(CDataWrapper& data_wrapper) {
         }
         case chaos::DataType::TYPE_CLUSTER:{
             CDataWrapper p;
-            p.setSerializedJsonData((const char*)value_buffer);
+            if(value_buffer && ((*(const char *)value_buffer)!=0)){
+                p.setSerializedJsonData((const char*)value_buffer);
+            }
             data_wrapper.addCSDataValue(name,p);
+
+            
             break;
         }
         case chaos::DataType::TYPE_STRING:{

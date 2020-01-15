@@ -22,7 +22,8 @@
 #include "RpcClient.h"
 #include <chaos/common/global.h>
 #include <chaos/common/configuration/GlobalConfiguration.h>
-
+#include <chaos/common/rpc/RpcServer.h>
+#include <chaos/common/rpc/RpcServerHandler.h>
 #define RPCC_LAPP INFO_LOG(RpcClient)
 #define RPCC_LDBG DBG_LOG(RpcClient)
 #define RPCC_LERR ERR_LOG(RpcClient)
@@ -37,6 +38,8 @@ RpcClient::RpcClient(const std::string& alias):
 NamedService(alias),
 syncrhonous_call(GlobalConfiguration::getInstance()->getConfiguration()->getBoolValue(InitOption::OPT_RPC_SYNC_ENABLE)),
 server_handler(NULL){}
+
+RpcClient::~RpcClient(){}
 
 /*!
  Forward to dispatcher the error during the forwarding of the request message
@@ -135,11 +138,19 @@ void RpcClient::forwadSubmissionResultError(NFISharedPtr message_info,
 }
 
 
-void RpcClient::setServerHandler(RpcServerHandler *_server_handler) {
+void RpcClient::setServerHandler(chaos::common::rpc::RpcServerHandler *_server_handler) {
     server_handler = _server_handler;
 }
 
 //! return the numebr of message that are waiting to be sent
 uint64_t RpcClient::getMessageQueueSize() {
     return 0;
+}
+
+void RpcClient::setSynchronousRPCState(bool _syncrhonous_call) {
+    syncrhonous_call = _syncrhonous_call;
+}
+
+bool RpcClient::getynchronousRPCState()const {
+    return syncrhonous_call;
 }

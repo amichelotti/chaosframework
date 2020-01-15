@@ -27,6 +27,10 @@ NamedService(alias),
 port_number(0),
 command_handler(NULL){}
 
+void RpcServer::setAlternatePortAddress(int new_port_address) {
+    port_number = new_port_address;
+}
+
 /*!
  Return the published port
  */
@@ -37,7 +41,7 @@ int RpcServer::getPublishedPort() {
 /*
  set the command dispatcher associated to the instance of rpc adapter
  */
-void RpcServer::setCommandDispatcher(RpcServerHandler *new_command_handler) {
+void RpcServer::setCommandDispatcher(chaos::common::rpc::RpcServerHandler *new_command_handler) {
     command_handler = new_command_handler;
 }
 

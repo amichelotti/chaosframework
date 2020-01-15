@@ -187,6 +187,9 @@ namespace chaos{
                 
                 //! get control unit load parameter
                 const std::string& getCUParam();
+                 //! get control unit load parameter as CDataWrapper
+                 // return 0 if success
+                int getCUParam(chaos::common::data::CDataWrapper&p);
                 
                 //!return true if the cu load paramete are in json format
                 const bool isCUParamInJson();
@@ -317,6 +320,7 @@ namespace chaos{
                 //! fast access for thread scheduledaly cached value
                 AttributeValue *thread_schedule_daly_cached_value;
                 
+                ChaosUniquePtr<chaos::common::data::CDataWrapper> drv_info;
                 //! check list of services for initialization and start state
                 chaos::common::utility::AggregatedCheckList check_list_sub_service;
                 
@@ -324,7 +328,7 @@ namespace chaos{
                 handler::DatasetAttributeHandler dataset_attribute_manager;
                 
                 //! init configuration
-                ChaosUniquePtr<chaos::common::data::CDataWrapper> init_configuration;
+                ChaosUniquePtr<chaos::common::data::CDataWrapper> init_configuration,cu_ds_init;
                 void _initDrivers();
                 void _initChecklist();
                 void _initPropertyGroup();
@@ -641,6 +645,12 @@ namespace chaos{
                 //!check if attribute hase been autorized by handler
                 bool isInputAttributeChangeAuthorizedByHandler(const std::string& attr_name);
                 
+
+                //-- driver information publishing on custom
+                void setDriverInfo(const chaos::common::data::CDataWrapper& info);
+
+                ChaosUniquePtr<chaos::common::data::CDataWrapper> getDriverInfo();
+
                 //---------------alarm api-------------
                 //!create a new alarm into the catalog
                 void addStateVariable(chaos::cu::control_manager::StateVariableType variable_type,
@@ -721,7 +731,68 @@ namespace chaos{
                                                                                          attribute_name,
                                                                                          handler_ptr);
                 }
-                
+
+                template<typename O>
+                bool addCDWHandlerOnInputAttributeName(O* object_reference,
+                                                           typename handler::DatasetAttributeCDWHandlerDescription<O>::HandlerDescriptionActionPtr handler_ptr,
+                                                           const std::string& attribute_name) {
+                    return dataset_attribute_manager.addCDWHandlerOnAttributeName<O>(object_reference,
+                                                                                        std::string(chaos::DataPackID::INPUT_DATASET_ID)+"/"+ attribute_name,
+                                                                                        handler_ptr);
+                }
+                template<typename O>
+                bool addHandlerOnCustomDriverAttributes(O* object_reference,
+                                                           typename handler::DatasetAttributeCDWHandlerDescription<O>::HandlerDescriptionActionPtr handler_ptr) {
+
+                      if(drv_info.get()){
+                        std::vector<std::string> keys;
+
+                        drv_info->getAllKey(keys);
+                        for(std::vector<std::string>::iterator i=keys.begin();i!=keys.end();i++){
+                            dataset_attribute_manager.addCDWHandlerOnAttributeName<O>(object_reference,
+                                                                                        std::string(chaos::DataPackID::CUSTOM_DATASET_ID)+"/"+*i,
+                                                                                        handler_ptr);
+                        }
+                        return true;
+                      }
+                                                       
+                                                               
+                    return false;
+                }
+                 template<typename O>
+                bool addInputAndHandlerOnEachKeyOf(O* object_reference,
+                                                    typename handler::DatasetAttributeVariantHandlerDescription<O>::HandlerDescriptionActionPtr handler_ptr,
+                                                    const chaos::common::data::CDataWrapper& attribute_name) {
+                                                        std::vector<std::string> keys;
+                                                        attribute_name.getAllKey(keys);
+                                                        for(std::vector<std::string>::iterator i=keys.begin();i!=keys.end();i++){
+                                                            std::string name=*i;
+                                                            std::string desc=*i;
+                                                            int typ=chaos::DataType::TYPE_UNDEFINED;
+                                                            if(attribute_name.isCDataWrapperValue(*i)){
+                                                                 ChaosUniquePtr<chaos::common::data::CDataWrapper> ret=attribute_name.getCSDataValue(name);
+                                                                 if(ret->hasKey(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_TYPE)){
+                                                                     //assume attribute described in chaos format
+                                                                     typ=ret->getInt32Value(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_TYPE);
+                                                                 }
+                                                                 if(ret->hasKey(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_DESCRIPTION)){
+                                                                     desc=ret->getStringValue(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_DESCRIPTION);
+                                                                 }
+                                                            } else {
+                                                                typ=attribute_name.getValueType(name);
+                                                            }
+                                                            if(typ!=chaos::DataType::TYPE_UNDEFINED){
+                                                                addAttributeToDataSet(name, desc, (chaos::DataType::DataType)typ, DataType::Input);
+                                                                if(handler_ptr!=NULL){
+                                                                    addVariantHandlerOnInputAttributeName<O>(object_reference,handler_ptr,name);
+
+                                                                }
+                                                            }
+                                                            
+                                                        }
+                                                        return true;
+                                                    }
+                CUStateKey::ControlUnitState getState();
                 bool removeHandlerOnAttributeName(const std::string& attribute_name) {
                     return dataset_attribute_manager.removeHandlerOnAttributeName(attribute_name);
                 }

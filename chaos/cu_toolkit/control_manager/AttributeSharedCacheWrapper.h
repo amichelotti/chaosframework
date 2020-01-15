@@ -67,6 +67,7 @@ namespace chaos{
 								   const std::string& attribute_name) {
 					CHAOS_ASSERT(attribute_value_shared_cache)
 					AttributeValue *value_setting = attribute_value_shared_cache->getAttributeValue(domain, attribute_name);
+					
 					return (const T *)value_setting->getValuePtr<T>();
 				}
 				
@@ -79,6 +80,7 @@ namespace chaos{
 					return *value_setting->getValuePtr<T>();
 				}
 				
+				chaos::common::data::CDWUniquePtr getCDValue(SharedCacheDomain domain,const std::string& attribute_name);
 				//! Return the value object for the domain and the string key
 				template<typename T>
 				void getCachedOutputAttributeValue(const std::string& attribute_name,
@@ -144,8 +146,31 @@ namespace chaos{
 					}
 				}
 				
+				template <typename T>
+				void setOutputAttributeValue(const std::string& attribute_name,
+											 T value){
+												 setOutputAttributeValue(attribute_name,&value,sizeof(T));
+											 }
+				template <typename T>
+				void setInputAttributeValue(const std::string& attribute_name,
+											 T value){
+												 setInputAttributeValue(attribute_name,&value,sizeof(T));
+											 }
+				void setOutputAttributeValue(const std::string& attribute_name,
+											 const std::string& value){
+												 setOutputAttributeValue(attribute_name,(void*)value.c_str(),value.size()+1);
+											 }
+				void setInputAttributeValue(const std::string& attribute_name,
+											 const std::string& value){
+												 setInputAttributeValue(attribute_name,(void*)value.c_str(),value.size()+1);
+											 }
 				//! Set the value for a determinated variable in a determinate domain
 				void setOutputAttributeValue(const std::string& attribute_name,
+											 void * value,
+											 uint32_t size);
+
+				//! Set the value for a determinated variable in a determinate domain
+				void setInputAttributeValue(const std::string& attribute_name,
 											 void * value,
 											 uint32_t size);
 				//! Set the value for a determinated variable in a determinate domain
@@ -184,11 +209,16 @@ namespace chaos{
 				void addCustomAttribute(const std::string&  name,
 										uint32_t max_size,
 										chaos::DataType::DataType type);
-				
+				//! Add a new variable
+				void addCustomAttribute(const std::string&  name,
+										 const chaos::common::data::CDataWrapper& value);
 				//! Set the value for a determinated variable in a determinate domain
 				void setCustomAttributeValue(const std::string& attribute_name,
 											 void * value,
 											 uint32_t size);
+
+				void setCustomAttributeValue(const std::string& attribute_name,
+											 const chaos::common::data::CDataWrapper& value);							 
 				//! Set the value for a determinated variable in a determinate domain
 				void setCustomAttributeValue(VariableIndexType attribute_index,
 											 void * value,

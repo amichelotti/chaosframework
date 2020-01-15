@@ -26,14 +26,9 @@
 #include <vector>
 #include <boost/shared_ptr.hpp>
 
-#include <chaos/common/global.h>
-#include <chaos/common/data/CDataWrapper.h>
-#include <chaos/common/exception/exception.h>
-#include <chaos/common/configuration/GlobalConfiguration.h>
 #include <chaos/common/utility/StartableService.h>
 #include <chaos/common/utility/NamedService.h>
 #include <chaos/common/rpc/RpcMessageForwarder.h>
-#include <chaos/common/rpc/RpcServerHandler.h>
 
 using namespace chaos::common::network;
 namespace chaos_data = chaos::common::data;
@@ -46,7 +41,7 @@ namespace chaos {
      */
     typedef struct {
         //! list of the server where to send data
-        vector<string> remoteServers;
+        std::vector<std::string> remoteServers;
         //message to forward to remote server
         chaos_data::CDataWrapper *message;
     } MessageForwardingInfo;
@@ -54,6 +49,10 @@ namespace chaos {
     namespace common {
         namespace network {
             class NetworkBroker;
+        }
+        namespace rpc{
+            class RpcServerHandler;
+
         }
     }
     
@@ -67,7 +66,7 @@ namespace chaos {
     public common::utility::NamedService {
         //friend class chaos::common::network::NetworkBroker;
         //! handler to the dispatcher to forward error on data forwarding
-        RpcServerHandler *server_handler;
+        chaos::common::rpc::RpcServerHandler *server_handler;
     protected:
         
         bool syncrhonous_call;
@@ -93,8 +92,8 @@ namespace chaos {
          Constructor di default per i
          */
         RpcClient(const std::string& alias);
-        
-        virtual void setServerHandler(RpcServerHandler *_server_handler);
+        virtual ~RpcClient();
+        virtual void setServerHandler(chaos::common::rpc::RpcServerHandler *_server_handler);
         
         //! return the numebr of message that are waiting to be sent
         /*!
@@ -102,6 +101,10 @@ namespace chaos {
          of internal queue message
          */
         virtual uint64_t getMessageQueueSize();
+        
+        //! Set dinamically the synchronousRpcFeautres
+        void setSynchronousRPCState(bool _syncrhonous_call);
+        bool getynchronousRPCState()const;
     };
 }
 #endif

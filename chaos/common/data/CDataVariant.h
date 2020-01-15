@@ -23,7 +23,7 @@
 #define __CHAOSFramework__CDataVariant_h
 
 #include <chaos/common/chaos_constants.h>
-#include <chaos/common/data/CDataWrapper.h>
+//#include <chaos/common/data/CDataWrapper.h>
 #include <chaos/common/data/CDataBuffer.h>
 
 #include <boost/variant.hpp>
@@ -67,6 +67,9 @@ t operator()(const ChaosSharedPtr<chaos::common::data::CDataWrapper>& buffer) co
 namespace chaos {
     namespace common {
         namespace data {
+            class CDataWrapper;
+            typedef ChaosUniquePtr<chaos::common::data::CDataWrapper> CDWUniquePtr;
+
             CHAOS_VARIANT_DEFINE_VISITOR_WITH_TYPE(bool);
             CHAOS_VARIANT_DEFINE_VISITOR_WITH_TYPE(int32_t);
             CHAOS_VARIANT_DEFINE_VISITOR_WITH_TYPE(uint32_t);
@@ -112,7 +115,8 @@ namespace chaos {
                 //! take the ownership of the object
                 explicit CDataVariant(CDBufferUniquePtr buffer_value);
                 explicit CDataVariant(CDataWrapper *buffer_value);
-                
+                explicit CDataVariant(CDWUniquePtr buffer_value);
+
                 CDataVariant(const CDataVariant& to_copy);
                 
                 CDataVariant();
@@ -121,6 +125,9 @@ namespace chaos {
                 
                 DataType::DataType getType() const;
                 bool isValid() const;
+                
+                char asChar() const;
+                operator char() const;
                 
                 int32_t asInt32() const;
                 operator int32_t() const;
@@ -133,7 +140,7 @@ namespace chaos {
                 
                 uint64_t asUInt64() const;
                 operator uint64_t() const;
-                
+    
                 double asDouble() const;
                 operator double() const;
                 

@@ -19,7 +19,7 @@ public:
         StateInfo(const StateInfo& _state_info);
     };
 
-    CStateVisiblePushButton(QWidget *parent = 0);
+    CStateVisiblePushButton(QWidget *parent = nullptr);
     unsigned int currentState();
     void setButtonState(unsigned int new_state);
     unsigned int addState(const StateInfo& new_state);
@@ -33,7 +33,7 @@ protected:
 private:
     unsigned int current_state;
     QReadWriteLock       map_lock;
-    QMap<int, StateInfo> map_state_info;
+    QMap<unsigned int, StateInfo> map_state_info;
 };
 
 #endif // CSTATEVISIBLEPUSHBUTTON_H

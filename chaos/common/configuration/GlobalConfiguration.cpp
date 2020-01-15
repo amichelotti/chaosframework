@@ -54,7 +54,9 @@ void GlobalConfiguration::preParseStartupParameters()  {
         addOption(InitOption::OPT_HELP, "Produce help message");
         addOption<std::string>(InitOption::OPT_CONF_FILE,"File configuration path");
         addOption(InitOption::OPT_VERSION, "Printout version");
-        
+        addOption(InitOption::OPT_NODE_DESC, po::value< std::string >()->default_value(""), "A string containing a brief description of the node");
+        addOption(InitOption::OPT_DATA_DIR, po::value< std::string >()->default_value("."), "A data directory where the node can dump data and check points");
+
         addOption(InitOption::OPT_LOG_ON_CONSOLE, po::value< bool >()->zero_tokens(), "Specify when the log must be forwarded on console");
         addOption(InitOption::OPT_LOG_ON_SYSLOG, po::value< bool >()->zero_tokens(), "Specify when the log must be forwarded on syslog server");
         addOption(InitOption::OPT_LOG_SYSLOG_SERVER, po::value< string >()->default_value("localhost"), "Specify the logsrv hostname");
@@ -64,6 +66,8 @@ void GlobalConfiguration::preParseStartupParameters()  {
         addOption(InitOption::OPT_LOG_LEVEL, po::value< string >()->default_value("info"), "Specify the level of the log using the value [debug, info, notice, warning, fatal]");
         addOption(InitOption::OPT_LOG_MAX_SIZE_MB, po::value< uint32_t >()->default_value(10), "Specify the max size in megabytes fo the file log");
         addOption(InitOption::OPT_METADATASERVER_ADDRESS, po::value< std::vector< std::string > >(), "Metadataserver server:port address");
+        addOption(InitOption::OPT_METADATASERVER_AUTO_CONF, po::value< bool >()->zero_tokens(), "Enable auto configuration for metadataserver endpoints");
+        
         addOption(InitOption::OPT_DATA_IO_IMPL, po::value< string >()->default_value("IODirect"), "Specify the data io implementation");
         addOption(InitOption::OPT_DIRECT_IO_IMPLEMENTATION, po::value< string >()->default_value("ZMQ"), "Specify the direct io implementation");
         addOption(InitOption::OPT_DIRECT_IO_PRIORITY_SERVER_PORT, po::value<uint32_t>()->default_value(_DIRECT_IO_PRIORITY_PORT), "DirectIO priority server port");
@@ -155,6 +159,18 @@ void GlobalConfiguration::loadStartupParameter(int argc, const char* argv[])  {
     }
 }
 
+void GlobalConfiguration::loadStartupParameterFromEnv()  {
+    try{
+        //
+        po::store(po::parse_environment(desc, "CHAOS-"), vm);
+        po::notify(vm);
+    }catch (po::error &e) {
+        //write error also on cerr
+        std::cerr << e.what();
+        throw CException(0, e.what(), __PRETTY_FUNCTION__);
+    }
+}
+
 void GlobalConfiguration::loadStreamParameter(std::istream &config_file)   {
     try{
         //
@@ -164,7 +180,6 @@ void GlobalConfiguration::loadStreamParameter(std::istream &config_file)   {
         //write error also on cerr
         std::cerr << e.what();
         throw CException(0, e.what(), __PRETTY_FUNCTION__);
-        
     }
 }
 
@@ -185,28 +200,18 @@ void GlobalConfiguration::scanOption()   {
         //write error also on cerr
         std::cerr << e.what();
         throw CException(0, e.what(), __PRETTY_FUNCTION__);
-        
     }
-    
-    
 }
 
 void GlobalConfiguration::parseParameter(const po::basic_parsed_options<char>& optionsParser) {
-    //int rpcServerPort;
-    //int rpcServerThreadNumber;
-    //string metadataServerAddress;
-    //vector<string> liveDataServer;
     try{
-        //
         po::store(optionsParser, vm);
         po::notify(vm);
     }catch (po::error &e) {
         //write error also on cerr
         std::cerr << e.what();
         throw CException(0, e.what(), "GlobalConfiguration::preParseStartupParameters");
-        
     }
-    
     //scan option
     scanOption();
     
@@ -235,6 +240,9 @@ void GlobalConfiguration::checkDefaultOption()  {
     CHECK_AND_DEFINE_OPTION(string, logFilePath, InitOption::OPT_LOG_FILE);
     configuration->addStringValue(InitOption::OPT_LOG_FILE, logFilePath);
     
+    CHECK_AND_DEFINE_OPTION(string, nodeDesc, InitOption::OPT_NODE_DESC);
+    configuration->addStringValue(InitOption::OPT_NODE_DESC, nodeDesc);
+
     CHECK_AND_DEFINE_OPTION(string, logLevel, InitOption::OPT_LOG_LEVEL)
     configuration->addInt32Value(InitOption::OPT_LOG_LEVEL, filterLogLevel(logLevel));
     
@@ -323,6 +331,9 @@ void GlobalConfiguration::checkDefaultOption()  {
         addMetadataServerAddress("localhost:5000");
     }
     finalizeMetadataServerAddress();
+    
+    CHECK_AND_DEFINE_BOOL_ZERO_TOKEN_OPTION(auto_conf_mds_endpoint, InitOption::OPT_METADATASERVER_AUTO_CONF);
+    configuration->addBoolValue(InitOption::OPT_METADATASERVER_AUTO_CONF, auto_conf_mds_endpoint);
     
     CHECK_AND_DEFINE_BOOL_ZERO_TOKEN_OPTION(enable_time_calibration, InitOption::OPT_TIME_CALIBRATION);
     configuration->addBoolValue(InitOption::OPT_TIME_CALIBRATION, enable_time_calibration);
@@ -483,7 +494,7 @@ string GlobalConfiguration::getMetadataServerAddress() {
     return server_array->getStringElementAtIndex(0);
 }
 
-VectorMetadatserver GlobalConfiguration::getMetadataServerAddressList() {
+VectorNetworkAddress GlobalConfiguration::getMetadataServerAddressList() {
     std::vector<CNetworkAddress> result;
     CMultiTypeDataArrayWrapperSPtr server_array = configuration->getVectorValue(InitOption::OPT_METADATASERVER_ADDRESS);
     for(int idx = 0;
@@ -499,6 +510,11 @@ VectorMetadatserver GlobalConfiguration::getMetadataServerAddressList() {
  */
 string GlobalConfiguration::getLocalServerAddress() {
     return configuration->getStringValue("local_ip");
+}
+
+std::string GlobalConfiguration::getDesc(){
+    return configuration->getStringValue(chaos::InitOption::OPT_NODE_DESC);
+
 }
 
 /*

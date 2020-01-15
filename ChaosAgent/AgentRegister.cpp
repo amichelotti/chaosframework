@@ -155,6 +155,13 @@ ChaosUniquePtr<chaos::common::data::CDataWrapper> AgentRegister::getAgentRegistr
                            chaos::NodeType::NODE_TYPE_AGENT);
     result->addStringValue(NodeDefinitionKey::NODE_RPC_ADDR,
                            chaos::GlobalConfiguration::getInstance()->getLocalServerAddressAnBasePort());
+    result->addStringValue(NodeDefinitionKey::NODE_HOST_NAME,
+                           chaos::GlobalConfiguration::getInstance()->getHostname());
+    if(chaos::GlobalConfiguration::getInstance()->getDesc()!=""){
+        result->addStringValue(NodeDefinitionKey::NODE_DESC,
+                           chaos::GlobalConfiguration::getInstance()->getDesc());
+    }
+    result->addStringValue("instance_name",ChaosAgent::getInstance()->settings.agent_uid);
     result->addStringValue(NodeDefinitionKey::NODE_RPC_DOMAIN,
                            rpc_domain);
     result->addInt64Value(NodeDefinitionKey::NODE_TIMESTAMP,
@@ -187,7 +194,7 @@ void AgentRegister::timeout() {
             HealtManager::getInstance()->addNodeMetricValue(ChaosAgent::getInstance()->settings.agent_uid,
                                                             NodeHealtDefinitionKey::NODE_HEALT_STATUS,
                                                             NodeHealtDefinitionValue::NODE_HEALT_STATUS_UNLOAD);
-            AsyncCentralManager::getInstance()->removeTimer(this);
+            TimerHandler::stopMe();
             HealtManager::getInstance()->removeNode(ChaosAgent::getInstance()->settings.agent_uid);
             break;
         case AgentRegisterStateStartRegistering: {
@@ -212,7 +219,7 @@ void AgentRegister::timeout() {
                                                             NodeHealtDefinitionKey::NODE_HEALT_STATUS,
                                                             NodeHealtDefinitionValue::NODE_HEALT_STATUS_LOAD);
             //stop timer
-            AsyncCentralManager::getInstance()->removeTimer(this);
+            TimerHandler::stopMe();
             
             //register all action
             try{

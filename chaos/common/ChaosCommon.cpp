@@ -19,6 +19,8 @@
  * permissions and limitations under the Licence.
  */
 #include <chaos/common/ChaosCommon.h>
+#include <chaos/common/chaos_errors.h>
+#include <chaos/common/network/NetworkBroker.h>
 
 #if CHAOS_PROMETHEUS
 #include <chaos/common/metric/MetricManager.h>
@@ -40,6 +42,7 @@
 #include <signal.h>
 #include <windows.h>
 #include "ChaosCommonWin.h"
+#include "../cu_toolkit/windowsCompliant.h"
 
 #endif
 using namespace chaos;
@@ -50,7 +53,7 @@ using namespace chaos::common::async_central;
 #ifndef _WIN32
 //http://stackoverflow.com/questions/11465148/using-sigaction-c-cpp
 void crit_err_hdlr(int sig_num, siginfo_t *info, void *ucontext) {
-    std::cerr << "signal " << sig_num
+    std::cerr << "SIGNAL " << sig_num
     << " (" << strsignal(sig_num) << "), address is "
     << info->si_addr << std::endl
     << std::endl;
@@ -116,7 +119,7 @@ void crit_err_hdlr(int sig_num, siginfo_t *info, void *ucontext) {
 #else
 
 void crit_err_hdlr(int sig_num) {
-    std::cerr << "signal " << sig_num << " (" << strsignal(sig_num) << ")";
+    std::cerr << "SIGNAL " << sig_num << " (" << strsignal(sig_num) << ")";
     
     void *       array[50];
     SYMBOL_INFO *symbol;
@@ -162,11 +165,13 @@ ChaosAbstractCommon::ChaosAbstractCommon()
 ChaosAbstractCommon::~ChaosAbstractCommon() {}
 
 void ChaosAbstractCommon::preparseConfigFile(std::istream &config_file_stream) {
+    GlobalConfiguration::getInstance()->loadStartupParameterFromEnv();
     GlobalConfiguration::getInstance()->loadStreamParameter(config_file_stream);
     GlobalConfiguration::getInstance()->scanOption();
 }
 
 void ChaosAbstractCommon::preparseCommandOption(int argc, const char *argv[]) {
+    GlobalConfiguration::getInstance()->loadStartupParameterFromEnv();
     GlobalConfiguration::getInstance()->loadStartupParameter(argc, argv);
     GlobalConfiguration::getInstance()->scanOption();
     

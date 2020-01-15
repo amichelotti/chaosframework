@@ -5,13 +5,16 @@
 #-------------------------------------------------
 
 QT += core gui sql
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
+
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport uitools qml
 
 PRECOMPILED_HEADER = precomp_header.h
+CONFIG += c++11
 CONFIG += precompile_header
-
+CONFIG+=sdk_no_version_check
 QMAKE_CXXFLAGS += -std=c++11
-#QMAKE_MAC_SDK = macosx10.12
+
+include(widget/designerui.pri)
 
 TARGET = ccs
 TEMPLATE = app
@@ -31,6 +34,7 @@ unix:!macx {
 macx:{
     CONFIG += app_bundle
     LIBS +=  -lchaos_common
+    QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.14
 }
 
 LIBS +=     -ljsoncpp\
@@ -189,7 +193,10 @@ SOURCES += main.cpp\
     language_editor/LuaLanguageSupport.cpp \
     language_editor/CLINGLanguageSupport.cpp \
     widget/StorageBurst.cpp \
-    widget/CLedIndicatorCUBusy.cpp
+    widget/CLedIndicatorCUBusy.cpp \
+    widget/designer/CUNodeRoot.cpp \
+    widget/designer/ChaosUISynopticLoaderWindow.cpp \
+    widget/designer/ScriptSignalDialog.cpp
 
 HEADERS  += \
     search/SearchNodeResult.h \
@@ -368,7 +375,10 @@ HEADERS  += \
     language_editor/LuaLanguageSupport.h \
     language_editor/CLINGLanguageSupport.h \
     widget/StorageBurst.h \
-    widget/CLedIndicatorCUBusy.h
+    widget/CLedIndicatorCUBusy.h \
+    widget/designer/CUNodeRoot.h \
+    widget/designer/ChaosUISynopticLoaderWindow.h \
+    widget/designer/ScriptSignalDialog.h
 
 FORMS    += \
     search/searchnoderesult.ui \
@@ -412,7 +422,9 @@ FORMS    += \
     widget/ChaosStorageTypeWidget.ui \
     preference/SelectNetworkDomain.ui \
     node/connection_manager/ConnectionEditor.ui \
-    widget/StorageBurst.ui
+    widget/StorageBurst.ui \
+    widget/designer/ChaosUISynopticLoaderWindow.ui \
+    widget/designer/ScriptSignalDialog.ui
 
 DISTFILES += \
     dark_orange.stylesheet \

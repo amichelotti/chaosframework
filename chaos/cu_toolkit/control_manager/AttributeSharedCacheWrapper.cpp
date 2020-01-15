@@ -64,7 +64,15 @@ void AttributeSharedCacheWrapper::setOutputAttributeValue(VariableIndexType attr
 												   value,
 												   size);
 }
-
+void AttributeSharedCacheWrapper::setInputAttributeValue(const std::string& attribute_name,
+																void * value,
+																uint32_t size) {
+	CHAOS_ASSERT(attribute_value_shared_cache)
+	attribute_value_shared_cache->setAttributeValue(DOMAIN_INPUT,
+												   attribute_name,
+												   value,
+												   size);
+}
 bool AttributeSharedCacheWrapper::setOutputAttributeNewSize(const std::string& attribute_name,
 															uint32_t new_size,
                                                             bool clear_mem) {
@@ -108,7 +116,17 @@ void AttributeSharedCacheWrapper::getAttributeNames(SharedCacheDomain domain,
 	CHAOS_ASSERT(attribute_value_shared_cache)
 	attribute_value_shared_cache->getAttributeNames(domain, names);
 }
+//! Add a new variable
+void AttributeSharedCacheWrapper::addCustomAttribute(const std::string&  name,
+										 const chaos::common::data::CDataWrapper& value){
+									CHAOS_ASSERT(attribute_value_shared_cache);
+									 std::string svalue=value.getCompliantJSONString();
 
+	attribute_value_shared_cache->addAttribute(DOMAIN_CUSTOM,
+											   name,
+											   svalue.size()+1,
+											   chaos::DataType::TYPE_CLUSTER);		 
+										 }
 // Add a new variable
 void AttributeSharedCacheWrapper::addCustomAttribute(const std::string&  name,
 													 uint32_t max_size,
@@ -118,6 +136,22 @@ void AttributeSharedCacheWrapper::addCustomAttribute(const std::string&  name,
 											   name,
 											   max_size,
 											   type);
+}
+void AttributeSharedCacheWrapper::setCustomAttributeValue(const std::string& attribute_name,
+											 const chaos::common::data::CDataWrapper& value){
+												 std::string svalue=value.getCompliantJSONString();
+												 setCustomAttributeValue(attribute_name,(void*)svalue.c_str(),(uint32_t)svalue.size()+1);
+
+											 }
+chaos::common::data::CDWUniquePtr AttributeSharedCacheWrapper::getCDValue(SharedCacheDomain domain,const std::string& attribute_name){
+	AttributeValue *value_setting = attribute_value_shared_cache->getAttributeValue(domain, attribute_name);
+	chaos::common::data::CDWUniquePtr dret(new chaos::common::data::CDataWrapper());
+	if(value_setting->type==chaos::DataType::TYPE_CLUSTER){
+		const char* ret=value_setting->getValuePtr<char>();
+		dret->setSerializedJsonData(ret);
+		
+	}
+	return dret;
 }
 
 // Set the value for a determinated variable in a determinate domain

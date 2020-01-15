@@ -29,10 +29,12 @@
 #include <boost/ptr_container/ptr_vector.hpp>
 #include <boost/ptr_container/ptr_map.hpp>
 
-#include <chaos/common/data/entity_db/EntityDB.h>
+#include <chaos/common/chaos_types.h>
 #include <chaos/common/chaos_constants.h>
+#include <chaos/common/data/entity_db/EntityDB.h>
 
 #define CUSCHEMA_DEFAULT_STRING_LENGHT 4096
+
 namespace chaos {
     namespace common {
         namespace data {
@@ -59,6 +61,15 @@ namespace chaos {
                 string minRange;
                 //!defaultValue
                 string defaultValue;
+                //! valid minimum increment if applicable 0 otherwise
+                string increment;
+                //! units info
+                string unit;
+                 //! conversion factor
+                string convf;
+                //! conversion offset
+                string offset;
+               
                 //!Type of the value
                 DataType::DataType valueType;
                 //!Type of binary
