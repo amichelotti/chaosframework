@@ -62,6 +62,7 @@ PosixFile::~PosixFile() {}
 std::map<std::string,uint64_t> PosixFile::s_lastDirs;
 PosixFile::cacheRead_t PosixFile::s_lastAccessedDir;
 //ChaosSharedMutex PosixFile::devio_mutex;
+ChaosSharedMutex PosixFile::last_access_mutex;
 
 void PosixFile::calcFileDir(const std::string& prefix, const std::string& cu,const std::string& tag, uint64_t ts_ms, uint64_t seq, uint64_t runid, char* dir, char* fname) {
   // std::size_t found = cu.find_last_of("/");
@@ -78,7 +79,7 @@ void PosixFile::calcFileDir(const std::string& prefix, const std::string& cu,con
     snprintf(dir, MAX_PATH_LEN, "%s/%s/%.4d/%.2d/%.2d/%.2d", prefix.c_str(), cu.c_str(), tinfo.tm_year + 1900, tinfo.tm_mon+1, tinfo.tm_mday, tinfo.tm_hour);
   }
   // timestamp_runid_seq_ssss
-  snprintf(fname, MAX_PATH_LEN, "%llu_%llu_%.10llu", t, runid, seq);
+  snprintf(fname, MAX_PATH_LEN, "%llu_%llu_%.10llu", ts_ms, runid, seq);
 }
 
 int PosixFile::pushObject(const std::string&                       key,
@@ -90,7 +91,7 @@ int PosixFile::pushObject(const std::string&                       key,
     ERR << CHAOS_FORMAT("Object to store doesn't has the default key!\n %1%", % stored_object.getJSONString());
     return -1;
   }
-  const uint64_t ts = chaos::common::utility::TimingUtil::getTimeStamp();
+  const uint64_t ts = stored_object.getInt64Value(NodeHealtDefinitionKey::NODE_HEALT_MDS_TIMESTAMP);
   char     dir[MAX_PATH_LEN];
   char     f[MAX_PATH_LEN];
   int64_t seq,runid;
@@ -103,7 +104,7 @@ int PosixFile::pushObject(const std::string&                       key,
   seq=stored_object.getInt64Value(chaos::DataPackCommonKey::DPCK_SEQ_ID);
   runid=stored_object.getInt64Value(chaos::ControlUnitDatapackCommonKey::RUN_ID);
   calcFileDir(basedatapath, key,tag, ts,seq , runid, dir, f);
-  std::map<std::string,uint64_t>::iterator id=s_lastDirs.find(dir);
+  const std::map<std::string,uint64_t>::iterator id=s_lastDirs.find(dir);
   if((id==s_lastDirs.end())||(ts-id->second)>1000){
     boost::filesystem::path p(dir);
       if ((boost::filesystem::exists(p) == false)){
@@ -156,6 +157,20 @@ int PosixFile::getLastObject(const std::string&               key,
 
                                  return -1;
 }
+int PosixFile::removeRecursevelyUp(const boost::filesystem::path& p ){
+  if(p==basedatapath){
+    return 0;
+  }
+  
+  if(boost::filesystem::is_empty(p.parent_path())){
+    if(remove_all(p.parent_path())){
+      INFO<<"REMOVING "<<p.parent_path();
+
+      return removeRecursevelyUp(p.parent_path());
+    }
+  }
+  return 0;
+}
 
 //!delete objects that are contained between intervall (exstreme included)
 int PosixFile::deleteObject(const std::string& key,
@@ -171,7 +186,11 @@ int PosixFile::deleteObject(const std::string& key,
         boost::filesystem::path p(dir);
         if (boost::filesystem::exists(p) && is_directory(p)) {
           INFO<<"REMOVING "<<p;
-          remove_all(p);
+          if(remove_all(p)>0){
+            removeRecursevelyUp(p);
+            
+          }
+
           std::map<std::string,uint64_t>::iterator id=s_lastDirs.find(dir);
           if(id!=s_lastDirs.end()){
             s_lastDirs.erase(id);
@@ -217,11 +236,16 @@ int PosixFile::getFromPath(const std::string& dir,const uint64_t timestamp_from,
   uint64_t seqid    = last_record_found_seq.datapack_counter;
   uint64_t runid    = last_record_found_seq.run_id;
   int elements=0;
-      cacheRead_t::iterator di=s_lastAccessedDir.find(dir);
+      const cacheRead_t::iterator di=s_lastAccessedDir.find(dir);
       if(di==s_lastAccessedDir.end()){
         boost::filesystem::path p(dir);
 
        if (boost::filesystem::exists(p) && is_directory(p)) {
+         
+         {
+           ChaosWriteLock ll(last_access_mutex);
+           s_lastAccessedDir[dir].ts=chaos::common::utility::TimingUtil::getTimeStamp(); // create the element also
+         }
            ChaosWriteLock ll(s_lastAccessedDir[dir].devio_mutex);
 
            std::transform(directory_iterator(p), directory_iterator(), std::back_inserter(s_lastAccessedDir[dir].sorted_path), path_leaf_string());
@@ -231,11 +255,12 @@ int PosixFile::getFromPath(const std::string& dir,const uint64_t timestamp_from,
           s_lastAccessedDir[dir].ts=chaos::common::utility::TimingUtil::getTimeStamp();
        }
        }
+        ChaosReadLock ll(s_lastAccessedDir[dir].devio_mutex);
+
         for (std::vector<std::string>::iterator it = s_lastAccessedDir[dir].sorted_path.begin(); it != s_lastAccessedDir[dir].sorted_path.end(); it++) {
             uint64_t iseq, irunid, tim;
           
-            sscanf(it->c_str(), "%Lu_%llu_%llu", &tim, &irunid, &iseq);
-            tim *= 1000;
+            sscanf(it->c_str(), "%llu_%llu_%llu", &tim, &irunid, &iseq);
             if ((tim < timestamp_to) && (tim >= timestamp_from) && (irunid >= runid) && iseq >= seqid) {
               char tmpbuf[MAX_PATH_LEN];
               snprintf(tmpbuf,sizeof(tmpbuf),"%s/%s",dir.c_str(),it->c_str());
@@ -254,7 +279,7 @@ int PosixFile::getFromPath(const std::string& dir,const uint64_t timestamp_from,
               chaos::common::data::CDWShrdPtr new_obj(new chaos::common::data::CDataWrapper((const char*)buffer, size));
 
               found_object_page.push_back(new_obj);
-              delete buffer;
+              delete []buffer;
               infile.close();
               last_record_found_seq.run_id           = irunid;
               last_record_found_seq.datapack_counter = iseq;
@@ -387,7 +412,14 @@ void PosixFile::timeout() {
       if((ts-id->second.ts)>5000){
         //not anymore used
         if(id->second.devio_mutex.try_lock()){
-          s_lastAccessedDir.erase(id++);
+          {
+            DBG <<"cleanup "<< id->first;
+           ChaosWriteLock ll(last_access_mutex);
+           id->second.devio_mutex.unlock();
+           s_lastAccessedDir.erase(id++);
+            DBG <<"end cleanup ";
+
+         }
         }
       } else {
         id++;

@@ -711,14 +711,14 @@ int MDSMessageChannel::searchNode(const std::string& unique_id_filter,
         int size;
         do{
             size=tmp.size();
-            ret=searchNodeInt(unique_id_filter,node_type_filter,alive_only,lastid,page_length,lastid,tmp,millisec_to_wait,impl);
+            ret=searchNodeInt(unique_id_filter,node_type_filter,alive_only,lastid,100000/*page_length*/,lastid,tmp,millisec_to_wait,impl);
             MSG_DBG<<"searchNode start page:"<<start_page<<" page len:"<<page_length<<" lastid:"<<lastid<<"size:"<<tmp.size()<<" sizebefore:"<<size<<" ret:"<<ret;
 
             if(tmp.size()<page_length){
                 break;
             }
         } while((size<tmp.size())&&(ret==ErrorCode::EC_NO_ERROR));
-        num_of_page=(tmp.size())?(tmp.size()/page_length)+((tmp.size()%page_length==0)?0:1):0;
+        num_of_page=(tmp.size())?(tmp.size()/page_length)+(((tmp.size()%page_length)==0)?0:1):0;
         for(int cnt=start_page*page_length;(cnt<tmp.size())&&(cnt<((start_page+1)*page_length));cnt++){
             node_found.push_back(tmp[cnt]);
         }
