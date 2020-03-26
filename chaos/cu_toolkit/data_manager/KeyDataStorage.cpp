@@ -166,7 +166,7 @@ CDWShrdPtr KeyDataStorage::getNewDataPackForDomain(const KeyDataStorageDomain do
             break;
     }
     if(result.get()==NULL){
-        throw chaos::CException(-1, "CANNOT allocate memorry for data pack ", __PRETTY_FUNCTION__);
+        throw chaos::CException(-1, "CANNOT allocate memory for data pack ", __PRETTY_FUNCTION__);
 
     }
     //add the unique key
@@ -183,16 +183,15 @@ int KeyDataStorage::pushDataWithControlOnHistoryTime(const std::string& key,
     uint64_t now = TimingUtil::getTimeStampInMicroseconds();
     int effective_storage_type = DataServiceNodeDefinitionType::DSStorageTypeUndefined;
     int err=0;
-    if(storage_type & DataServiceNodeDefinitionType::DSStorageTypeLive ||
-       override_storage_everride & DataServiceNodeDefinitionType::DSStorageTypeLive) {
+    
+    if(storage_type & DataServiceNodeDefinitionType::DSStorageTypeLive ) {
         if((now - storage_live_time_last_push) >= storage_live_time) {
             effective_storage_type |= DataServiceNodeDefinitionType::DSStorageTypeLive;
             storage_live_time_last_push = now;
         }
     }
     
-    if(storage_type & DataServiceNodeDefinitionType::DSStorageTypeHistory ||
-       override_storage_everride & DataServiceNodeDefinitionType::DSStorageTypeHistory) {
+    if((storage_type & DataServiceNodeDefinitionType::DSStorageTypeHistory) ) {
         //history is enabled
         if(use_timing_info) {
             if((now - storage_history_time_last_push) >= storage_history_time) {
@@ -203,8 +202,11 @@ int KeyDataStorage::pushDataWithControlOnHistoryTime(const std::string& key,
             effective_storage_type |= DataServiceNodeDefinitionType::DSStorageTypeHistory;
         }
     }
-    
+    if(override_storage_everride!=DataServiceNodeDefinitionType::DSStorageTypeUndefined){
+        effective_storage_type|=override_storage_everride;
+    }
     if(effective_storage_type) {
+        effective_storage_type|=(storage_type&DataServiceNodeDefinitionType::DSStorageLogHisto);
         err=io_data_driver->storeData(key,
                                       MOVE(dataset),
                                       static_cast<DataServiceNodeDefinitionType::DSStorageType>(effective_storage_type),
@@ -230,14 +232,15 @@ int KeyDataStorage::pushDataSet(KeyDataStorageDomain domain,
             //input channel need to be push ever either in live and in history
             err=io_data_driver->storeData(input_key,
                                           MOVE(dataset),
-                                          DataServiceNodeDefinitionType::DSStorageTypeLiveHistory,
+                                          storage_type,
                                           current_tags());
             break;
         case KeyDataStorageDomainSystem:
             //system channel need to be push ever either in live and in history
             err=io_data_driver->storeData(system_key,
                                           MOVE(dataset),
-                                          DataServiceNodeDefinitionType::DSStorageTypeLiveHistory,
+                                          //DataServiceNodeDefinitionType::DSStorageTypeLiveHistory,
+                                          storage_type,
                                           current_tags());
             break;
         case KeyDataStorageDomainCUAlarm:
@@ -369,7 +372,13 @@ ChaosSharedPtr<chaos_data::CDataWrapper> KeyDataStorage::getDatasetFromRestorePo
 
 void KeyDataStorage::updateConfiguration(CDataWrapper *configuration) {
     //update the driver configration
-    if(io_data_driver.get()) io_data_driver->updateConfiguration(configuration);
+    if(io_data_driver.get()) {
+        KeyDataStorageLDBG <<" configuration to update:"<<((configuration)?configuration->getJSONString():"NULL CONFIGURATION");
+        io_data_driver->updateConfiguration(configuration);
+    } else {
+        KeyDataStorageLERR <<" NULL IODRIVER configuration to update:"<<(configuration)?configuration->getJSONString():"NULL CONFIGURATION";
+
+    }
     
 }
 
@@ -382,7 +391,7 @@ void KeyDataStorage::updateConfiguration(const std::string& conf_name,
     } else if(conf_name.compare(DataServiceNodeDefinitionKey::DS_STORAGE_TYPE) == 0){
         storage_type = static_cast<DataServiceNodeDefinitionType::DSStorageType>(conf_value.asInt32());
     }
-    KeyDataStorageLAPP << CHAOS_FORMAT("Set value %1% to property %2%", %conf_value.asString()%conf_name);
+    KeyDataStorageLDBG << CHAOS_FORMAT("Set value %1% to property %2%", %conf_value.asString()%conf_name);
 }
 
 void KeyDataStorage::setOverrideStorageType(chaos::DataServiceNodeDefinitionType::DSStorageType _override_storage_type) {

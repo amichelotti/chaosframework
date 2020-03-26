@@ -18,15 +18,16 @@
  * See the Licence for the specific language governing
  * permissions and limitations under the Licence.
  */
+
 #include <mongo/client/dbclient.h>
 #include "MongoDBNodeDataAccess.h"
 #include "mongo_db_constants.h"
 
 #include <chaos/common/utility/TimingUtil.h>
 #include <boost/algorithm/string.hpp>
+#undef DEBUG
 
 #include <map>
-
 #define MDBNDA_INFO INFO_LOG(MongoDBNodeDataAccess)
 #define MDBNDA_DBG  DBG_LOG(MongoDBNodeDataAccess)
 #define MDBNDA_ERR  ERR_LOG(MongoDBNodeDataAccess)

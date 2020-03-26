@@ -697,7 +697,9 @@ namespace chaos {
             //!datapack into file (shared FS)
             DSStorageTypeFile = 4,
             //!datapack into Remote Queue (i.e Kafka)
-            DSStorageTypeRQ = 8     
+            DSStorageTypeRQ = 8,
+            //!datapack into a logging system (i.e. influxdb)
+            DSStorageLogHisto = 16          
         } DSStorageType;
     }
     /** @} */ // end of DataServiceNodeDefinitionType
@@ -949,6 +951,11 @@ namespace chaos {
         //! is the tag associated to the current running command alias(in the case of slow contro unit)
         static const char * const RUNNING_COMMAND_ALIAS     = "running_cmd_alias";
         
+        //! is CU class
+        static const char * const CU_CLASS_TYPE     = "cudk_cu_class";
+
+        //!  hostname
+        static const char * const CU_SOURCE_HOSTNAME     = "cudk_hostname";
         
     }
     
@@ -1367,6 +1374,9 @@ namespace chaos {
         static const unsigned int DPCK_DATASET_TYPE_CU_ALARM           = 6;
         //!define tags associated to the dataset[array of string]
         static const char * const DPCK_DATASET_TAG                    = "dpck_ds_tag";
+
+        //!define optional to specify the destination storage of the dataset
+        static const char * const DPCK_DATASET_DESTINATION_STORAGE     = "dpck_ds_dst";
     }
     
     

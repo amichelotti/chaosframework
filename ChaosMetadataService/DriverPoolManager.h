@@ -24,7 +24,6 @@
 
 #include "cache_system/cache_system.h"
 #include "persistence/persistence.h"
-#include "object_storage/object_storage.h"
 
 #include <chaos/common/utility/Singleton.h>
 #include <chaos/common/utility/InizializableService.h>
@@ -45,6 +44,8 @@ namespace chaos{
             friend class chaos::common::utility::Singleton<DriverPoolManager>;
             chaos::common::utility::InizializableServiceContainer<chaos::service_common::persistence::data_access::AbstractPersistenceDriver> persistence_driver;
             chaos::common::utility::InizializableServiceContainer<chaos::service_common::persistence::data_access::AbstractPersistenceDriver> storage_driver;
+            chaos::common::utility::InizializableServiceContainer<chaos::service_common::persistence::data_access::AbstractPersistenceDriver> log_driver;
+
             chaos::common::utility::InizializableServiceContainer<chaos::metadata_service::cache_system::CacheDriver> cache_driver;
 
             DriverPoolManager();
@@ -69,6 +70,13 @@ namespace chaos{
             T* getStorageDataAccess() {
                 if(storage_driver.get() == NULL) throw CException(-1, "No Storage Driver Found", __PRETTY_FUNCTION__);
                 return storage_driver->getDataAccess<T>();
+            }
+
+            chaos::service_common::persistence::data_access::AbstractPersistenceDriver& getLogDrv();
+            template<typename T>
+            T* getLogDataAccess() {
+                if(log_driver.get() == NULL) throw CException(-1, "No Logging Driver Found", __PRETTY_FUNCTION__);
+                return log_driver->getDataAccess<T>();
             }
         };
     }

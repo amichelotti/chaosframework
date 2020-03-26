@@ -71,7 +71,17 @@ void DeviceSharedDataWorker::executeJob(WorkerJobPtr job_info, void* cookie) {
     
     //check what kind of push we have
     //read lock on mantainance mutex
-    switch(static_cast<DataServiceNodeDefinitionType::DSStorageType>(job.key_tag)) {
+    if(static_cast<DataServiceNodeDefinitionType::DSStorageType>(job.key_tag)&DataServiceNodeDefinitionType::DSStorageTypeHistory){
+           //write data on object storage
+            CDataWrapper data_pack((char *)job.data_pack->data());
+            //push received datapack into object storage
+            if((err = obj_storage_da->pushObject(job.key,
+                                                 MOVE(job.meta_tag),
+                                                 data_pack))) {
+                ERR << "Error pushing datapack into object storage driver";
+            }
+    }
+   /* switch(static_cast<DataServiceNodeDefinitionType::DSStorageType>(job.key_tag)) {
         case DataServiceNodeDefinitionType::DSStorageTypeFile:{
             break;
         }
@@ -88,8 +98,11 @@ void DeviceSharedDataWorker::executeJob(WorkerJobPtr job_info, void* cookie) {
             break;
         }
         case DataServiceNodeDefinitionType::DSStorageTypeLive:
+        case DataServiceNodeDefinitionType::DSStorageLogHisto:
+        case DataServiceNodeDefinitionType::DSStorageTypeRQ:
+
         case DataServiceNodeDefinitionType::DSStorageTypeUndefined:{// live only
             break;
         }
-    }
+    }*/
 }
