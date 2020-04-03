@@ -18,15 +18,16 @@
  * See the Licence for the specific language governing
  * permissions and limitations under the Licence.
  */
+
 #include <mongo/client/dbclient.h>
 #include "MongoDBNodeDataAccess.h"
 #include "mongo_db_constants.h"
 
 #include <chaos/common/utility/TimingUtil.h>
 #include <boost/algorithm/string.hpp>
+#undef DEBUG
 
 #include <map>
-
 #define MDBNDA_INFO INFO_LOG(MongoDBNodeDataAccess)
 #define MDBNDA_DBG  DBG_LOG(MongoDBNodeDataAccess)
 #define MDBNDA_ERR  ERR_LOG(MongoDBNodeDataAccess)
@@ -387,7 +388,8 @@ int MongoDBNodeDataAccess::searchNode(chaos::common::data::CDataWrapper **result
                                       chaos::NodeType::NodeSearchType search_type,
                                       bool alive_only,
                                       uint32_t last_unique_id,
-                                      uint32_t page_length) {
+                                      uint32_t page_length,
+                                      const std::string& impl) {
     int err = 0;
     //decode the type of the node
     std::string             type_of_node;
@@ -403,7 +405,9 @@ int MongoDBNodeDataAccess::searchNode(chaos::common::data::CDataWrapper **result
     //compose query
     
     //filter on sequence
-    bson_find_and << BSON( "seq" << BSON("$gt"<<last_unique_id));
+    if(search_type!=chaos::NodeType::NodeSearchType::node_type_cds){
+        bson_find_and << BSON( "seq" << BSON("$gt"<<last_unique_id));
+    }
     
     //filter on type
     if(search_type>0) {
@@ -426,20 +430,31 @@ int MongoDBNodeDataAccess::searchNode(chaos::common::data::CDataWrapper **result
             default:
                 break;
         }
-        bson_find_and << BSON( chaos::NodeDefinitionKey::NODE_TYPE << type_of_node);
+        if(search_type!=chaos::NodeType::NodeSearchType::node_type_all_server){
+
+            bson_find_and << BSON( chaos::NodeDefinitionKey::NODE_TYPE << type_of_node);
+        } else {
+                MDBNDA_DBG << "QUERY EVERITHING";
+
+        }
     }
     
     if(alive_only){bson_find_and << getAliveOption(6);}
     
     //compose the 'or' condition for all token of unique_id filed
     bson_find_and << BSON("$or" << getSearchTokenOnFiled(criteria, chaos::NodeDefinitionKey::NODE_UNIQUE_ID));
+    if(impl.size()>0){
+            bson_find_and << BSON("$or" << getSearchTokenOnFiled(impl, "instance_description.control_unit_implementation"));
+
+    }
     bson_find.appendArray("$and", bson_find_and.obj());
     mongo::BSONObj q = bson_find.obj();
     mongo::BSONObj p = BSON(chaos::NodeDefinitionKey::NODE_UNIQUE_ID << 1 <<
                             chaos::NodeDefinitionKey::NODE_TYPE << 1 <<
                             chaos::NodeDefinitionKey::NODE_RPC_ADDR << 1 <<
                             "seq" << 1 <<
-                            "health_stat" <<1);
+                            "health_stat" <<1<<
+                            "instance_description.control_unit_implementation"<<1);
     DEBUG_CODE(MDBNDA_DBG<<log_message("searchNode",
                                        "performPagedQuery",
                                        DATA_ACCESS_LOG_2_ENTRY("Query",
@@ -470,8 +485,12 @@ int MongoDBNodeDataAccess::searchNode(chaos::common::data::CDataWrapper **result
                     if(cd.hasKey(chaos::NodeDefinitionKey::NODE_RPC_ADDR)) {
                         cd.addStringValue(chaos::NodeDefinitionKey::NODE_RPC_ADDR, it->getField(chaos::NodeDefinitionKey::NODE_RPC_ADDR).String());
                     }
-                    cd.addInt64Value("seq", (int64_t)it->getField("seq").Long());
-                    
+                    if(it->hasField("seq")){
+                        cd.addInt64Value("seq", (int64_t)it->getField("seq").Long());
+                    } /*else {
+                        cd.addInt64Value("seq", (int64_t)0);
+                    }*/
+                   
                     if(it->hasField("health_stat")) {
                         mongo::BSONElement health_stat_element = it->getField("health_stat");
                         if(health_stat_element.type() == mongo::Object) {
@@ -486,6 +505,7 @@ int MongoDBNodeDataAccess::searchNode(chaos::common::data::CDataWrapper **result
                             cd.addCSDataValue("health_stat", health);
                         }
                     }
+                   
                     (*result)->appendCDataWrapperToArray(cd);
                 } catch(...) {
                     MDBNDA_ERR << "Exception during scan of found node:" << node_uid_found;

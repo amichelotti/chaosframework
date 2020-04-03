@@ -51,12 +51,14 @@ using namespace chaos::cu::data_manager;
 using namespace chaos::cu::control_manager;
 using namespace chaos::cu::driver_manager;
 using namespace chaos::cu::driver_manager::driver;
+#define DBG DBG_LOG(AbstractControlUnit)
+#define ERR ERR_LOG(AbstractControlUnit)
 
 #define ACULAPP_ LAPP_ << "[Control Unit:" << control_unit_instance << "-" << control_unit_id << "] -"
 #define ACULNOTE_ LNOTE_ << "[Control Unit:" << control_unit_instance << "-" << control_unit_id << "] -"
 #define ACULWRN_ LWRN_ << "[Control Unit:" << control_unit_instance << "-" << control_unit_id << "] -"
-#define ACULDBG_ LDBG_ << "[Control Unit:" << control_unit_instance << "-" << control_unit_id << "] -" << __FUNCTION__ << "-"
-#define ACULERR_ LERR_ << "[Control Unit:" << control_unit_instance << "-" << control_unit_id << "](-" << __FUNCTION__ << "-" << __LINE__ << ") - "
+#define ACULDBG_ DBG << "[Control Unit:" << control_unit_instance << "-" << control_unit_id << "] -" << __FUNCTION__ << "-"
+#define ACULERR_ ERR << "[Control Unit:" << control_unit_instance << "-" << control_unit_id << "](-" << __FUNCTION__ << "-" << __LINE__ << ") - "
 
 #define S(x) #x
 #define S_(x) S(x)
@@ -161,6 +163,7 @@ bool PushStorageBurst::active(void* data __attribute__((unused))) {
     ,
 #endif
     control_unit_type(_control_unit_type)
+    ,control_unit_class("AbstractControlUnit")
     , control_unit_id(_control_unit_id)
     , control_unit_param(_control_unit_param)
     , run_id(0)
@@ -204,7 +207,10 @@ bool PushStorageBurst::active(void* data __attribute__((unused))) {
             accessor_instances.push_back(accessor_instance);
         }
     }
-    
+    void AbstractControlUnit::setCUClass(const std::string&cl){
+        control_unit_class=cl;
+    }
+
     void AbstractControlUnit::_initChecklist() {
         //init checklists
         check_list_sub_service.addCheckList("_init");
@@ -577,10 +583,10 @@ bool PushStorageBurst::active(void* data __attribute__((unused))) {
                                     cdw_unique_ptr->addBoolValue(attrName, CDataVariant(attrValue).asBool());
                                     break;
                                 case DataType::TYPE_INT32:
-                                    cdw_unique_ptr->addInt32Value(attrName, CDataVariant(attrValue).asInt32());
+                                    cdw_unique_ptr->addInt32Value(attrName, (int32_t)strtoul(attrValue.c_str(),0,0));
                                     break;
                                 case DataType::TYPE_INT64:
-                                    cdw_unique_ptr->addInt64Value(attrName, CDataVariant(attrValue).asInt64());
+                                    cdw_unique_ptr->addInt64Value(attrName, (int64_t)strtoll(attrValue.c_str(),0,0));
                                     break;
                                 case DataType::TYPE_DOUBLE:
                                     cdw_unique_ptr->addDoubleValue(attrName, CDataVariant(attrValue).asDouble());
@@ -695,7 +701,7 @@ bool PushStorageBurst::active(void* data __attribute__((unused))) {
         CHAOS_CHECK_LIST_START_SCAN_TO_DO(check_list_sub_service, "init") {
             CHAOS_CHECK_LIST_DONE(check_list_sub_service, "init", INIT_SM_PHASE_INIT_DB) {
                 //cast to the CDatawrapper instance
-                ACULAPP_ << "Initialize CU Database for device:" << DatasetDB::getDeviceID();
+                ACULDBG_ << "Initialize CU Database for device:" << DatasetDB::getDeviceID();
                 run_id = CDW_GET_INT64_WITH_DEFAULT(init_configuration, ControlUnitNodeDefinitionKey::CONTROL_UNIT_RUN_ID, 0);
                 DatasetDB::addAttributeToDataSetFromDataWrapper(*init_configuration);
                 break;
@@ -704,10 +710,10 @@ bool PushStorageBurst::active(void* data __attribute__((unused))) {
                 //call init sequence
                 //call update param function
                 //initialize key data storage for device id
-                ACULAPP_ << "Create KeyDataStorage device:" << DatasetDB::getDeviceID();
+                //ACULDBG_ << "Create KeyDataStorage device:" << DatasetDB::getDeviceID();
                 key_data_storage.reset(DataManager::getInstance()->getKeyDataStorageNewInstanceForKey(DatasetDB::getDeviceID()));
                 
-                ACULAPP_ << "Call KeyDataStorage init implementation for deviceID:" << DatasetDB::getDeviceID();
+                ACULDBG_ << "Call KeyDataStorage init implementation for deviceID:" << DatasetDB::getDeviceID()<< " init:"<< ((init_configuration.get())?init_configuration->getJSONString():"NULL CONFIG");
                 key_data_storage->init(init_configuration.get());
                 break;
             }
@@ -764,7 +770,7 @@ bool PushStorageBurst::active(void* data __attribute__((unused))) {
                 break;
             }
             CHAOS_CHECK_LIST_REDO(check_list_sub_service, "_init", INIT_RPC_PHASE_INIT_SHARED_CACHE) {
-                ACULAPP_ << "Deallocate the user cache wrapper for:" + DatasetDB::getDeviceID();
+                ACULDBG_ << "Deallocate the user cache wrapper for:" << DatasetDB::getDeviceID();
                 if (attribute_shared_cache_wrapper) {
                     delete (attribute_shared_cache_wrapper);
                     attribute_shared_cache_wrapper = NULL;
@@ -1506,13 +1512,13 @@ bool PushStorageBurst::active(void* data __attribute__((unused))) {
                     case DataType::TYPE_INT32: {
                         int32_t val = strtoul(attributeInfo.defaultValue.c_str(), 0, 0);  //boost::lexical_cast<int32_t>(attributeInfo.defaultValue);
                         attribute_setting.setValueForAttribute(idx, &val, sizeof(int32_t));
-                        ACULDBG_ << domain<< " Init TYPE_INT32 attribute:'" << attribute_names[idx]<<"' to:"<<val;
+                        ACULDBG_ << domain<< " Init TYPE_INT32 attribute:'" << attribute_names[idx]<<"' to:"<<val<<" 0x"<<std::hex<<val<<std::dec;
                         break;
                     }
                     case DataType::TYPE_INT64: {
                         int64_t val = strtoll(attributeInfo.defaultValue.c_str(), 0, 0);  //boost::lexical_cast<int64_t>(attributeInfo.defaultValue);
                         attribute_setting.setValueForAttribute(idx, &val, sizeof(int64_t));
-                        ACULDBG_ << domain<< " Init TYPE_INT64 attribute:'" << attribute_names[idx]<<"' to:"<<val;
+                        ACULDBG_ << domain<< " Init TYPE_INT64 attribute:'" << attribute_names[idx]<<"' to:"<<val<<" 0x"<<std::hex<<val<<std::dec;
                         break;
                     }
                     case DataType::TYPE_CLUSTER: {
@@ -1605,10 +1611,26 @@ bool PushStorageBurst::active(void* data __attribute__((unused))) {
         
         //add history time
         domain_attribute_setting.addAttribute(DataServiceNodeDefinitionKey::DS_STORAGE_HISTORY_TIME, 0, DataType::TYPE_INT64);
+
+        //command status
+        domain_attribute_setting.addAttribute(DataPackSystemKey::DP_SYS_QUEUED_CMD, 0, DataType::TYPE_INT32);
+        domain_attribute_setting.addAttribute(DataPackSystemKey::DP_SYS_STACK_CMD, 0, DataType::TYPE_INT32);
+        domain_attribute_setting.addAttribute(ControlUnitDatapackSystemKey::RUNNING_COMMAND_ALIAS, 0, DataType::TYPE_STRING);
+        // add hostname
+        std::string hn=chaos::GlobalConfiguration::getInstance()->getHostname();
+        domain_attribute_setting.addAttribute(chaos::ControlUnitDatapackSystemKey::CU_SOURCE_HOSTNAME, (uint32_t)hn.size(), DataType::TYPE_STRING);
+        char* str_ptr = domain_attribute_setting.getValueSettingForIndex(domain_attribute_setting.getIndexForName(chaos::ControlUnitDatapackSystemKey::CU_SOURCE_HOSTNAME))->getValuePtr<char>();
+        strncpy(str_ptr, hn.c_str(), hn.size());
+        // add class name
+        hn=getCUClass();
+
+        domain_attribute_setting.addAttribute(chaos::ControlUnitDatapackSystemKey::CU_CLASS_TYPE, (uint32_t)hn.size(), DataType::TYPE_STRING);
+        str_ptr = domain_attribute_setting.getValueSettingForIndex(domain_attribute_setting.getIndexForName(chaos::ControlUnitDatapackSystemKey::CU_CLASS_TYPE))->getValuePtr<char>();
+        strncpy(str_ptr, hn.c_str(), hn.size());
         
         //add unit type
         domain_attribute_setting.addAttribute(DataPackSystemKey::DP_SYS_UNIT_TYPE, (uint32_t)control_unit_type.size(), DataType::TYPE_STRING);
-        char* str_ptr = domain_attribute_setting.getValueSettingForIndex(domain_attribute_setting.getIndexForName(DataPackSystemKey::DP_SYS_UNIT_TYPE))->getValuePtr<char>();
+        str_ptr = domain_attribute_setting.getValueSettingForIndex(domain_attribute_setting.getIndexForName(DataPackSystemKey::DP_SYS_UNIT_TYPE))->getValuePtr<char>();
         strncpy(str_ptr, control_unit_type.c_str(), control_unit_type.size());
     }
     
@@ -1794,21 +1816,51 @@ bool PushStorageBurst::active(void* data __attribute__((unused))) {
      by the rpc request for attribute change.
      */
     void AbstractControlUnit::unitInputAttributeChangedHandler() {}
+
+template<typename t>
+inline void checkForRange(t v,  RangeValueInfo&attributeInfo,const std::string& attr_name,const std::string&id ){
+    t max,min;
+    std::size_t mini=attributeInfo.minRange.find("0x");
+    std::size_t maxi=attributeInfo.maxRange.find("0x");
+    std::string maxs,mins;
+    if(maxi!=std::string::npos){
+        maxs=attributeInfo.maxRange.substr(maxi);
+    } else {
+        maxs=attributeInfo.maxRange;
+    }
+    if(mini!=std::string::npos){
+        mins=attributeInfo.minRange.substr(mini);
+    } else {
+        mins=attributeInfo.minRange;
+    }
     
+    
+    try{
+        min=boost::lexical_cast<t>(mins);
+    }catch(std::exception &e){
+        throw MetadataLoggingCException(id, -1, boost::str(boost::format("Invalid casting MIN value (%1%) for attribute %2% value %3%" ) % mins % attr_name % v).c_str(), __PRETTY_FUNCTION__);
+    }
+    try{
+
+    max=boost::lexical_cast<t>(maxs);
+    } catch(std::exception &e){
+        throw MetadataLoggingCException(id, -1, boost::str(boost::format("Invalid casting MAX value (%1%) for attribute %2% value %3%" ) % maxs % attr_name % v).c_str(), __PRETTY_FUNCTION__);
+    }
+    
+    if (((mins.size()>0)&&(v < min)) || ((maxs.size()>0)&&(v > max))) {
+        throw MetadataLoggingCException(id, -1, boost::str(boost::format("Invalid value (%1%) [Min:%2%-%3% Max:%4%-%5%] for attribute %6%") % v % min  % mins % max % maxs % attr_name).c_str(), __PRETTY_FUNCTION__);
+    }
+}
+#define CHECK_FOR_RANGE_VALUE(t, v, attr_name)   \
+checkForRange<t>(v,attributeInfo,attr_name,getCUID());                                                         
+
+/*
 #define CHECK_FOR_RANGE_VALUE(t, v, attr_name)                                                                            \
 t max, min;                                                                                                             \
-if (attributeInfo.maxRange.compare(0, 2, "0x") == 0) {                                                                  \
 max = strtoll(attributeInfo.maxRange.c_str(), 0, 0);                                                                  \
-} else {                                                                                                                \
-max = attributeInfo.maxRange.size() ? boost::lexical_cast<t>(attributeInfo.maxRange) : std::numeric_limits<t>::max(); \
-}                                                                                                                       \
-if (attributeInfo.minRange.compare(0, 2, "0x") == 0) {                                                                  \
-min = strtoll(attributeInfo.minRange.c_str(), 0, 0);                                                                  \
-} else {                                                                                                                \
-min = attributeInfo.minRange.size() ? boost::lexical_cast<t>(attributeInfo.minRange) : std::numeric_limits<t>::min(); \
-}                                                                                                                       \
-if (v < min || v > max) throw MetadataLoggingCException(getCUID(), -1, boost::str(boost::format("Invalid value (%1%) [Min:%2% Max:%3%] for attribute %4%") % v % attributeInfo.minRange % attributeInfo.maxRange % attr_name).c_str(), __PRETTY_FUNCTION__);
-    
+min = strtoll(attributeInfo.minRange.c_str(), 0, 0);\
+if (((attributeInfo.minRange.size()>0)&&(v < min)) || ((attributeInfo.maxRange.size()>0)&&(v > max))) throw MetadataLoggingCException(getCUID(), -1, boost::str(boost::format("Invalid value (%1%) [Min:%2%-%3% Max:%4%-%5%] for attribute %6%") % v % min  % attributeInfo.minRange % max % attributeInfo.maxRange % attr_name).c_str(), __PRETTY_FUNCTION__);
+  */  
 #define CHECK_FOR_STRING_RANGE_VALUE(v, attr_name)                                                                                                                                                                                                                                                      \
 if (attributeInfo.minRange.size() && v < attributeInfo.minRange) throw MetadataLoggingCException(getCUID(), -1, boost::str(boost::format("Invalid value (%1%) [max:%2% Min:%3%] for attribute %4%") % v % attr_name % attributeInfo.minRange % attributeInfo.maxRange).c_str(), __PRETTY_FUNCTION__); \
 if (attributeInfo.maxRange.size() && v > attributeInfo.maxRange) throw MetadataLoggingCException(getCUID(), -1, boost::str(boost::format("Invalid value (%1%) [max:%2% Min:%3%] for attribute %4%") % v % attr_name % attributeInfo.minRange % attributeInfo.maxRange).c_str(), __PRETTY_FUNCTION__);
@@ -2119,8 +2171,13 @@ if (attributeInfo.maxRange.size() && v > attributeInfo.maxRange) throw MetadataL
         if (!system_attribute_cache.hasChanged()) return err;
         //get the cdatawrapper for the pack
         int64_t    cur_us                   = TimingUtil::getTimeStampInMicroseconds();
+         if(key_data_storage.get()==NULL){
+            ACULERR_ << " key data storage not allocated";
+
+            return -2;
+        }
         CDWShrdPtr system_attribute_dataset = key_data_storage->getNewDataPackForDomain(KeyDataStorageDomainSystem);
-        if (system_attribute_dataset) {
+        if (system_attribute_dataset.get()) {
             system_attribute_dataset->addInt64Value(ControlUnitDatapackCommonKey::RUN_ID, run_id);
             //input dataset timestamp is added only when pushed on cache
             system_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_TIMESTAMP, cur_us / 1000);
@@ -2137,6 +2194,9 @@ if (attributeInfo.maxRange.size() && v > attributeInfo.maxRange) throw MetadataL
     
     CDWShrdPtr AbstractControlUnit::writeCatalogOnCDataWrapper(AlarmCatalog& catalog,
                                                                int32_t       dataset_type) {
+        if(key_data_storage.get()==NULL){
+            return CDWShrdPtr();
+        }
         CDWShrdPtr attribute_dataset = key_data_storage->getNewDataPackForDomain((KeyDataStorageDomain)dataset_type);
         if (attribute_dataset) {
             //fill datapack with
@@ -2162,7 +2222,7 @@ if (attributeInfo.maxRange.size() && v > attributeInfo.maxRange) throw MetadataL
         
         CDWShrdPtr attribute_dataset = writeCatalogOnCDataWrapper(catalog,
                                                                   DataPackCommonKey::DPCK_DATASET_TYPE_DEV_ALARM);
-        if (attribute_dataset) {
+        if (attribute_dataset&& key_data_storage.get()) {
             //push out the system dataset
             err = key_data_storage->pushDataSet(KeyDataStorageDomainDevAlarm, MOVE(attribute_dataset));
         }
@@ -2174,7 +2234,7 @@ if (attributeInfo.maxRange.size() && v > attributeInfo.maxRange) throw MetadataL
         int        err               = 0;
         CDWShrdPtr attribute_dataset = writeCatalogOnCDataWrapper(catalog,
                                                                   DataPackCommonKey::DPCK_DATASET_TYPE_CU_ALARM);
-        if (attribute_dataset) {
+        if (attribute_dataset&&key_data_storage.get()) {
             //push out the system dataset
             err = key_data_storage->pushDataSet(KeyDataStorageDomainCUAlarm, MOVE(attribute_dataset));
         }
@@ -2356,7 +2416,7 @@ if (attributeInfo.maxRange.size() && v > attributeInfo.maxRange) throw MetadataL
         
         //update alarm log
         if((alarm_ms->max_freq_log_ms==0)||
-        ((alarm_ms->max_freq_log_ms>0)&&((alarm->getLastUpdateTimestamp()-alarm_ms->last_log_ms)>alarm_ms->max_freq_log_ms))){
+        (alarm_logging_channel && (alarm_ms->max_freq_log_ms>0)&&((alarm->getLastUpdateTimestamp()-alarm_ms->last_log_ms)>alarm_ms->max_freq_log_ms))){
            // ACULDBG_ << "State "<<state_variable_name<<" last modified:"<<( alarm->getLastUpdateTimestamp() -alarm_ms->last_log_ms)<<" ms freq:"<<alarm_ms->max_freq_log_ms;
 
             alarm_logging_channel->logAlarm(getCUID(),
@@ -2410,19 +2470,19 @@ if (attributeInfo.maxRange.size() && v > attributeInfo.maxRange) throw MetadataL
                                              message);
         switch (log_level) {
             case StandardLoggingChannel::LogLevelInfo:
-                ACULAPP_ << log_level;
+                ACULAPP_ << "LOGINFO" <<" subj:"<<subject<< " msg:"<<message;
                 break;
             case StandardLoggingChannel::LogLevelDebug:
-                ACULDBG_ << log_level;
+                ACULDBG_ << "LOGDEBUG"<<" subj:"<<subject<< " msg:"<<message;
                 break;
             case StandardLoggingChannel::LogLevelWarning:
-                ACULWRN_ << log_level;
+                ACULWRN_ << "LOGWARN"<<" subj:"<<subject<< " msg:"<<message;
                 break;
             case StandardLoggingChannel::LogLevelError:
-                ACULERR_ << log_level;
+                ACULERR_ << "LOGERR"<<" subj:"<<subject<< " msg:"<<message;
                 break;
             case StandardLoggingChannel::LogLevelFatal:
-                ACULNOTE_ << log_level;
+                ACULNOTE_ << "LOGFATAL" <<" subj:"<<subject<< " msg:"<<message;
                 break;
         }
     }

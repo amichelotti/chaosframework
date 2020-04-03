@@ -125,7 +125,10 @@ int QueryDataConsumer::consumePutEvent(const std::string& key,
                                        BufferSPtr channel_data) {
     CHAOS_ASSERT(channel_data)
     int err = 0;
-    
+    CDataWrapper data_pack((char *)channel_data->data());
+    data_pack.addInt64Value(NodeHealtDefinitionKey::NODE_HEALT_MDS_TIMESTAMP, TimingUtil::getTimeStamp()&ChaosMetadataService::timePrecisionMask);
+    BufferSPtr channel_data_injected(data_pack.getBSONDataBuffer().release());
+
     DataServiceNodeDefinitionType::DSStorageType storage_type = static_cast<DataServiceNodeDefinitionType::DSStorageType>(hst_tag);
     //! if tag is == 1 the datapack is in liveonly
     
@@ -133,10 +136,23 @@ int QueryDataConsumer::consumePutEvent(const std::string& key,
         //protected access to cached driver
         CacheDriver& cache_slot = DriverPoolManager::getInstance()->getCacheDrv();
         err = cache_slot.putData(key,
-                                 channel_data);
+                                 channel_data_injected);
         
     }
-    
+   if(storage_type &DataServiceNodeDefinitionType::DSStorageLogHisto) {
+        //protected access to cached driver
+        ObjectStorageDataAccess *log_slot  = DriverPoolManager::getInstance()->getLogDrv().getDataAccess<ObjectStorageDataAccess>();
+
+         // CDataWrapper data_pack((char *)channel_data->data());
+            //push received datapack into object storage
+            if((err = log_slot->pushObject(key,
+                                                 MOVE(meta_tag_set),
+                                                 data_pack))) {
+                ERR << "Error pushing datapack into logstorage driver";
+            }
+      
+        
+    } 
     if(!err &&
        (storage_type & (DataServiceNodeDefinitionType::DSStorageTypeHistory|DataServiceNodeDefinitionType::DSStorageTypeFile))) {
         //compute the index to use for the data worker
@@ -146,7 +162,7 @@ int QueryDataConsumer::consumePutEvent(const std::string& key,
         auto job = ChaosMakeSharedPtr<DeviceSharedWorkerJob>();
         job->key = key;
         job->key_tag = hst_tag;
-        job->data_pack = channel_data;
+        job->data_pack = channel_data_injected;
         job->meta_tag = MOVE(meta_tag_set);
         if((err = device_data_worker[index_to_use]->submitJobInfo(job,
                                                                   storage_queue_push_timeout))) {
@@ -329,7 +345,21 @@ int QueryDataConsumer::consumeDataCloudDelete(const std::string& search_key,
     }
     return err;
 }
+int QueryDataConsumer::countDataCloud(const std::string& search_key,
+                                       uint64_t start_ts,
+                                       uint64_t end_ts,
+                                       uint64_t& count){
+    int err = 0;
+    ObjectStorageDataAccess *obj_storage_da = DriverPoolManager::getInstance()->getObjectStorageDrv().getDataAccess<object_storage::abstraction::ObjectStorageDataAccess>();
+    if((err = obj_storage_da->countObject(search_key,
+                                           start_ts,
+                                           end_ts,count))) {
+        ERR << CHAOS_FORMAT("Error performing count cloud query with code %1%", %err);
+    }
+    return err;
 
+}
+            
 #pragma mark DirectIOSystemAPIServerChannelHandler
 // Return the dataset for a producerkey ona specific snapshot
 int QueryDataConsumer::consumeGetDatasetSnapshotEvent(opcode_headers::DirectIOSystemAPIChannelOpcodeNDGSnapshotHeader& header,

@@ -94,7 +94,10 @@ array_index(0){
     } else {
         bson = ALLOCATE_BSONT(bson_new());
     }
-    CHAOS_ASSERT(bson);
+    if(bson==NULL){
+              throw CException(-51, "Invalid BSON", __PRETTY_FUNCTION__);
+
+    }
 }
 
 CDataWrapper::CDataWrapper(const char* mem_ser):
@@ -672,6 +675,9 @@ const char* CDataWrapper::getBSONRawData(int& size) const{
 const char* CDataWrapper::getBSONRawData() const{
     return reinterpret_cast<const char*>(bson_get_data(ACCESS_BSON(bson)));
 }
+const bson_t*CDataWrapper::getBSON() const {
+    return reinterpret_cast<const bson_t*>((ACCESS_BSON(bson)));
+    }
 
 const int CDataWrapper::getBSONRawSize() const{
     return bson->len;

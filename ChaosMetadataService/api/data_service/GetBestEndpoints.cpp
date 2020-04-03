@@ -21,6 +21,7 @@
 
 #include "GetBestEndpoints.h"
 #include "../../ChaosMetadataService.h"
+#include "../../common/CUCommonUtility.h"
 
 #include <chaos/common/utility/TimingUtil.h>
 
@@ -29,6 +30,8 @@
 
 using namespace chaos::common::data;
 using namespace chaos::common::utility;
+using namespace chaos::metadata_service::common;
+
 using namespace chaos::metadata_service::api::metadata_service;
 using namespace chaos::metadata_service::persistence::data_access;
 
@@ -57,7 +60,12 @@ CDWUniquePtr GetBestEndpoints::execute(CDWUniquePtr api_data) {
     if(api_data && api_data->hasKey("count")) {
         numner_or_result = api_data->getInt32Value("count");
     }
-    
+    GET_DATA_ACCESS(DataServiceDataAccess, ds_da, -1)
+
+    CUCommonUtility::addDataServicePack(result,ds_da,numner_or_result);
+     
+
+    #if 0
     if(now >= nu_cache_ts ||
        data_services.size() == 0) {
         data_services.clear();
@@ -74,6 +82,18 @@ CDWUniquePtr GetBestEndpoints::execute(CDWUniquePtr api_data) {
     
     //constructs the result
     result.reset(new CDataWrapper());
+    if(data_services.size()==0){
+        /// something wrong returning my self
+        result->appendStringToArray(boost::str(boost::format("%1%|0")%NetworkBroker::getInstance()->getDirectIOUrl()));
+          result->finalizeArrayForKey(chaos::DataServiceNodeDefinitionKey::DS_DIRECT_IO_FULL_ADDRESS_LIST);
+                                                        
+         result->appendStringToArray(NetworkBroker::getInstance()->getRPCUrl());
+          result->finalizeArrayForKey(chaos::NodeDefinitionKey::NODE_RPC_ADDR);
+            GBE_ERR<< " no dataservice from DB, returning myself.:"<<result->getJSONString();
+
+          return result;
+      
+    }
     if(data_services.size()>0) {
         GBE_INFO << CHAOS_FORMAT("Found %1% data services available", %data_services.size());
         BOOST_FOREACH(ChaosSharedPtr<CDataWrapper> ds_element, data_services) {
@@ -95,7 +115,11 @@ CDWUniquePtr GetBestEndpoints::execute(CDWUniquePtr api_data) {
         }
         result->finalizeArrayForKey(chaos::NodeDefinitionKey::NODE_RPC_ADDR);
     } else {
+        // something is going wrong returning myself
+       
+
         LOG_AND_TROW(GBE_ERR, -1, "No best endpoint found");
     }
+    #endif
     return result;
 }

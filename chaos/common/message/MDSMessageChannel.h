@@ -47,6 +47,16 @@ namespace chaos {
                 //!Evition handler
                 void evictionHandler(const chaos::common::network::ServiceRetryInformation& service_retry_information);
             protected:
+            int searchNodeInt(const std::string& unique_id_filter,
+                               chaos::NodeType::NodeSearchType node_type_filter,
+                               bool alive_only,
+                               unsigned int last_node_sequence_id,
+                               unsigned int page_length,
+                               uint64_t & lastid,
+
+                               ChaosStringVector& node_found,
+                               uint32_t millisec_to_wait,
+                               const std::string& impl);
                 //! base constructor
                 /*!
                  The base constructor prepare the base class constructor call to be adapted for metadataserver comunication. For the MDS the node address is
@@ -298,8 +308,17 @@ namespace chaos {
                                unsigned int last_node_sequence_id,
                                unsigned int page_length,
                                ChaosStringVector& node_found,
-                               uint32_t millisec_to_wait=5000);
+                               uint32_t millisec_to_wait=5000,const std::string& impl="");
                 
+                //! works with pages instead with sequenceid
+                int searchNode(const std::string& unique_id_filter,
+                               chaos::NodeType::NodeSearchType node_type_filter,
+                               bool alive_only,
+                               unsigned int start_page,
+                               unsigned int page_length,
+                               unsigned int& num_of_page,
+                               ChaosStringVector& node_found,
+                               uint32_t millisec_to_wait=5000,const std::string& impl="");
                 //! send custom message to the servers
                 /*!
                  \param message_pack memory is not managed to the ownershiw is not keeped

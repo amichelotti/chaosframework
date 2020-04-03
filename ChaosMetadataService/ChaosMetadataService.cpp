@@ -47,12 +47,14 @@ using namespace chaos::metadata_service::batch;
 using namespace chaos::service_common::persistence::data_access;
 
 WaitSemaphore ChaosMetadataService::waitCloseSemaphore;
+uint64_t ChaosMetadataService::timePrecisionMask=0xFFFFFFFFFFFFFFF0ULL;
 
 #define LCND_LAPP   INFO_LOG(ChaosMetadataService)
 #define LCND_LDBG   DBG_LOG(ChaosMetadataService)
 #define LCND_LERR   ERR_LOG(ChaosMetadataService)
 
-ChaosMetadataService::ChaosMetadataService(){ingore_unreg_po = true;};
+ChaosMetadataService::ChaosMetadataService(){ingore_unreg_po = true;
+};
 ChaosMetadataService::~ChaosMetadataService(){}
 
 //! C and C++ attribute parser
@@ -111,7 +113,19 @@ void ChaosMetadataService::init(void *init_data)  {
             throw chaos::CException(-3, "No cache server provided", __PRETTY_FUNCTION__);
         }
         
-        
+        if(getGlobalConfigurationInstance()->hasOption(OPT_SYNCTIME_ERROR)) {
+           timeError_opt= getGlobalConfigurationInstance()->getOption< uint32_t >(OPT_SYNCTIME_ERROR);
+
+        }
+
+        if(timeError_opt>2048){
+            std::stringstream ss;
+            ss<<"Specified time synchronization error to high:"<<timeError_opt<<" ms";
+            throw chaos::CException(-4,ss.str(), __PRETTY_FUNCTION__);
+
+        }
+        uint64_t tmp=pow(2,(uint32_t)log2(timeError_opt));
+        timePrecisionMask=~(tmp-1);
         if(getGlobalConfigurationInstance()->hasOption(OPT_CACHE_DRIVER_KVP)) {
             GlobalConfiguration::getInstance()->fillKVParameter(setting.cache_driver_setting.key_value_custom_param,
                                                                 getGlobalConfigurationInstance()->getOption< std::vector<std::string> >(OPT_CACHE_DRIVER_KVP), "");
@@ -125,7 +139,12 @@ void ChaosMetadataService::init(void *init_data)  {
 //            fillKVParameter(setting.object_storage_setting.key_value_custom_param,
 //                            getGlobalConfigurationInstance()->getOption< std::vector<std::string> >(OPT_OBJ_STORAGE_DRIVER_KVP));
         }
-        
+         if(getGlobalConfigurationInstance()->hasOption(OPT_LOG_STORAGE_DRIVER_KVP)) {
+            GlobalConfiguration::getInstance()->fillKVParameter(setting.log_storage_setting.key_value_custom_param,
+                                                                getGlobalConfigurationInstance()->getOption< std::vector<std::string> >(OPT_LOG_STORAGE_DRIVER_KVP), "");
+//            fillKVParameter(setting.object_storage_setting.key_value_custom_param,
+//                            getGlobalConfigurationInstance()->getOption< std::vector<std::string> >(OPT_OBJ_STORAGE_DRIVER_KVP));
+        }
         //initilize driver pool manager
         InizializableService::initImplementation(DriverPoolManager::getInstance(), NULL, "DriverPoolManager", __PRETTY_FUNCTION__);
         
@@ -168,7 +187,7 @@ void ChaosMetadataService::start()  {
         "\nRPC Server address: "	<< NetworkBroker::getInstance()->getRPCUrl() <<
         "\nDirectIO Server address: " << NetworkBroker::getInstance()->getDirectIOUrl() <<
         CHAOS_FORMAT("\nData Service published with url: %1%|0", %NetworkBroker::getInstance()->getDirectIOUrl()) <<
-        "\n----------------------------------------------------------------------";
+        "\nTime precision mask: "<<std::hex<<timePrecisionMask<<std::dec<<"\n----------------------------------------------------------------------";
         
         //register this process on persistence database
         persistence::data_access::DataServiceDataAccess *ds_da = DriverPoolManager::getInstance()->getPersistenceDataAccess<persistence::data_access::DataServiceDataAccess>();
