@@ -137,6 +137,8 @@ bool AbstractDriver::getNewAccessor(DriverAccessor **newAccessor) {
   if (result) {
     //set the parent uuid
     result->driver_uuid   = driver_uuid;
+    result->driverName   = driverName;
+    
     result->command_queue = command_queue.get();
     boost::unique_lock<boost::shared_mutex> lock(accesso_list_shr_mux);
     accessors.push_back(result);
@@ -225,7 +227,22 @@ void AbstractDriver::scanForMessage() {
           driverDeinit();
           opcode_submission_result = MsgManagmentResultType::MMR_EXECUTED;
           break;
-
+        case OpcodeType::OP_GET_PROPERTIES:{
+          chaos::common::data::CDWUniquePtr ret=getDrvProperties();
+          current_message_ptr->resultData=(void*)strdup(ret->getCompliantJSONString().c_str());
+          ADLDBG_ << "STRING PARMS:" <<(const char*)current_message_ptr->resultData;
+          current_message_ptr->resultDataLength=ret->getCompliantJSONString().size()+1;
+          
+        break;
+        }
+        case OpcodeType::OP_SET_PROPERTY:{
+          keyval_t *parms=(keyval_t *)current_message_ptr->inputData;
+          if(parms&&parms->key&&parms->value){
+            current_message_ptr->ret=setDrvProperty(parms->key,parms->value);
+          }
+        break;
+        }
+        
         default: {
           //for custom opcode we call directly the driver implementation of execOpcode
           opcode_submission_result = o_exe->execOpcode(current_message_ptr);
@@ -290,4 +307,13 @@ void AbstractDriver::setBypass(bool bypass) {
   } else {
     o_exe = this;
   }
+}
+
+int AbstractDriver::setDrvProperty(const std::string& key, const std::string& value){
+  return 0;
+}
+
+chaos::common::data::CDWUniquePtr AbstractDriver::getDrvProperties(){
+  chaos::common::data::CDWUniquePtr ret(new chaos::common::data::CDataWrapper());
+  return ret;
 }
