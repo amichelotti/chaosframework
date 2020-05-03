@@ -81,6 +81,9 @@ namespace chaos{
 					//! unique uuid for the instance
                     std::string driver_uuid;
 					
+                    //! driver Name
+                    std::string driverName;
+					
 					//! used by driver manager to identity the instance by the hashing
 					std::string identification_string;
 					
@@ -179,6 +182,21 @@ namespace chaos{
                      */
                     virtual MsgManagmentResultType::MsgManagmentResult execOpcode(DrvMsgPtr cmd) = 0;
                     std::string getUid(){return driver_uuid;}
+                    /**
+                     * @brief return a CDataWrapper (JSON) with the optional properties of a driver
+                     * 
+                     * @return properties
+                     */
+                    virtual chaos::common::data::CDWUniquePtr getDrvProperties();
+                    /**
+                     * @brief Set the Drv property 
+                     * 
+                     * @param key name of the property
+                     * @param value its value
+                     * @return 0 if success
+                     */
+                    virtual int setDrvProperty(const std::string& key, const std::string& value);
+
                 };
                 
                 

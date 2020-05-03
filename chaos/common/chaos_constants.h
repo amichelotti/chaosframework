@@ -136,7 +136,7 @@ namespace chaos {
         //! the regular expression for check the wel format key/valuparameter list for CS_CMDM_OPT_RPC_IMPL_KV_PARAM
         static const char * const OPT_RPC_IMPL_KV_PARAM_STRING_REGEX    = "([a-zA-Z0-9/_,.]+)=([a-zA-Z0-9/_,.]+)(\\|([a-zA-Z0-9/_,.]+):([a-zA-Z0-9/_,.]+))*";
         //! define the default time for rpc operation
-        static const unsigned int GlobalRPCTimeoutinMSec                = 5000;
+        static const unsigned int GlobalRPCTimeoutinMSec                = 20000;
     }
     /** @} */ // end of RpcConfigurationKey
     
@@ -721,6 +721,10 @@ namespace chaos {
     namespace ControlUnitNodeDefinitionKey {
         //! param to pass to the control unit during load operation[ string]
         static const char * const CONTROL_UNIT_LOAD_PARAM                           = "cudk_load_param";
+
+        //! param control unit description
+        static const char * const CONTROL_UNIT_DESC                                = "cudk_desc";
+        
         //! param to pass to the control unit during init operation[ int64]
         static const char * const CONTROL_UNIT_RUN_ID                               = "cudk_run_id";
         //! Description for the control unit dirvers [vector[string, string, string]*]
@@ -737,6 +741,11 @@ namespace chaos {
 
         //! The information coming from the driver
         static const char * const CONTROL_UNIT_DRIVER_INFO	                        = "cudk_driver_info";
+
+        //! The information coming from the CU
+        static const char * const CONTROL_UNIT_CU_INFO	                            = "cudk_cu_info";
+        
+
         
         //!key for dataset description (array of per-attribute document)
         static const char * const CONTROL_UNIT_DATASET_DESCRIPTION                  = "cudk_ds_desc";
