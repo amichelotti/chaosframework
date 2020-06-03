@@ -21,6 +21,7 @@
 #include "NodeRegister.h"
 
 #include <chaos/common/property/property.h>
+#include "../../ChaosMetadataService.h"
 
 #include "../../batch/unit_server/UnitServerAckBatchCommand.h"
 #include "../../batch/control_unit/RegistrationAckBatchCommand.h"
@@ -44,7 +45,7 @@ CDWUniquePtr NodeRegister::execute(CDWUniquePtr api_data){
     CHECK_CDW_THROW_AND_LOG(api_data, USRA_ERR, -1, "No parameter found")
     CDWUniquePtr result;
     if(!api_data->hasKey(NodeDefinitionKey::NODE_UNIQUE_ID)) {
-        throw CException(-1, "Node unique id not found", __PRETTY_FUNCTION__);
+        throw CException(-1, "Node unique id not found:"+api_data->getJSONString(), __PRETTY_FUNCTION__);
     }
     
     if(!api_data->hasKey(NodeDefinitionKey::NODE_TYPE)) {
@@ -113,9 +114,16 @@ CDWUniquePtr NodeRegister::simpleRegistration(CDWUniquePtr api_data) {
     GET_DATA_ACCESS(NodeDataAccess, n_da, -1);
     const std::string node_uid = api_data->getStringValue(NodeDefinitionKey::NODE_UNIQUE_ID);
     //check if node is already up and running
+#ifdef HEALTH_ON_DB
+
     if((err = n_da->isNodeAlive(node_uid, alive))){
         LOG_AND_TROW(USRA_ERR, -4, CHAOS_FORMAT("Error checking if node %1% already running", %node_uid));
-    } else if(alive) {
+    } 
+#else
+    alive=ChaosMetadataService::getInstance()->isNodeAlive(node_uid);
+#endif
+    
+    if(alive) {
         USRA_ERR<<"NODE:"<<node_uid<<" already alive wait 10s";
         api_data->addInt32Value(MetadataServerNodeDefinitionKeyRPC::PARAM_REGISTER_NODE_RESULT,
                                 ErrorCode::EC_MDS_NODE_REGISTRATION_FAILURE_INSTANCE_ALREADY_RUNNING);

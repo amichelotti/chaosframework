@@ -73,7 +73,7 @@ last_used_sb_idx(3){
     installCommand(agent::AgentProcessController::command_alias, MDS_BATCH_COMMAND_INSTANCER(agent::AgentProcessController));
     installCommand(agent::AgentCheckAgentProcess::command_alias, MDS_BATCH_COMMAND_INSTANCER(agent::AgentCheckAgentProcess));
     installCommand(agent::AgentRemoveNodeSafety::command_alias, MDS_BATCH_COMMAND_INSTANCER(agent::AgentRemoveNodeSafety));
-    installCommand(agent::AgentLoggingNodeManagement::command_alias, MDS_BATCH_COMMAND_INSTANCER(agent::AgentLoggingNodeManagement));
+   // installCommand(agent::AgentLoggingNodeManagement::command_alias, MDS_BATCH_COMMAND_INSTANCER(agent::AgentLoggingNodeManagement));
     
     //add all sandbox instances
     if(ChaosMetadataService::getInstance()->getGlobalConfigurationInstance()->hasOption(OPT_BATCH_SANDBOX_SIZE)) {
@@ -139,7 +139,7 @@ uint32_t MDSBatchExecutor::getNextSandboxToUse() {
 chaos::common::batch_command::BatchCommand * MDSBatchExecutor::instanceCommandInfo(const std::string& command_alias,
                                                                                    uint32_t submission_rule,
                                                                                    uint32_t submission_retry_delay,
-                                                                                   uint64_t scheduler_step_delay) {
+                                                                                   int64_t scheduler_step_delay) {
     //install command into the batch command executor root class
     MDSBatchCommand *result = (MDSBatchCommand*) BatchCommandExecutor::instanceCommandInfo(command_alias,
                                                                                            submission_rule,

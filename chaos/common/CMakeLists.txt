@@ -4,6 +4,30 @@ project(chaos_common)
 MESSAGE(" CMAKELIST framework/chaos/common")
 MESSAGE ("CHAOS_TARGET:" ${CHAOS_TARGET})
 
+
+IF(KAFKA_ENABLE)
+MESSAGE("ENABLING KAFKA")
+ExternalProject_Add(
+	 jsonCpp
+	 GIT_REPOSITORY https://github.com/edenhill/librdkafka.git
+	 
+     GIT_PROGRESS 1
+     PREFIX "${CMAKE_BINARY_DIR}/ext_dep/librdkafka-prefix"
+	 SOURCE_DIR "${CMAKE_BINARY_DIR}/ext_dep/librdkafka-src"
+	 BINARY_DIR "${CMAKE_BINARY_DIR}/ext_dep/librdkafka-build"
+	  
+     CMAKE_ARGS
+	  -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}  -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+	 
+	 LOG_DOWNLOAD 1
+    LOG_UPDATE 1
+    LOG_CONFIGURE 1
+    LOG_BUILD 1
+    LOG_INSTALL 1
+	)
+
+ENDIF(KAFKA_ENABLE)
+
 if(WIN32)
 set(CMAKE_SUPPRESS_REGENERATION true)
 ELSE(WIN32)
@@ -91,6 +115,7 @@ ExternalProject_Add(
 ENDIF(WIN32)
 
 
+
 IF (CLING_VIRTUAL_MACHINE_ENABLE)
   MESG("Using ${CMAKE_BINARY_DIR}/ext_dep/cling-src for download cling")
   IF(NOT EXISTS ${CMAKE_BINARY_DIR}/ext_dep/cling-src)
@@ -132,6 +157,8 @@ IF (CLING_VIRTUAL_MACHINE_ENABLE)
 	   add_dependencies(${PROJECT_NAME} cling)
   ENDIF()
 ENDIF()
+
+SET(BUILD_LIBRARY ${FrameworkLib})
 
 SET(common_lib_src  ChaosCommon.cpp
                     chaos_errors.cpp
@@ -316,7 +343,15 @@ SET(common_lib_src ${common_lib_src}
                     message/MultiAddressMessageChannel.cpp
                     message/MultiAddressMessageRequestFuture.cpp
                     message/PerformanceNodeChannel.cpp
-                    message/MessageRequestDomain.cpp)
+                    message/MessageRequestDomain.cpp
+                    message/MessagePublishSubscribeBase.cpp
+                    message/MessagePSProducer.cpp)
+
+IF(KAFKA_ENABLE)
+SET(common_lib_src ${common_lib_src}
+message/impl//kafka/MessagePSKafkaProducer.cpp message/impl//kafka/MessagePSRDKafka.cpp)
+SET(BUILD_LIBRARY ${BUILD_LIBRARY} rdkafka)
+ENDIF()
 
 SET(common_lib_src ${common_lib_src}
                     network/NetworkBroker.cpp
@@ -337,7 +372,6 @@ SET(common_lib_src ${common_lib_src}
                     utility/SWEService.cpp
                     utility/CheckList.cpp
                     utility/AggregatedCheckList.cpp
-                    utility/TimingUtil.cpp
                     utility/AbstractListener.cpp
                     utility/AbstractListenerContainer.cpp
                     utility/ProcStat.cpp
@@ -345,6 +379,7 @@ SET(common_lib_src ${common_lib_src}
                     utility/InetUtility.cpp
                     utility/FSUtility.cpp
                     utility/Base64Util.cpp
+                    utility/TimingUtil.cpp
                     utility/Random.cpp)
 
 SET(common_lib_src ${common_lib_src}
@@ -398,6 +433,9 @@ SET(common_lib_src ${common_lib_src}
 SET(common_lib_src ${common_lib_src}
                     rpc/RpcClientMetricCollector.cpp
                     rpc/RpcServerMetricCollector.cpp)
+
+SET(BUILD_LIBRARY ${BUILD_LIBRARY} prometheus-cpp-core prometheus-cpp-pull)
+
 ELSE(CHAOS_PROMETHEUS)
 MESG("Metrics source code is not included")  
 ENDIF(CHAOS_PROMETHEUS)
@@ -459,7 +497,6 @@ ENDIF()
 target_compile_definitions(${PROJECT_NAME} PRIVATE CLING_VIRTUAL_MACHINE=${CLING_VIRTUAL_MACHINE})
 
 
-SET(BUILD_LIBRARY ${FrameworkLib})
 IF(WIN32)
 MESSAGE("ALEDEBUG CMAKE_INSTALL_PREFIX" ${CMAKE_INSTALL_PREFIX} )
 set (BOOST_LIBPATH  ${CMAKE_INSTALL_PREFIX}/boostinstall/lib )
@@ -479,9 +516,6 @@ IF (WIN32)
 ENDIF(WIN32)
 ENDIF()
 
-IF(CHAOS_PROMETHEUS)
-  SET(BUILD_LIBRARY ${BUILD_LIBRARY} prometheus-cpp-core prometheus-cpp-pull)
-ENDIF(CHAOS_PROMETHEUS)
 
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${BUILD_LIBRARY})
 
@@ -624,4 +658,4 @@ INSTALL(FILES ${files} DESTINATION include/chaos/common/script/lua/core)
 
 INSTALL(TARGETS ${PROJECT_NAME}
         DESTINATION "lib"
-        PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ WORLD_EXECUTE)
+        PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)

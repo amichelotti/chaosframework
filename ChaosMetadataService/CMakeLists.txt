@@ -305,6 +305,9 @@ SET(cnd_src  ${cnd_src}	api/node/NodeGroup.cpp
                         api/node/NodeHealthStatus.cpp
                         api/node/NodeLoadCompletion.cpp
                         api/node/NodeSearch.cpp
+                        api/node/NodeNewDelete.cpp
+                        api/node/NodeSetDescription.cpp
+
                         api/node/UpdateProperty.cpp
                         api/node/UpdatePropertyDefaultValues.cpp
                         api/node/GetPropertyDefaultValues.cpp
@@ -486,4 +489,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE USE_MONGODB3_DRIVER=1)
 # target_compile_definitions(${PROJECT_NAME} PRIVATE USE_CASSANDRA_DRIVER=1)
 
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${BUILD_LIBRARY})
-INSTALL_TARGETS(/bin ${PROJECT_NAME})
+#INSTALL_TARGETS(/bin ${PROJECT_NAME})
+INSTALL(TARGETS ${PROJECT_NAME}
+        DESTINATION "bin"
+        PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)

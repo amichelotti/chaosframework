@@ -21,9 +21,9 @@
 
 #include "NodeGetDescription.h"
 
-#define USRA_INFO INFO_LOG(NodeRegister)
-#define USRA_DBG  DBG_LOG(NodeRegister)
-#define USRA_ERR  ERR_LOG(NodeRegister)
+#define USRA_INFO INFO_LOG(NodeGetDescription)
+#define USRA_DBG  DBG_LOG(NodeGetDescription)
+#define USRA_ERR  ERR_LOG(NodeGetDescription)
 
 using namespace chaos::common::data;
 using namespace chaos::metadata_service::api::node;

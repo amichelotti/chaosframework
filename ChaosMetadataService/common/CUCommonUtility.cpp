@@ -221,7 +221,7 @@ void CUCommonUtility::addDataServicePack(ChaosUniquePtr<chaos::common::data::CDa
       
     }
     if(data_services.size()>0) {
-        CUCU_DBG << CHAOS_FORMAT("Found %1% data services available", %data_services.size());
+      //  CUCU_DBG << CHAOS_FORMAT("Found %1% data services available", %data_services.size());
         BOOST_FOREACH(ChaosSharedPtr<CDataWrapper> ds_element, data_services) {
             if(ds_element->hasKey(chaos::NodeDefinitionKey::NODE_DIRECT_IO_ADDR) &&
                ds_element->hasKey(chaos::DataServiceNodeDefinitionKey::DS_DIRECT_IO_ENDPOINT)){
@@ -345,11 +345,14 @@ ChaosUniquePtr<chaos::common::data::CDataWrapper> CUCommonUtility::initDataPack(
     
     //update run id
     //update the cotnrol unit id
-    if((err = cu_da->getNextRunID(cu_uid,
+
+    // better to return the timestamp is always growing, has a more information and faster
+  /*  if((err = cu_da->getNextRunID(cu_uid,
                                   run_id))) {
         LOG_AND_TROW(CUCU_ERR, err, CHAOS_FORMAT("Error incrementig run id for control unit %1%", %cu_uid));
     }
-    
+    */
+   run_id=chaos::common::utility::TimingUtil::getTimeStamp();
     //get the dataset of the control unit
     if((err = cu_da->getDataset(cu_uid,
                                 &result))) {

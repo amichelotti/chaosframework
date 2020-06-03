@@ -86,6 +86,21 @@ namespace chaos {
             void start();
             void stop();
             void deinit();
+            /**
+             * @brief Look on cache to retrive live nodes
+             * 
+             * @param uids vector of nodes
+             * @return std::vector<bool> return a corresponding array of bool
+             */
+            std::vector<bool> areNodeAlive(const ChaosStringVector& uids);
+            bool isNodeAlive(const std::string& uid);
+
+            /**
+             * @brief remove storage data to from
+             * 
+             * 
+             */
+            int removeStorageData(const std::string& nodeuid,uint64_t start,uint64_t end);
         };
     }
 }

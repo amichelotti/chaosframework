@@ -12,6 +12,9 @@ SET(chaos_cde_src cde.cpp)
 ADD_EXECUTABLE(ChaosDataExport ${chaos_cde_src})
 
 
-TARGET_LINK_LIBRARIES(ChaosDataExport chaos_metadata_service_client ${FrameworkLib})
+TARGET_LINK_LIBRARIES(ChaosDataExport chaos_metadata_service_client  ${FrameworkLib})
 
-INSTALL_TARGETS(/bin ChaosDataExport)
+#INSTALL_TARGETS(/bin ChaosDataExport)
+INSTALL(TARGETS ChaosDataExport
+        DESTINATION "bin"
+        PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
