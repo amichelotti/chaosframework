@@ -23,26 +23,32 @@
 #include "ChaosMetadataService.h"
 #include "DriverPoolManager.h"
 #include "QueryDataConsumer.h"
+#include "object_storage/object_storage.h"
 
 #include <csignal>
 #include <chaos/common/exception/CException.h>
 #include <boost/format.hpp>
 #include <boost/algorithm/string.hpp>
+#include <chaos/common/healt_system/HealtManager.h>
+#include <chaos/common/io/SharedManagedDirecIoDataDriver.h>
 
 #include <chaos/common/utility/ObjectFactoryRegister.h>
 #include <chaos/common/configuration/GlobalConfiguration.h>
 using namespace std;
 using namespace chaos;
+using namespace chaos::common::io;
 
 using namespace chaos::common::utility;
 using namespace chaos::common::async_central;
 using namespace chaos::common::data::structured;
+using namespace chaos::metadata_service::cache_system;
 
 using namespace chaos::metadata_service;
 
 using namespace chaos::metadata_service;
 using namespace chaos::metadata_service::api;
 using namespace chaos::metadata_service::batch;
+using namespace chaos::common::healt_system;
 
 using namespace chaos::service_common::persistence::data_access;
 
@@ -52,7 +58,7 @@ uint64_t ChaosMetadataService::timePrecisionMask=0xFFFFFFFFFFFFFFF0ULL;
 #define LCND_LAPP   INFO_LOG(ChaosMetadataService)
 #define LCND_LDBG   DBG_LOG(ChaosMetadataService)
 #define LCND_LERR   ERR_LOG(ChaosMetadataService)
-
+#define log(x) LCND_LDBG<<x
 ChaosMetadataService::ChaosMetadataService(){ingore_unreg_po = true;
 };
 ChaosMetadataService::~ChaosMetadataService(){}
@@ -164,6 +170,11 @@ void ChaosMetadataService::init(void *init_data)  {
                                                  NULL,
                                                  "MDSConousManager",
                                                  __PRETTY_FUNCTION__);
+
+        InizializableService::initImplementation(SharedManagedDirecIoDataDriver::getInstance(), NULL, "SharedManagedDirecIoDataDriver", __PRETTY_FUNCTION__);
+
+        StartableService::initImplementation(HealtManager::getInstance(), NULL, "HealthManager", __PRETTY_FUNCTION__);
+
         
     } catch (CException& ex) {
         DECODE_CHAOS_EXCEPTION(ex)
@@ -191,9 +202,9 @@ void ChaosMetadataService::start()  {
         
         //register this process on persistence database
         persistence::data_access::DataServiceDataAccess *ds_da = DriverPoolManager::getInstance()->getPersistenceDataAccess<persistence::data_access::DataServiceDataAccess>();
-
+        std::string unique_uid=NetworkBroker::getInstance()->getRPCUrl();
         ds_da->registerNode(setting.ha_zone_name,
-                            NetworkBroker::getInstance()->getRPCUrl(),
+                            unique_uid,
                             NetworkBroker::getInstance()->getDirectIOUrl(),
                             0);
 
@@ -201,6 +212,14 @@ void ChaosMetadataService::start()  {
         chaos::common::async_central::AsyncCentralManager::getInstance()->addTimer(this,
                                                                                    0,
                                                                                    chaos::common::constants::HBTimersTimeoutinMSec);
+
+
+        StartableService::startImplementation(HealtManager::getInstance(), "HealthManager", __PRETTY_FUNCTION__);
+        HealtManager::getInstance()->addNewNode(unique_uid);
+        HealtManager::getInstance()->addNodeMetricValue(unique_uid,
+                                                            NodeHealtDefinitionKey::NODE_HEALT_STATUS,
+                                                            NodeHealtDefinitionValue::NODE_HEALT_STATUS_START);
+            
         waitCloseSemaphore.wait();
     } catch (CException& ex) {
         DECODE_CHAOS_EXCEPTION(ex)
@@ -248,10 +267,144 @@ void ChaosMetadataService::timeout() {
     }
 }
 
+bool ChaosMetadataService::isNodeAlive(const std::string& uid){
+    ChaosStringVector s;
+    s.push_back(uid);
+    bool alive=areNodeAlive(s)[0];
+    //LCND_LDBG<<"NODE:"<<uid<<" "<<((alive)?"TRUE":"FALSE");
+    return alive;
+    }
+using namespace chaos::metadata_service::object_storage::abstraction;
+using namespace chaos::metadata_service::persistence::data_access;
+
+int ChaosMetadataService::removeStorageData(const std::string& control_unit_found,uint64_t start,uint64_t remove_until_ts){
+    int err;
+    auto *obj_storage_da = DriverPoolManager::getInstance()->getObjectStorageDrv().getDataAccess<ObjectStorageDataAccess>();
+
+    if(obj_storage_da==NULL ){
+        LCND_LERR<< " cannot access object storage resources";
+        return -1;
+    }
+    LCND_LDBG<<" deleting node storage "<<control_unit_found<<" from:"<<start<<" to:"<<remove_until_ts;
+      const std::string output_key    = control_unit_found + DataPackPrefixID::OUTPUT_DATASET_POSTFIX;
+        const std::string input_key     = control_unit_found + DataPackPrefixID::INPUT_DATASET_POSTFIX;
+        const std::string system_key    = control_unit_found + DataPackPrefixID::SYSTEM_DATASET_POSTFIX;
+        const std::string custom_key    = control_unit_found + DataPackPrefixID::CUSTOM_DATASET_POSTFIX;
+        const std::string health_key    = control_unit_found + NodeHealtDefinitionKey::HEALT_KEY_POSTFIX;
+        const std::string dev_alarm_key    = control_unit_found + DataPackPrefixID::DEV_ALARM_DATASET_POSTFIX;
+        const std::string cu_alarm_key    = control_unit_found + DataPackPrefixID::CU_ALARM_DATASET_POSTFIX;
+      
+       try {
+            log(CHAOS_FORMAT("Remove data for key %1%", %output_key));
+            
+            if((err = obj_storage_da->deleteObject(output_key,
+                                                   start,
+                                                   remove_until_ts))){
+                log(CHAOS_FORMAT("Error erasing key %1% for control unit %2% with error %3%", %output_key%control_unit_found%err));
+            }
+            
+            log(CHAOS_FORMAT("Remove data for key %1%", %input_key));
+            if((err = obj_storage_da->deleteObject(input_key,
+                                                   start,
+                                                   remove_until_ts))){
+                log(CHAOS_FORMAT("Error erasing key %1% for control unit %2% with error %3%", %input_key%control_unit_found%err));
+            }
+            
+            log(CHAOS_FORMAT("Remove data for key %1%", %system_key));
+            if((err = obj_storage_da->deleteObject(system_key,
+                                                   start,
+                                                   remove_until_ts))){
+                log(CHAOS_FORMAT("Error erasing key %1% for control unit %2% with error %3%", %system_key%control_unit_found%err));
+            }
+            
+            log(CHAOS_FORMAT("Remove data for key %1%", %custom_key));
+            if((err = obj_storage_da->deleteObject(custom_key,
+                                                   start,
+                                                   remove_until_ts))){
+                log(CHAOS_FORMAT("Error erasing key %1% for control unit %2% with error %3%", %custom_key%control_unit_found%err));
+            }
+            
+            log(CHAOS_FORMAT("Remove data for key %1%", %health_key));
+            if((err = obj_storage_da->deleteObject(health_key,
+                                                   start,
+                                                   remove_until_ts))){
+                log(CHAOS_FORMAT("Error erasing key %1% for control unit %2% with error %3%", %health_key%control_unit_found%err));
+            }
+            
+            log(CHAOS_FORMAT("Remove data for key %1%", %dev_alarm_key));
+            if((err = obj_storage_da->deleteObject(dev_alarm_key,
+                                                   start,
+                                                   remove_until_ts))){
+                log(CHAOS_FORMAT("Error erasing key %1% for control unit %2% with error %3%", %dev_alarm_key%control_unit_found%err));
+            }
+            
+            log(CHAOS_FORMAT("Remove data for key %1%", %cu_alarm_key));
+            if((err = obj_storage_da->deleteObject(cu_alarm_key,
+                                                   start,
+                                                   remove_until_ts))){
+                log(CHAOS_FORMAT("Error erasing key %1% for control unit %2% with error %3%", %cu_alarm_key%control_unit_found%err));
+            }
+            
+            log(CHAOS_FORMAT("Remove log for cu %1%", %control_unit_found));
+            if((err = DriverPoolManager::getInstance()->getPersistenceDataAccess<persistence::data_access::LoggingDataAccess>()->eraseLogBeforTS(control_unit_found,
+                                                                                                    remove_until_ts))){
+                log(CHAOS_FORMAT("Error erasing logging for control unit %1% with error %2%", %control_unit_found%err));
+            }
+            }catch(CException& ex){
+            log(ex.what());
+            return -100;
+        }catch(...){
+            log("Undeterminated error during ageing management");
+            return -200;
+        }
+    return err;
+
+}
+
+std::vector<bool> ChaosMetadataService::areNodeAlive(const ChaosStringVector& uids){
+        int err=0;
+        std::vector<bool> res;
+        CacheDriver& cache_slot = DriverPoolManager::getInstance()->getCacheDrv();
+        DataBuffer data_buffer;
+        MultiCacheData multi_cached_data;
+        ChaosStringVector keys;
+        for(ChaosStringVector::const_iterator i=uids.begin();i!=uids.end();i++){
+            keys.push_back((*i)+NodeHealtDefinitionKey::HEALT_KEY_POSTFIX);
+        }
+        if(keys.size()==0) return res;
+        err = cache_slot.getData(keys,
+                                 multi_cached_data);
+        uint64_t now=chaos::common::utility::TimingUtil::getTimeStamp();
+        for(ChaosStringVectorConstIterator it = keys.begin(),
+            end = keys.end();
+            it != end;
+            it++) {
+            const CacheData& cached_element = multi_cached_data[*it];
+            if(!cached_element ||
+               cached_element->size() == 0) {
+                res.push_back(false);
+            } else {
+                CDataWrapper ca(cached_element->data(),cached_element->size());
+                uint64_t ts=0;
+                if(ca.hasKey(NodeHealtDefinitionKey::NODE_HEALT_MDS_TIMESTAMP)){
+                    ts=ca.getInt64Value(NodeHealtDefinitionKey::NODE_HEALT_MDS_TIMESTAMP);
+                } else if(ca.hasKey(DataPackCommonKey::DPCK_TIMESTAMP)){
+                    ts=ca.getInt64Value(DataPackCommonKey::DPCK_TIMESTAMP);
+                }
+                 res.push_back((ts>(now-(2*chaos::common::constants::HBTimersTimeoutinMSec))));
+
+            }
+        }
+        return res;
+    
+}
+
 /*
  Stop the toolkit execution
  */
 void ChaosMetadataService::stop() {
+    CHAOS_NOT_THROW(StartableService::stopImplementation(HealtManager::getInstance(), "HealthManager", __PRETTY_FUNCTION__););
+
     chaos::common::async_central::AsyncCentralManager::getInstance()->removeTimer(this);
     
     //stop data consumer
@@ -268,6 +421,10 @@ void ChaosMetadataService::stop() {
  Deiniti all the manager
  */
 void ChaosMetadataService::deinit() {
+    InizializableService::deinitImplementation(SharedManagedDirecIoDataDriver::getInstance(), "SharedManagedDirecIoDataDriver", __PRETTY_FUNCTION__);
+
+    CHAOS_NOT_THROW(StartableService::deinitImplementation(HealtManager::getInstance(), "HealthManager", __PRETTY_FUNCTION__););
+
     InizializableService::deinitImplementation(cron_job::MDSCronusManager::getInstance(),
                                                "MDSConousManager",
                                                __PRETTY_FUNCTION__);
