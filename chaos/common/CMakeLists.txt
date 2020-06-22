@@ -3,21 +3,62 @@ project(chaos_common)
 #### required libraries
 MESSAGE(" CMAKELIST framework/chaos/common")
 MESSAGE ("CHAOS_TARGET:" ${CHAOS_TARGET})
+option(KAFKA_ASIO_ENABLE "KAFKA ASIO ENABLE" OFF)
 
 
-IF(KAFKA_ENABLE)
-MESSAGE("ENABLING KAFKA")
-ExternalProject_Add(
+set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
+
+
+
+if(WIN32)
+  SET(BUILD_FORCE_STATIC 1)
+
+  set(CMAKE_SUPPRESS_REGENERATION true)
+  ExternalProject_Add(
 	 jsonCpp
-	 GIT_REPOSITORY https://github.com/edenhill/librdkafka.git
+	 GIT_REPOSITORY https://github.com/open-source-parsers/jsoncpp.git
 	 
-     GIT_PROGRESS 1
-     PREFIX "${CMAKE_BINARY_DIR}/ext_dep/librdkafka-prefix"
-	 SOURCE_DIR "${CMAKE_BINARY_DIR}/ext_dep/librdkafka-src"
-	 BINARY_DIR "${CMAKE_BINARY_DIR}/ext_dep/librdkafka-build"
+	 GIT_TAG 1.9.2
+     PREFIX "${CMAKE_BINARY_DIR}/ext_dep/libjsoncpp-prefix"
+	 SOURCE_DIR "${CMAKE_BINARY_DIR}/ext_dep/libjsoncpp-src"
+	 BINARY_DIR "${CMAKE_BINARY_DIR}/ext_dep/libjsoncpp-build"
 	  
      CMAKE_ARGS
-	  -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}  -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+	  -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX} -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DJSONCPP_WITH_TESTS=OFF -DJSONCPP_WITH_POST_BUILD_UNITTEST=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+	 
+	 LOG_DOWNLOAD 1
+    LOG_UPDATE 1
+    LOG_CONFIGURE 1
+    LOG_BUILD 1
+    LOG_INSTALL 1
+  )
+  MESG("Configure libBoost as CMake")
+	ExternalProject_Add(
+	 boost
+	 GIT_REPOSITORY https://github.com/boostorg/boost.git
+	 PREFIX ${CMAKE_CURRENT_BINARY_DIR}/boost
+	GIT_TAG boost-1.70.0
+    BUILD_IN_SOURCE 1
+    UPDATE_COMMAND ""
+    CONFIGURE_COMMAND bootstrap.bat
+    BUILD_COMMAND b2 link=static install --prefix=${CMAKE_INSTALL_PREFIX}/boostinstall
+    INSTALL_COMMAND b2 install --prefix=${CMAKE_INSTALL_PREFIX}/boostinstall
+    LOG_DOWNLOAD 1
+    LOG_UPDATE 1
+    LOG_CONFIGURE 1
+    LOG_BUILD 1
+    LOG_INSTALL 1
+	)
+
+ELSE(WIN32)
+  ExternalProject_Add(
+	 jsonCpp
+	 GIT_REPOSITORY https://github.com/bisegni/jsoncpp	 
+     PREFIX "${CMAKE_BINARY_DIR}/ext_dep/libjsoncpp-prefix"
+	 SOURCE_DIR "${CMAKE_BINARY_DIR}/ext_dep/libjsoncpp-src"
+	 BINARY_DIR "${CMAKE_BINARY_DIR}/ext_dep/libjsoncpp-build"
+     CMAKE_ARGS
+	  -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX} -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DJSONCPP_WITH_TESTS=OFF -DJSONCPP_WITH_POST_BUILD_UNITTEST=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
 	 
 	 LOG_DOWNLOAD 1
     LOG_UPDATE 1
@@ -25,25 +66,19 @@ ExternalProject_Add(
     LOG_BUILD 1
     LOG_INSTALL 1
 	)
-
-ENDIF(KAFKA_ENABLE)
-
-if(WIN32)
-set(CMAKE_SUPPRESS_REGENERATION true)
-ELSE(WIN32)
-IF(NOT CHAOS_DISABLE_EVENTFD)
-  CheckConfigureBuild(event libevent:release-2.1.8-stable "--disable-openssl;--enable-static" https://github.com/amichelotti )
-ELSE()
-IF(CHAOS_TARGET)
-## there is the risk that for old targets it selects epoll that is not supported in old kernels
-  MESSAGE ("FORCE ZMQ TO USE POLL for ${CHAOS_TARGET} with compilers ${CMAKE_CXX_COMPILER}")
-  SET(ZMQ_FLAGS "--with-poller=select --disable-eventfd --enable-static --enable-force-CXX98-compat --disable-curve --disable-curve-keygen --disable-libunwind")
-#  SET(ZMQ_FLAGS "")
-ELSE()
-  SET(ZMQ_FLAGS "")
-ENDIF()
-ENDIF()
+  IF(NOT CHAOS_DISABLE_EVENTFD)
+    CheckConfigureBuild(event libevent:release-2.1.8-stable "--disable-openssl;--enable-static" https://github.com/amichelotti )
+  ELSE()
+    IF(CHAOS_TARGET)
+    ## there is the risk that for old targets it selects epoll that is not supported in old kernels
+      MESSAGE ("FORCE ZMQ TO USE POLL for ${CHAOS_TARGET} with compilers ${CMAKE_CXX_COMPILER}")
+      SET(ZMQ_FLAGS "--with-poller=select --disable-eventfd --enable-static --enable-force-CXX98-compat --disable-curve --disable-curve-keygen --disable-libunwind")
+    ELSE()
+      SET(ZMQ_FLAGS "")
+    ENDIF()
+  ENDIF()
 ENDIF(WIN32)
+
 IF (CHAOS_TARGET)
   IF(NEW_ZMQ)
       MESG("Configure NEW libzmq with autotools")  
@@ -70,39 +105,38 @@ IF (CHAOS_TARGET)
 	 LOG_BUILD ON)
      ENDIF()
 
-if(WIN32)
-MESG("Configure libBoost as CMake")
-	ExternalProject_Add(
-	 boost
-	 GIT_REPOSITORY https://github.com/boostorg/boost.git
-	 PREFIX ${CMAKE_CURRENT_BINARY_DIR}/boost
-	GIT_TAG boost-1.70.0
-    GIT_PROGRESS 1
-    BUILD_IN_SOURCE 1
-    UPDATE_COMMAND ""
-    CONFIGURE_COMMAND bootstrap.bat
-    BUILD_COMMAND b2 link=static install --prefix=${CMAKE_INSTALL_PREFIX}/boostinstall
-    INSTALL_COMMAND b2 install --prefix=${CMAKE_INSTALL_PREFIX}/boostinstall
-    LOG_DOWNLOAD 1
-    LOG_UPDATE 1
-    LOG_CONFIGURE 1
-    LOG_BUILD 1
-    LOG_INSTALL 1
-	)
-MESSAGE("Configure JsonCpp as CMake External Project")
+
+     ExternalProject_Add(
+      zlib
+      GIT_REPOSITORY https://github.com/madler/zlib.git 
+      PREFIX "${CMAKE_BINARY_DIR}/ext_dep/zlib-prefix"
+      SOURCE_DIR "${CMAKE_BINARY_DIR}/ext_dep/zlib-src"
+      BINARY_DIR "${CMAKE_BINARY_DIR}/ext_dep/zlib-build"
+   
+      CMAKE_ARGS
+       -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}  -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+      LOG_DOWNLOAD 1
+       LOG_UPDATE 1
+       LOG_CONFIGURE 1
+       LOG_BUILD 1
+       LOG_INSTALL 1
+     )
+   
+IF(KAFKA_ASIO_ENABLE)
+MESSAGE("ENABLING DEP KAFKA")
+
+add_definitions(-DKAFKA_ASIO_ENABLE)
+
+
 ExternalProject_Add(
-	 jsonCpp
-	 GIT_REPOSITORY https://github.com/open-source-parsers/jsoncpp
-	 
-	 GIT_TAG 1.9.2
-     GIT_PROGRESS 1
-     PREFIX "${CMAKE_BINARY_DIR}/ext_dep/libjsoncpp-prefix"
-	 SOURCE_DIR "${CMAKE_BINARY_DIR}/ext_dep/libjsoncpp-src"
-	 BINARY_DIR "${CMAKE_BINARY_DIR}/ext_dep/libjsoncpp-build"
-	  
-     CMAKE_ARGS
-	  -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}  -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-	 
+	 snappylib
+	 GIT_REPOSITORY https://github.com/google/snappy.git  
+   PREFIX "${CMAKE_BINARY_DIR}/ext_dep/snappylib-prefix"
+   SOURCE_DIR "${CMAKE_BINARY_DIR}/ext_dep/snappylib-src"
+   BINARY_DIR "${CMAKE_BINARY_DIR}/ext_dep/snappylib-build"
+
+   CMAKE_ARGS
+	  -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}/snappy  -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_CXX_STANDARD=11 -DSNAPPY_BUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
 	 LOG_DOWNLOAD 1
     LOG_UPDATE 1
     LOG_CONFIGURE 1
@@ -110,11 +144,49 @@ ExternalProject_Add(
     LOG_INSTALL 1
 	)
 
+ENDIF()
 
+IF(KAFKA_RDK_ENABLE)
+MESSAGE("ENABLING RDK KAFKA")
+ExternalProject_Add(
+	 librdkafa
+	 GIT_REPOSITORY https://github.com/edenhill/librdkafka.git
 
-ENDIF(WIN32)
+     PREFIX "${CMAKE_BINARY_DIR}/ext_dep/librdkafka-prefix"
+	 SOURCE_DIR "${CMAKE_BINARY_DIR}/ext_dep/librdkafka-src"
+	 BINARY_DIR "${CMAKE_BINARY_DIR}/ext_dep/librdkafka-build"
+	  
+     CMAKE_ARGS
+	  -DWITH_SSL=OFF -DRDKAFKA_BUILD_EXAMPLES=OFF -DRDKAFKA_BUILD_STATIC=ON -DRDKAFKA_BUILD_TESTS=OFF -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}  -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+	 
+	 LOG_DOWNLOAD 1
+    LOG_UPDATE 1
+    LOG_CONFIGURE 1
+    LOG_BUILD 1
+    LOG_INSTALL 1
+	)
+add_definitions(-DKAFKA_RDK_ENABLE)
 
+ENDIF(KAFKA_RDK_ENABLE)
 
+IF (CHAOS_PROMETHEUS)
+  #google performance tools
+  MESG("Add Prometheus metrics dependency")
+  ExternalProject_Add(
+  prometheus
+  GIT_REPOSITORY https://github.com/jupp0r/prometheus-cpp.git
+  GIT_TAG v0.9.0
+  PREFIX "${CMAKE_BINARY_DIR}/ext_dep/prometheus-prefix"
+  SOURCE_DIR "${CMAKE_BINARY_DIR}/ext_dep/prometheus-src"
+  BINARY_DIR "${CMAKE_BINARY_DIR}/ext_dep/prometheus-src"
+  CMAKE_ARGS  -DBUILD_SHARED_LIBS=ON -DENABLE_TESTING=OFF -DCMAKE_BUILD_TYPE=Release
+                -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
+  LOG_DOWNLOAD ON
+  LOG_CONFIGURE ON
+  LOG_BUILD ON)
+  # add definition for compilation
+  add_definitions(-DCHAOS_PROMETHEUS=1)
+ENDIF()
 
 IF (CLING_VIRTUAL_MACHINE_ENABLE)
   MESG("Using ${CMAKE_BINARY_DIR}/ext_dep/cling-src for download cling")
@@ -158,17 +230,17 @@ IF (CLING_VIRTUAL_MACHINE_ENABLE)
   ENDIF()
 ENDIF()
 
-SET(BUILD_LIBRARY ${FrameworkLib})
+SET(BUILD_LIBRARY )
 
 SET(common_lib_src  ChaosCommon.cpp
                     chaos_errors.cpp
                     log/LogManager.cpp
                     log/ChaosLoggingBackend.cpp)
 
+
 SET(common_lib_src ${common_lib_src}
-                    additional_lib/mongoose.c
-                    additional_lib/sqlite3.c
-                    additional_lib/base64.cpp)
+                    additional_lib/mongoose.c additional_lib/sqlite3.c additional_lib/base64.cpp)
+
 
 SET(common_lib_src ${common_lib_src}
                     metadata_logging/ErrorLoggingChannel.cpp
@@ -324,7 +396,8 @@ SET(common_lib_src ${common_lib_src}
                     direct_io/channel/DirectIOPerformanceServerChannel.cpp
                     direct_io/channel/DirectIOPerformanceClientChannel.cpp
                     direct_io/channel/DirectIOSystemAPIServerChannel.cpp
-                    direct_io/channel/DirectIOSystemAPIClientChannel.cpp)
+                    direct_io/channel/DirectIOSystemAPIClientChannel.cpp
+                    )
 
 SET(common_lib_src ${common_lib_src}
                     io/IODataDriver.cpp
@@ -332,7 +405,7 @@ SET(common_lib_src ${common_lib_src}
                     io/ManagedDirectIODataDriver.cpp
                     io/QueryCursor.cpp
 					          io/QueryIndexCursor.cpp
-                    io/SharedManagedDirecIoDataDriver.cpp)
+                    io/SharedManagedDirecIoDataDriver.cpp io/IODirectIOPSMsgDriver.cpp)
 
 SET(common_lib_src ${common_lib_src}
                     message/DeviceMessageChannel.cpp
@@ -345,13 +418,24 @@ SET(common_lib_src ${common_lib_src}
                     message/PerformanceNodeChannel.cpp
                     message/MessageRequestDomain.cpp
                     message/MessagePublishSubscribeBase.cpp
-                    message/MessagePSProducer.cpp)
+                    message/MessagePSProducer.cpp
+                    message/MessagePSConsumer.cpp
+                    message/MessagePSDriver.cpp)
 
-IF(KAFKA_ENABLE)
+IF(KAFKA_ASIO_ENABLE)
+SET(CMAKE_CXX_STANDARD 11)
+INCLUDE_DIRECTORIES(${CMAKE_INSTALL_PREFIX}/snappy/include message/impl/kafka/asio/ )
+SET(common_lib_src ${common_lib_src} message/impl/kafka/asio/MessagePSKafkaAsioProducer.cpp message/impl/kafka/asio/MessagePSKafkaAsio.cpp message/impl/kafka/asio/MessagePSKafkaAsioConsumer.cpp)
+link_directories(${CMAKE_INSTALL_PREFIX}/snappy/lib ${CMAKE_INSTALL_PREFIX}/snappy/lib64)
+SET(BUILD_LIBRARY snappy  ${BUILD_LIBRARY} )
+
+ENDIF(KAFKA_ASIO_ENABLE)
+
+IF(KAFKA_RDK_ENABLE)
 SET(common_lib_src ${common_lib_src}
-message/impl//kafka/MessagePSKafkaProducer.cpp message/impl//kafka/MessagePSRDKafka.cpp)
-SET(BUILD_LIBRARY ${BUILD_LIBRARY} rdkafka)
-ENDIF()
+message/impl/kafka/rdk/MessagePSKafkaProducer.cpp message/impl/kafka/rdk/MessagePSRDKafkaConsumer.cpp message/impl//kafka/rdk/MessagePSRDKafka.cpp)
+SET(BUILD_LIBRARY rdkafka ${BUILD_LIBRARY} )
+ENDIF(KAFKA_RDK_ENABLE)
 
 SET(common_lib_src ${common_lib_src}
                     network/NetworkBroker.cpp
@@ -422,6 +506,7 @@ SET(common_lib_src ${common_lib_src}
 
 IF(CHAOS_PROMETHEUS)
 MESG("Add source code for metrics: ${CHAOS_PROMETHEUS}")  
+ADD_DEFINITIONS(-DCHAOS_PROMETHEUS)
 SET(common_lib_src ${common_lib_src}
                     metric/MetricManager.cpp
                     metric/MetricCollector.cpp
@@ -434,7 +519,7 @@ SET(common_lib_src ${common_lib_src}
                     rpc/RpcClientMetricCollector.cpp
                     rpc/RpcServerMetricCollector.cpp)
 
-SET(BUILD_LIBRARY ${BUILD_LIBRARY} prometheus-cpp-core prometheus-cpp-pull)
+SET(FrameworkLib prometheus-cpp-pull prometheus-cpp-push prometheus-cpp-core ${FrameworkLib} )
 
 ELSE(CHAOS_PROMETHEUS)
 MESG("Metrics source code is not included")  
@@ -444,13 +529,16 @@ SET(common_lib_src ${common_lib_src}
                     ChaosCommonWin.cpp)
 #compile lua chaos vm and core files
 if (WIN32)
-INCLUDE_DIRECTORIES( ../../ script/lua/core ${ALL_WINDOWS_INCLUDE_DIR})
+  INCLUDE_DIRECTORIES( ../../ script/lua/core ${ALL_WINDOWS_INCLUDE_DIR})
 
-INCLUDE_DIRECTORIES(${CMAKE_INSTALL_PREFIX}/boostinstall/include/boost-1_70)
-link_directories(${CMAKE_CURRENT_BINARY_DIR}/boostinstall/lib)
+  INCLUDE_DIRECTORIES(${CMAKE_INSTALL_PREFIX}/boostinstall/include/boost-1_70)
+  link_directories(${CMAKE_CURRENT_BINARY_DIR}/boostinstall/lib)
+  add_dependencies(${PROJECT_NAME} boost)
+
 else(WIN32)
-INCLUDE_DIRECTORIES(script/lua/core ./chaos/common ./chaos/common/metadata_logging ../../)
+  INCLUDE_DIRECTORIES(script/lua/core ./chaos/common ./chaos/common/metadata_logging ../../)
 endif(WIN32)
+
 FILE(GLOB LuaCoreSource script/lua/core/*.c)
 SET(common_lib_src ${common_lib_src}
 	script/lua/LuaScriptVM.cpp
@@ -464,37 +552,13 @@ IF (CLING_VIRTUAL_MACHINE)
         script/cling/ClingRootInterpreter.cpp)
 ENDIF()
 
-IF (NOT DEFINED BUILD_FORCE_STATIC)
-
-ENDIF ()
-IF (WIN32)
-SET(BUILD_FORCE_STATIC 1)
-ENDIF(WIN32)
-
-IF (BUILD_FORCE_STATIC  )
-  ADD_LIBRARY(${PROJECT_NAME} STATIC ${common_lib_src})
-ELSE (BUILD_FORCE_STATIC)
-  ADD_LIBRARY(${PROJECT_NAME} SHARED ${common_lib_src})
-  set_target_properties(${PROJECT_NAME} PROPERTIES VERSION 1.0.0 SOVERSION 1)
-ENDIF (BUILD_FORCE_STATIC)
 
 
 
 
-IF (CHAOS_PROMETHEUS)
-add_dependencies(${PROJECT_NAME} prometheus)
-endif()
 
-IF (WIN32)
-add_dependencies(${PROJECT_NAME} libzmq)
-add_dependencies(${PROJECT_NAME} boost)
-add_dependencies(${PROJECT_NAME} jsonCpp)
-ENDIF()
 
-IF (CLING_VIRTUAL_MACHINE)
-  add_dependencies(${PROJECT_NAME} cling)
-ENDIF()
-target_compile_definitions(${PROJECT_NAME} PRIVATE CLING_VIRTUAL_MACHINE=${CLING_VIRTUAL_MACHINE})
+
 
 
 IF(WIN32)
@@ -517,7 +581,29 @@ ENDIF(WIN32)
 ENDIF()
 
 
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${BUILD_LIBRARY})
+
+IF (BUILD_FORCE_STATIC  )
+  ADD_LIBRARY(${PROJECT_NAME} STATIC ${common_lib_src})
+  TARGET_LINK_LIBRARIES(${PROJECT_NAME} z ${FrameworkLib} ${BUILD_LIBRARY})
+ELSE (BUILD_FORCE_STATIC)
+  ADD_LIBRARY(${PROJECT_NAME} SHARED ${common_lib_src})
+  set_target_properties(${PROJECT_NAME} PROPERTIES VERSION 1.0.0 SOVERSION 1)
+  TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC z ${FrameworkLib} PRIVATE ${BUILD_LIBRARY})
+ENDIF (BUILD_FORCE_STATIC)
+
+target_compile_definitions(${PROJECT_NAME} PRIVATE CLING_VIRTUAL_MACHINE=${CLING_VIRTUAL_MACHINE})
+
+IF (CHAOS_PROMETHEUS)
+add_dependencies(${PROJECT_NAME} prometheus)
+endif()
+
+add_dependencies(${PROJECT_NAME} libzmq)
+add_dependencies(${PROJECT_NAME} jsonCpp)
+
+IF (CLING_VIRTUAL_MACHINE)
+  add_dependencies(${PROJECT_NAME} cling)
+ENDIF()
+
 
 FILE(GLOB files "external_unit/*.h")
 INSTALL(FILES ${files} DESTINATION include/chaos/common/external_unit)

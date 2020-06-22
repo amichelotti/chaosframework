@@ -1,6 +1,12 @@
 project(chaos_cutoolkit)
+
+IF (NOT BUILD_FORCE_STATIC)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ENDIF ()
+
 if(WIN32)
 set(CMAKE_SUPPRESS_REGENERATION true)
+
 INCLUDE_DIRECTORIES( ../../ ${ALL_WINDOWS_INCLUDE_DIR})
 INCLUDE_DIRECTORIES(${CMAKE_INSTALL_PREFIX}/boostinstall/include/boost-1_70)
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/boostinstall/include/boost-1_70)
@@ -100,7 +106,7 @@ set (BOOST_LIBPATH  ${CMAKE_INSTALL_PREFIX}/boostinstall/lib )
 
 
 separate_arguments(chaos_cutoolkit_lib)
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} chaos_common ${ALL_WINDOWS_LIBS})
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} chaos_common jsoncpp ${ALL_WINDOWS_LIBS})
 
 FILE(GLOB files "*.h")
 INSTALL(FILES ${files} DESTINATION include/chaos/cu_toolkit)

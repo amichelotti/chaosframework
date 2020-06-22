@@ -10,26 +10,21 @@ namespace chaos {
     namespace common {
         namespace message {
 
-            class MessagePSProducer: public MessagePublishSubscribeBase {
+            class MessagePSProducer: public virtual MessagePublishSubscribeBase {
 
                 protected:
                 std::string client_id;
                 std::string defkey;
-                MessagePublishSubscribeBase*impl;
                 public:
                 MessagePSProducer();
 
                 MessagePSProducer(const std::string& clientid,const std::string& k="");
-                ~MessagePSProducer();
-                 virtual int applyConfiguration();
-                virtual void addServer(const std::string&url);
-
-                virtual int pushMsgAsync(const chaos::common::data::CDataWrapper&data,const std::string&key);
-                virtual int pushMsg(const chaos::common::data::CDataWrapper&data,const std::string&key);
-                inline int pushMsg(const chaos::common::data::CDataWrapper&data){if(defkey!="") return pushMsg(data,defkey);return -1;}
-                inline int pushMsgAsync(const chaos::common::data::CDataWrapper&data){if(defkey!="") return pushMsgAsync(data,defkey);return -1;}
-
-
+                virtual ~MessagePSProducer();
+                virtual int pushMsgAsync(const chaos::common::data::CDataWrapper&data,const std::string&key,const int32_t pnum=0);
+                virtual int pushMsg(const chaos::common::data::CDataWrapper&data,const std::string&key,const int32_t pnum=0);
+                inline int pushMsg(const chaos::common::data::CDataWrapper&data,const int32_t pnum=0){if(defkey!="") return pushMsg(data,defkey,pnum);return -1;}
+                inline int pushMsgAsync(const chaos::common::data::CDataWrapper&data,const int32_t pnum=0){if(defkey!="") return pushMsgAsync(data,defkey,pnum);return -1;}
+                virtual int flush(const int timeout=MSG_TIMEOUT_MS);
             };
         }
         }
