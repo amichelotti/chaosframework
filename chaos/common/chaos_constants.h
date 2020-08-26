@@ -488,8 +488,12 @@ namespace chaos {
         //! recovery a recoverable state of the node
         static const char * const ACTION_NODE_RECOVER                               = "recoverNodeUnit";
         
-        //! pause the run method for a determinated device
+        //! restore a predefined configuration
         static const char * const ACTION_NODE_RESTORE                               = "restoreNodeUnit";
+        
+        //! perform a calibration function
+        static const char * const ACTION_NODE_CALIBRATION                           = "calibrateNodeUnit";
+        
         
         //! restore the control unit to a determinate temporal tag
         static const char * const ACTION_NODE_RESTORE_PARAM_TAG                     = "restoreNodeTag";
@@ -1516,6 +1520,10 @@ namespace chaos {
         static const char * const NODE_HEALT_STATUS_START       = "Start";
         //! started status
         static const char * const NODE_HEALT_STATUS_STARTING    = "Starting";
+
+         //! Calibrate status
+        static const char * const NODE_HEALT_STATUS_CALIBRATE    = "Calibrating";
+       
         //! stopped status
         static const char * const NODE_HEALT_STATUS_STOP        = "Stop";
         //! stopped status

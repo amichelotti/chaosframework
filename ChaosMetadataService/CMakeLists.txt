@@ -327,6 +327,7 @@ SET(cnd_src  ${cnd_src}	api/node/NodeGroup.cpp
                         api/node/CommandInstanceSubmit.cpp
                         api/node/CommandCommonUtility.cpp
                         api/node/KillCurrentCommand.cpp
+                        api/node/NodeGenericCommand.cpp
                         api/node/ClearCommandQueue.cpp
                         api/node/ForwardNodeRpcMessage.cpp
                         api/node/GetPropertyDefaultValues.cpp

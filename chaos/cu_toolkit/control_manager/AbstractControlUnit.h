@@ -376,6 +376,10 @@ class AbstractControlUnit : public DeclareAction,
                  */
   virtual chaos::common::data::CDWUniquePtr _unitRestoreToSnapshot(chaos::common::data::CDWUniquePtr data);
 
+
+    chaos::common::data::CDWUniquePtr _unitPerformCalibration(chaos::common::data::CDWUniquePtr data);
+
+
   /*!
                  Define the control unit DataSet and Action into
                  a CDataWrapper
@@ -501,6 +505,8 @@ class AbstractControlUnit : public DeclareAction,
 
   void _updateRunScheduleDelay(uint64_t new_scehdule_delay);
 
+
+
   //!timer for update push metric
   void _updatePushRateMetric();
 
@@ -599,6 +605,17 @@ class AbstractControlUnit : public DeclareAction,
                  on saved tag
                  */
   virtual bool unitRestoreToSnapshot(AbstractSharedDomainCache* const snapshot_cache);
+
+
+  //!handler called  to perform a calibration on the unit
+  /*!
+                 This handler if defined perform a calibration for the given CU
+                 \param data optional args 
+                 \return optional calibration data
+    */
+  virtual chaos::common::data::CDWUniquePtr unitPerformCalibration(chaos::common::data::CDWUniquePtr data);
+
+
 
   //! this andler is called befor the input attribute will be updated
   virtual void unitInputAttributePreChangeHandler();

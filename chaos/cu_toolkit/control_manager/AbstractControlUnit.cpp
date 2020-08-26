@@ -390,7 +390,12 @@ bool PushStorageBurst::active(void* data __attribute__((unused))) {
         action_description = addActionDescritionInstance<AbstractControlUnit>(this,
                                                                               &AbstractControlUnit::_unitRestoreToSnapshot,
                                                                               NodeDomainAndActionRPC::ACTION_NODE_RESTORE,
-                                                                              "Restore contorl unit to a snapshot tag");
+                                                                              "Restore control unit to a snapshot tag");
+        
+        action_description = addActionDescritionInstance<AbstractControlUnit>(this,
+                                                                              &AbstractControlUnit::_unitPerformCalibration,
+                                                                              NodeDomainAndActionRPC::ACTION_NODE_CALIBRATION,
+                                                                              "Perform Calibration");
         
         action_description = addActionDescritionInstance<AbstractControlUnit>(this,
                                                                               &AbstractControlUnit::_getState,
@@ -1892,7 +1897,30 @@ bool PushStorageBurst::active(void* data __attribute__((unused))) {
     bool AbstractControlUnit::unitRestoreToSnapshot(AbstractSharedDomainCache* const snapshot_cache) {
         return true;
     }
-    
+
+    chaos::common::data::CDWUniquePtr AbstractControlUnit::_unitPerformCalibration(chaos::common::data::CDWUniquePtr data){
+         chaos::common::data::CDWUniquePtr ret;
+         std::string prev_state=HealtManager::getInstance()->getNodeMetricStringValue(control_unit_id,
+                                                            NodeHealtDefinitionKey::NODE_HEALT_STATUS);
+
+         HealtManager::getInstance()->addNodeMetricValue(control_unit_id,
+                                                            NodeHealtDefinitionKey::NODE_HEALT_STATUS,
+                                                            NodeHealtDefinitionValue::NODE_HEALT_STATUS_CALIBRATE,
+                                                            true);
+
+        ret=unitPerformCalibration(MOVE(data));
+        HealtManager::getInstance()->addNodeMetricValue(control_unit_id,
+                                                            NodeHealtDefinitionKey::NODE_HEALT_STATUS,
+                                                            prev_state,
+                                                            true);
+        return ret;
+    }
+
+    chaos::common::data::CDWUniquePtr AbstractControlUnit::unitPerformCalibration(chaos::common::data::CDWUniquePtr data){
+        ACULDBG_<<"Empty calibration:"<<(data.get()?data->getJSONString():"");
+        return CDWUniquePtr();
+    }
+
     //! this andler is called befor the input attribute will be updated
     void AbstractControlUnit::unitInputAttributePreChangeHandler() {}
     
