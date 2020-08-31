@@ -2211,7 +2211,7 @@ if (attributeInfo.maxRange.size() && v > attributeInfo.maxRange) throw MetadataL
                     break;
                 case DataType::TYPE_BYTEARRAY:
                     if (value_set->size) {
-                        if (value_set->sub_type.size() == 1) {
+                        if ((value_set->sub_type.size() == 1)&&(value_set->sub_type[0]!=DataType::SUB_TYPE_MIME)) {
                             output_attribute_dataset->addBinaryValue(value_set->name, value_set->sub_type[0], value_set->getValuePtr<char>(), value_set->size);
                         } else {
                             output_attribute_dataset->addBinaryValue(value_set->name, value_set->getValuePtr<char>(), value_set->size);
