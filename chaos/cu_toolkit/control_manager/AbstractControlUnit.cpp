@@ -460,17 +460,16 @@ bool PushStorageBurst::active(void* data __attribute__((unused))) {
        
         if(cnt){
 //        drv.finalizeArrayForKey(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_INFO);
-            ACULDBG_<<" Adding driver info to custom dataset "<<chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_INFO<<":"<<drv.getJSONString();
+            ACULDBG_<<" Adding driver properties to custom dataset "<<chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_INFO<<":"<<drv.getJSONString();
 
             getAttributeCache()->addCustomAttribute(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_INFO, drv);
             getAttributeCache()->setCustomAttributeValue(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_INFO, drv);
-        }
-         if(drv_info.get()){
+        } else if(drv_info.get()){
             ACULDBG_<<" Adding driver info to custom dataset "<<chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_CU_INFO<<":"<<drv_info->getJSONString();
             getAttributeCache()->addCustomAttribute(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_CU_INFO, *drv_info.get());
             getAttributeCache()->setCustomAttributeValue(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_CU_INFO, *drv_info.get());
         }
-
+        
     }
     
     void AbstractControlUnit::_undefineActionAndDataset() {
@@ -797,6 +796,7 @@ bool PushStorageBurst::active(void* data __attribute__((unused))) {
     void AbstractControlUnit::setDriverInfo(const chaos::common::data::CDataWrapper& info){
         drv_info.reset(new CDataWrapper);
         info.copyAllTo(*drv_info.get());
+        ACULDBG_ <<"Set Driving info:"<<drv_info->getJSONString();
     }
 
     void AbstractControlUnit::doStartSMCheckList() {
@@ -1859,9 +1859,22 @@ bool PushStorageBurst::active(void* data __attribute__((unused))) {
     void AbstractControlUnit::_goInFatalError(chaos::CException recoverable_exception) {
         //change state machine
         if (SWEService::goInFatalError(this, recoverable_exception, "AbstractControlUnit", __PRETTY_FUNCTION__)) {
+            fatalErrorHandler(recoverable_exception);
         }
+    }   
+
+   void AbstractControlUnit::goInFatalError(std::string msg,int err,std::string domain){
+        CFatalException ex(err, msg, domain);
+        _goInFatalError(ex);
+        std::stringstream ss;
+        ss<<"Fatal Error:\""<<msg<<"\" domain:\""<<domain<<"\" errcode:"<<err;
+        metadataLogging(chaos::common::metadata_logging::StandardLoggingChannel::LogLevelError,ss.str());
+
+   }
+    void AbstractControlUnit::fatalErrorHandler(const chaos::CException&ex){
+            ACULERR_<<ex.errorMessage;
     }
-    
+
     void AbstractControlUnit::_completeDatasetAttribute() {
          // alarms
         
@@ -2299,9 +2312,11 @@ if (attributeInfo.maxRange.size() && v > attributeInfo.maxRange) throw MetadataL
                 
                 //fill the dataset
                 fillCDatawrapperWithCachedValue(cache_custom_attribute_vector, *custom_attribute_dataset);
-                
+                ACULDBG_ << " Push custom:"<<custom_attribute_dataset->getJSONString();
+
                 //push out the system dataset
                 err = key_data_storage->pushDataSet(data_manager::KeyDataStorageDomainCustom, MOVE(custom_attribute_dataset));
+
                 if(!err){custom_attribute_cache.resetChangedIndex();}
             } else {
                 ACULERR_ << " Cannot allocate packet.. err:"<<err;

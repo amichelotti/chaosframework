@@ -112,36 +112,43 @@ int QueryDataMsgPSConsumer::consumeHealthDataEvent(const std::string&           
   {
     boost::mutex::scoped_lock ll(map_m);
     bool                      subok = true;
-    if (alive_map.find(key) == alive_map.end()) {
+    CDataWrapper health_data_pack((char *)channel_data->data());
+    bool isACUEU=(channel_data.get()==NULL)||(health_data_pack.hasKey(chaos::ControlUnitHealtDefinitionValue::CU_HEALT_OUTPUT_DATASET_PUSH_RATE));
+
+    if(isACUEU){
+     // DBG << "Received healt from:"<<key<<" is:"<<((channel_data.get()==NULL)?"registration":"normal");
+
       std::string rootname = key;
       size_t      pos      = key.find(NodeHealtDefinitionKey::HEALT_KEY_POSTFIX);
       if (pos != std::string::npos) {
-        // If found then erase it from string
         rootname.erase(pos, strlen(NodeHealtDefinitionKey::HEALT_KEY_POSTFIX));
-
-        std::vector<std::string> tosub = {
+      }
+      std::vector<std::string> tosub = {
             DataPackPrefixID::OUTPUT_DATASET_POSTFIX,
             DataPackPrefixID::INPUT_DATASET_POSTFIX,
             DataPackPrefixID::CUSTOM_DATASET_POSTFIX,
             DataPackPrefixID::SYSTEM_DATASET_POSTFIX,
             DataPackPrefixID::DEV_ALARM_DATASET_POSTFIX,
-            DataPackPrefixID::CU_ALARM_DATASET_POSTFIX};
-
-        for (auto i : tosub) {
-          std::string keysub = rootname + i;
-          if (cons->subscribe(keysub) != 0) {
-            ERR << " cannot subscribe to :" << cons->getLastError();
-            subok = true;
-          } else {
-            DBG << "Subscribed to:" << keysub;
-            //  alive_map[key] = TimingUtil::getTimeStamp();
-          }
+            DataPackPrefixID::CU_ALARM_DATASET_POSTFIX
+            };
+       int64_t seq=-1;
+        if(channel_data.get()&&health_data_pack.hasKey(DataPackCommonKey::DPCK_SEQ_ID)){
+          seq=health_data_pack.getInt64Value(DataPackCommonKey::DPCK_SEQ_ID);
         }
+      for (auto i : tosub) {
+          std::string keysub = rootname + i;
+          if(alive_map.find(keysub)==alive_map.end()){
+            if (cons->subscribe(keysub) != 0) {
+              ERR << seq<<"] cannot subscribe to :" << keysub<<" err:"<<cons->getLastError();
+            } else {
+              DBG << seq<<"] Subscribed to:" << keysub;
+              alive_map[keysub]= TimingUtil::getTimeStamp();
+            }
+          } else {
+           //   DBG << seq<<"] Already subscribed:" << keysub;
+
+          }
       }
-    }
-    if (channel_data.get() && subok) {
-      // real health
-      alive_map[key] = TimingUtil::getTimeStamp();
     }
   }
   return QueryDataConsumer::consumeHealthDataEvent(key, hst_tag, meta_tag_set, channel_data);

@@ -537,6 +537,9 @@ class AbstractControlUnit : public DeclareAction,
   virtual void consumerHandler(const chaos::common::message::ele_t& data);
 
  protected:
+   void goInFatalError(std::string msg,int err=-1000,std::string domain=__PRETTY_FUNCTION__);
+   virtual void fatalErrorHandler(const chaos::CException&ex);
+
   void useCustomHigResolutionTimestamp(bool _use_custom_high_resolution_timestamp);
   void setHigResolutionAcquistionTimestamp(uint64_t high_resolution_timestamp);
   //! Abstract Method that need to be used by the sublcass to define the dataset

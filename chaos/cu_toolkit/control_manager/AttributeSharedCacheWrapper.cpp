@@ -140,6 +140,7 @@ void AttributeSharedCacheWrapper::addCustomAttribute(const std::string&  name,
 void AttributeSharedCacheWrapper::setCustomAttributeValue(const std::string& attribute_name,
 											 const chaos::common::data::CDataWrapper& value){
 												 std::string svalue=value.getCompliantJSONString();
+												 LDBG_<<"Set "<<attribute_name<<" to:"<<svalue;
 												 setCustomAttributeValue(attribute_name,(void*)svalue.c_str(),(uint32_t)svalue.size()+1);
 
 											 }

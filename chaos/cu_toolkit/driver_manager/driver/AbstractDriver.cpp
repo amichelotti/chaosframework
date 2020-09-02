@@ -316,5 +316,7 @@ int AbstractDriver::setDrvProperty(const std::string& key, const std::string& va
 
 chaos::common::data::CDWUniquePtr AbstractDriver::getDrvProperties(){
   chaos::common::data::CDWUniquePtr ret(new chaos::common::data::CDataWrapper());
+  ADLDBG_ << "Get Driver properties not implemented";
+
   return ret;
 }

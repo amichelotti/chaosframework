@@ -200,14 +200,14 @@ int ZMQBaseClass::readMessage(void *socket,
     int err = 0;
     if((err = zmq_msg_init(&message))) {
         err = zmq_errno();
-        ZMQDIO_BASE_LERR_ << "Error initilizing message" << PRINT_ZMQ_ERR(err);
+        ZMQDIO_BASE_LERR_ << "Error initilizing message:" << PRINT_ZMQ_ERR(err);
         return err;
     }
     
     /* Block until a message is available to be received from socket */
     if((err = zmq_msg_recv(&message, socket, 0)) <= 0) {
         err = zmq_errno();
-        ZMQDIO_BASE_LERR_ << "Error receiving message" << PRINT_ZMQ_ERR(err);
+        ZMQDIO_BASE_LERR_ << "Error receiving message:" << PRINT_ZMQ_ERR(err);
     } else {
         err = 0;
     }
@@ -222,14 +222,19 @@ int ZMQBaseClass::readMessage(void *socket,
     zmq_msg_t message;
     if((err = zmq_msg_init(&message))) {
         err = zmq_errno();
-        ZMQDIO_BASE_LERR_ << "Error initilizing message" << PRINT_ZMQ_ERR(err);
+        ZMQDIO_BASE_LERR_ << "Error initilizing message:" << PRINT_ZMQ_ERR(err);
         return err;
     }
     
     /* Block until a message is available to be received from socket */
     if((err = zmq_msg_recv(&message, socket, 0)) <= 0) {
         err = zmq_errno();
-        ZMQDIO_BASE_LERR_ << "Error receiving message" << PRINT_ZMQ_ERR(err);
+        if(zmq_has("draft")&& zmq_msg_gets(&message, "Peer-Address")) {
+            ZMQDIO_BASE_LERR_ << "Error receiving message: " << PRINT_ZMQ_ERR(err)<<" from :"<< zmq_msg_gets(&message, "Peer-Address");
+        } else {
+            ZMQDIO_BASE_LERR_ << "Error receiving message: " << PRINT_ZMQ_ERR(err);
+        } 
+        
     } else {
         err = 0;
         //extract buffer from zmq message
@@ -238,7 +243,7 @@ int ZMQBaseClass::readMessage(void *socket,
         has_next = moreMessageToRead(message);
         if((err = zmq_msg_close(&message)) != 0) {
             err = zmq_errno();
-            ZMQDIO_BASE_LERR_ << "Error closing message" << PRINT_ZMQ_ERR(err);
+            ZMQDIO_BASE_LERR_ << "Error closing message:" << PRINT_ZMQ_ERR(err);
         }
         err = 0;
     }
@@ -254,14 +259,14 @@ int ZMQBaseClass::readMessage(void *socket,
     zmq_msg_t message;
     if((err = zmq_msg_init(&message))) {
         err = zmq_errno();
-        ZMQDIO_BASE_LERR_ << "Error initilizing message" << PRINT_ZMQ_ERR(err);
+        ZMQDIO_BASE_LERR_ << "Error initializing message:" << PRINT_ZMQ_ERR(err);
         return err;
     }
     
     /* Block until a message is available to be received from socket */
     if((err = zmq_msg_recv(&message, socket, 0)) <= 0) {
         err = zmq_errno();
-        ZMQDIO_BASE_LERR_ << "Error receiving message" << PRINT_ZMQ_ERR(err);
+        ZMQDIO_BASE_LERR_ << "Error receiving message:" << PRINT_ZMQ_ERR(err);
     } else {
         err = 0;
         buffer.assign((const char *)zmq_msg_data(&message), zmq_msg_size(&message));
