@@ -59,10 +59,10 @@ METADATA_LOGGING_CHANNEL_INSTANCER(StandardLoggingChannel)
                 void setLogLevel(LogLevel new_log_level);
 
                 //!log an info message
-                int logMessage(const std::string& node_uid,
-                               const std::string& log_subject,
+                int logMessage( std::string node_uid,
+                                std::string log_subject,
                                const LogLevel log_level,
-                               const std::string& message);
+                                std::string message);
             private:
                 LogLevel current_logging_level;
                 inline bool loggable(LogLevel log_level);
