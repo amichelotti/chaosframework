@@ -188,6 +188,14 @@ namespace chaos{
                      * @return properties
                      */
                     virtual chaos::common::data::CDWUniquePtr getDrvProperties();
+
+                    /**
+                     * @brief Set driver properties a CDataWrapper (JSON) with the optional properties of a driver
+                     * 
+                     * @return properties
+                     */
+                    virtual chaos::common::data::CDWUniquePtr setDrvProperties(chaos::common::data::CDWUniquePtr);
+
                     /**
                      * @brief Set the Drv property 
                      * 

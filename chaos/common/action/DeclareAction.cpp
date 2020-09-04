@@ -26,7 +26,16 @@ using namespace chaos;
 using namespace boost;
 namespace chaos_data = chaos::common::data;
 
-DeclareAction::DeclareAction() {}
+DeclareAction::DeclareAction() {
+    addActionDescritionInstance<DeclareAction>(this,&DeclareAction::setAction,
+                                                NodeDomainAndActionRPC::RPC_DOMAIN,
+                                                NodeDomainAndActionRPC::ACTION_SET_PROPERTIES,
+                                                                              "method for set properties");
+  addActionDescritionInstance<DeclareAction>(this,&DeclareAction::getAction,
+                                                NodeDomainAndActionRPC::RPC_DOMAIN,
+                                                NodeDomainAndActionRPC::ACTION_GET_PROPERTIES,
+                                                                              "method for get properties");                                                                            
+}
 
 DeclareAction::~DeclareAction() {
     actionDescriptionVector.clear();
@@ -100,3 +109,18 @@ void DeclareAction::decodeAction(AbstActionDescShrPtr& actionDesc, chaos_data::C
         actionDescription.finalizeArrayForKey(RpcActionDefinitionKey::CS_CMDM_ACTION_DESC_PARAM);
     }
 }
+
+chaos::common::data::CDWUniquePtr DeclareAction::getAction(chaos::common::data::CDWUniquePtr d){
+    if(d.get()){
+        LDBG_<<"Get Not Implemented:"<<d->getJSONString();
+    }
+    return d;
+}
+chaos::common::data::CDWUniquePtr DeclareAction::setAction(chaos::common::data::CDWUniquePtr d){
+      if(d.get()){
+        LDBG_<<"Set Not Implemented:"<<d->getJSONString();
+    }
+    return d;
+
+}
+

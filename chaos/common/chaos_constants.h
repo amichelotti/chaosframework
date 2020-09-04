@@ -190,7 +190,7 @@ namespace chaos {
             static const unsigned int MDSHistoryQueuePushTimeoutinMSec          = 60000;
         }
         
-    };
+    }
     /** @defgroup NodeDefinitionKey !CHAOS node key description
      *  This is the collection of the key for the general node information
      *  @{
@@ -464,6 +464,13 @@ namespace chaos {
     //! Name space for grupping the key for action published by the node. Most of the funtion are node related so belong
     //! to a different rpc domains, but the default domain(used for action of general usage is identified by RPC_DOMAIN key)
     namespace NodeDomainAndActionRPC {
+        //! Common action to retrieve properties as Cdwrapper
+        static const char * const ACTION_GET_PROPERTIES                           = "ndk_get_prop";
+
+        //! Common action to set properties as Cdwrapper
+        static const char * const ACTION_SET_PROPERTIES                           = "ndk_set_prop";
+        
+        
         //! The domain for the rpc action for every nodes (and sublcass used for general use)
         static const char * const RPC_DOMAIN                                        = "system";
         //! Action that needs to answer with the status of the node(specialized for  every node)
@@ -942,7 +949,11 @@ namespace chaos {
     namespace ControlUnitNodeDomainAndActionRPC {
         //!Alias associated to thefunction that apply the value changes set to the input dataset attribute
         static const char * const CONTROL_UNIT_APPLY_INPUT_DATASET_ATTRIBUTE_CHANGE_SET  = "cunrpc_ida_cs";
-        
+
+        static const char * const CONTROL_UNIT_DRV_SET_PROPERTIES  = "cu_prop_drv_set";
+
+        static const char * const CONTROL_UNIT_DRV_GET_PROPERTIES  = "cu_prop_drv_get";
+
         //! Deinitialization of a control unit, if it is in run, the stop phase
         //! is started befor deinitialization one
         static const char * const ACTION_STORAGE_BURST  = "cunrpc_start_storage_burst";

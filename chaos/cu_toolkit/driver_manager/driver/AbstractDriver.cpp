@@ -20,9 +20,6 @@
  */
 
 #include <string>
-#ifndef _WIN32
-#include <sched.h>  //note Windows compiles perfectly without this. Maybe is unnecessary?
-#endif
 #include <chaos/common/utility/UUIDUtil.h>
 
 #include <chaos/cu_toolkit/driver_manager/driver/AbstractDriver.h>
@@ -230,10 +227,29 @@ void AbstractDriver::scanForMessage() {
           break;
         case OpcodeType::OP_GET_PROPERTIES:{
           chaos::common::data::CDWUniquePtr ret=getDrvProperties();
-          current_message_ptr->resultData=(void*)strdup(ret->getCompliantJSONString().c_str());
-          ADLDBG_ << "STRING PARMS:" <<(const char*)current_message_ptr->resultData;
-          current_message_ptr->resultDataLength=ret->getCompliantJSONString().size()+1;
-          
+          int sizeb;
+          const char*ptr=ret->getBSONRawData(sizeb);
+          current_message_ptr->resultData=NULL;
+          current_message_ptr->resultDataLength=0;
+        if((sizeb>0)&& ptr){
+          current_message_ptr->resultData=(char*)malloc(sizeb);
+          current_message_ptr->resultDataLength=sizeb;
+            memcpy(current_message_ptr->resultData,ptr,sizeb);
+        } 
+        break;
+        }
+        case OpcodeType::OP_SET_PROPERTIES:{
+          chaos::common::data::CDWUniquePtr inp(new chaos::common::data::CDataWrapper((const char*)current_message_ptr->inputData));
+          chaos::common::data::CDWUniquePtr ret=setDrvProperties(MOVE(inp));
+          int sizeb=0;
+          const char*ptr=ret->getBSONRawData(sizeb);
+          current_message_ptr->resultData=NULL;
+          current_message_ptr->resultDataLength=0;
+        if((sizeb>0)&& ptr){
+          current_message_ptr->resultData=(char*)malloc(sizeb);
+          current_message_ptr->resultDataLength=sizeb;
+          memcpy(current_message_ptr->resultData,ptr,sizeb);
+        } 
         break;
         }
         case OpcodeType::OP_SET_PROPERTY:{
@@ -315,8 +331,13 @@ int AbstractDriver::setDrvProperty(const std::string& key, const std::string& va
 }
 
 chaos::common::data::CDWUniquePtr AbstractDriver::getDrvProperties(){
-  chaos::common::data::CDWUniquePtr ret(new chaos::common::data::CDataWrapper());
   ADLDBG_ << "Get Driver properties not implemented";
 
-  return ret;
+  return chaos::common::data::CDWUniquePtr();
+}
+
+chaos::common::data::CDWUniquePtr AbstractDriver::setDrvProperties(chaos::common::data::CDWUniquePtr s){
+  ADLDBG_ << "Get Driver properties not implemented";
+
+  return chaos::common::data::CDWUniquePtr();
 }

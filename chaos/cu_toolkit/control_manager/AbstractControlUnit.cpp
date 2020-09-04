@@ -356,6 +356,8 @@ bool PushStorageBurst::active(void* data __attribute__((unused))) {
                                                                               &AbstractControlUnit::_setDatasetAttribute,
                                                                               ControlUnitNodeDomainAndActionRPC::CONTROL_UNIT_APPLY_INPUT_DATASET_ATTRIBUTE_CHANGE_SET,
                                                                               "method for setting the input element for the dataset");
+
+        
         
         //expose updateConfiguration Methdo to rpc
         action_description = addActionDescritionInstance<AbstractControlUnit>(this,
@@ -410,6 +412,23 @@ bool PushStorageBurst::active(void* data __attribute__((unused))) {
                                                                               &AbstractControlUnit::_submitStorageBurst,
                                                                               ControlUnitNodeDomainAndActionRPC::ACTION_STORAGE_BURST,
                                                                               "Execute a storage burst on control unit");
+
+
+         addActionDescritionInstance<AbstractControlUnit>(this,&AbstractControlUnit::setAction,
+                                                NodeDomainAndActionRPC::ACTION_SET_PROPERTIES,
+                                                                              "method for set properties of a CU");
+         addActionDescritionInstance<AbstractControlUnit>(this,&AbstractControlUnit::getAction,
+                                                NodeDomainAndActionRPC::ACTION_GET_PROPERTIES,
+                                                                              "method for get properties of a CU");   
+
+
+          addActionDescritionInstance<AbstractControlUnit>(this,&AbstractControlUnit::_setDriverProperties,
+                                                ControlUnitNodeDomainAndActionRPC::CONTROL_UNIT_DRV_SET_PROPERTIES,
+                                                                              "method for set properties of a driver");
+         addActionDescritionInstance<AbstractControlUnit>(this,&AbstractControlUnit::_getDriverProperties,
+                                                ControlUnitNodeDomainAndActionRPC::CONTROL_UNIT_DRV_GET_PROPERTIES,
+                                                                              "method for get properties of a driver");                                                                                                                                                     
+                                                                    
         action_description->addParam(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_HISTORY_BURST_TAG, DataType::TYPE_STRING, "Tag associated to the stored data during burst");
         action_description->addParam(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_HISTORY_BURST_TYPE, DataType::TYPE_INT32, "The type of burst");
         action_description->addParam(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_HISTORY_BURST_VALUE, DataType::TYPE_UNDEFINED, "The value of the burst is defined by the type");
@@ -432,7 +451,58 @@ bool PushStorageBurst::active(void* data __attribute__((unused))) {
        
 
     }
-    
+  chaos::common::data::CDWUniquePtr AbstractControlUnit::_setDriverProperties(chaos::common::data::CDWUniquePtr data){
+      if(data.get()){
+          
+          for (VInstantitedDriverIterator it  = accessor_instances.begin(),
+             end = accessor_instances.end();
+             it != end;
+             it++) {
+                 if(data->hasKey("_id_")){
+                     if((*it)->getDriverName()==data->getStringValue("_id_")){
+                         ACULDBG_<<"set driver "<<(*it)->getDriverName()<<" property:"<<data->getJSONString();
+                         return (*it)->setDrvProperties(MOVE(data));
+                     }
+                } else {
+                    ACULDBG_<<"set driver "<<(*it)->getDriverName()<<" property:"<<data->getJSONString();
+
+                    return (*it)->setDrvProperties(MOVE(data));
+
+                }
+          
+        }
+      }
+    return chaos::common::data::CDWUniquePtr();
+  }
+  chaos::common::data::CDWUniquePtr AbstractControlUnit::_getDriverProperties(chaos::common::data::CDWUniquePtr data){
+      chaos::common::data::CDWUniquePtr ret;
+      if(data.get()){
+          
+          for (VInstantitedDriverIterator it  = accessor_instances.begin(),
+             end = accessor_instances.end();
+             it != end;
+             it++) {
+                 if(data->hasKey("_id_")){
+                     if((*it)->getDriverName()==data->getStringValue("_id_")){
+                         ret= (*it)->getDrvProperties();
+                        ACULDBG_<<"get driver "<<(*it)->getDriverName()<<" property:"<<ret->getJSONString();
+
+                     }
+                } else {
+                    ret =(*it)->getDrvProperties();
+                    ACULDBG_<<"get driver "<<(*it)->getDriverName()<<" property:"<<ret->getJSONString();
+
+                    return ret;
+
+                }
+          
+        }
+      }
+    return ret;
+
+  }
+
+
     void AbstractControlUnit::unitDefineDriver(std::vector<DrvRequestInfo>& neededDriver) {
         for (ControlUnitDriverListIterator iter = control_unit_drivers.begin();
              iter != control_unit_drivers.end();

@@ -480,6 +480,17 @@ class AbstractControlUnit : public DeclareAction,
                  */
   chaos::common::data::CDWUniquePtr _setDatasetAttribute(chaos::common::data::CDWUniquePtr data);
 
+ //! Set the driver properties values, if "_id_" specified, the control unit search for the specified driver, otherwise is called the first driver
+  /*!
+                 */
+  chaos::common::data::CDWUniquePtr _setDriverProperties(chaos::common::data::CDWUniquePtr data);
+
+
+//! Get the driver properties values,if "_id_" specified, the control unit search for the specified driver, otherwise is called the first driver
+  /*!
+                 */
+  chaos::common::data::CDWUniquePtr _getDriverProperties(chaos::common::data::CDWUniquePtr data);
+
   //! Return the state of the control unit
   /*!
                  Return the current control unit state identifyed by ControlUnitState types

@@ -60,7 +60,8 @@ namespace chaos{
 						OP_CLEAR_BYPASS,
                          OP_GET_PROPERTIES, // return a CDataWrapper with all driver properties (optional)
                         OP_SET_PROPERTY, // set a property (key, value) optional
-						
+						OP_SET_PROPERTIES, // return a CDataWrapper set driver properties  (optional)
+
 						OP_UKNOWN= 0xDEADDEAD
 					} Opcode;
 				}
