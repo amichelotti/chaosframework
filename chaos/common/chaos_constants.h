@@ -1805,6 +1805,9 @@ namespace chaos {
         static const char * const CS_CMDM_ANSWER_ID                          = "rh_ans_msg_id";
         //!ker ofr the ip where to send the rpc pack
         static const char * const CS_CMDM_REMOTE_HOST_IP                     = "rh_ip";
+        //! action forwarded so the answer is given by someone else
+        static const char * const CS_CMDM_ANSWER_FORWARDED                   = "rh_ans_fwd";
+
     }
     /** @} */ // end of RpcActionDefinitionKey
     

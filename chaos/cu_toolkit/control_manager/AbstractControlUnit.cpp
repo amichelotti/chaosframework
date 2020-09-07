@@ -476,13 +476,12 @@ bool PushStorageBurst::active(void* data __attribute__((unused))) {
   }
   chaos::common::data::CDWUniquePtr AbstractControlUnit::_getDriverProperties(chaos::common::data::CDWUniquePtr data){
       chaos::common::data::CDWUniquePtr ret;
-      if(data.get()){
           
           for (VInstantitedDriverIterator it  = accessor_instances.begin(),
              end = accessor_instances.end();
              it != end;
              it++) {
-                 if(data->hasKey("_id_")){
+                 if(data.get()&&data->hasKey("_id_")){
                      if((*it)->getDriverName()==data->getStringValue("_id_")){
                          ret= (*it)->getDrvProperties();
                         ACULDBG_<<"get driver "<<(*it)->getDriverName()<<" property:"<<ret->getJSONString();
@@ -497,7 +496,7 @@ bool PushStorageBurst::active(void* data __attribute__((unused))) {
                 }
           
         }
-      }
+      
     return ret;
 
   }

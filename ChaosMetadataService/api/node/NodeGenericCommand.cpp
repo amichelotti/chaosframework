@@ -36,13 +36,14 @@ ForwardNodeRpcMessage("NodeGenericCommand"){}
 NodeGenericCommand::~NodeGenericCommand(){}
 
 CDWUniquePtr NodeGenericCommand::execute(CDWUniquePtr api_data) {
-    CDWUniquePtr node_description;
     CHECK_CDW_THROW_AND_LOG(api_data, ERR, -1, "No parameter found")
     CHECK_KEY_THROW_AND_LOG(api_data, NodeDefinitionKey::NODE_UNIQUE_ID, ERR, -2, CHAOS_FORMAT("The attribute %1% is mandatory",%NodeDefinitionKey::NODE_UNIQUE_ID));
     CHECK_KEY_THROW_AND_LOG(api_data, RpcActionDefinitionKey::CS_CMDM_ACTION_NAME, ERR, -2, CHAOS_FORMAT("The attribute %1% is mandatory",%RpcActionDefinitionKey::CS_CMDM_ACTION_NAME));
 
     CHAOS_LASSERT_EXCEPTION(api_data->isStringValue(NodeDefinitionKey::NODE_UNIQUE_ID), ERR, -3, CHAOS_FORMAT("The attribute %1% need to be string",%NodeDefinitionKey::NODE_UNIQUE_ID));
-    
+    CDWUniquePtr ret(new CDataWrapper);
+    ForwardNodeRpcMessage::execute(MOVE(api_data));
+    ret->addBoolValue(RpcActionDefinitionKey::CS_CMDM_ANSWER_FORWARDED,true);
     //complete data with domain and action name
-    return ForwardNodeRpcMessage::execute(MOVE(api_data));
+    return ret;
 }

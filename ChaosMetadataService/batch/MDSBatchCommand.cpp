@@ -21,6 +21,7 @@
 #include "MDSBatchCommand.h"
 #include "MDSBatchExecutor.h"
 #include "../ChaosMetadataService.h"
+#include <chaos/common/message/MessageChannel.h>
 using namespace chaos::common::data;
 using namespace chaos::common::network;
 using namespace chaos::common::batch_command;
