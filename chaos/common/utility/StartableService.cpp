@@ -80,7 +80,7 @@ bool StartableService::initImplementation(StartableService *impl, void *initData
             impl->serviceState = impl->state_machine.current_state()[0]; //service_state_machine::InizializableServiceType::IS_INITIATED;
         } else {
 			DEBUG_CODE(SS_LDBG << "Service cant flow to next state and current is ->" << impl->state_machine.current_state()[0];)
-            throw CException(0, "Service cant be initialized", domainString);
+            throw CException(0, "Service can't be initialized", domainString);
         }
         SS_LDBG  << implName << "Initialized";
     } catch (CException& ex) {

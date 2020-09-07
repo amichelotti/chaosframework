@@ -228,14 +228,17 @@ void AbstractDriver::scanForMessage() {
         case OpcodeType::OP_GET_PROPERTIES:{
           chaos::common::data::CDWUniquePtr ret=getDrvProperties();
           int sizeb;
-          const char*ptr=ret->getBSONRawData(sizeb);
           current_message_ptr->resultData=NULL;
           current_message_ptr->resultDataLength=0;
+          if(ret.get()){
+          const char*ptr=ret->getBSONRawData(sizeb);
+          
         if((sizeb>0)&& ptr){
           current_message_ptr->resultData=(char*)malloc(sizeb);
           current_message_ptr->resultDataLength=sizeb;
             memcpy(current_message_ptr->resultData,ptr,sizeb);
         } 
+          }
         break;
         }
         case OpcodeType::OP_SET_PROPERTIES:{

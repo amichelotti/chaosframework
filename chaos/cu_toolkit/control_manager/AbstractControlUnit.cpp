@@ -524,8 +524,10 @@ bool PushStorageBurst::active(void* data __attribute__((unused))) {
              it != end;
              it++) {
             chaos::common::data::CDWUniquePtr res=(*it)->getDrvProperties();
-            drv.addCSDataValue((*it)->getDriverName(),*(res.get()));
+            drv.addCSDataValue((*it)->getDriverName(),(res.get()?*(res.get()):chaos::common::data::CDataWrapper()));
+            
             cnt++;
+
         }
        
         if(cnt){
