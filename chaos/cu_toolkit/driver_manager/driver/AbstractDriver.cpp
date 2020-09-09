@@ -19,8 +19,8 @@
  * permissions and limitations under the Licence.
  */
 
-#include <string>
 #include <chaos/common/utility/UUIDUtil.h>
+#include <string>
 
 #include <chaos/cu_toolkit/driver_manager/driver/AbstractDriver.h>
 #include <chaos/cu_toolkit/driver_manager/driver/DriverAccessor.h>
@@ -51,7 +51,7 @@ void AbstractDriver::init(void *init_param) {
   CDataWrapper parm;
 
   //!try to decode parameter string has json document
-  is_json_param = parm.isJsonValue((const char*)init_param);
+  is_json_param = parm.isJsonValue((const char *)init_param);
 
   ADLAPP_ << "Start in driver thread";
   //start interna thread for the waithing of the message
@@ -103,7 +103,7 @@ void AbstractDriver::deinit() {
   ResponseMessageType id_to_read;
   AccessorQueueType   result_queue;
 
-//  std::memset(&deinit_msg, 0, sizeof(DrvMsg));
+  //  std::memset(&deinit_msg, 0, sizeof(DrvMsg));
   deinit_msg.opcode        = OpcodeType::OP_DEINIT_DRIVER;
   deinit_msg.drvResponseMQ = &result_queue;
   //send opcode to driver implemetation
@@ -134,9 +134,9 @@ bool AbstractDriver::getNewAccessor(DriverAccessor **newAccessor) {
   DriverAccessor *result = new DriverAccessor(accessor_count++);
   if (result) {
     //set the parent uuid
-    result->driver_uuid   = driver_uuid;
-    result->driverName   = driverName;
-    
+    result->driver_uuid = driver_uuid;
+    result->driverName  = driverName;
+
     result->command_queue = command_queue.get();
     boost::unique_lock<boost::shared_mutex> lock(accesso_list_shr_mux);
     accessors.push_back(result);
@@ -225,44 +225,47 @@ void AbstractDriver::scanForMessage() {
           driverDeinit();
           opcode_submission_result = MsgManagmentResultType::MMR_EXECUTED;
           break;
-        case OpcodeType::OP_GET_PROPERTIES:{
-          chaos::common::data::CDWUniquePtr ret=getDrvProperties();
-          int sizeb;
-          current_message_ptr->resultData=NULL;
-          current_message_ptr->resultDataLength=0;
-          if(ret.get()){
-          const char*ptr=ret->getBSONRawData(sizeb);
-          
-        if((sizeb>0)&& ptr){
-          current_message_ptr->resultData=(char*)malloc(sizeb);
-          current_message_ptr->resultDataLength=sizeb;
-            memcpy(current_message_ptr->resultData,ptr,sizeb);
-        } 
+        case OpcodeType::OP_GET_PROPERTIES: {
+          chaos::common::data::CDWUniquePtr ret = getDrvProperties();
+          int                               sizeb;
+          current_message_ptr->resultData       = NULL;
+          current_message_ptr->resultDataLength = 0;
+          if (ret.get()) {
+            const char *ptr = ret->getBSONRawData(sizeb);
+
+            if ((sizeb > 0) && ptr) {
+              current_message_ptr->resultData       = (char *)malloc(sizeb);
+              current_message_ptr->resultDataLength = sizeb;
+              memcpy(current_message_ptr->resultData, ptr, sizeb);
+            }
           }
-        break;
+          break;
         }
-        case OpcodeType::OP_SET_PROPERTIES:{
-          chaos::common::data::CDWUniquePtr inp(new chaos::common::data::CDataWrapper((const char*)current_message_ptr->inputData));
-          chaos::common::data::CDWUniquePtr ret=setDrvProperties(MOVE(inp));
-          int sizeb=0;
-          const char*ptr=ret->getBSONRawData(sizeb);
-          current_message_ptr->resultData=NULL;
-          current_message_ptr->resultDataLength=0;
-        if((sizeb>0)&& ptr){
-          current_message_ptr->resultData=(char*)malloc(sizeb);
-          current_message_ptr->resultDataLength=sizeb;
-          memcpy(current_message_ptr->resultData,ptr,sizeb);
-        } 
-        break;
-        }
-        case OpcodeType::OP_SET_PROPERTY:{
-          keyval_t *parms=(keyval_t *)current_message_ptr->inputData;
-          if(parms&&parms->key&&parms->value){
-            current_message_ptr->ret=setDrvProperty(parms->key,parms->value);
+        case OpcodeType::OP_SET_PROPERTIES: {
+          chaos::common::data::CDWUniquePtr inp(new chaos::common::data::CDataWrapper((const char *)current_message_ptr->inputData));
+          chaos::common::data::CDWUniquePtr ret   = setDrvProperties(MOVE(inp));
+          int                               sizeb = 0;
+          const char *                      ptr   = NULL;
+          if (ret.get()) {
+            ptr = ret->getBSONRawData(sizeb);
           }
-        break;
+          current_message_ptr->resultData       = NULL;
+          current_message_ptr->resultDataLength = 0;
+          if ((sizeb > 0) && ptr) {
+            current_message_ptr->resultData       = (char *)malloc(sizeb);
+            current_message_ptr->resultDataLength = sizeb;
+            memcpy(current_message_ptr->resultData, ptr, sizeb);
+          }
+          break;
         }
-        
+        case OpcodeType::OP_SET_PROPERTY: {
+          keyval_t *parms = (keyval_t *)current_message_ptr->inputData;
+          if (parms && parms->key && parms->value) {
+            current_message_ptr->ret = setDrvProperty(parms->key, parms->value);
+          }
+          break;
+        }
+
         default: {
           //for custom opcode we call directly the driver implementation of execOpcode
           opcode_submission_result = o_exe->execOpcode(current_message_ptr);
@@ -281,7 +284,7 @@ void AbstractDriver::scanForMessage() {
       }
     } catch (CException &ex) {
       //chaos exception
-      
+
       ADLERR_ << "an error has been catched code: " << ex.errorCode << " msg:" << ex.errorMessage.c_str() << " dom:" << ex.errorDomain.c_str() << " executing opcode:" << current_message_ptr->opcode;
       current_message_ptr->ret = ex.errorCode;
       strncpy(current_message_ptr->err_msg, ex.errorMessage.c_str(), DRVMSG_ERR_MSG_SIZE);
@@ -329,18 +332,18 @@ void AbstractDriver::setBypass(bool bypass) {
   }
 }
 
-int AbstractDriver::setDrvProperty(const std::string& key, const std::string& value){
+int AbstractDriver::setDrvProperty(const std::string &key, const std::string &value) {
   return 0;
 }
 
-chaos::common::data::CDWUniquePtr AbstractDriver::getDrvProperties(){
+chaos::common::data::CDWUniquePtr AbstractDriver::getDrvProperties() {
   ADLDBG_ << "Get Driver properties not implemented";
 
   return chaos::common::data::CDWUniquePtr();
 }
 
-chaos::common::data::CDWUniquePtr AbstractDriver::setDrvProperties(chaos::common::data::CDWUniquePtr s){
-  ADLDBG_ << "Get Driver properties not implemented";
+chaos::common::data::CDWUniquePtr AbstractDriver::setDrvProperties(chaos::common::data::CDWUniquePtr s) {
+  ADLDBG_ << "Set Driver properties not implemented:"<<((s.get())?s->getJSONString():"");
 
   return chaos::common::data::CDWUniquePtr();
 }

@@ -191,13 +191,13 @@ void DomainActionsScheduler::processBufferElement(CDWShrdPtr rpc_call_action) {
             if(needAnswer){
                 //we need a response, so allocate the memory for it
                 remote_action_result.reset(new CDataWrapper());
-                if(action_message.get()){
+             /*   if(action_message.get()){
                     action_message->addStringValue(RpcActionDefinitionKey::CS_CMDM_ANSWER_DOMAIN,answerDomain);
                     action_message->addStringValue(RpcActionDefinitionKey::CS_CMDM_ANSWER_ACTION,answerAction);
                     action_message->addStringValue(RpcActionDefinitionKey::CS_CMDM_ANSWER_HOST_IP,answerIP);
                     action_message->addInt32Value(RpcActionDefinitionKey::CS_CMDM_ANSWER_ID,answerID);
                 }
-
+                */
             }
             LDBG_<<__FUNCTION__<<" "<<rpc_call_action->getJSONString()<<" need answer:"<<needAnswer;
             //synCronusly call the action in the current thread

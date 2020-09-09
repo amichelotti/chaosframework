@@ -126,7 +126,7 @@ ChaosUniquePtr<CDataWrapper> CDataWrapper::instanceFromJson(const std::string& j
     return ChaosUniquePtr<CDataWrapper>(new CDataWrapper(json_serialization));
 }
 
-ChaosUniquePtr<CDataWrapper> CDataWrapper::clone() {
+ChaosUniquePtr<CDataWrapper> CDataWrapper::clone() const{
     return ChaosUniquePtr<CDataWrapper>(new CDataWrapper(bson.get()));
 }
 

@@ -117,7 +117,7 @@ namespace chaos {
                 const bson_t*getBSON() const;
 
                 static ChaosUniquePtr<CDataWrapper> instanceFromJson(const std::string& json_serialization);
-                ChaosUniquePtr<CDataWrapper>clone();
+                ChaosUniquePtr<CDataWrapper>clone() const;
                 //add a csdata value
                 void addCSDataValue(const std::string&, const CDataWrapper&);
                 //get a csdata value
