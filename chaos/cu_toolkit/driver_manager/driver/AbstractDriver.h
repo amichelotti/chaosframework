@@ -26,9 +26,8 @@
 #include <vector>
 
 #include <boost/thread.hpp>
-
+#include <chaos/common/data/Property.h>
 #include <chaos/common/chaos_errors.h>
-#include <chaos/common/data/CDataWrapper.h>
 #include <chaos/common/utility/LockableObject.h>
 #include <chaos/common/utility/InizializableService.h>
 #include <chaos/common/thread/TemplatedConcurrentQueue.h>
@@ -71,7 +70,7 @@ namespace chaos{
                  */
 				class AbstractDriver:
                 public OpcodeExecutor,
-				public chaos::common::utility::InizializableService {
+				public chaos::common::utility::InizializableService,public chaos::common::data::Property<AbstractDriver> {
                     template<typename T>
                     friend class DriverWrapperPlugin;
                     friend class chaos::cu::driver_manager::DriverManager;

@@ -451,7 +451,9 @@ void CDataWrapper::append(const std::string& key,bool val){
 void CDataWrapper::append(const std::string& key,const std::string& val){
     addStringValue(key, val);
 }
-
+void CDataWrapper::append(const std::string& key,const char* val){
+    addStringValue(key, val);
+}
 void CDataWrapper::append(const std::string& key,const CDataWrapper& val){
     addCSDataValue(key,val);
 }

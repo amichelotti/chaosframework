@@ -165,6 +165,8 @@ namespace chaos {
                 void append(const std::string& key,int64_t val);
                 void append(const std::string& key,double val);
                 void append(const std::string& key,bool val);
+                void append(const std::string& key,const char* val);
+
                 void append(const std::string& key,const std::string& val);
                 void append(const std::string& key,const CDataWrapper& val);
                 void append(const std::string& key,const std::vector<int32_t>& val);

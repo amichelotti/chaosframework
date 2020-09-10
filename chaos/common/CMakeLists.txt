@@ -329,7 +329,8 @@ SET(common_lib_src ${common_lib_src}
                     data/entity/Entity.cpp data/broker/DataBroker.cpp
                     data/broker/publisher/PublisherDataService.cpp
                     data/broker/reader/ReaderDataService.cpp
-                    data/cache/FastHash.cpp)
+                    data/cache/FastHash.cpp
+                    data/Property.cpp)
 
 SET(common_lib_src ${common_lib_src}
                     debug/tracey.cpp)
