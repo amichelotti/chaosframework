@@ -44,17 +44,16 @@ public:
     }
     return props.clone();
   }
-  void importKeysAsProperties(chaos::common::data::CDataWrapper &p) {
+  void importKeysAsProperties(chaos::common::data::CDataWrapper &p,bool sync=false) {
     ChaosStringVector sv;
     p.getAllKey(sv);
     for (ChaosStringVector::iterator i = sv.begin(); i != sv.end(); i++) {
         chaos::common::data::CDataWrapper cd;
         p.copyKeyToNewKey(*i,"value",cd);
-        props.addCSDataValue(*i,cd);
-
+        setProperty(*i,cd,sync);
     }
   }
-  
+
   void appendPropertiesTo(chaos::common::data::CDataWrapper &p) {
     ChaosStringVector sv;
     props.getAllKey(sv);
@@ -139,14 +138,18 @@ public:
   }
   chaos::common::data::CDWUniquePtr
   setProperty(const std::string &propname,
-              chaos::common::data::CDataWrapper &val, bool sync = false) {
+              const chaos::common::data::CDataWrapper &val, bool sync = false) {
     std::string realpropname = propname;
+    if(!val.hasKey("value")){
+        throw chaos::CException(-10,"missing required key 'value' in:"+val.getJSONString(),__FUNCTION__);
+      }
     chaos::common::data::CDWUniquePtr prop = retriveProp(realpropname);
     if (prop.get()) {
+      
+      chaos::common::data::CDWUniquePtr towrite = val.clone();
       ChaosStringVector sv;
       prop->getAllKey(sv);
-      chaos::common::data::CDWUniquePtr towrite = val.clone();
-
+      
       for (ChaosStringVector::iterator i = sv.begin(); i != sv.end(); i++) {
         if (!towrite->hasKey(*i)) {
           prop->copyKeyTo(*i, *towrite.get());
@@ -156,15 +159,18 @@ public:
       if (sync) {
         chaos::common::data::CDWUniquePtr ret =
             syncWrite(realpropname, towrite);
-        if (ret.get()) {
+        if (ret.get()&& ret->hasKey("value")) {
           props.setValue(realpropname, ret.get());
+        } else {
+          props.setValue(realpropname, towrite.get());
+
         }
       } else {
         props.setValue(realpropname, towrite.get());
       }
       LDBG_ << __FUNCTION__ << "-"
             << "set property " << realpropname
-            << " props:" << props.getJSONString();
+            << " props:" << props.getJSONString()<<" input:"<<val.getJSONString();
 
       return retriveProp(realpropname);
     }
