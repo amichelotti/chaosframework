@@ -212,6 +212,14 @@ void AbstractDriver::scanForMessage() {
             }
             if (isjson) {
               ADLDBG_ << "JSON PARMS:" << p->getJSONString();
+               if(p->hasKey(DRIVER_PROPERTY)&&p->isCDataWrapperValue(DRIVER_PROPERTY)){
+                 CDataWrapper cd;
+                 p->getCSDataValue(DRIVER_PROPERTY,cd);
+                 importKeysAsProperties(cd);
+            //      config.getCSDataValue(CAMERA_CUSTOM_PROPERTY,camera_custom_props);
+                  ADLDBG_<<"driver properties"<<getProperties()->getJSONString();
+        
+                }
               driverInit(*p);
             } else {
               ADLDBG_ << "STRING PARMS:" << static_cast<const char *>(current_message_ptr->inputData);

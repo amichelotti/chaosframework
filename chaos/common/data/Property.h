@@ -44,6 +44,17 @@ public:
     }
     return props.clone();
   }
+  void importKeysAsProperties(chaos::common::data::CDataWrapper &p) {
+    ChaosStringVector sv;
+    p.getAllKey(sv);
+    for (ChaosStringVector::iterator i = sv.begin(); i != sv.end(); i++) {
+        chaos::common::data::CDataWrapper cd;
+        p.copyKeyToNewKey(*i,"value",cd);
+        props.addCSDataValue(*i,cd);
+
+    }
+  }
+  
   void appendPropertiesTo(chaos::common::data::CDataWrapper &p) {
     ChaosStringVector sv;
     props.getAllKey(sv);
@@ -51,10 +62,11 @@ public:
       chaos::common::data::CDataWrapper cd;
       if (props.isCDataWrapperValue(*i)) {
         props.getCSDataValue(*i, cd);
-        
-        p.addCSDataValue(*i, cd);
+        if(cd.hasKey("value")){
+          p.copyKeyToNewKey("value",*i,p);
       }
     }
+  }
   }
   void appendPubPropertiesTo(chaos::common::data::CDataWrapper &p) {
     ChaosStringVector sv;
@@ -92,7 +104,9 @@ public:
         value.append("pubname", pubname);
         abstract2props[pubname] = propname;
       }
-      
+     if(!value.hasKey("value")){
+       throw chaos::CException(-2,"missing required key 'value",__FUNCTION__);
+     }
       props.append(
           propname,
           ((setHandler != NULL) ? *setHandler(propname, value).get() : value));

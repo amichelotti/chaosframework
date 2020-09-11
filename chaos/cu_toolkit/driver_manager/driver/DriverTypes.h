@@ -37,6 +37,7 @@
 #endif
 
 namespace chaos_thread_ns = chaos::common::thread;
+#define DRIVER_PROPERTY "drv_prop"
 
 namespace chaos{
     namespace cu {
