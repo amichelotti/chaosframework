@@ -15,7 +15,7 @@ namespace data {
  */
 template <typename BC> class Property {
   chaos::common::data::CDataWrapper props;
-  using conversion_func_t = chaos::common::data::CDWUniquePtr (*)(
+  typedef  chaos::common::data::CDWUniquePtr (*conversion_func_t)(
       BC *, const std::string &name, const chaos::common::data::CDataWrapper &);
   std::map<std::string, std::string> abstract2props;
   std::map<std::string, conversion_func_t> prop2setHandler;
