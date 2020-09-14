@@ -690,6 +690,10 @@ BufferUPtr CDataWrapper::getBSONDataBuffer() const {
  of the CDataWrapper
  */
 const char* CDataWrapper::getBSONRawData(int& size) const{
+    if(bson.get()==NULL){
+        return NULL;
+
+    }
     size = bson->len;
     return reinterpret_cast<const char*>(bson_get_data(ACCESS_BSON(bson)));
 }
@@ -712,6 +716,10 @@ const int CDataWrapper::getBSONRawSize() const{
 //return the json data
 string CDataWrapper::getJSONString()  const{
     size_t str_size = 0;
+    if(bson.get()==NULL){
+        return std::string("{}");
+
+    }
     char * str_c = bson_as_canonical_extended_json(ACCESS_BSON(bson),
                                                    &str_size);
     if(str_c==NULL){
