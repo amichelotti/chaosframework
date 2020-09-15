@@ -17,15 +17,13 @@
  *    	See the License for the specific language governing permissions and
  *    	limitations under the License.
  */
-#ifndef __ASTRACTCAMERADRIVERINTERFACE_H__
-#define __ASTRACTCAMERADRIVERINTERFACE_H__
-#include <chaos/cu_toolkit/driver_manager/driver/AbstractDriverPlugin.h>
-#include <driver/sensors/core/AbstractCameraDriver.h>
-#include <chaos/cu_toolkit/driver_manager/driver/DriverTypes.h>
+#ifndef __ASTRACTDRIVERINTERFACE_H__
+#define __ASTRACTDRIVERINTERFACE_H__
+#include <chaos/common/data/CDataWrapper.h>
 #include <chaos/cu_toolkit/driver_manager/driver/DriverAccessor.h>
 namespace chaos_driver=::chaos::cu::driver_manager::driver;
-namespace chaos {
 
+namespace chaos {
 namespace cu {
 namespace driver_manager{
 namespace driver{
@@ -39,7 +37,7 @@ protected:
     boost::mutex io_mux;
 
 public:
-    AbstractDriverInterface(chaos_driver::DriverAccessor*_accessor):accessor(_accessor){if(_accessor==NULL)throw chaos::CException(-20,"invalid accessor",__PRETTY__FUNCTION__)};
+    AbstractDriverInterface(chaos_driver::DriverAccessor*_accessor):accessor(_accessor){if(_accessor==NULL)throw chaos::CException(-20,"invalid accessor",__FUNCTION__);};
 
     ~AbstractDriverInterface();
          /**
@@ -62,6 +60,7 @@ public:
     std::string getDriverName() const{return accessor->getDriverName();}
     std::string getLastError();
 };
+}
 }
 }
 }

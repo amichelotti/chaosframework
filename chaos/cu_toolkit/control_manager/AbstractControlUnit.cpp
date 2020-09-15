@@ -147,6 +147,7 @@ bool PushStorageBurst::active(void* data __attribute__((unused))) {
         //!try to decode parameter string has json document
         is_control_unit_json_param = json_reader.parse(control_unit_param, json_parameter_document);
         //initialize check list
+        
         _initChecklist();
     }
     
@@ -414,10 +415,10 @@ bool PushStorageBurst::active(void* data __attribute__((unused))) {
                                                                               "Execute a storage burst on control unit");
 
 
-         addActionDescritionInstance<AbstractControlUnit>(this,&AbstractControlUnit::setAction,
+         addActionDescritionInstance<AbstractControlUnit>(this,&AbstractControlUnit::setProperty,
                                                 NodeDomainAndActionRPC::ACTION_SET_PROPERTIES,
                                                                               "method for set properties of a CU");
-         addActionDescritionInstance<AbstractControlUnit>(this,&AbstractControlUnit::getAction,
+         addActionDescritionInstance<AbstractControlUnit>(this,&AbstractControlUnit::getProperty,
                                                 NodeDomainAndActionRPC::ACTION_GET_PROPERTIES,
                                                                               "method for get properties of a CU");   
 
@@ -451,6 +452,21 @@ bool PushStorageBurst::active(void* data __attribute__((unused))) {
        
 
     }
+  chaos::common::data::CDWUniquePtr AbstractControlUnit::getProperty(chaos::common::data::CDWUniquePtr data){
+      chaos::common::data::CDWUniquePtr ret=getProperties();
+        ACULDBG_<<"get CU properties:"<<((ret.get())?ret->getJSONString():"");
+
+          return ret;
+
+
+  }
+  chaos::common::data::CDWUniquePtr AbstractControlUnit::setProperty(chaos::common::data::CDWUniquePtr data ){
+      if(data.get()){
+          importKeysAsProperties(*data.get());
+      }
+    return getProperties();
+  }
+
   chaos::common::data::CDWUniquePtr AbstractControlUnit::_setDriverProperties(chaos::common::data::CDWUniquePtr data){
       if(data.get()){
           
@@ -461,12 +477,12 @@ bool PushStorageBurst::active(void* data __attribute__((unused))) {
                  if(data->hasKey("_id_")){
                      if((*it)->getDriverName()==data->getStringValue("_id_")){
                          ACULDBG_<<"set driver "<<(*it)->getDriverName()<<" property:"<<data->getJSONString();
-                         return (*it)->setDrvProperties(MOVE(data));
+                         return (*it)->setDrvProperties(data);
                      }
                 } else {
                     ACULDBG_<<"set driver "<<(*it)->getDriverName()<<" property:"<<data->getJSONString();
 
-                    return (*it)->setDrvProperties(MOVE(data));
+                    return (*it)->setDrvProperties(data);
 
                 }
           
@@ -489,7 +505,7 @@ bool PushStorageBurst::active(void* data __attribute__((unused))) {
                      }
                 } else {
                     ret =(*it)->getDrvProperties();
-                    ACULDBG_<<"get driver "<<(*it)->getDriverName()<<" property:"<<ret->getJSONString();
+                    ACULDBG_<<"get driver "<<(*it)->getDriverName()<<" property:"<<((ret.get())?ret->getJSONString():"");
 
                     return ret;
 

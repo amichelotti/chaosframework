@@ -35,13 +35,9 @@
 #include <chaos/common/alarm/AlarmCatalog.h>
 #include <chaos/common/alarm/MultiSeverityAlarm.h>
 #include <chaos/common/async_central/async_central.h>
-#include <chaos/common/chaos_types.h>
-#include <chaos/common/data/CDataWrapper.h>
 #include <chaos/common/data/DatasetDB.h>
 #include <chaos/common/data/cache/AttributeValueSharedCache.h>
 #include <chaos/common/data/structured/Dataset.h>
-#include <chaos/common/exception/exception.h>
-#include <chaos/common/general/Configurable.h>
 #include <chaos/common/metadata_logging/metadata_logging.h>
 #include <chaos/common/property/property.h>
 #include <chaos/common/utility/AggregatedCheckList.h>
@@ -53,7 +49,7 @@
 #include <chaos/cu_toolkit/control_manager/handler/handler.h>
 #include <chaos/cu_toolkit/data_manager/KeyDataStorage.h>
 #include <chaos/cu_toolkit/driver_manager/DriverErogatorInterface.h>
-
+#include <chaos/common/data/Property.h>
 #define CUINFO LAPP_ << "[" << __FUNCTION__ << " - " << getDeviceID() << "]"
 #define CUDBG LDBG_ << "[- " << __FUNCTION__ << " - " << getDeviceID() << "]"
 #define CUERR LERR_ << "[" << __PRETTY_FUNCTION__ << " - " << getDeviceID() << "]"
@@ -134,7 +130,8 @@ class AbstractControlUnit : public DeclareAction,
                             public chaos::common::alarm::AlarmHandler,
                             public chaos::common::property::PropertyCollector,
                             protected chaos::common::async_central::TimerHandler,
-                            public chaos::cu::driver_manager::DriverErogatorInterface {
+                            public chaos::cu::driver_manager::DriverErogatorInterface,
+                            public chaos::common::data::Property< AbstractControlUnit > {
   //friendly class declaration
   friend class ControlManager;
   friend class ProxyControlUnit;
@@ -490,6 +487,13 @@ class AbstractControlUnit : public DeclareAction,
   /*!
                  */
   chaos::common::data::CDWUniquePtr _getDriverProperties(chaos::common::data::CDWUniquePtr data);
+
+
+  // virtual get CU properties 
+  virtual chaos::common::data::CDWUniquePtr getProperty(chaos::common::data::CDWUniquePtr );
+  // virtual set CU properties
+  virtual chaos::common::data::CDWUniquePtr setProperty(chaos::common::data::CDWUniquePtr );
+
 
   //! Return the state of the control unit
   /*!

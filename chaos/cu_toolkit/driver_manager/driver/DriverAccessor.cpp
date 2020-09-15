@@ -116,7 +116,7 @@ chaos::common::data::CDWUniquePtr DriverAccessor::getDrvProperties(){
     }
     return chaos::common::data::CDWUniquePtr();
 }
-chaos::common::data::CDWUniquePtr DriverAccessor::setDrvProperties(chaos::common::data::CDWUniquePtr data){
+chaos::common::data::CDWUniquePtr DriverAccessor::setDrvProperties(chaos::common::data::CDWUniquePtr& data){
     chaos_driver::DrvMsg message;
     message.opcode=OpcodeType::OP_SET_PROPERTIES;
     int sizeb;

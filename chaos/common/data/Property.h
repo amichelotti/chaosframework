@@ -1,5 +1,7 @@
 #include <chaos/common/data/CDataWrapper.h>
 #include <chaos/common/global.h>
+#ifndef __DATAPROPERTY__
+#define __DATAPROPERTY__
 namespace chaos {
 namespace common {
 namespace data {
@@ -87,6 +89,50 @@ public:
   bool hasKey(const std::string &key) { return props.hasKey(key); }
 
   // between public and private properties
+/**
+ * @brief Create a Property by using the getHandler
+ * 
+ * @param pubname 
+ * @param getHandler 
+ * @param setHandler 
+ * @return chaos::common::data::CDWUniquePtr 
+ */
+chaos::common::data::CDWUniquePtr createProperty(
+    const std::string propname, 
+    conversion_func_t getHandler,
+    conversion_func_t setHandler,
+    const std::string &pubname = "") {
+      
+    if (setHandler) {
+        prop2setHandler[propname] = setHandler;
+      }
+      if (getHandler) {
+        prop2getHandler[propname] = getHandler;
+      } else {
+        throw chaos::CException(-10,"Get handler of "+propname+" must be set",__FUNCTION__);
+
+      }
+    chaos::common::data::CDWUniquePtr ret=getHandler((BC *)this,propname, chaos::common::data::CDataWrapper());
+    if (ret.get()==NULL) {
+      LERR_<<"Cannot initialize property "+propname+ " from get callback";
+        return chaos::common::data::CDWUniquePtr();
+    }
+    if (!props.hasKey(propname)) {
+      if (pubname.size() > 0) {
+        ret->append("pubname", pubname);
+        abstract2props[pubname] = propname;
+      }
+      if(ret.get()){
+        props.append(propname,*ret.get());
+
+      }
+
+    } else {
+
+      props.setValue(propname,ret.get());
+    }
+    return props.clone();
+  }
 
   chaos::common::data::CDWUniquePtr createProperty(
       const std::string &propname, chaos::common::data::CDataWrapper &value,
@@ -106,9 +152,9 @@ public:
      if(!value.hasKey("value")){
        throw chaos::CException(-2,"missing required key 'value",__FUNCTION__);
      }
-      props.append(
-          propname,
-          ((setHandler != NULL) ? *setHandler(propname, value).get() : value));
+      props.append(propname,value);
+
+      syncWrite(propname);
 
     } else {
 
@@ -200,7 +246,8 @@ public:
         abstract2props[pubname] = propname;
       }
       props.append(propname, p);
-      
+      syncWrite(propname);
+
     } else {
       return setProperty(propname, p);
     }
@@ -233,7 +280,7 @@ public:
         p.append("pubname", pubname);
       }
       props.append(propname, p);
-      
+      syncWrite(propname);
 
     } else {
       return setProperty(propname, p);
@@ -370,3 +417,4 @@ public:
 } // namespace data
 } // namespace misc
 } // namespace common
+#endif

@@ -808,10 +808,15 @@ namespace chaos {
         //! The information coming from the driver
         static const char * const CONTROL_UNIT_DRIVER_INFO	                        = "cudk_driver_info";
 
+        //! The control unit load time driver prop
+        static const char * const CONTROL_UNIT_DRIVER_PROP	                        = "cudk_driver_prop";
+
         //! The information coming from the CU
         static const char * const CONTROL_UNIT_CU_INFO	                            = "cudk_cu_info";
         
-
+        //! The load time properties
+        static const char * const CONTROL_UNIT_PROP	                               = "cudk_props";
+        
         
         //!key for dataset description (array of per-attribute document)
         static const char * const CONTROL_UNIT_DATASET_DESCRIPTION                  = "cudk_ds_desc";

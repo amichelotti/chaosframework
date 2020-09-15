@@ -163,7 +163,7 @@ namespace chaos{
                      * @return properties
                      */
 
-                    chaos::common::data::CDWUniquePtr setDrvProperties(chaos::common::data::CDWUniquePtr);
+                    chaos::common::data::CDWUniquePtr setDrvProperties(chaos::common::data::CDWUniquePtr&);
                     /**
                      * @brief Set the Drv property 
                      * 
