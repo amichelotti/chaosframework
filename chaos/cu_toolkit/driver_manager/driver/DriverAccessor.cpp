@@ -149,3 +149,18 @@ int DriverAccessor::setDrvProperty(const std::string& key, const std::string& va
 
 }
 
+std::string DriverAccessor::getLastError(){
+     chaos_driver::DrvMsg message;
+
+    message.opcode=OpcodeType::OP_GET_LASTERROR;
+    send(&message);
+    if(message.resultData && message.resultDataLength){
+        std::string result((const char*)message.resultData,message.resultDataLength);
+        free(message.resultData);
+        return result;
+    }
+    return std::string();
+ 
+}
+
+

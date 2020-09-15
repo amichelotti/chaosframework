@@ -190,6 +190,16 @@ void AbstractDriver::scanForMessage() {
       memset(current_message_ptr->err_dom, 0, DRVMSG_ERR_DOM_SIZE);
       //! check if we need to execute the private driver's opcode
       switch (current_message_ptr->opcode) {
+        case OpcodeType::OP_GET_LASTERROR:
+          current_message_ptr->resultData       = NULL;
+          current_message_ptr->resultDataLength = 0;
+          if(lastError.size()>0){
+            current_message_ptr->resultData       = strdup(lastError.c_str());
+            current_message_ptr->resultDataLength = lastError.size()+1;
+            lastError=""; // clear last error
+          }
+
+        break;
         case OpcodeType::OP_SET_BYPASS:
           ADLDBG_ << "Switch to bypass driver";
           setBypass(true);
@@ -212,9 +222,9 @@ void AbstractDriver::scanForMessage() {
             }
             if (isjson) {
               ADLDBG_ << "JSON PARMS:" << p->getJSONString();
-               if(p->hasKey(DRIVER_PROPERTY)&&p->isCDataWrapperValue(DRIVER_PROPERTY)){
+               if(p->hasKey(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_PROP)&&p->isCDataWrapperValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_PROP)){
                  CDataWrapper cd;
-                 p->getCSDataValue(DRIVER_PROPERTY,cd);
+                 p->getCSDataValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_PROP,cd);
                  importKeysAsProperties(cd);
             //      config.getCSDataValue(CAMERA_CUSTOM_PROPERTY,camera_custom_props);
                   ADLDBG_<<"driver properties"<<getProperties()->getJSONString();
@@ -348,6 +358,9 @@ chaos::common::data::CDWUniquePtr AbstractDriver::getDrvProperties() {
   ADLDBG_ << "Get Driver properties not implemented";
 
   return chaos::common::data::CDWUniquePtr();
+}
+void AbstractDriver::setLastError(const std::string&str){
+  lastError=str;
 }
 
 chaos::common::data::CDWUniquePtr AbstractDriver::setDrvProperties(chaos::common::data::CDWUniquePtr s) {

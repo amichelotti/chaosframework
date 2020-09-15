@@ -132,6 +132,7 @@ namespace chaos{
                     void scanForMessage();
 					
                 protected:
+                    std::string lastError;
                     //!Private constructor
                     AbstractDriver(BaseBypassShrdPtr custom_bypass_driver = BaseBypassShrdPtr(new BaseBypassDriver()));
                     
@@ -203,7 +204,10 @@ namespace chaos{
                      * @return 0 if success
                      */
                     virtual int setDrvProperty(const std::string& key, const std::string& value);
-
+                    /**
+                     * to set last error
+                    */
+                    void setLastError(const std::string&str);
                 };
                 
                 

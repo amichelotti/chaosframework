@@ -175,6 +175,7 @@ namespace chaos{
 
                     std::string getUID() const;
                     std::string getDriverName() const;
+                    std::string getLastError();
 
                 };
             }
