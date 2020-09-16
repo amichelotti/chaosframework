@@ -39,11 +39,11 @@ MessagePSRDKafka::MessagePSRDKafka():MessagePublishSubscribeBase("kafka-rdk"),rk
 
 int MessagePSRDKafka::setOption(const std::string& key, const std::string& value) {
   char errstr[512];
-  if(init_done){
+  /*if(init_done){
         MRDDBG_ << "Cannot set option on already initialized";
 
     return -3;
-  }
+  }*/
   MRDDBG_<<"set \""<<key<<"\"="<<value;
   if (rd_kafka_conf_set(conf, key.c_str(), value.c_str(), errstr, sizeof(errstr)) != RD_KAFKA_CONF_OK) {
     MRDERR_ << "error:" << errstr;
@@ -55,6 +55,7 @@ int MessagePSRDKafka::setOption(const std::string& key, const std::string& value
 int MessagePSRDKafka::setMaxMsgSize(const int size){
   char sinteger[256];
   sprintf(sinteger,"%d",size);
+  setOption("max.request.siz",sinteger); 
   return setOption("message.max.bytes",sinteger);
 }
 
@@ -99,6 +100,7 @@ int MessagePSRDKafka::init(std::set<std::string>& servers) {
 
     return -5;
   }
+
   init_done=true;
   return 0;
 }

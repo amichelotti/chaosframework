@@ -5,6 +5,51 @@
 namespace chaos {
 namespace common {
 namespace data {
+
+#define CREATE_DRV_INT_PROP(n,pub,var,min,max,inc,typ) \
+createProperty(n,var,(int32_t)min,(int32_t)max,(int32_t)inc,pub,[](AbstractDriver*thi,const std::string&name,\
+      const chaos::common::data::CDataWrapper &p) -> chaos::common::data::CDWUniquePtr {\
+        chaos::common::data::CDWUniquePtr ret(new chaos::common::data::CDataWrapper());\
+        ret->addInt32Value("value",((typ*)thi)->var);\
+        return ret;\
+      },[](AbstractDriver*thi,const std::string&name,\
+       const chaos::common::data::CDataWrapper &p) -> chaos::common::data::CDWUniquePtr { \
+          ((typ*)thi)->var=p.getInt32Value("value");\
+          return p.clone();});
+
+#define CREATE_DRV_DOUBLE_PROP(n,pub,var,min,max,inc,typ) \
+createProperty(n,var,min,max,inc,pub,[](AbstractDriver*thi,const std::string&name,\
+      const chaos::common::data::CDataWrapper &p) -> chaos::common::data::CDWUniquePtr {\
+        chaos::common::data::CDWUniquePtr ret(new chaos::common::data::CDataWrapper());\
+        ret->addDoubleValue("value",((typ*)thi)->var);\
+        return ret;\
+      },[](AbstractDriver*thi,const std::string&name,\
+       const chaos::common::data::CDataWrapper &p) -> chaos::common::data::CDWUniquePtr { \
+          ((typ*)thi)->var=p.getDoubleValue("value");\
+          return p.clone();});
+
+#define CREATE_CU_INT_PROP(n,pub,var,min,max,inc,typ) \
+createProperty(n,var,(int32_t)min,(int32_t)max,(int32_t)inc,pub,[](AbstractControlUnit*thi,const std::string&name,\
+      const chaos::common::data::CDataWrapper &p) -> chaos::common::data::CDWUniquePtr {\
+        chaos::common::data::CDWUniquePtr ret(new chaos::common::data::CDataWrapper());\
+        ret->addInt32Value("value",((typ*)thi)->var);\
+        return ret;\
+      },[](AbstractControlUnit*thi,const std::string&name,\
+       const chaos::common::data::CDataWrapper &p) -> chaos::common::data::CDWUniquePtr { \
+          ((typ*)thi)->var=p.getInt32Value("value");\
+          return p.clone();});
+
+#define CREATE_CU_DOUBLE_PROP(n,pub,var,min,max,inc,typ) \
+createProperty(n,var,min,max,inc,pub,[](AbstractControlUnit*thi,const std::string&name,\
+      const chaos::common::data::CDataWrapper &p) -> chaos::common::data::CDWUniquePtr {\
+        chaos::common::data::CDWUniquePtr ret(new chaos::common::data::CDataWrapper());\
+        ret->addDoubleValue("value",((typ*)thi)->var);\
+        return ret;\
+      },[](AbstractControlUnit*thi,const std::string&name,\
+       const chaos::common::data::CDataWrapper &p) -> chaos::common::data::CDWUniquePtr { \
+          ((typ*)thi)->var=p.getDoubleValue("value");\
+          return p.clone();});
+
 #define FILLPROPERTYCD(cw, value, min, max, incr)                              \
   cw->append("value", value);                                                  \
   cw->append("min", min);                                                      \
@@ -219,6 +264,11 @@ chaos::common::data::CDWUniquePtr createProperty(
             << " props:" << props.getJSONString()<<" input:"<<val.getJSONString();
 
       return retriveProp(realpropname);
+    } else {
+        LERR_ << __FUNCTION__ << "-"
+            << "Property not exists, settting property " << realpropname
+            << " props:" << props.getJSONString()<<" input:"<<val.getJSONString();
+
     }
 
     return chaos::common::data::CDWUniquePtr();
@@ -252,7 +302,7 @@ chaos::common::data::CDWUniquePtr createProperty(
       return setProperty(propname, p);
     }
     LDBG_ << __FUNCTION__ << "-"
-          << "create property:" << p.getJSONString();
+          << "create property:" << propname<<" :"<<p.getJSONString();
 
     return p.clone();
   }
@@ -286,7 +336,7 @@ chaos::common::data::CDWUniquePtr createProperty(
       return setProperty(propname, p);
     }
     LDBG_ << __FUNCTION__ << "-"
-          << "create property:" << p.getJSONString();
+          << "create property:" << propname<<":"<<p.getJSONString();
     return p.clone();
   }
 

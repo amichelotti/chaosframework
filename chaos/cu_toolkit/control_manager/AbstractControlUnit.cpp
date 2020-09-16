@@ -462,7 +462,7 @@ bool PushStorageBurst::active(void* data __attribute__((unused))) {
   }
   chaos::common::data::CDWUniquePtr AbstractControlUnit::setProperty(chaos::common::data::CDWUniquePtr data ){
       if(data.get()){
-          importKeysAsProperties(*data.get());
+          setProperties(*data.get(),true);
       }
     return getProperties();
   }

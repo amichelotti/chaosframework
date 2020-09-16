@@ -310,7 +310,7 @@ void AbstractDriver::scanForMessage() {
     } catch (std::exception &e) {
       opcode_submission_result = MsgManagmentResultType::MMR_ERROR;
       std::stringstream ss;
-      ss << "Unexpected exception:" << e.what() << " executing opcode:" << current_message_ptr->opcode;
+      ss << "Unexpected exception: \"" << e.what() << "\" executing opcode:" << current_message_ptr->opcode;
       ADLERR_ << ss.str();
       strncpy(current_message_ptr->err_msg, ss.str().c_str(), DRVMSG_ERR_MSG_SIZE);
       strncpy(current_message_ptr->err_dom, __PRETTY_FUNCTION__, DRVMSG_ERR_DOM_SIZE);

@@ -99,7 +99,7 @@ int MessagePSKafkaProducer::applyConfiguration() {
   if ((ret = MessagePSRDKafka::init(servers)) == 0) {
     if(rk==NULL){
       MRDDBG_ << "create new producer";
-
+      setMaxMsgSize(16*1024*1024);
       if (!(rk = rd_kafka_new(RD_KAFKA_PRODUCER, conf, ers, sizeof(ers)))) {
         errstr=ers;
         MRDERR_ << "Failed to create new producer: " << errstr;
