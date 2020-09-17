@@ -67,27 +67,12 @@ template <typename BC> class Property {
   std::map<std::string, std::string> abstract2props;
   std::map<std::string, conversion_func_t> prop2setHandler;
   std::map<std::string, conversion_func_t> prop2getHandler;
-
+  boost::mutex lock;
 public:
   void reset() { props.reset(); }
   chaos::common::data::CDWUniquePtr getProperties(bool sync = false) {
     if (sync) {
-      ChaosStringVector sv;
-      props.getAllKey(sv);
-      for (ChaosStringVector::iterator i = sv.begin(); i != sv.end(); i++) {
-        chaos::common::data::CDataWrapper cd;
-        typename std::map<std::string, conversion_func_t>::iterator j =
-            prop2getHandler.find(*i);
-        if ((j != prop2getHandler.end())) {
-          chaos::common::data::CDataWrapper cd;
-          props.getCSDataValue(*i, cd);
-          chaos::common::data::CDWUniquePtr toset =
-              j->second((BC *)this, *i, cd);
-          if (toset.get()) {
-            props.setValue(*i, toset.get());
-          }
-        }
-      }
+      syncRead();
     }
     return props.clone();
   }
@@ -174,7 +159,7 @@ chaos::common::data::CDWUniquePtr createProperty(
 
     } else {
 
-      props.setValue(propname,ret.get());
+      setProperty(propname,*ret.get());
     }
     return props.clone();
   }
@@ -195,34 +180,38 @@ chaos::common::data::CDWUniquePtr createProperty(
         abstract2props[pubname] = propname;
       }
      if(!value.hasKey("value")){
-       throw chaos::CException(-2,"missing required key 'value",__FUNCTION__);
+       throw chaos::CException(-2,propname+" missing required key 'value",__FUNCTION__);
      }
       props.append(propname,value);
 
       syncWrite(propname);
 
     } else {
-
-      props.setValue(propname,
-                     (const chaos::common::data::CDataWrapper *)&value);
+      setProperty(propname,value);
+     // props.setValue(propname,
+       //              (const chaos::common::data::CDataWrapper *)&value);
+       
     }
     return props.clone();
   }
 
   chaos::common::data::CDWUniquePtr retriveProp(std::string &propname) {
     if (props.hasKey(propname) && props.isCDataWrapperValue(propname)) {
-      chaos::common::data::CDataWrapper p;
-      props.getCSDataValue(propname, p);
-      return p.clone();
+   //   LDBG_<<__FUNCTION__<<" -0 retrive prop full before:"<<props.getJSONString();
+
+      chaos::common::data::CDWUniquePtr p=props.getCSDataValue(propname);
+   //   LDBG_<<__FUNCTION__<<" -1 retrive prop:"<<propname<<" :"<<p->getJSONString()<< " full:"<<props.getJSONString();
+      return p;
     }
     std::map<std::string, std::string>::iterator i =
         abstract2props.find(propname);
     if (i != abstract2props.end()) {
       if (props.hasKey(i->second) && props.isCDataWrapperValue(i->second)) {
         propname = i->second;
-        chaos::common::data::CDataWrapper p;
-        props.getCSDataValue(i->second, p);
-        return p.clone();
+        chaos::common::data::CDWUniquePtr p=props.getCSDataValue(propname);
+  //      LDBG_<<__FUNCTION__<<" -2 retrive prop:"<<propname<<" :"<<p->getJSONString()<< " full:"<<props.getJSONString();
+
+        return p;
       }
     }
     return chaos::common::data::CDWUniquePtr();
@@ -230,17 +219,21 @@ chaos::common::data::CDWUniquePtr createProperty(
   chaos::common::data::CDWUniquePtr
   setProperty(const std::string &propname,
               const chaos::common::data::CDataWrapper &val, bool sync = false) {
+    boost::mutex::scoped_lock ll (lock);
     std::string realpropname = propname;
     if(!val.hasKey("value")){
-        throw chaos::CException(-10,"missing required key 'value' in:"+val.getJSONString(),__FUNCTION__);
+        throw chaos::CException(-10,propname+" missing required key 'value' in:"+val.getJSONString(),__FUNCTION__);
       }
     chaos::common::data::CDWUniquePtr prop = retriveProp(realpropname);
     if (prop.get()) {
+     //DEBUG_CODE(( LDBG_ << __FUNCTION__ << "-"
+     //       << "0 set property:" << propname<<" ["<<realpropname<<"]"<< ":" << prop->getJSONString()<<" full props:"<<props.getJSONString();
       
       chaos::common::data::CDWUniquePtr towrite = val.clone();
+
       ChaosStringVector sv;
       prop->getAllKey(sv);
-      
+      //if in the props there are keys that are not in the original one copy them (i.e. min,max)
       for (ChaosStringVector::iterator i = sv.begin(); i != sv.end(); i++) {
         if (!towrite->hasKey(*i)) {
           prop->copyKeyTo(*i, *towrite.get());
@@ -251,23 +244,40 @@ chaos::common::data::CDWUniquePtr createProperty(
         chaos::common::data::CDWUniquePtr ret =
             syncWrite(realpropname, towrite);
         if (ret.get()&& ret->hasKey("value")) {
-          props.setValue(realpropname, ret.get());
+         // ret->copyAllTo(props);
+       /*  LDBG_ << __FUNCTION__ << "-"
+            << "1 set property after sync: " << realpropname
+            << " to :" << ret->getJSONString();*/
+          replaceProperty(realpropname,*ret.get());
+          //props.setValue(realpropname, ret.get());
         } else {
-          props.setValue(realpropname, towrite.get());
-
+         /* LDBG_ << __FUNCTION__ << "-"
+            << "2 set property sync returned empty: " << realpropname
+            << " to :" << towrite->getJSONString();*/
+          //towrite->copyAllTo(props);
+          //props.setValue(realpropname, towrite.get());
+          replaceProperty(realpropname,*towrite.get());
+          
         }
       } else {
-        props.setValue(realpropname, towrite.get());
+        //towrite->copyAllTo(props);
+     /*   LDBG_ << __FUNCTION__ << "-"
+            << "3 set property not sync: " << realpropname
+            << " to :" << towrite->getJSONString();
+       */   
+        //props.setValue(realpropname, towrite.get());
+        replaceProperty(realpropname,*towrite.get());
+         
       }
       LDBG_ << __FUNCTION__ << "-"
-            << "set property " << realpropname
+            << "4 set property " << realpropname
             << " props:" << props.getJSONString()<<" input:"<<val.getJSONString();
 
       return retriveProp(realpropname);
     } else {
         LERR_ << __FUNCTION__ << "-"
-            << "Property not exists, settting property " << realpropname
-            << " props:" << props.getJSONString()<<" input:"<<val.getJSONString();
+            << "Property not exists, setting property \"" << realpropname
+            << "\" props:" << props.getJSONString()<<" input:"<<val.getJSONString();
 
     }
 
@@ -302,7 +312,7 @@ chaos::common::data::CDWUniquePtr createProperty(
       return setProperty(propname, p);
     }
     LDBG_ << __FUNCTION__ << "-"
-          << "create property:" << propname<<" :"<<p.getJSONString();
+          << "1 create property:" << propname<<" :"<<p.getJSONString();
 
     return p.clone();
   }
@@ -336,7 +346,7 @@ chaos::common::data::CDWUniquePtr createProperty(
       return setProperty(propname, p);
     }
     LDBG_ << __FUNCTION__ << "-"
-          << "create property:" << propname<<":"<<p.getJSONString();
+          << "2 create property:" << propname<<":"<<p.getJSONString();
     return p.clone();
   }
 
@@ -420,8 +430,10 @@ chaos::common::data::CDWUniquePtr createProperty(
   replaceProperty(const std::string &propname,
                   const chaos::common::data::CDataWrapper &p) {
     if (props.hasKey(propname)) {
-      props.setValue(propname, &p);
-      return p.clone();
+     // props.setValue(propname, &p);
+     props.replaceKey(propname,p);
+     
+    return p.clone();
     }
     chaos::common::data::CDWUniquePtr ret;
     return ret;
@@ -435,7 +447,16 @@ chaos::common::data::CDWUniquePtr createProperty(
       if (p.isCDataWrapperValue(*i)) {
         chaos::common::data::CDataWrapper cd;
         p.getCSDataValue(*i, cd);
+        if(cd.hasKey("value")){
+          setProperty(*i, cd,sync);
+        } else {
+          LERR_<<__FUNCTION__<<" CDWrapper property:"<<*i<<" misses required key 'value'";
+        }
+      } else {
+        chaos::common::data::CDataWrapper cd;
+        p.copyKeyToNewKey(*i,"value",cd);
         setProperty(*i, cd,sync);
+
       }
     }
     return props.clone();

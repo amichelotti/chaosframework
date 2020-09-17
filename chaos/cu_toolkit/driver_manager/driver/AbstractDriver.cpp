@@ -355,16 +355,17 @@ int AbstractDriver::setDrvProperty(const std::string &key, const std::string &va
 }
 
 chaos::common::data::CDWUniquePtr AbstractDriver::getDrvProperties() {
-  ADLDBG_ << "Get Driver properties not implemented";
 
-  return chaos::common::data::CDWUniquePtr();
+  return getProperties();
 }
 void AbstractDriver::setLastError(const std::string&str){
   lastError=str;
 }
 
-chaos::common::data::CDWUniquePtr AbstractDriver::setDrvProperties(chaos::common::data::CDWUniquePtr s) {
-  ADLDBG_ << "Set Driver properties not implemented:"<<((s.get())?s->getJSONString():"");
+chaos::common::data::CDWUniquePtr AbstractDriver::setDrvProperties(chaos::common::data::CDWUniquePtr drv) {
+  if(drv.get()){
+    return setProperties(*drv.get(),true);
 
-  return chaos::common::data::CDWUniquePtr();
+  }
+ return chaos::common::data::CDWUniquePtr();
 }

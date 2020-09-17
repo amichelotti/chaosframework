@@ -827,6 +827,64 @@ void CDataWrapper::reset() {
     bson_reinit(ACCESS_BSON(bson));
     bson_tmp_array.reset();
 }
+bool CDataWrapper::removeKey(const std::string& key){
+    CDataWrapper destination;
+     bson_iter_t it;
+     bool found=false;
+    bson_iter_init(&it, ACCESS_BSON(bson));
+    while (bson_iter_next(&it)) {
+        if(bson_iter_key(&it)!=key){
+            bson_append_value(ACCESS_BSON(destination.bson),
+                          bson_iter_key(&it),
+                          -1,
+                          bson_iter_value(&it));
+        } else {
+            found=true;
+        }
+    }
+    reset();
+    bson_iter_init(&it, ACCESS_BSON(destination.bson));
+    while (bson_iter_next(&it)) {
+            bson_append_value(ACCESS_BSON(bson),
+                          bson_iter_key(&it),
+                          -1,
+                          bson_iter_value(&it));
+        
+    }
+    return found;
+}
+bool CDataWrapper::replaceKey(const std::string& key,const CDataWrapper&d ){
+    CDataWrapper destination;
+     bson_iter_t it;
+     bool found=false;
+    bson_iter_init(&it, ACCESS_BSON(bson));
+    while (bson_iter_next(&it)) {
+        if(bson_iter_key(&it)!=key){
+            bson_append_value(ACCESS_BSON(destination.bson),
+                          bson_iter_key(&it),
+                          -1,
+                          bson_iter_value(&it));
+        } else {
+            bson_append_document(ACCESS_BSON(destination.bson),
+                         key.c_str(),
+                         (int)key.size(),
+                         ACCESS_BSON(d.bson));
+          
+            found=true;
+        }
+    }
+    reset();
+    bson_iter_init(&it, ACCESS_BSON(destination.bson));
+    while (bson_iter_next(&it)) {
+            bson_append_value(ACCESS_BSON(bson),
+                          bson_iter_key(&it),
+                          -1,
+                          bson_iter_value(&it));
+        
+    }
+    return found;
+}
+
 
 string CDataWrapper::toHash() const{
     char ret[33];

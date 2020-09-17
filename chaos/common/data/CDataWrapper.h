@@ -314,6 +314,10 @@ throw chaos::CException(-2, ss.str(), __PRETTY_FUNCTION__);
                 void setSerializedJsonData(const char* jsonData);
                 //check if the key is present in data wrapper
                 bool hasKey(const std::string& key) const;
+                //
+                bool removeKey(const std::string& key);
+                bool replaceKey(const std::string& key,const CDataWrapper&d );
+
                 bool isVector(const std::string& key) const;
                 //return all key contained into the object
                 void getAllKey(ChaosStringVector& contained_key) const;

@@ -24,7 +24,7 @@ class MessagePSRDKafka:public virtual MessagePublishSubscribeBase {
   MessagePSRDKafka();
   ~MessagePSRDKafka();
 
-  int setOption(const std::string& key, const std::string& value);
+  int setOption(const std::string key, const std::string value);
 
   int init(std::set<std::string>& servers);
 
