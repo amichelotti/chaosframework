@@ -28,6 +28,28 @@ createProperty(n,var,min,max,inc,pub,[](AbstractDriver*thi,const std::string&nam
           ((typ*)thi)->var=p.getDoubleValue("value");\
           return p.clone();});
 
+#define CREATE_DRV_BOOL_PROP(n,pub,var,typ) \
+createProperty(n,var,pub,[](AbstractDriver*thi,const std::string&name,\
+      const chaos::common::data::CDataWrapper &p) -> chaos::common::data::CDWUniquePtr {\
+        chaos::common::data::CDWUniquePtr ret(new chaos::common::data::CDataWrapper());\
+        ret->addBoolValue("value",((typ*)thi)->var);\
+        return ret;\
+      },[](AbstractDriver*thi,const std::string&name,\
+       const chaos::common::data::CDataWrapper &p) -> chaos::common::data::CDWUniquePtr { \
+          ((typ*)thi)->var=p.getBoolValue("value");\
+          return p.clone();});
+
+#define CREATE_DRV_STRING_PROP(n,pub,var,typ) \
+createProperty(n,var,pub,[](AbstractDriver*thi,const std::string&name,\
+      const chaos::common::data::CDataWrapper &p) -> chaos::common::data::CDWUniquePtr {\
+        chaos::common::data::CDWUniquePtr ret(new chaos::common::data::CDataWrapper());\
+        ret->addStringValue("value",((typ*)thi)->var);\
+        return ret;\
+      },[](AbstractDriver*thi,const std::string&name,\
+       const chaos::common::data::CDataWrapper &p) -> chaos::common::data::CDWUniquePtr { \
+          ((typ*)thi)->var=p.getStringValue("value");\
+          return p.clone();});
+
 #define CREATE_CU_INT_PROP(n,pub,var,min,max,inc,typ) \
 createProperty(n,var,(int32_t)min,(int32_t)max,(int32_t)inc,pub,[](AbstractControlUnit*thi,const std::string&name,\
       const chaos::common::data::CDataWrapper &p) -> chaos::common::data::CDWUniquePtr {\
@@ -48,6 +70,29 @@ createProperty(n,var,min,max,inc,pub,[](AbstractControlUnit*thi,const std::strin
       },[](AbstractControlUnit*thi,const std::string&name,\
        const chaos::common::data::CDataWrapper &p) -> chaos::common::data::CDWUniquePtr { \
           ((typ*)thi)->var=p.getDoubleValue("value");\
+          return p.clone();});
+
+#define CREATE_CU_BOOL_PROP(n,pub,var,typ) \
+createProperty(n,var,pub,[](AbstractControlUnit*thi,const std::string&name,\
+      const chaos::common::data::CDataWrapper &p) -> chaos::common::data::CDWUniquePtr {\
+        chaos::common::data::CDWUniquePtr ret(new chaos::common::data::CDataWrapper());\
+        ret->addBoolValue("value",((typ*)thi)->var);\
+        return ret;\
+      },[](AbstractControlUnit*thi,const std::string&name,\
+       const chaos::common::data::CDataWrapper &p) -> chaos::common::data::CDWUniquePtr { \
+          ((typ*)thi)->var=p.getBoolValue("value");\
+          return p.clone();});
+
+
+#define CREATE_CU_STRING_PROP(n,pub,var,typ) \
+createProperty(n,var,pub,[](AbstractControlUnit*thi,const std::string&name,\
+      const chaos::common::data::CDataWrapper &p) -> chaos::common::data::CDWUniquePtr {\
+        chaos::common::data::CDWUniquePtr ret(new chaos::common::data::CDataWrapper());\
+        ret->addStringValue("value",((typ*)thi)->var);\
+        return ret;\
+      },[](AbstractControlUnit*thi,const std::string&name,\
+       const chaos::common::data::CDataWrapper &p) -> chaos::common::data::CDWUniquePtr { \
+          ((typ*)thi)->var=p.getStringValue("value");\
           return p.clone();});
 
 #define FILLPROPERTYCD(cw, value, min, max, incr)                              \
