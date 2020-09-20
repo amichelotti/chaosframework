@@ -72,7 +72,7 @@ int MessagePSConsumer::subscribe(const std::string& key) {
   std::replace(topic.begin(), topic.end(), '/', '.');
 
   keylist.insert(topic);
-  MRDDBG_ <<keylist.size()<< "] subscribed to:"<<topic;
+  //MRDDBG_ <<keylist.size()<< "] subscribing to:"<<topic;
 
   return 0;
 }

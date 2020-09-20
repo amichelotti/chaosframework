@@ -159,6 +159,19 @@ int MessagePSRDKafkaConsumer::subscribe(const std::string& key){
           rd_kafka_destroy(rk);
           return -20;
         }
+        rd_kafka_message_t *rkm;
+          rkm = rd_kafka_consumer_poll(rk, 100);
+
+        if (rkm && rkm->err) {
+              /* Consumer errors are generally to be considered
+                * informational as the consumer will automatically
+                * try to recover from all types of errors. */
+        errstr=rd_kafka_message_errstr(rkm);
+        MRDERR_<<"Consumer error cannot subscribe:"<<errstr;
+        stats.errs++;
+        rd_kafka_message_destroy(rkm);
+        return -30;
+        }
 
         MRDDBG_<<" subscribed to "<<subscription->cnt;
       
