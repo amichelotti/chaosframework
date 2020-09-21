@@ -79,7 +79,8 @@ namespace chaos{
 					AttributeValue *value_setting = attribute_value_shared_cache->getAttributeValue(domain, attribute_name);
 					return *value_setting->getValuePtr<T>();
 				}
-				
+				chaos::common::data::CDWUniquePtr getCDValue(SharedCacheDomain domain);
+
 				chaos::common::data::CDWUniquePtr getCDValue(SharedCacheDomain domain,const std::string& attribute_name);
 				//! Return the value object for the domain and the string key
 				template<typename T>

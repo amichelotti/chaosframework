@@ -356,7 +356,7 @@ int AbstractDriver::setDrvProperty(const std::string &key, const std::string &va
 
 chaos::common::data::CDWUniquePtr AbstractDriver::getDrvProperties() {
 
-  return getProperties();
+  return getProperties(true);
 }
 void AbstractDriver::setLastError(const std::string&str){
   lastError=str;
