@@ -204,8 +204,21 @@ void MessagePSRDKafkaConsumer::poll(){
                 * informational as the consumer will automatically
                 * try to recover from all types of errors. */
         errstr=rd_kafka_message_errstr(rkm);
-        MRDERR_<<"Consumer error:"<<errstr;
+        MRDERR_<<"Consumer error:"<<errstr<<" err:"<<rkm->err;
         stats.errs++;
+        
+        if(handlers[ONERROR]){
+           ele_t d;
+          d.key=rd_kafka_topic_name(rkm->rkt);
+          d.off=rkm->offset;
+          d.par=rkm->partition;
+          d.cd= chaos::common::data::CDWShrdPtr( new chaos::common::data::CDataWrapper());
+          d.cd->addStringValue("msg",errstr);
+          d.cd->addInt32Value("err",rkm->err);
+          handlers[ONERROR](d);
+
+        }
+
         rd_kafka_message_destroy(rkm);
         return;
 

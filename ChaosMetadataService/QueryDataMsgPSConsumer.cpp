@@ -72,6 +72,16 @@ void QueryDataMsgPSConsumer::messageHandler(const chaos::common::message::ele_t&
   QueryDataConsumer::consumePutEvent(kp, (uint8_t)st, meta_tag_set, *(data.cd.get()));
 }
 
+void QueryDataMsgPSConsumer::messageError(const chaos::common::message::ele_t& data) {
+  ChaosStringSetConstSPtr meta_tag_set;
+    std::map<std::string, uint64_t>::iterator i=alive_map.find(data.key);
+    ERR<<"key:"<<data.key<<" err msg:"<<data.cd->getStringValue("msg")<<" err:"<<data.cd->getInt32Value("err");
+    if(i!=alive_map.end()){
+      DBG<<" removing from alive list:"<<i->first;
+    }
+
+}
+
 void QueryDataMsgPSConsumer::init(void* init_data) {
   QueryDataConsumer::init(init_data);
   msgbroker = GlobalConfiguration::getInstance()->getOption<std::string>(InitOption::OPT_MSG_BROKER_SERVER);
@@ -79,6 +89,8 @@ void QueryDataMsgPSConsumer::init(void* init_data) {
   cons->addServer(msgbroker);
 
   cons->addHandler(chaos::common::message::MessagePublishSubscribeBase::ONARRIVE, boost::bind(&QueryDataMsgPSConsumer::messageHandler, this, _1));
+  cons->addHandler(chaos::common::message::MessagePublishSubscribeBase::ONERROR, boost::bind(&QueryDataMsgPSConsumer::messageError, this, _1));
+
   if (cons->setOption("auto.offset.reset", "earliest") != 0) {
     throw chaos::CException(-1, "cannot set offset:" + cons->getLastError(), __PRETTY_FUNCTION__);
   }
@@ -140,6 +152,7 @@ int QueryDataMsgPSConsumer::consumeHealthDataEvent(const std::string&           
           if(alive_map.find(keysub)==alive_map.end()){
             if (cons->subscribe(keysub) != 0) {
               ERR << seq<<"] cannot subscribe to :" << keysub<<" err:"<<cons->getLastError();
+              
             } else {
               DBG << seq<<"] Subscribed to:" << keysub;
               alive_map[keysub]= TimingUtil::getTimeStamp();

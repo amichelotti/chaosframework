@@ -37,6 +37,8 @@ class QueryDataMsgPSConsumer : public QueryDataConsumer {
   chaos::common::message::consumer_uptr_t cons;
   boost::mutex                            map_m;
   void                                    messageHandler(const chaos::common::message::ele_t& data);
+  void                                  messageError(const chaos::common::message::ele_t& data);
+
   //---------------- DirectIODeviceServerChannelHandler -----------------------
   
  public:
