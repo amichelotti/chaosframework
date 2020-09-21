@@ -458,7 +458,7 @@ chaos::common::data::CDWUniquePtr createProperty(
           if (ret.get()) {
             setProperty(*i, *ret.get());
           }
-
+        
         } else if (*i == propname) {
           chaos::common::data::CDWUniquePtr ret =
               j->second((BC *)this, propname, p);
