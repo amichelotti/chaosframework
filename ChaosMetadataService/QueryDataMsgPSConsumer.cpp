@@ -46,6 +46,8 @@ namespace metadata_service {
 QueryDataMsgPSConsumer::~QueryDataMsgPSConsumer() {
 }
 */
+std::map<std::string, uint64_t>  QueryDataMsgPSConsumer::alive_map;
+
 QueryDataMsgPSConsumer::QueryDataMsgPSConsumer(const std::string& id)
     : groupid(id) {
   if (GlobalConfiguration::getInstance()->getConfiguration()->hasKey(InitOption::OPT_HA_ZONE_NAME)) {
