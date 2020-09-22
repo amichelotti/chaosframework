@@ -529,6 +529,38 @@ chaos::common::data::CDWUniquePtr createProperty(
 
     return -2;
   }
+   template <typename T>
+  int getProperty(const std::string &propname, T &value, T &max, T &min,T &incr,bool sync = false) {
+    std::string realpropname = propname;
+    chaos::common::data::CDWUniquePtr prop = retriveProp(realpropname);
+    if (prop.get() == NULL) {
+      return -1;
+    }
+
+    if (sync) {
+      typename std::map<std::string, conversion_func_t>::iterator i =
+          prop2getHandler.find(realpropname);
+      if (i != prop2getHandler.end()) {
+        prop = i->second((BC *)this, propname, *prop.get());
+      }
+    }
+
+   if (prop->hasKey("max")) {
+      max = props.getCSDataValue(realpropname)->getValue<T>("max");
+    }
+  if (prop->hasKey("min")) {
+      min = props.getCSDataValue(realpropname)->getValue<T>("min");
+    }
+    if (prop->hasKey("incr")) {
+      incr = props.getCSDataValue(realpropname)->getValue<T>("incr");
+    }
+    if (prop->hasKey("value")) {
+      value = props.getCSDataValue(realpropname)->getValue<T>("value");
+      return 0;
+    }
+  
+    return -2;
+  }
 };
 } // namespace data
 } // namespace misc
