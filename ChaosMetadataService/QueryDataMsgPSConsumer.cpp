@@ -80,7 +80,7 @@ void QueryDataMsgPSConsumer::messageError(const chaos::common::message::ele_t& d
       DBG<<" removing from alive list:"<<i->first;
       alive_map.erase(i);
     } else {
-      DBG<<i->first<<" is not in the alive list:"<<i->first;
+      DBG<<data.key<<" is not in the alive list";
 
     }
 
