@@ -77,14 +77,16 @@ void QueryDataMsgPSConsumer::messageHandler(const chaos::common::message::ele_t&
 void QueryDataMsgPSConsumer::messageError(const chaos::common::message::ele_t& data) {
   ChaosStringSetConstSPtr meta_tag_set;
       boost::mutex::scoped_lock ll(map_m);
+    std::string path=data.key;
+    std::replace(path.begin(), path.end(), '.', '/');
 
-    std::map<std::string, uint64_t>::iterator i=alive_map.find(data.key);
-    ERR<<"key:"<<data.key<<" err msg:"<<data.cd->getStringValue("msg")<<" err:"<<data.cd->getInt32Value("err");
+    std::map<std::string, uint64_t>::iterator i=alive_map.find(path);
+    ERR<<"key:"<<data.key<<" ["<<path<<"] err msg:"<<data.cd->getStringValue("msg")<<" err:"<<data.cd->getInt32Value("err");
     if(i!=alive_map.end()){
       DBG<<" removing from alive list:"<<i->first;
       alive_map.erase(i);
     } else {
-      DBG<<data.key<<" is not in the alive list";
+      DBG<<path<<" is not in the alive list";
 
     }
 
