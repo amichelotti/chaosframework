@@ -76,6 +76,8 @@ void QueryDataMsgPSConsumer::messageHandler(const chaos::common::message::ele_t&
 
 void QueryDataMsgPSConsumer::messageError(const chaos::common::message::ele_t& data) {
   ChaosStringSetConstSPtr meta_tag_set;
+      boost::mutex::scoped_lock ll(map_m);
+
     std::map<std::string, uint64_t>::iterator i=alive_map.find(data.key);
     ERR<<"key:"<<data.key<<" err msg:"<<data.cd->getStringValue("msg")<<" err:"<<data.cd->getInt32Value("err");
     if(i!=alive_map.end()){
@@ -160,8 +162,9 @@ int QueryDataMsgPSConsumer::consumeHealthDataEvent(const std::string&           
               ERR << seq<<"] cannot subscribe to :" << keysub<<" err:"<<cons->getLastError();
               
             } else {
-              DBG << seq<<"] Subscribed to:" << keysub;
               alive_map[keysub]= TimingUtil::getTimeStamp();
+
+              DBG << seq<<"] Subscribed to:" << keysub<<" at:"<<alive_map[keysub];
             }
           } else {
            //   DBG << seq<<"] Already subscribed:" << keysub;
