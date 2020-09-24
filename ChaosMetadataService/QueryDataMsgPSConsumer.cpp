@@ -175,6 +175,10 @@ int QueryDataMsgPSConsumer::consumeHealthDataEvent(const std::string&           
       }
     }
   }
+  if(channel_data.get()==NULL){
+    DBG<<"Empty health for:\""<<key<<"\" registration pack?";
+    return 0;
+  }
   return QueryDataConsumer::consumeHealthDataEvent(key, hst_tag, meta_tag_set, channel_data);
 }
 
