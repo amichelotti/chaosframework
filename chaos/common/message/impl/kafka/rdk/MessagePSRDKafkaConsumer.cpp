@@ -102,15 +102,14 @@ int MessagePSRDKafkaConsumer::applyConfiguration() {
     if(rk==NULL){
       MRDDBG_<<"Consumer apply configuration, groupid:"<<groupid;
       if(groupid!=""){
-      if (rd_kafka_conf_set(conf, "group.id", groupid.c_str(),
-                                ers, sizeof(ers)) != RD_KAFKA_CONF_OK) {
-
-                  MRDERR_<<ers;
-                  errstr=ers;
-                // rd_kafka_conf_destroy(conf);
-                  return -1;
-      }
+        if(setOption("group.id", groupid.c_str())!=0){
+          return -2;
+        }
+      
     }
+      if(setOption("allow.auto.create.topics","true")!=0){
+        return -3;
+      }
       if (!(rk = rd_kafka_new(RD_KAFKA_CONSUMER, conf, ers, sizeof(ers)))) {
         MRDERR_ << "Failed to create new consumer: " << ers;
         errstr=ers;

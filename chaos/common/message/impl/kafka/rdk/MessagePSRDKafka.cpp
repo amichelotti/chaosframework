@@ -40,6 +40,7 @@ MessagePSRDKafka::MessagePSRDKafka():MessagePublishSubscribeBase("kafka-rdk"),rk
 }
 
 int MessagePSRDKafka::setOption(const std::string key, const std::string value) {
+  
   char errstr[512];
 
   /*if(init_done){
@@ -53,6 +54,7 @@ int MessagePSRDKafka::setOption(const std::string key, const std::string value) 
 
     return -2;
   }
+  
   return 0;
 }
 int MessagePSRDKafka::setMaxMsgSize(const int size){
