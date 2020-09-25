@@ -663,7 +663,7 @@ namespace chaos {
             static const char * const ACTION_LAUNCH_NODE_PAR_CFG            = "node_init_cfg";
             static const char * const ACTION_LAUNCH_NODE_PAR_AUTO_START     = "node_auto_start";
             static const char * const ACTION_LAUNCH_NODE_PAR_KEEP_ALIVE     = "node_keep_alive";
-            static const char * const ACTION_LAUNCH_NODE_PAR_LOG_ON_MDS     = "node_log_on_mds";
+            static const char * const ACTION_LAUNCH_NODE_LOG_ON_CONSOLE     = "node_log_on_console";
             static const char * const ACTION_LAUNCH_SCRIPT     = "node_script_id";
             static const char * const ACTION_LAUNCH_WORKDIR     = "node_workdir";
 

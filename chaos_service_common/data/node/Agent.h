@@ -108,14 +108,14 @@ namespace chaos {
                     //!qgent automatically respawn process it it will be killed
                     bool  keep_alive;
                     //!qgent automatically route log to mds for launched process
-                    bool  log_on_mds;
+                    bool  log_on_console;
                     
                     AgentAssociation():
                     associated_node_uid(),
                     configuration_file_content(),
                     auto_start(false),
                     keep_alive(false),
-                    log_on_mds(false){}
+                    log_on_console(false){}
                     
                     AgentAssociation(const std::string& _associated_node_uid,
                                      const std::string& _launch_cmd_line,
@@ -131,7 +131,7 @@ namespace chaos {
                     configuration_file_content(_configuration_file_content),
                     auto_start(_auto_start),
                     keep_alive(_keep_alive),
-                    log_on_mds(_log_at_launch),scriptID(_scriptID),working_dir(_workdir)
+                    log_on_console(_log_at_launch),scriptID(_scriptID),working_dir(_workdir)
                     {}
                     
                     AgentAssociation(const AgentAssociation& copy_src):
@@ -141,7 +141,7 @@ namespace chaos {
                     configuration_file_content(copy_src.configuration_file_content),
                     auto_start(copy_src.auto_start),
                     keep_alive(copy_src.keep_alive),
-                    log_on_mds(copy_src.log_on_mds),
+                    log_on_console(copy_src.log_on_console),
                     scriptID(copy_src.scriptID),
                     working_dir(copy_src.working_dir)
 
@@ -155,7 +155,7 @@ namespace chaos {
                         configuration_file_content = rhs.configuration_file_content;
                         auto_start = rhs.auto_start;
                         keep_alive = rhs.keep_alive;
-                        log_on_mds = rhs.log_on_mds;
+                        log_on_console = rhs.log_on_console;
                         scriptID   = rhs.scriptID;
                         working_dir= rhs.working_dir;
 
@@ -173,7 +173,7 @@ namespace chaos {
                     dataWrapped().configuration_file_content = CDW_GET_SRT_WITH_DEFAULT(serialized_data, AgentNodeDomainAndActionRPC::ProcessWorker::ACTION_LAUNCH_NODE_PAR_CFG, "");
                     dataWrapped().auto_start = CDW_GET_BOOL_WITH_DEFAULT(serialized_data, AgentNodeDomainAndActionRPC::ProcessWorker::ACTION_LAUNCH_NODE_PAR_AUTO_START, false);
                     dataWrapped().keep_alive = CDW_GET_BOOL_WITH_DEFAULT(serialized_data, AgentNodeDomainAndActionRPC::ProcessWorker::ACTION_LAUNCH_NODE_PAR_KEEP_ALIVE, false);
-                    dataWrapped().log_on_mds = CDW_GET_BOOL_WITH_DEFAULT(serialized_data, AgentNodeDomainAndActionRPC::ProcessWorker::ACTION_LAUNCH_NODE_PAR_LOG_ON_MDS, false);
+                    dataWrapped().log_on_console = CDW_GET_BOOL_WITH_DEFAULT(serialized_data, AgentNodeDomainAndActionRPC::ProcessWorker::ACTION_LAUNCH_NODE_LOG_ON_CONSOLE, false);
                     dataWrapped().scriptID = CDW_GET_SRT_WITH_DEFAULT(serialized_data, AgentNodeDomainAndActionRPC::ProcessWorker::ACTION_LAUNCH_SCRIPT, "");
                     dataWrapped().working_dir = CDW_GET_SRT_WITH_DEFAULT(serialized_data, AgentNodeDomainAndActionRPC::ProcessWorker::ACTION_LAUNCH_WORKDIR, "");
 
@@ -187,7 +187,7 @@ namespace chaos {
                     data_serialized->addStringValue(AgentNodeDomainAndActionRPC::ProcessWorker::ACTION_LAUNCH_NODE_PAR_CFG, dataWrapped().configuration_file_content);
                     data_serialized->addBoolValue(AgentNodeDomainAndActionRPC::ProcessWorker::ACTION_LAUNCH_NODE_PAR_AUTO_START, dataWrapped().auto_start);
                     data_serialized->addBoolValue(AgentNodeDomainAndActionRPC::ProcessWorker::ACTION_LAUNCH_NODE_PAR_KEEP_ALIVE, dataWrapped().keep_alive);
-                    data_serialized->addBoolValue(AgentNodeDomainAndActionRPC::ProcessWorker::ACTION_LAUNCH_NODE_PAR_LOG_ON_MDS, dataWrapped().log_on_mds);
+                    data_serialized->addBoolValue(AgentNodeDomainAndActionRPC::ProcessWorker::ACTION_LAUNCH_NODE_LOG_ON_CONSOLE, dataWrapped().log_on_console);
                     data_serialized->addStringValue(AgentNodeDomainAndActionRPC::ProcessWorker::ACTION_LAUNCH_SCRIPT, dataWrapped().scriptID);
                     data_serialized->addStringValue(AgentNodeDomainAndActionRPC::ProcessWorker::ACTION_LAUNCH_WORKDIR, dataWrapped().working_dir);
 
