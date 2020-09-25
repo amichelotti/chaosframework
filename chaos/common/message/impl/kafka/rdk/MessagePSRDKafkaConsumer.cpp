@@ -77,6 +77,10 @@ int MessagePSRDKafkaConsumer::getMsgAsync(const std::string&key,const int32_t pn
   
   return stats.last_err;
 }
+int MessagePSRDKafkaConsumer::setOption(const std::string& key, const std::string& value){
+  MRDDBG_<<"Setting Option:"<<key<<"="<<value;
+  return MessagePSRDKafka::setOption(key,value);
+  }
 
 int MessagePSRDKafkaConsumer::getMsgAsync(const std::string&key,uint32_t off,const int32_t pnum){
   

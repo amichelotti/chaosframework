@@ -28,6 +28,7 @@ class MessagePSKafkaProducer : public MessagePSRDKafka, public chaos::common::me
 
   int  applyConfiguration();
   void poll();
+  int setOption(const std::string& key, const std::string& value);
 
   int deleteKey(const std::string&key);
   int flush(const int timeo=10000);

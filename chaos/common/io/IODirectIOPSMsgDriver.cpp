@@ -58,7 +58,6 @@ IODirectIOPSMsgDriver::IODirectIOPSMsgDriver(const std::string& alias)
   }
   cons = chaos::common::message::MessagePSDriver::getConsumerDriver(msgbrokerdrv, gid);
   cons->addHandler(chaos::common::message::MessagePublishSubscribeBase::ONARRIVE, boost::bind(&IODirectIOPSMsgDriver::defaultHandler, this, _1));
-  cons->setOption("allow.auto.create.topics", "true");
 }
 
 IODirectIOPSMsgDriver::~IODirectIOPSMsgDriver() {

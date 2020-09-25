@@ -71,6 +71,8 @@ void GlobalConfiguration::preParseStartupParameters()  {
         addOption(InitOption::OPT_METADATASERVER_AUTO_CONF, po::value< bool >()->zero_tokens(), "Enable auto configuration for metadataserver endpoints");
         #if defined(KAFKA_RDK_ENABLE) || defined(KAFKA_ASIO_ENABLE)
         addOption(InitOption::OPT_DATA_IO_IMPL, po::value< string >()->default_value(std::string("IODirectIOPSMsgDriver")), "Specify the data io implementation");
+        addOption(InitOption::OPT_MSG_PRODUCER_KVP, po::value< std::vector<std::string> >(), "K:V message producer options");
+        addOption(InitOption::OPT_MSG_CONSUMER_KVP, po::value< std::vector<std::string> >(), "K:V message consumer options");
 
         #else
         addOption(InitOption::OPT_DATA_IO_IMPL, po::value< string >()->default_value(std::string("IODirectIODriver")), "Specify the data io implementation");
@@ -200,20 +202,12 @@ void GlobalConfiguration::scanOption()   {
     try {
         if (hasOption(InitOption::OPT_HELP)) {
             std::cout << *desc;
-            delete desc;
-            desc=NULL;
             exit(0);
 
-            return;
         }
         if (hasOption(InitOption::OPT_VERSION)) {
             std::cout <<"Version:"<< CSLIB_VERSION_MAJOR<<"."<<CSLIB_VERSION_MINOR<<"."<<CSLIB_VERSION_NUMBER<< " BuildID:"<<CSLIB_BUILD_ID<< " BuildDate:"<<__DATE__ <<" " <<__TIME__<<"\n";
-            delete desc;
-            desc=NULL;
-
-            exit(0);
-            return;
-            
+            exit(0);            
         }
     } catch (po::error &e) {
         //write error also on cerr

@@ -2,7 +2,7 @@
 #define MRDAPP_ INFO_LOG(MessagePSDriver)
 #define MRDDBG_ DBG_LOG(MessagePSDriver)
 #define MRDERR_ ERR_LOG(MessagePSDriver)
-
+#include <chaos/common/configuration/GlobalConfiguration.h>
 #ifdef KAFKA_RDK_ENABLE
 #include "impl/kafka/rdk/MessagePSKafkaProducer.h"
 #include "impl/kafka/rdk/MessagePSRDKafkaConsumer.h"
@@ -36,7 +36,6 @@ producer_uptr_t ret;
                 if((drvname=="KAFKA-RDK") || (drvname=="kafka-rdk")){
                     ret.reset(new kafka::rdk::MessagePSKafkaProducer());
                     producer_drv_m["kafka-rdk"]=ret;
-                    return ret;
                 }
 #endif
 #ifdef KAFKA_ASIO_ENABLE
@@ -44,11 +43,24 @@ producer_uptr_t ret;
                     ret.reset(new kafka::asio::MessagePSKafkaAsioProducer());
                     producer_drv_m["kafka-asio"]=ret;
 
-                    return  ret;
                 }
 #endif
+            if(ret.get()==NULL){
+                throw chaos::CException(-5,"cannot find a producer driver for:"+drvname,__PRETTY_FUNCTION__);
 
-        throw chaos::CException(-5,"cannot find a producer driver for:"+drvname,__PRETTY_FUNCTION__);
+            }
+            MRDDBG_<<drvname<<"] created producer:"<<std::hex<<ret.get();
+
+            if(GlobalConfiguration::getInstance()->hasOption(InitOption::OPT_MSG_PRODUCER_KVP)){
+                     std::vector<std::string> opt=GlobalConfiguration::getInstance()->getOption< std::vector<std::string> >(InitOption::OPT_MSG_PRODUCER_KVP);
+                    std::map<std::string,std::string> kv;
+                    GlobalConfiguration::getInstance()->fillKVParameter(kv ,opt,"");
+                    for(std::map<std::string,std::string>::iterator i=kv.begin();i!=kv.end();i++){
+                        ret->setOption(i->first,i->second);
+                    }
+
+            }
+            return ret;
 
                 
     }
@@ -66,19 +78,32 @@ producer_uptr_t ret;
                 if((drvname=="KAFKA-RDK") || (drvname=="kafka-rdk")){
                     ret.reset(new kafka::rdk::MessagePSRDKafkaConsumer(gid,k));
                     consumer_drv_m["kafka-rdk"]=ret;
-                    return  ret;
                 }
     #endif
     #ifdef KAFKA_ASIO_ENABLE
                 if((drvname=="KAFKA-ASIO")||(drvname=="kafka-asio")){
-                    ret.reset(new kafka::rdk::MessagePSRDKafkaConsumer(gid,k));
+                    ret.reset(new kafka::rdk::MessagePSKafkaAsioConsumer(gid,k));
                     consumer_drv_m["kafka-asio"]=ret;
-                    return  ret;
                 }
     #endif
 
-            throw chaos::CException(-5,"cannot find a consumert driver for:"+drvname,__PRETTY_FUNCTION__);
-                
+            if(ret.get()==NULL){
+                throw chaos::CException(-5,"cannot find a consumer driver for:"+drvname,__PRETTY_FUNCTION__);
+
+            }
+            MRDDBG_<<drvname<<"] created consumer:"<<std::hex<<ret.get();
+
+            if(GlobalConfiguration::getInstance()->hasOption(InitOption::OPT_MSG_CONSUMER_KVP)){
+                     std::vector<std::string> opt=GlobalConfiguration::getInstance()->getOption< std::vector<std::string> >(InitOption::OPT_MSG_CONSUMER_KVP);
+                    std::map<std::string,std::string> kv;
+                    GlobalConfiguration::getInstance()->fillKVParameter(kv ,opt,"");
+                    for(std::map<std::string,std::string>::iterator i=kv.begin();i!=kv.end();i++){
+
+                        ret->setOption(i->first,i->second);
+                    }
+
+            }
+            return ret;
 
      }
 

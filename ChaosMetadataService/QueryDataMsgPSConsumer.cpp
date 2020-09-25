@@ -101,12 +101,14 @@ void QueryDataMsgPSConsumer::init(void* init_data) {
   cons->addHandler(chaos::common::message::MessagePublishSubscribeBase::ONARRIVE, boost::bind(&QueryDataMsgPSConsumer::messageHandler, this, _1));
   cons->addHandler(chaos::common::message::MessagePublishSubscribeBase::ONERROR, boost::bind(&QueryDataMsgPSConsumer::messageError, this, _1));
 
+/*
   if (cons->setOption("auto.offset.reset", "earliest") != 0) {
     throw chaos::CException(-1, "cannot set offset:" + cons->getLastError(), __PRETTY_FUNCTION__);
   }
   if (cons->setOption("topic.metadata.refresh.interval.ms", "5000") != 0) {
     throw chaos::CException(-1, "cannot set refresh topic:" + cons->getLastError(), __PRETTY_FUNCTION__);
   }
+  */
   if (cons->applyConfiguration() != 0) {
     throw chaos::CException(-1, "cannot initialize Publish Subscribe:" + cons->getLastError(), __PRETTY_FUNCTION__);
   }

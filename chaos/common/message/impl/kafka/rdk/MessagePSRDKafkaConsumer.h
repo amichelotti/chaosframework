@@ -23,6 +23,7 @@ class MessagePSRDKafkaConsumer : public MessagePSRDKafka,public chaos::common::m
   ele_uptr_t getMsg(int timeo);
   void poll();
   int subscribe(const std::string& key);
+  int setOption(const std::string& key, const std::string& value);
 
 
 };

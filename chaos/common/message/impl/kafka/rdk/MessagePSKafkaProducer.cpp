@@ -86,6 +86,11 @@ int MessagePSKafkaProducer::pushMsg(const chaos::common::data::CDataWrapper& dat
     return 0;
   }
 
+int MessagePSKafkaProducer::setOption(const std::string& key, const std::string& value){
+    MRDDBG_<<"Setting Option:"<<key<<"="<<value;
+
+  return MessagePSRDKafka::setOption(key,value);
+  }
 
 int MessagePSKafkaProducer::applyConfiguration() {
   int  ret = 0;

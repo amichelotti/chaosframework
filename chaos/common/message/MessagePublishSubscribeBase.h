@@ -90,7 +90,7 @@ namespace chaos {
                  * @param value value
                  * @return int 
                  */
-                virtual int setOption(const std::string&key,const std::string& value);
+                virtual int setOption(const std::string& key,const std::string&value);
 
  /**
                  * @brief apply configuration 
