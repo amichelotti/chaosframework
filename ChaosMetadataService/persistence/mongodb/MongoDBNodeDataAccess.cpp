@@ -406,10 +406,10 @@ int MongoDBNodeDataAccess::deleteNode(const std::string& node_unique_id,
         }
         mongo::BSONObj q = bson_find.obj();
         
-        DEBUG_CODE(MDBNDA_DBG<<log_message("deleteNode",
+        MDBNDA_DBG<<log_message("deleteNode",
                                            "delete",
                                            DATA_ACCESS_LOG_1_ENTRY("Query",
-                                                                   q.jsonString()));)
+                                                                   q.jsonString()));
         
         if((err = connection->remove(MONGO_DB_COLLECTION_NAME(MONGODB_COLLECTION_NODES),
                                      q))){
