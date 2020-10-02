@@ -989,6 +989,10 @@ namespace chaos {
         static const char * const EXECUTION_SCRIPT_INSTANCE_LIST        = "eudk_script_instance_list";
         //!is the language that represent the script of the execution unit
         static const char * const EXECUTION_SCRIPT_INSTANCE_LANGUAGE    = "eudk_script_language";
+        //!is the language that represent the script target
+        static const char * const EXECUTION_SCRIPT_TARGET               = "script_target";
+         //!is the language that represent the script group
+        static const char * const EXECUTION_SCRIPT_GROUP                = "script_group";
         //!is the content of the script to be execution
         static const char * const EXECUTION_SCRIPT_INSTANCE_CONTENT     = "eudk_script_content";
         //! the dataset attribute associated to the variable[string]

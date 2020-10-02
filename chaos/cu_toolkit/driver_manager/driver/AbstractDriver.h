@@ -145,13 +145,14 @@ namespace chaos{
 					 * */
 					virtual void driverInit(const chaos::common::data::CDataWrapper&);
 
-					virtual void driverDeinit()   = 0;
+					virtual void driverDeinit();
                     const bool isDriverParamInJson() const;
                     const bool isBypass()const;
                     /*
                      * called via rpc or via user to implement the bypass
                      * */
                     void setBypass(bool val);
+                    
 
                  //   const Json::Value& getDriverParamJsonRootElement() const;
                 public:
@@ -180,7 +181,7 @@ namespace chaos{
 						\param cmd the message that needs to be executed by the driver implementation
 						\return the managment state of the message
                      */
-                    virtual MsgManagmentResultType::MsgManagmentResult execOpcode(DrvMsgPtr cmd) = 0;
+                    virtual MsgManagmentResultType::MsgManagmentResult execOpcode(DrvMsgPtr cmd);
                     std::string getUid(){return driver_uuid;}
                     /**
                      * @brief return a CDataWrapper (JSON) with the optional properties of a driver

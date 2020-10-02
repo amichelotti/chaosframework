@@ -552,6 +552,29 @@ class AbstractControlUnit : public DeclareAction,
   virtual void consumerHandler(const chaos::common::message::ele_t& data);
 
  protected:
+   void addPublicDriverPropertyToDataset();
+    void updateDatasetFromDriverProperty();
+
+    template <typename T>
+   bool setDrvProp(const std::string &name, T value, uint32_t size){
+chaos::common::data::CDataWrapper cd,props;
+      cd.append(PROPERTY_VALUE_KEY,value);
+      props.append(name,cd);
+      for (int idx = 0;
+             idx != accessor_instances.size();
+             idx++) {
+                 chaos::common::data::CDWUniquePtr p=props.clone();
+                accessor_instances[idx]->setDrvProperties(p); 
+             }
+
+    return true;
+   }
+   /*
+   bool setDrvProp(const std::string &name, double value, uint32_t size=sizeof(double));
+   bool setDrvProp(const std::string &name, const std::string& value, uint32_t size);
+   bool setDrvProp(const std::string &name, const bool& value, uint32_t size=sizeof(bool));
+*/
+
    void goInFatalError(std::string msg,int err=-1000,std::string domain=__PRETTY_FUNCTION__);
    virtual void fatalErrorHandler(const chaos::CException&ex);
 

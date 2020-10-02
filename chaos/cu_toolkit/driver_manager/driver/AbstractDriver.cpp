@@ -337,6 +337,10 @@ void AbstractDriver::driverInit(const chaos::common::data::CDataWrapper &data) {
   driverInit(data.getCompliantJSONString().c_str());
 }
 
+void AbstractDriver::driverDeinit() {
+  ADLDBG_ << "base driver " << identification_string <<" DEINIT";
+}
+
 const bool AbstractDriver::isBypass() const {
   return o_exe != this;
 }
@@ -368,4 +372,8 @@ chaos::common::data::CDWUniquePtr AbstractDriver::setDrvProperties(chaos::common
 
   }
  return chaos::common::data::CDWUniquePtr();
+}
+MsgManagmentResultType::MsgManagmentResult AbstractDriver::execOpcode(DrvMsgPtr cmd){
+  ADLERR_<<"OPCODE:"<<cmd->opcode<< " NOT IMPLEMENTED";
+  return MsgManagmentResultType::MMR_ERROR;
 }

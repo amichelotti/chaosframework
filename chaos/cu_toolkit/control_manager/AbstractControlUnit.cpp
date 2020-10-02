@@ -2746,4 +2746,86 @@ if (attributeInfo.maxRange.size() && v > attributeInfo.maxRange) throw MetadataL
 
       incomingMessage(data.key,data.cd);     
 }
+  void AbstractControlUnit::updateDatasetFromDriverProperty(){
+     for (int idx = 0;
+             idx != accessor_instances.size();
+             idx++) {
+                chaos::common::data::CDWUniquePtr ret=accessor_instances[idx]->getDrvProperties();
+                std::vector<std::string> props;
+                ret->getAllKey(props);
+                for(std::vector<std::string>::iterator i = props.begin();i!=props.end();i++){
+                    if (ret->isCDataWrapperValue(*i)) {
+                        chaos::common::data::CDWUniquePtr cd=ret->getCSDataValue(*i);
+                        if(cd->hasKey(PROPERTY_VALUE_KEY)&&cd->hasKey(PROPERTY_VALUE_PUB_KEY)){
+                            std::string attrname=cd->getStringValue(PROPERTY_VALUE_PUB_KEY);
+
+                            DataType::DataSetAttributeIOAttribute type=chaos::DataType::Bidirectional;
+                            if(cd->hasKey(PROPERTY_VALUE_IO_KEY)){
+                                type=(DataType::DataSetAttributeIOAttribute)cd->getInt32Value(PROPERTY_VALUE_IO_KEY);
+                            }
+                            if((type==chaos::DataType::Bidirectional) || (type==chaos::DataType::Output)){
+                                 getAttributeCache()->setOutputAttributeValue(attrname,cd->getVariantValue(attrname));
+                               /* if (cd->getValueType(*i) == chaos::DataType::TYPE_DOUBLE) {
+                                        getAttributeCache()->setOutputAttributeValue(attrname,cd->getDoubleValue(attrname));
+
+                                } else if (cd->getValueType(*i) == chaos::DataType::TYPE_INT32) {
+                                        getAttributeCache()->setOutputAttributeValue(attrname,cd->getInt32Value(attrname));
+
+                                }else  if(cd->getValueType(*i) == chaos::DataType::TYPE_BOOLEAN) {
+                                        getAttributeCache()->setOutputAttributeValue(attrname,cd->getBooleanValue(attrname));
+
+                                }else if (cd->getValueType(*i) == chaos::DataType::TYPE_STRING) {
+                                        getAttributeCache()->setOutputAttributeValue(attrname,cd->getStringValue(attrname));
+
+                                }*/
+     
+                            }
+                        }
+                    }
+                }
+             }
+  }
+
+  
+  void AbstractControlUnit::addPublicDriverPropertyToDataset(){
+       for (int idx = 0;
+             idx != accessor_instances.size();
+             idx++) {
+                chaos::common::data::CDWUniquePtr ret=accessor_instances[idx]->getDrvProperties();
+                std::vector<std::string> props;
+                ret->getAllKey(props);
+                for(std::vector<std::string>::iterator i = props.begin();i!=props.end();i++){
+                    if (ret->isCDataWrapperValue(*i)) {
+                        chaos::common::data::CDWUniquePtr cd=ret->getCSDataValue(*i);
+                        if(cd->hasKey(PROPERTY_VALUE_KEY)&&cd->hasKey(PROPERTY_VALUE_PUB_KEY)){
+                            std::string attrname=cd->getStringValue(PROPERTY_VALUE_PUB_KEY);
+
+                            ACULDBG_ << "ADDING ATTRIBUTE:" << *i <<" as "<<attrname;
+                            DataType::DataSetAttributeIOAttribute type=chaos::DataType::Bidirectional;
+                            if(cd->hasKey(PROPERTY_VALUE_IO_KEY)){
+                                type=(DataType::DataSetAttributeIOAttribute)cd->getInt32Value(PROPERTY_VALUE_IO_KEY);
+                            }
+                            addAttributeToDataSet(attrname, cd->getStringValue(PROPERTY_VALUE_DESC_KEY), cd->getValueType(*i),type);
+                            if((type==chaos::DataType::Bidirectional) || (type==chaos::DataType::Input)){
+                                if (cd->getValueType(*i) == chaos::DataType::TYPE_DOUBLE) {
+                                        addHandlerOnInputAttributeName<AbstractControlUnit,double>(this, &AbstractControlUnit::setDrvProp, attrname);
+
+                                } else if (cd->getValueType(*i) == chaos::DataType::TYPE_INT32) {
+                                        addHandlerOnInputAttributeName<AbstractControlUnit,int32_t>(this, &AbstractControlUnit::setDrvProp, attrname);
+
+                                }else  if(cd->getValueType(*i) == chaos::DataType::TYPE_BOOLEAN) {
+                                        addHandlerOnInputAttributeName<AbstractControlUnit,bool>(this, &AbstractControlUnit::setDrvProp, attrname);
+
+                                }else if (cd->getValueType(*i) == chaos::DataType::TYPE_STRING) {
+                                        addHandlerOnInputAttributeName<AbstractControlUnit,std::string>(this, &AbstractControlUnit::setDrvProp, attrname);
+
+                                }
+     
+                            }
+                        }
+                    }
+                }
+             }
+  }
+
 

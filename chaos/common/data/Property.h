@@ -5,82 +5,92 @@
 namespace chaos {
 namespace common {
 namespace data {
+#define PROPERTY_VALUE_KEY "value"
+#define PROPERTY_VALUE_MAX_KEY "max"
+#define PROPERTY_VALUE_MIN_KEY "min"
+#define PROPERTY_VALUE_INC_KEY "inc"
+#define PROPERTY_VALUE_PUB_KEY "pubname"
+#define PROPERTY_VALUE_DESC_KEY "desc"
+#define PROPERTY_VALUE_UNIT_KEY "unit"
+#define PROPERTY_VALUE_IO_KEY "io"
+
+
 
 #define CREATE_DRV_INT_PROP(n,pub,var,min,max,inc,typ) \
 createProperty(n,var,(int32_t)min,(int32_t)max,(int32_t)inc,pub,[](AbstractDriver*thi,const std::string&name,\
       const chaos::common::data::CDataWrapper &p) -> chaos::common::data::CDWUniquePtr {\
         chaos::common::data::CDWUniquePtr ret(new chaos::common::data::CDataWrapper());\
-        ret->addInt32Value("value",((typ*)thi)->var);\
+        ret->addInt32Value(PROPERTY_VALUE_KEY,((typ*)thi)->var);\
         return ret;\
       },[](AbstractDriver*thi,const std::string&name,\
        const chaos::common::data::CDataWrapper &p) -> chaos::common::data::CDWUniquePtr { \
-          ((typ*)thi)->var=p.getInt32Value("value");\
+          ((typ*)thi)->var=p.getInt32Value(PROPERTY_VALUE_KEY);\
           return p.clone();});
 
 #define CREATE_DRV_DOUBLE_PROP(n,pub,var,min,max,inc,typ) \
 createProperty(n,var,min,max,inc,pub,[](AbstractDriver*thi,const std::string&name,\
       const chaos::common::data::CDataWrapper &p) -> chaos::common::data::CDWUniquePtr {\
         chaos::common::data::CDWUniquePtr ret(new chaos::common::data::CDataWrapper());\
-        ret->addDoubleValue("value",((typ*)thi)->var);\
+        ret->addDoubleValue(PROPERTY_VALUE_KEY,((typ*)thi)->var);\
         return ret;\
       },[](AbstractDriver*thi,const std::string&name,\
        const chaos::common::data::CDataWrapper &p) -> chaos::common::data::CDWUniquePtr { \
-          ((typ*)thi)->var=p.getDoubleValue("value");\
+          ((typ*)thi)->var=p.getDoubleValue(PROPERTY_VALUE_KEY);\
           return p.clone();});
 
 #define CREATE_DRV_BOOL_PROP(n,pub,var,typ) \
 createProperty(n,var,pub,[](AbstractDriver*thi,const std::string&name,\
       const chaos::common::data::CDataWrapper &p) -> chaos::common::data::CDWUniquePtr {\
         chaos::common::data::CDWUniquePtr ret(new chaos::common::data::CDataWrapper());\
-        ret->addBoolValue("value",((typ*)thi)->var);\
+        ret->addBoolValue(PROPERTY_VALUE_KEY,((typ*)thi)->var);\
         return ret;\
       },[](AbstractDriver*thi,const std::string&name,\
        const chaos::common::data::CDataWrapper &p) -> chaos::common::data::CDWUniquePtr { \
-          ((typ*)thi)->var=p.getBoolValue("value");\
+          ((typ*)thi)->var=p.getBoolValue(PROPERTY_VALUE_KEY);\
           return p.clone();});
 
 #define CREATE_DRV_STRING_PROP(n,pub,var,typ) \
 createProperty(n,var,pub,[](AbstractDriver*thi,const std::string&name,\
       const chaos::common::data::CDataWrapper &p) -> chaos::common::data::CDWUniquePtr {\
         chaos::common::data::CDWUniquePtr ret(new chaos::common::data::CDataWrapper());\
-        ret->addStringValue("value",((typ*)thi)->var);\
+        ret->addStringValue(PROPERTY_VALUE_KEY,((typ*)thi)->var);\
         return ret;\
       },[](AbstractDriver*thi,const std::string&name,\
        const chaos::common::data::CDataWrapper &p) -> chaos::common::data::CDWUniquePtr { \
-          ((typ*)thi)->var=p.getStringValue("value");\
+          ((typ*)thi)->var=p.getStringValue(PROPERTY_VALUE_KEY);\
           return p.clone();});
 
 #define CREATE_CU_INT_PROP(n,pub,var,min,max,inc,typ) \
 createProperty(n,var,(int32_t)min,(int32_t)max,(int32_t)inc,pub,[](AbstractControlUnit*thi,const std::string&name,\
       const chaos::common::data::CDataWrapper &p) -> chaos::common::data::CDWUniquePtr {\
         chaos::common::data::CDWUniquePtr ret(new chaos::common::data::CDataWrapper());\
-        ret->addInt32Value("value",((typ*)thi)->var);\
+        ret->addInt32Value(PROPERTY_VALUE_KEY,((typ*)thi)->var);\
         return ret;\
       },[](AbstractControlUnit*thi,const std::string&name,\
        const chaos::common::data::CDataWrapper &p) -> chaos::common::data::CDWUniquePtr { \
-          ((typ*)thi)->var=p.getInt32Value("value");\
+          ((typ*)thi)->var=p.getInt32Value(PROPERTY_VALUE_KEY);\
           return p.clone();});
 
 #define CREATE_CU_DOUBLE_PROP(n,pub,var,min,max,inc,typ) \
 createProperty(n,var,min,max,inc,pub,[](AbstractControlUnit*thi,const std::string&name,\
       const chaos::common::data::CDataWrapper &p) -> chaos::common::data::CDWUniquePtr {\
         chaos::common::data::CDWUniquePtr ret(new chaos::common::data::CDataWrapper());\
-        ret->addDoubleValue("value",((typ*)thi)->var);\
+        ret->addDoubleValue(PROPERTY_VALUE_KEY,((typ*)thi)->var);\
         return ret;\
       },[](AbstractControlUnit*thi,const std::string&name,\
        const chaos::common::data::CDataWrapper &p) -> chaos::common::data::CDWUniquePtr { \
-          ((typ*)thi)->var=p.getDoubleValue("value");\
+          ((typ*)thi)->var=p.getDoubleValue(PROPERTY_VALUE_KEY);\
           return p.clone();});
 
 #define CREATE_CU_BOOL_PROP(n,pub,var,typ) \
 createProperty(n,var,pub,[](AbstractControlUnit*thi,const std::string&name,\
       const chaos::common::data::CDataWrapper &p) -> chaos::common::data::CDWUniquePtr {\
         chaos::common::data::CDWUniquePtr ret(new chaos::common::data::CDataWrapper());\
-        ret->addBoolValue("value",((typ*)thi)->var);\
+        ret->addBoolValue(PROPERTY_VALUE_KEY,((typ*)thi)->var);\
         return ret;\
       },[](AbstractControlUnit*thi,const std::string&name,\
        const chaos::common::data::CDataWrapper &p) -> chaos::common::data::CDWUniquePtr { \
-          ((typ*)thi)->var=p.getBoolValue("value");\
+          ((typ*)thi)->var=p.getBoolValue(PROPERTY_VALUE_KEY);\
           return p.clone();});
 
 
@@ -88,18 +98,18 @@ createProperty(n,var,pub,[](AbstractControlUnit*thi,const std::string&name,\
 createProperty(n,var,pub,[](AbstractControlUnit*thi,const std::string&name,\
       const chaos::common::data::CDataWrapper &p) -> chaos::common::data::CDWUniquePtr {\
         chaos::common::data::CDWUniquePtr ret(new chaos::common::data::CDataWrapper());\
-        ret->addStringValue("value",((typ*)thi)->var);\
+        ret->addStringValue(PROPERTY_VALUE_KEY,((typ*)thi)->var);\
         return ret;\
       },[](AbstractControlUnit*thi,const std::string&name,\
        const chaos::common::data::CDataWrapper &p) -> chaos::common::data::CDWUniquePtr { \
-          ((typ*)thi)->var=p.getStringValue("value");\
+          ((typ*)thi)->var=p.getStringValue(PROPERTY_VALUE_KEY);\
           return p.clone();});
 
 #define FILLPROPERTYCD(cw, value, min, max, incr)                              \
-  cw->append("value", value);                                                  \
-  cw->append("min", min);                                                      \
-  cw->append("max", max);                                                      \
-  cw->append("incr", incr);
+  cw->append(PROPERTY_VALUE_KEY, value);                                                  \
+  cw->append(PROPERTY_VALUE_MIN_KEY, min);                                                      \
+  cw->append(PROPERTY_VALUE_MAX_KEY, max);                                                      \
+  cw->append(PROPERTY_VALUE_INC_KEY, incr);
 /**
  * Class to store properties/variables that can be abstracted and private
  * typic example is in the use of camera properties that has to be normalized
@@ -126,7 +136,7 @@ public:
     p.getAllKey(sv);
     for (ChaosStringVector::iterator i = sv.begin(); i != sv.end(); i++) {
         chaos::common::data::CDataWrapper cd;
-        p.copyKeyToNewKey(*i,"value",cd);
+        p.copyKeyToNewKey(*i,PROPERTY_VALUE_KEY,cd);
         setProperty(*i,cd,sync);
     }
   }
@@ -138,8 +148,8 @@ public:
       chaos::common::data::CDataWrapper cd;
       if (props.isCDataWrapperValue(*i)) {
         props.getCSDataValue(*i, cd);
-        if(cd.hasKey("value")){
-          p.copyKeyToNewKey("value",*i,p);
+        if(cd.hasKey(PROPERTY_VALUE_KEY)){
+          p.copyKeyToNewKey(PROPERTY_VALUE_KEY,*i,p);
       }
     }
   }
@@ -151,10 +161,10 @@ public:
       chaos::common::data::CDataWrapper cd;
       if (props.isCDataWrapperValue(*i)) {
         props.getCSDataValue(*i, cd);
-        if(cd.hasKey("pubname")&&cd.isStringValue("pubname")){
-          std::string pub=cd.getStringValue("pubname");
-          if((pub.size()>0)&&cd.hasKey("value")){
-            cd.copyKeyToNewKey("value",pub,p);
+        if(cd.hasKey(PROPERTY_VALUE_PUB_KEY)&&cd.isStringValue(PROPERTY_VALUE_PUB_KEY)){
+          std::string pub=cd.getStringValue(PROPERTY_VALUE_PUB_KEY);
+          if((pub.size()>0)&&cd.hasKey(PROPERTY_VALUE_KEY)){
+            cd.copyKeyToNewKey(PROPERTY_VALUE_KEY,pub,p);
           }
 
         }
@@ -163,6 +173,7 @@ public:
   }
   bool hasKey(const std::string &key) { return props.hasKey(key); }
 
+  
   // between public and private properties
 /**
  * @brief Create a Property by using the getHandler
@@ -194,7 +205,15 @@ chaos::common::data::CDWUniquePtr createProperty(
     }
     if (!props.hasKey(propname)) {
       if (pubname.size() > 0) {
-        ret->append("pubname", pubname);
+        ret->append(PROPERTY_VALUE_PUB_KEY, pubname);
+         if((getHandler!=NULL) && (setHandler==NULL)){
+      ret->append(PROPERTY_VALUE_IO_KEY, (int32_t)chaos::DataType::Output);
+    } else if((getHandler==NULL) && (setHandler!=NULL)){
+      ret->append(PROPERTY_VALUE_IO_KEY, (int32_t)chaos::DataType::Input);
+
+    } else {
+      ret->append(PROPERTY_VALUE_IO_KEY, (int32_t)chaos::DataType::Bidirectional);
+    }
         abstract2props[pubname] = propname;
       }
       if(ret.get()){
@@ -220,14 +239,24 @@ chaos::common::data::CDWUniquePtr createProperty(
         prop2getHandler[propname] = getHandler;
       }
     if (!props.hasKey(propname)) {
-      if (pubname.size() > 0) {
-        value.append("pubname", pubname);
-        abstract2props[pubname] = propname;
-      }
-     if(!value.hasKey("value")){
+      if(!value.hasKey(PROPERTY_VALUE_KEY)){
        throw chaos::CException(-2,propname+" missing required key 'value",__FUNCTION__);
      }
-      props.append(propname,value);
+      chaos::common::data::CDWUniquePtr val=value.clone();
+      if (pubname.size() > 0) {
+        val->append(PROPERTY_VALUE_PUB_KEY, pubname);
+        abstract2props[pubname] = propname;
+      }
+     
+     if((getHandler!=NULL) && (setHandler==NULL)){
+      val->append(PROPERTY_VALUE_IO_KEY, (int32_t)chaos::DataType::Output);
+    } else if((getHandler==NULL) && (setHandler!=NULL)){
+      val->append(PROPERTY_VALUE_IO_KEY, (int32_t)chaos::DataType::Input);
+
+    } else {
+      val->append(PROPERTY_VALUE_IO_KEY, (int32_t)chaos::DataType::Bidirectional);
+    }
+      props.append(propname,*val.get());
 
       syncWrite(propname);
 
@@ -266,7 +295,7 @@ chaos::common::data::CDWUniquePtr createProperty(
               const chaos::common::data::CDataWrapper &val, bool sync = false) {
     boost::mutex::scoped_lock ll (lock);
     std::string realpropname = propname;
-    if(!val.hasKey("value")){
+    if(!val.hasKey(PROPERTY_VALUE_KEY)){
         throw chaos::CException(-10,propname+" missing required key 'value' in:"+val.getJSONString(),__FUNCTION__);
       }
     chaos::common::data::CDWUniquePtr prop = retriveProp(realpropname);
@@ -288,7 +317,7 @@ chaos::common::data::CDWUniquePtr createProperty(
       if (sync) {
         chaos::common::data::CDWUniquePtr ret =
             syncWrite(realpropname, towrite);
-        if (ret.get()&& ret->hasKey("value")) {
+        if (ret.get()&& ret->hasKey(PROPERTY_VALUE_KEY)) {
          // ret->copyAllTo(props);
        /*  LDBG_ << __FUNCTION__ << "-"
             << "1 set property after sync: " << realpropname
@@ -338,7 +367,15 @@ chaos::common::data::CDWUniquePtr createProperty(
                  conversion_func_t getHandler = NULL,
                  conversion_func_t setHandler = NULL) {
     chaos::common::data::CDataWrapper p;
-    p.append("value", value);
+    p.append(PROPERTY_VALUE_KEY, value);
+    if((getHandler!=NULL) && (setHandler==NULL)){
+      p.append(PROPERTY_VALUE_IO_KEY, (int32_t)chaos::DataType::Output);
+    } else if((getHandler==NULL) && (setHandler!=NULL)){
+      p.append(PROPERTY_VALUE_IO_KEY, (int32_t)chaos::DataType::Input);
+
+    } else {
+      p.append(PROPERTY_VALUE_IO_KEY, (int32_t)chaos::DataType::Bidirectional);
+    }
       if (setHandler) {
         prop2setHandler[propname] = setHandler;
       }
@@ -347,7 +384,7 @@ chaos::common::data::CDWUniquePtr createProperty(
       }
     if (!props.hasKey(propname)) {
       if (pubname.size() > 0) {
-        p.append("pubname", pubname);
+        p.append(PROPERTY_VALUE_PUB_KEY, pubname);
         abstract2props[pubname] = propname;
       }
       props.append(propname, p);
@@ -367,11 +404,31 @@ chaos::common::data::CDWUniquePtr createProperty(
                  const std::string &pubname = "",
                  conversion_func_t getHandler = NULL,
                  conversion_func_t setHandler = NULL) {
+                   return createProperty(propname,value,min,max,incr,"","NA",pubname,getHandler,setHandler);
+                 }
+  template <typename T>
+  chaos::common::data::CDWUniquePtr
+  createProperty(const std::string &propname, T value,  T min,  T max,  T incr,const std::string& desc, const std::string& unit,
+                 const std::string &pubname = "",
+                 conversion_func_t getHandler = NULL,
+                 conversion_func_t setHandler = NULL) {
     chaos::common::data::CDataWrapper p;
-    p.append("value", value);
-    p.append("min", min);
-    p.append("max", max);
-    p.append("incr", incr);
+
+    p.append(PROPERTY_VALUE_KEY, value);
+    p.append(PROPERTY_VALUE_MIN_KEY, min);
+    p.append(PROPERTY_VALUE_MAX_KEY, max);
+    p.append(PROPERTY_VALUE_INC_KEY, incr);
+    p.append(PROPERTY_VALUE_DESC_KEY, desc);
+    p.append(PROPERTY_VALUE_UNIT_KEY, unit);
+    if((getHandler!=NULL) && (setHandler==NULL)){
+      p.append(PROPERTY_VALUE_IO_KEY, (int32_t)chaos::DataType::Output);
+    } else if((getHandler==NULL) && (setHandler!=NULL)){
+      p.append(PROPERTY_VALUE_IO_KEY, (int32_t)chaos::DataType::Input);
+
+    } else {
+      p.append(PROPERTY_VALUE_IO_KEY, (int32_t)chaos::DataType::Bidirectional);
+    }
+
     if (setHandler) {
         prop2setHandler[propname] = setHandler;
       }
@@ -382,7 +439,7 @@ chaos::common::data::CDWUniquePtr createProperty(
       if (pubname.size() > 0) {
         abstract2props[pubname] = propname;
 
-        p.append("pubname", pubname);
+        p.append(PROPERTY_VALUE_PUB_KEY, pubname);
       }
       props.append(propname, p);
       syncWrite(propname);
@@ -400,7 +457,7 @@ chaos::common::data::CDWUniquePtr createProperty(
   setPropertyValue(const std::string &propname, const T &value,
                    bool sync = false) {
     chaos::common::data::CDataWrapper p;
-    p.append("value", value);
+    p.append(PROPERTY_VALUE_KEY, value);
 
     return setProperty(propname, p, sync);
   }
@@ -492,14 +549,14 @@ chaos::common::data::CDWUniquePtr createProperty(
       if (p.isCDataWrapperValue(*i)) {
         chaos::common::data::CDataWrapper cd;
         p.getCSDataValue(*i, cd);
-        if(cd.hasKey("value")){
+        if(cd.hasKey(PROPERTY_VALUE_KEY)){
           setProperty(*i, cd,sync);
         } else {
           LERR_<<__FUNCTION__<<" CDWrapper property:"<<*i<<" misses required key 'value'";
         }
       } else {
         chaos::common::data::CDataWrapper cd;
-        p.copyKeyToNewKey(*i,"value",cd);
+        p.copyKeyToNewKey(*i,PROPERTY_VALUE_KEY,cd);
         setProperty(*i, cd,sync);
 
       }
@@ -522,8 +579,8 @@ chaos::common::data::CDWUniquePtr createProperty(
       }
     }
 
-    if (prop->hasKey("value")) {
-      value = props.getCSDataValue(realpropname)->getValue<T>("value");
+    if (prop->hasKey(PROPERTY_VALUE_KEY)) {
+      value = props.getCSDataValue(realpropname)->getValue<T>(PROPERTY_VALUE_KEY);
       return 0;
     }
 
@@ -545,17 +602,17 @@ chaos::common::data::CDWUniquePtr createProperty(
       }
     }
 
-   if (prop->hasKey("max")) {
-      max = props.getCSDataValue(realpropname)->getValue<T>("max");
+   if (prop->hasKey(PROPERTY_VALUE_MAX_KEY)) {
+      max = props.getCSDataValue(realpropname)->getValue<T>(PROPERTY_VALUE_MAX_KEY);
     }
-  if (prop->hasKey("min")) {
-      min = props.getCSDataValue(realpropname)->getValue<T>("min");
+  if (prop->hasKey(PROPERTY_VALUE_MIN_KEY)) {
+      min = props.getCSDataValue(realpropname)->getValue<T>(PROPERTY_VALUE_MIN_KEY);
     }
-    if (prop->hasKey("incr")) {
-      incr = props.getCSDataValue(realpropname)->getValue<T>("incr");
+    if (prop->hasKey(PROPERTY_VALUE_INC_KEY)) {
+      incr = props.getCSDataValue(realpropname)->getValue<T>(PROPERTY_VALUE_INC_KEY);
     }
-    if (prop->hasKey("value")) {
-      value = props.getCSDataValue(realpropname)->getValue<T>("value");
+    if (prop->hasKey(PROPERTY_VALUE_KEY)) {
+      value = props.getCSDataValue(realpropname)->getValue<T>(PROPERTY_VALUE_KEY);
       return 0;
     }
   
