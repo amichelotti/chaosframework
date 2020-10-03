@@ -2764,20 +2764,25 @@ if (attributeInfo.maxRange.size() && v > attributeInfo.maxRange) throw MetadataL
                                 type=(DataType::DataSetAttributeIOAttribute)cd->getInt32Value(PROPERTY_VALUE_IO_KEY);
                             }
                             if((type==chaos::DataType::Bidirectional) || (type==chaos::DataType::Output)){
-                                 getAttributeCache()->setOutputAttributeValue(attrname,cd->getVariantValue(attrname));
-                               /* if (cd->getValueType(*i) == chaos::DataType::TYPE_DOUBLE) {
-                                        getAttributeCache()->setOutputAttributeValue(attrname,cd->getDoubleValue(attrname));
+                                chaos::DataType::DataType dstype=cd->getValueType(PROPERTY_VALUE_KEY);
 
-                                } else if (cd->getValueType(*i) == chaos::DataType::TYPE_INT32) {
-                                        getAttributeCache()->setOutputAttributeValue(attrname,cd->getInt32Value(attrname));
+                                 //getAttributeCache()->setOutputAttributeValue(attrname,cd->getVariantValue(PROPERTY_VALUE_KEY));
+                                if (dstype == chaos::DataType::TYPE_DOUBLE) {
+                                        getAttributeCache()->setOutputAttributeValue(attrname,cd->getDoubleValue(PROPERTY_VALUE_KEY));
 
-                                }else  if(cd->getValueType(*i) == chaos::DataType::TYPE_BOOLEAN) {
-                                        getAttributeCache()->setOutputAttributeValue(attrname,cd->getBooleanValue(attrname));
+                                } else if (dstype == chaos::DataType::TYPE_INT32) {
+                                        getAttributeCache()->setOutputAttributeValue(attrname,cd->getInt32Value(PROPERTY_VALUE_KEY));
 
-                                }else if (cd->getValueType(*i) == chaos::DataType::TYPE_STRING) {
-                                        getAttributeCache()->setOutputAttributeValue(attrname,cd->getStringValue(attrname));
+                                } else if (dstype == chaos::DataType::TYPE_INT64) {
+                                        getAttributeCache()->setOutputAttributeValue(attrname,cd->getInt64Value(PROPERTY_VALUE_KEY));
 
-                                }*/
+                                } else  if(dstype == chaos::DataType::TYPE_BOOLEAN) {
+                                        getAttributeCache()->setOutputAttributeValue(attrname,cd->getBoolValue(PROPERTY_VALUE_KEY));
+
+                                }else if (dstype == chaos::DataType::TYPE_STRING) {
+                                        getAttributeCache()->setOutputAttributeValue(attrname,cd->getStringValue(PROPERTY_VALUE_KEY));
+
+                                }
      
                             }
                         }
@@ -2805,18 +2810,22 @@ if (attributeInfo.maxRange.size() && v > attributeInfo.maxRange) throw MetadataL
                             if(cd->hasKey(PROPERTY_VALUE_IO_KEY)){
                                 type=(DataType::DataSetAttributeIOAttribute)cd->getInt32Value(PROPERTY_VALUE_IO_KEY);
                             }
-                            addAttributeToDataSet(attrname, cd->getStringValue(PROPERTY_VALUE_DESC_KEY), cd->getValueType(*i),type);
+                            chaos::DataType::DataType dstype=cd->getValueType(PROPERTY_VALUE_KEY);
+                            addAttributeToDataSet(attrname, cd->getStringValue(PROPERTY_VALUE_DESC_KEY),dstype ,type);
                             if((type==chaos::DataType::Bidirectional) || (type==chaos::DataType::Input)){
-                                if (cd->getValueType(*i) == chaos::DataType::TYPE_DOUBLE) {
+                                if (dstype == chaos::DataType::TYPE_DOUBLE) {
                                         addHandlerOnInputAttributeName<AbstractControlUnit,double>(this, &AbstractControlUnit::setDrvProp, attrname);
 
-                                } else if (cd->getValueType(*i) == chaos::DataType::TYPE_INT32) {
+                                } else if (dstype == chaos::DataType::TYPE_INT32) {
                                         addHandlerOnInputAttributeName<AbstractControlUnit,int32_t>(this, &AbstractControlUnit::setDrvProp, attrname);
 
-                                }else  if(cd->getValueType(*i) == chaos::DataType::TYPE_BOOLEAN) {
+                                 }else if (dstype == chaos::DataType::TYPE_INT64) {
+                                        addHandlerOnInputAttributeName<AbstractControlUnit,int64_t>(this, &AbstractControlUnit::setDrvProp, attrname);
+
+                                } else  if(dstype == chaos::DataType::TYPE_BOOLEAN) {
                                         addHandlerOnInputAttributeName<AbstractControlUnit,bool>(this, &AbstractControlUnit::setDrvProp, attrname);
 
-                                }else if (cd->getValueType(*i) == chaos::DataType::TYPE_STRING) {
+                                }else if (dstype == chaos::DataType::TYPE_STRING) {
                                         addHandlerOnInputAttributeName<AbstractControlUnit,std::string>(this, &AbstractControlUnit::setDrvProp, attrname);
 
                                 }

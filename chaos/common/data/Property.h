@@ -418,15 +418,15 @@ chaos::common::data::CDWUniquePtr createProperty(
     p.append(PROPERTY_VALUE_MIN_KEY, min);
     p.append(PROPERTY_VALUE_MAX_KEY, max);
     p.append(PROPERTY_VALUE_INC_KEY, incr);
-    p.append(PROPERTY_VALUE_DESC_KEY, desc);
-    p.append(PROPERTY_VALUE_UNIT_KEY, unit);
+    p.addStringValue(PROPERTY_VALUE_DESC_KEY, desc);
+    p.addStringValue(PROPERTY_VALUE_UNIT_KEY, unit);
     if((getHandler!=NULL) && (setHandler==NULL)){
-      p.append(PROPERTY_VALUE_IO_KEY, (int32_t)chaos::DataType::Output);
+      p.addInt32Value(PROPERTY_VALUE_IO_KEY, (int32_t)chaos::DataType::Output);
     } else if((getHandler==NULL) && (setHandler!=NULL)){
-      p.append(PROPERTY_VALUE_IO_KEY, (int32_t)chaos::DataType::Input);
+      p.addInt32Value(PROPERTY_VALUE_IO_KEY, (int32_t)chaos::DataType::Input);
 
     } else {
-      p.append(PROPERTY_VALUE_IO_KEY, (int32_t)chaos::DataType::Bidirectional);
+      p.addInt32Value(PROPERTY_VALUE_IO_KEY, (int32_t)chaos::DataType::Bidirectional);
     }
 
     if (setHandler) {
@@ -439,7 +439,7 @@ chaos::common::data::CDWUniquePtr createProperty(
       if (pubname.size() > 0) {
         abstract2props[pubname] = propname;
 
-        p.append(PROPERTY_VALUE_PUB_KEY, pubname);
+        p.addStringValue(PROPERTY_VALUE_PUB_KEY, pubname);
       }
       props.append(propname, p);
       syncWrite(propname);
@@ -493,7 +493,9 @@ chaos::common::data::CDWUniquePtr createProperty(
         } else if (*i == propname) {
           chaos::common::data::CDWUniquePtr ret =
               j->second((BC *)this, propname, p);
-          return setProperty(*i, *ret.get());
+          if(ret.get()){
+           return setProperty(*i, *ret.get());
+          }
         }
       }
     }

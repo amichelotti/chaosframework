@@ -76,7 +76,7 @@ void DriverPropertyCU::unitStart() {
 void DriverPropertyCU::unitRun() {
   //get the output attribute pointer form the internal cache
   updateDatasetFromDriverProperty();
-  
+  getAttributeCache()->setOutputDomainAsChanged();
 }
 
 //!Execute the Control Unit work

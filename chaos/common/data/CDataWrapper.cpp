@@ -910,16 +910,14 @@ CDataVariant CDataWrapper::getVariantValue(const std::string& key) const{
     switch (getValueType(key)) {
         case chaos::DataType::TYPE_BOOLEAN:
             return CDataVariant(getBoolValue(key));
-            break;
         case  chaos::DataType::TYPE_INT32:
             return CDataVariant(getInt32Value(key));
-            break;
         case  chaos::DataType::TYPE_INT64:
             return CDataVariant(getInt64Value(key));
-            break;
-        case  chaos::DataType::TYPE_DOUBLE:
-            return CDataVariant(getDoubleValue(key));
-            break;
+        case  chaos::DataType::TYPE_DOUBLE:{
+            double val=getDoubleValue(key);
+            return CDataVariant(val);
+        }
         case chaos::DataType::TYPE_STRING:
             return  CDataVariant(getStringValue(key));
         case chaos::DataType::TYPE_CLUSTER:
@@ -933,7 +931,6 @@ CDataVariant CDataWrapper::getVariantValue(const std::string& key) const{
        
         case  chaos::DataType::TYPE_BYTEARRAY:
             return CDataVariant(getBinaryValueAsCDataBuffer(key));
-            break;
         default:
             break;
     }
