@@ -25,12 +25,13 @@ using namespace chaos;
 using namespace chaos::common::data::cache;
 using namespace chaos::cu::driver_manager::driver;
 
-PUBLISHABLE_CONTROL_UNIT_IMPLEMENTATION(DriverPropertyCU)
+PUBLISHABLE_CONTROL_UNIT_IMPLEMENTATION(chaos::cu::control_manager::DriverPropertyCU)
 
 #define DriverPropertyCULAPP_ LAPP_ << "[DriverPropertyCU] "
 #define DriverPropertyCULDBG_ LDBG_ << "[DriverPropertyCU] " << __PRETTY_FUNCTION__ << " "
 #define DriverPropertyCULERR_ LERR_ << "[DriverPropertyCU] " << __PRETTY_FUNCTION__ << "(" << __LINE__ << ") "
 
+using namespace chaos::cu::control_manager;
 /*
  Construct
  */
@@ -53,7 +54,6 @@ DriverPropertyCU::~DriverPropertyCU() {
  (chaosframework/Documentation/html/group___control___unit___definition___api.html)
  */
 void DriverPropertyCU::unitDefineActionAndDataset() {
-  int ret;
   DriverPropertyCULAPP_ << "UnitDefine";
   addPublicDriverPropertyToDataset();
   
@@ -76,7 +76,7 @@ void DriverPropertyCU::unitStart() {
 void DriverPropertyCU::unitRun() {
   //get the output attribute pointer form the internal cache
   updateDatasetFromDriverProperty();
-  getAttributeCache()->setOutputDomainAsChanged();
+ // getAttributeCache()->setOutputDomainAsChanged();
 }
 
 //!Execute the Control Unit work

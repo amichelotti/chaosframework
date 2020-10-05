@@ -75,6 +75,14 @@ namespace chaos{
                     
                     //!main buffer
                     void								*value_buffer;
+                    union oldData {
+                        int32_t i32data;
+                        int64_t i64data;
+                        double ddata;
+                        bool bdata;
+
+                    } old_value;
+                    std::string old_string;
                     CDataWrapper						cdvalue;
 
                         //global index bitmap for infom that this value(using index) has been changed

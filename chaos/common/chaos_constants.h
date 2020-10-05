@@ -723,6 +723,10 @@ namespace chaos {
         static const char * const DS_DIRECT_IO_ENDPOINT                             = "dsndk_direct_io_ep";
         //!define the type of storage(history only = 0, cache only	= 1, both	= 2) [uint32_t]
         static const char * const DS_STORAGE_TYPE                                   = "dsndk_storage_type";
+       
+        //!define a constant that tells to update output even if there is no change
+        static const char * const DS_UPDATE_ANYWAY                               = "dsndk_update_anyway";
+       
         //!define the numbers of second for the ageing time, that is maximu number of second
         //!for wich the data need to remain archive within the !CHAOS storage system. A value
         //! of 0 mean infinit persistence[uint32_t]

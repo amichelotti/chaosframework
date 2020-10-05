@@ -28,6 +28,9 @@
 #include <chaos/cu_toolkit/driver_manager/driver/DriverAccessor.h>
 #include <chaos/cu_toolkit/control_manager/RTAbstractControlUnit.h>
 
+namespace chaos{
+  namespace cu{
+    namespace control_manager{
 class DriverPropertyCU : public chaos::cu::control_manager::RTAbstractControlUnit {
 	PUBLISHABLE_CONTROL_UNIT_INTERFACE(DriverPropertyCU);
    chaos::cu::driver_manager::driver::DriverAccessor* driver;
@@ -75,5 +78,6 @@ protected:
 
 
 };
-
+    }}}
+    
 #endif

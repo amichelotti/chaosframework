@@ -51,6 +51,9 @@ using namespace chaos::cu::data_manager;
 using namespace chaos::cu::control_manager;
 using namespace chaos::cu::driver_manager;
 using namespace chaos::cu::driver_manager::driver;
+
+#define DS_UPDATE_ANYWAY_DEF 60000
+
 #define DBG DBG_LOG(AbstractControlUnit)
 #define ERR ERR_LOG(AbstractControlUnit)
 
@@ -142,6 +145,8 @@ bool PushStorageBurst::active(void* data __attribute__((unused))) {
     , timestamp_acq_cached_value()
     , timestamp_hw_acq_cached_value()
     , thread_schedule_daly_cached_value()
+    , ds_update_anyway(DS_UPDATE_ANYWAY_DEF)
+    , last_push(0)
     , key_data_storage() {
         _initPropertyGroup();
         //!try to decode parameter string has json document
@@ -247,6 +252,8 @@ bool PushStorageBurst::active(void* data __attribute__((unused))) {
         pg_abstract_cu.addProperty(DataServiceNodeDefinitionKey::DS_STORAGE_TYPE, "Set the control unit storage type", DataType::TYPE_INT32, 0, CDataVariant((int32_t)0));
         pg_abstract_cu.addProperty(DataServiceNodeDefinitionKey::DS_STORAGE_LIVE_TIME, "Set the control unit storage type", DataType::TYPE_INT64, 0, CDataVariant((int64_t)0));
         pg_abstract_cu.addProperty(DataServiceNodeDefinitionKey::DS_STORAGE_HISTORY_TIME, "Set the control unit storage type", DataType::TYPE_INT64, 0, CDataVariant((int64_t)0));
+        pg_abstract_cu.addProperty(DataServiceNodeDefinitionKey::DS_UPDATE_ANYWAY, "Update the dataset anyway (ms)", DataType::TYPE_INT32, 0, CDataVariant((int32_t)DS_UPDATE_ANYWAY_DEF));
+        ds_update_anyway=DS_UPDATE_ANYWAY_DEF;
         //    CDWUniquePtr burst_type_desc(new CDataWrapper());
         //    burst_type_desc->addInt32Value(DataServiceNodeDefinitionKey::DS_HISTORY_BURST_TYPE, DataServiceNodeDefinitionType::DSStorageBurstTypeUndefined);
         //    pg_abstract_cu.addProperty(DataServiceNodeDefinitionKey::DS_HISTORY_BURST, "Specify if the restore operation need to be done as real operation or not", DataType::TYPE_CLUSTER,0, CDataVariant(burst_type_desc.release()));
@@ -1768,9 +1775,9 @@ bool PushStorageBurst::active(void* data __attribute__((unused))) {
         //add history time
         domain_attribute_setting.addAttribute(DataServiceNodeDefinitionKey::DS_STORAGE_HISTORY_TIME, 0, DataType::TYPE_INT64);
         
-        //add history time
-        domain_attribute_setting.addAttribute(DataServiceNodeDefinitionKey::DS_STORAGE_HISTORY_TIME, 0, DataType::TYPE_INT64);
-
+        //add update anyway
+        domain_attribute_setting.addAttribute(DataServiceNodeDefinitionKey::DS_UPDATE_ANYWAY, 0, DataType::TYPE_INT32);
+       
         //command status
         domain_attribute_setting.addAttribute(DataPackSystemKey::DP_SYS_QUEUED_CMD, 0, DataType::TYPE_INT32);
         domain_attribute_setting.addAttribute(DataPackSystemKey::DP_SYS_STACK_CMD, 0, DataType::TYPE_INT32);
@@ -2244,6 +2251,9 @@ if (attributeInfo.maxRange.size() && v > attributeInfo.maxRange) throw MetadataL
                 *attribute_value_shared_cache->getAttributeValue(DOMAIN_SYSTEM, DataServiceNodeDefinitionKey::DS_STORAGE_LIVE_TIME)->getValuePtr<uint64_t>() = new_value.asUInt64();
             } else if (property_name.compare(DataServiceNodeDefinitionKey::DS_STORAGE_HISTORY_TIME) == 0) {
                 *attribute_value_shared_cache->getAttributeValue(DOMAIN_SYSTEM, DataServiceNodeDefinitionKey::DS_STORAGE_HISTORY_TIME)->getValuePtr<uint64_t>() = new_value.asUInt64();
+            } else if (property_name.compare(DataServiceNodeDefinitionKey::DS_UPDATE_ANYWAY) == 0) {
+                *attribute_value_shared_cache->getAttributeValue(DOMAIN_SYSTEM, DataServiceNodeDefinitionKey::DS_UPDATE_ANYWAY)->getValuePtr<int32_t>() = new_value.asInt32();
+                ds_update_anyway=new_value.asInt32();
             }
         }
     }
@@ -2263,17 +2273,20 @@ if (attributeInfo.maxRange.size() && v > attributeInfo.maxRange) throw MetadataL
         AttributeCache&                       output_attribute_cache = attribute_value_shared_cache->getSharedDomain(DOMAIN_OUTPUT);
         ChaosSharedPtr<SharedCacheLockDomain> r_lock                 = attribute_value_shared_cache->getLockOnDomain(DOMAIN_OUTPUT, false);
         r_lock->lock();
-        
-        //check if something as changed
-        if (!output_attribute_cache.hasChanged()) {return err;}
-        
+        uint64_t tscor=TimingUtil::getTimeCorStamp();
+        if((tscor-last_push)<ds_update_anyway){
+            //check if something as changed
+            if (!output_attribute_cache.hasChanged()) {
+                return err;
+                }
+        }
+        last_push=tscor;
         CDWShrdPtr output_attribute_dataset = key_data_storage->getNewDataPackForDomain(KeyDataStorageDomainOutput);
         if (!output_attribute_dataset.get()) {
             ACULERR_ << " Cannot allocate packet.. err:"<<err;
             return err;
         }
         output_attribute_dataset->addInt64Value(ControlUnitDatapackCommonKey::RUN_ID, run_id);
-        uint64_t tscor=TimingUtil::getTimeCorStamp();
         output_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_TIMESTAMP, tscor/* *timestamp_acq_cached_value->getValuePtr<uint64_t>()*/);
         output_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_HIGH_RESOLUTION_TIMESTAMP, *timestamp_hw_acq_cached_value->getValuePtr<uint64_t>());
         //add all other output channel
