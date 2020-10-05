@@ -582,7 +582,8 @@ chaos::common::data::CDWUniquePtr createProperty(
     }
 
     if (prop->hasKey(PROPERTY_VALUE_KEY)) {
-      value = props.getCSDataValue(realpropname)->getValue<T>(PROPERTY_VALUE_KEY);
+      chaos::common::data::CDWUniquePtr pp=props.getCSDataValue(realpropname);
+      value = pp->getValue<T>(PROPERTY_VALUE_KEY);
       return 0;
     }
 
@@ -605,16 +606,23 @@ chaos::common::data::CDWUniquePtr createProperty(
     }
 
    if (prop->hasKey(PROPERTY_VALUE_MAX_KEY)) {
-      max = props.getCSDataValue(realpropname)->getValue<T>(PROPERTY_VALUE_MAX_KEY);
+     chaos::common::data::CDWUniquePtr pp=props.getCSDataValue(realpropname);
+      max = pp->getValue<T>(PROPERTY_VALUE_MAX_KEY);
     }
   if (prop->hasKey(PROPERTY_VALUE_MIN_KEY)) {
-      min = props.getCSDataValue(realpropname)->getValue<T>(PROPERTY_VALUE_MIN_KEY);
+      chaos::common::data::CDWUniquePtr pp=props.getCSDataValue(realpropname);
+
+      min = pp->getValue<T>(PROPERTY_VALUE_MIN_KEY);
     }
     if (prop->hasKey(PROPERTY_VALUE_INC_KEY)) {
-      incr = props.getCSDataValue(realpropname)->getValue<T>(PROPERTY_VALUE_INC_KEY);
+      chaos::common::data::CDWUniquePtr pp=props.getCSDataValue(realpropname);
+
+      incr = pp->getValue<T>(PROPERTY_VALUE_INC_KEY);
     }
     if (prop->hasKey(PROPERTY_VALUE_KEY)) {
-      value = props.getCSDataValue(realpropname)->getValue<T>(PROPERTY_VALUE_KEY);
+        chaos::common::data::CDWUniquePtr pp=props.getCSDataValue(realpropname);
+
+      value = pp->getValue<T>(PROPERTY_VALUE_KEY);
       return 0;
     }
   
