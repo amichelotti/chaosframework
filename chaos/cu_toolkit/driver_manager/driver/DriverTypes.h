@@ -37,6 +37,7 @@
 #endif
 
 namespace chaos_thread_ns = chaos::common::thread;
+#define DRIVER_PROPERTY "drv_prop"
 
 namespace chaos{
     namespace cu {
@@ -60,7 +61,8 @@ namespace chaos{
 						OP_CLEAR_BYPASS,
                          OP_GET_PROPERTIES, // return a CDataWrapper with all driver properties (optional)
                         OP_SET_PROPERTY, // set a property (key, value) optional
-						
+						OP_SET_PROPERTIES, // return a CDataWrapper set driver properties  (optional)
+                        OP_GET_LASTERROR,
 						OP_UKNOWN= 0xDEADDEAD
 					} Opcode;
 				}
@@ -87,6 +89,7 @@ namespace chaos{
 					std::string alias;
 					std::string version;
 					std::string init_parameter;
+                    std::string props;
 				} DrvRequestInfo;
                 
                 //forward declaration

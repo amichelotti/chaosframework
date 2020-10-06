@@ -118,16 +118,20 @@ void QueryDataConsumer::deinit()  {
     }
 }
 
-#pragma mark DirectIODeviceServerChannelHandler
 int QueryDataConsumer::consumePutEvent(const std::string& key,
-                                       const uint8_t hst_tag,
-                                       const ChaosStringSetConstSPtr meta_tag_set,
-                                       BufferSPtr channel_data) {
-    CHAOS_ASSERT(channel_data)
-    int err = 0;
-    CDataWrapper data_pack((char *)channel_data->data());
-    data_pack.addInt64Value(NodeHealtDefinitionKey::NODE_HEALT_MDS_TIMESTAMP, TimingUtil::getTimeStamp()&ChaosMetadataService::timePrecisionMask);
-    BufferSPtr channel_data_injected(data_pack.getBSONDataBuffer().release());
+                                const uint8_t hst_tag,
+                                const ChaosStringSetConstSPtr meta_tag_set,
+                                chaos::common::data::CDataWrapper& data_pack){
+
+int err=0;
+uint64_t now=TimingUtil::getTimeStamp();
+ if(data_pack.hasKey(DataPackCommonKey::DPCK_HIGH_RESOLUTION_TIMESTAMP)){
+     int32_t lat=TimingUtil::getTimeStampInMicroseconds()-data_pack.getInt64Value(DataPackCommonKey::DPCK_HIGH_RESOLUTION_TIMESTAMP);
+     data_pack.addInt32Value(DataPackCommonKey::NODE_MDS_TIMEDIFF, lat);
+ }
+
+  data_pack.addInt64Value(NodeHealtDefinitionKey::NODE_HEALT_MDS_TIMESTAMP, now);
+  BufferSPtr channel_data_injected(data_pack.getBSONDataBuffer().release());
 
     DataServiceNodeDefinitionType::DSStorageType storage_type = static_cast<DataServiceNodeDefinitionType::DSStorageType>(hst_tag);
     //! if tag is == 1 the datapack is in liveonly
@@ -138,6 +142,7 @@ int QueryDataConsumer::consumePutEvent(const std::string& key,
         err = cache_slot.putData(key,
                                  channel_data_injected);
         
+    
     }
    if(storage_type &DataServiceNodeDefinitionType::DSStorageLogHisto) {
         //protected access to cached driver
@@ -171,6 +176,19 @@ int QueryDataConsumer::consumePutEvent(const std::string& key,
     }
     
     return err;
+    }
+#pragma mark DirectIODeviceServerChannelHandler
+int QueryDataConsumer::consumePutEvent(const std::string& key,
+                                       const uint8_t hst_tag,
+                                       const ChaosStringSetConstSPtr meta_tag_set,
+                                       BufferSPtr channel_data) {
+
+    if(channel_data.get()==NULL){
+        return 0;
+    }
+    int err = 0;
+    CDataWrapper data_pack((char *)channel_data->data());
+   return consumePutEvent(key,hst_tag,meta_tag_set,data_pack);
 }
 
 int QueryDataConsumer::consumeHealthDataEvent(const std::string& key,
@@ -195,7 +213,6 @@ int QueryDataConsumer::consumeHealthDataEvent(const std::string& key,
    #endif
 
     //create channel data with injected mds timestamp
-    
     
     BufferSPtr channel_data_injected(health_data_pack.getBSONDataBuffer().release());
     return consumePutEvent(key,

@@ -12,9 +12,7 @@ namespace message {
 namespace kafka {
 namespace rdk {
 
-class MessagePSRDKafkaConsumer : public chaos::common::message::MessagePSConsumer,public MessagePSRDKafka {
- protected:
-  rd_kafka_t* rk;
+class MessagePSRDKafkaConsumer : public MessagePSRDKafka,public chaos::common::message::MessagePSConsumer {
  public:
   
   MessagePSRDKafkaConsumer(const std::string& gid,const std::string& defkey);
@@ -25,6 +23,7 @@ class MessagePSRDKafkaConsumer : public chaos::common::message::MessagePSConsume
   ele_uptr_t getMsg(int timeo);
   void poll();
   int subscribe(const std::string& key);
+  int setOption(const std::string& key, const std::string& value);
 
 
 };

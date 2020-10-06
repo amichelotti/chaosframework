@@ -136,6 +136,7 @@ namespace chaos {
                                 }
                                 data_serialized->finalizeArrayForKey(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_BINARY_SUBTYPE);
                             } else {
+                            
                                 data_serialized->addInt32Value(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_BINARY_SUBTYPE, Subclass::dataWrapped().binary_subtype_list[0]);
                             }
                         }

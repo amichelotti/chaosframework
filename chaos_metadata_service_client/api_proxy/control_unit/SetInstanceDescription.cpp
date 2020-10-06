@@ -138,11 +138,14 @@ SetInstanceDescriptionHelper::~SetInstanceDescriptionHelper() {}
 //!add a new driver description
 void SetInstanceDescriptionHelper::addDriverDescription(const std::string& driver_name,
                                                         const std::string& driver_version,
-                                                        const std::string& driver_init_parameter) {
+                                                        const std::string& driver_init_parameter,
+                                                        const std::string& driver_props) {
     CDWUniquePtr dd(new CDataWrapper());
     dd->addStringValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_DESCRIPTION_NAME, driver_name);
     dd->addStringValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_DESCRIPTION_VERSION, driver_version);
     dd->addStringValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_DESCRIPTION_INIT_PARAMETER, driver_init_parameter);
+    dd->addStringValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_PROP, driver_props);
+
     driver_descriptions.push_back(dd.release());
 }
 

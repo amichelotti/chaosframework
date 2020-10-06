@@ -45,9 +45,9 @@ const std::string& AbstractMetadataLogChannel::getInstanceUUID() {
     return instance_uuid;
 }
 
-CDataWrapper *AbstractMetadataLogChannel::getNewLogEntry(const std::string& log_emitter,
-                                                         const std::string& log_subject,
-                                                         const std::string& log_domain) {
+CDataWrapper *AbstractMetadataLogChannel::getNewLogEntry( std::string log_emitter,
+                                                          std::string log_subject,
+                                                          std::string log_domain) {
     CDataWrapper *log_entry = new CDataWrapper();
     log_entry->addStringValue(MetadataServerLoggingDefinitionKeyRPC::PARAM_NODE_LOGGING_LOG_SOURCE_IDENTIFIER,
                               log_emitter);

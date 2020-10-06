@@ -113,6 +113,11 @@ namespace chaos {
         static const char * const   OPT_REST_POLL_TIME_US               = "rest-poll-us";
         //!data directory for storage and checkpoint of nodes
         static const char * const   OPT_DATA_DIR                        = "data-dir";
+        #if defined(KAFKA_RDK_ENABLE) || defined(KAFKA_ASIO_ENABLE)
+        static const char * const   OPT_MSG_PRODUCER_KVP                = "msgopt-producer-kvp";
+        static const char * const   OPT_MSG_CONSUMER_KVP                = "msgopt-consumer-kvp";
+
+        #endif
 
 #if CHAOS_PROMETHEUS
         //! config file parameter
@@ -125,6 +130,10 @@ namespace chaos {
 
         static const char * const   OPT_MSG_BROKER_SERVER			    = "msg-broker-server";
         static const char * const   OPT_MSG_BROKER_DRIVER			    = "msg-broker-driver";
+
+        static const char * const   OPT_HA_ZONE_NAME                    = "ha-zone-name";
+        static const char * const   CONTROL_MANAGER_UNIT_SERVER_ALIAS   = "unit-server-alias";
+
  
     }
     /** @} */ // end of ParamOption
@@ -186,7 +195,7 @@ namespace chaos {
             static const unsigned int MDSHistoryQueuePushTimeoutinMSec          = 60000;
         }
         
-    };
+    }
     /** @defgroup NodeDefinitionKey !CHAOS node key description
      *  This is the collection of the key for the general node information
      *  @{
@@ -447,6 +456,7 @@ namespace chaos {
         static const char * const CU_HEALT_OUTPUT_DATASET_PUSH_ERROR  = "cuh_dso_prerr";
         static const char * const CU_HEALT_OUTPUT_DATASET_PUSH_LOST   = "cuh_dso_plost";
         static const char * const CU_HEALT_OUTPUT_TOT_PUSH_KSIZE   = "cuh_dso_tksize";
+        static const char * const CU_HEALT_OUTPUT_DATASET_TSOFF  = "cuh_dso_tsoff";
 
         
     }
@@ -459,6 +469,13 @@ namespace chaos {
     //! Name space for grupping the key for action published by the node. Most of the funtion are node related so belong
     //! to a different rpc domains, but the default domain(used for action of general usage is identified by RPC_DOMAIN key)
     namespace NodeDomainAndActionRPC {
+        //! Common action to retrieve properties as Cdwrapper
+        static const char * const ACTION_GET_PROPERTIES                           = "ndk_get_prop";
+
+        //! Common action to set properties as Cdwrapper
+        static const char * const ACTION_SET_PROPERTIES                           = "ndk_set_prop";
+        
+        
         //! The domain for the rpc action for every nodes (and sublcass used for general use)
         static const char * const RPC_DOMAIN                                        = "system";
         //! Action that needs to answer with the status of the node(specialized for  every node)
@@ -483,8 +500,12 @@ namespace chaos {
         //! recovery a recoverable state of the node
         static const char * const ACTION_NODE_RECOVER                               = "recoverNodeUnit";
         
-        //! pause the run method for a determinated device
+        //! restore a predefined configuration
         static const char * const ACTION_NODE_RESTORE                               = "restoreNodeUnit";
+        
+        //! perform a calibration function
+        static const char * const ACTION_NODE_CALIBRATION                           = "calibrateNodeUnit";
+        
         
         //! restore the control unit to a determinate temporal tag
         static const char * const ACTION_NODE_RESTORE_PARAM_TAG                     = "restoreNodeTag";
@@ -647,7 +668,7 @@ namespace chaos {
             static const char * const ACTION_LAUNCH_NODE_PAR_CFG            = "node_init_cfg";
             static const char * const ACTION_LAUNCH_NODE_PAR_AUTO_START     = "node_auto_start";
             static const char * const ACTION_LAUNCH_NODE_PAR_KEEP_ALIVE     = "node_keep_alive";
-            static const char * const ACTION_LAUNCH_NODE_PAR_LOG_ON_MDS     = "node_log_on_mds";
+            static const char * const ACTION_LAUNCH_NODE_LOG_ON_CONSOLE     = "node_log_on_console";
             static const char * const ACTION_LAUNCH_SCRIPT     = "node_script_id";
             static const char * const ACTION_LAUNCH_WORKDIR     = "node_workdir";
 
@@ -702,6 +723,10 @@ namespace chaos {
         static const char * const DS_DIRECT_IO_ENDPOINT                             = "dsndk_direct_io_ep";
         //!define the type of storage(history only = 0, cache only	= 1, both	= 2) [uint32_t]
         static const char * const DS_STORAGE_TYPE                                   = "dsndk_storage_type";
+       
+        //!define a constant that tells to update output even if there is no change
+        static const char * const DS_UPDATE_ANYWAY                               = "dsndk_update_anyway";
+       
         //!define the numbers of second for the ageing time, that is maximu number of second
         //!for wich the data need to remain archive within the !CHAOS storage system. A value
         //! of 0 mean infinit persistence[uint32_t]
@@ -717,6 +742,9 @@ namespace chaos {
          */
         static const char * const DS_STORAGE_LIVE_TIME                              = "dsndk_storage_live_time";
         static const char * const DS_BROKER_ADDRESS_LIST                            = "dsndk_broker_list";
+        static const char * const DS_SUBSCRIBE_KEY_LIST                             = "dsndk_subkey_list";
+
+        static const char * const DS_TIMESTAMP_UNCERTENTY                           = "dsndk_ts_unc";
 
         
     }
@@ -789,10 +817,15 @@ namespace chaos {
         //! The information coming from the driver
         static const char * const CONTROL_UNIT_DRIVER_INFO	                        = "cudk_driver_info";
 
+        //! The control unit load time driver prop
+        static const char * const CONTROL_UNIT_DRIVER_PROP	                        = "cudk_driver_prop";
+
         //! The information coming from the CU
         static const char * const CONTROL_UNIT_CU_INFO	                            = "cudk_cu_info";
         
-
+        //! The load time properties
+        static const char * const CONTROL_UNIT_PROP	                               = "cudk_props";
+        
         
         //!key for dataset description (array of per-attribute document)
         static const char * const CONTROL_UNIT_DATASET_DESCRIPTION                  = "cudk_ds_desc";
@@ -895,6 +928,9 @@ namespace chaos {
         static const char * const CONTROL_UNIT_DATASET_HISTORY_BURST_VALUE         = "dsndk_history_burst_value";
         //! is the tag associated to the burst
         static const char * const CONTROL_UNIT_DATASET_HISTORY_BURST_TAG           = "dsndk_history_burst_tag";
+        
+        static const char * const CONTROL_UNIT_DATASET_TAG                          = "dsndk_tag";
+
     }
     /** @} */ // end of ControlUnitNodeDefinitionKey
     
@@ -927,7 +963,11 @@ namespace chaos {
     namespace ControlUnitNodeDomainAndActionRPC {
         //!Alias associated to thefunction that apply the value changes set to the input dataset attribute
         static const char * const CONTROL_UNIT_APPLY_INPUT_DATASET_ATTRIBUTE_CHANGE_SET  = "cunrpc_ida_cs";
-        
+
+        static const char * const CONTROL_UNIT_DRV_SET_PROPERTIES  = "cu_prop_drv_set";
+
+        static const char * const CONTROL_UNIT_DRV_GET_PROPERTIES  = "cu_prop_drv_get";
+
         //! Deinitialization of a control unit, if it is in run, the stop phase
         //! is started befor deinitialization one
         static const char * const ACTION_STORAGE_BURST  = "cunrpc_start_storage_burst";
@@ -953,6 +993,10 @@ namespace chaos {
         static const char * const EXECUTION_SCRIPT_INSTANCE_LIST        = "eudk_script_instance_list";
         //!is the language that represent the script of the execution unit
         static const char * const EXECUTION_SCRIPT_INSTANCE_LANGUAGE    = "eudk_script_language";
+        //!is the language that represent the script target
+        static const char * const EXECUTION_SCRIPT_TARGET               = "script_target";
+         //!is the language that represent the script group
+        static const char * const EXECUTION_SCRIPT_GROUP                = "script_group";
         //!is the content of the script to be execution
         static const char * const EXECUTION_SCRIPT_INSTANCE_CONTENT     = "eudk_script_content";
         //! the dataset attribute associated to the variable[string]
@@ -1417,6 +1461,9 @@ namespace chaos {
         static const char * const DPCK_HIGH_RESOLUTION_TIMESTAMP       = "dpck_hr_ats";//chaos::NodeDefinitionKey::NODE_TIMESTAMP;
                                                                                        //!define the type of the dataset uint32_t [output(0) - input(1) - custom(2) - system(3) - ....others int32_t]
         static const char * const DPCK_DATASET_TYPE                    = "dpck_ds_type";
+
+        static const char * const NODE_MDS_TIMEDIFF                     = "dpck_ts_diff";
+
         //!define the list of tags associated to the datapack
         static const char * const DPCK_DATASET_TAGS                    = "dpck_ds_tag";
         //! the constant that represent the output dataset type
@@ -1433,6 +1480,9 @@ namespace chaos {
         static const unsigned int DPCK_DATASET_TYPE_DEV_ALARM          = 5;
         //! the constant that represent the alarm dataset type
         static const unsigned int DPCK_DATASET_TYPE_CU_ALARM           = 6;
+        //! the command dataset
+        static const unsigned int DPCK_DATASET_TYPE_COMMAND            = 7;
+
         //!define tags associated to the dataset[array of string]
         static const char * const DPCK_DATASET_TAG                    = "dpck_ds_tag";
 
@@ -1499,6 +1549,10 @@ namespace chaos {
         static const char * const NODE_HEALT_STATUS_START       = "Start";
         //! started status
         static const char * const NODE_HEALT_STATUS_STARTING    = "Starting";
+
+         //! Calibrate status
+        static const char * const NODE_HEALT_STATUS_CALIBRATE    = "Calibrating";
+       
         //! stopped status
         static const char * const NODE_HEALT_STATUS_STOP        = "Stop";
         //! stopped status
@@ -1588,12 +1642,15 @@ namespace chaos {
      */
     //! Namespace for the domain for the unique identification key
     namespace DataPackPrefixID {
+        static const char * const COMMAND_DATASET_POSTFIX    = "_cmd";
+
         static const char * const OUTPUT_DATASET_POSTFIX    = "_o";
         static const char * const INPUT_DATASET_POSTFIX     = "_i";
         static const char * const CUSTOM_DATASET_POSTFIX    = "_c";
         static const char * const SYSTEM_DATASET_POSTFIX    = "_s";
         static const char * const DEV_ALARM_DATASET_POSTFIX = "_a";
         static const char * const CU_ALARM_DATASET_POSTFIX  = "_w";
+
         static const char * const HEALTH_DATASET_POSTFIX    = NodeHealtDefinitionKey::HEALT_KEY_POSTFIX;
     }
       namespace DataPackID {
@@ -1632,6 +1689,10 @@ namespace chaos {
                 //!Integer 64 bit length
             case DataPackCommonKey::DPCK_DATASET_TYPE_CU_ALARM:
                 return DataPackPrefixID::CU_ALARM_DATASET_POSTFIX;
+                 //!Integer 64 bit length
+            case DataPackCommonKey::DPCK_DATASET_TYPE_COMMAND:
+                return DataPackPrefixID::COMMAND_DATASET_POSTFIX;
+           
             default:
                 return "";
         }
@@ -1646,6 +1707,8 @@ namespace chaos {
         if(ds_postfix.compare(DataPackPrefixID::DEV_ALARM_DATASET_POSTFIX) == 0){return DataPackCommonKey::DPCK_DATASET_TYPE_DEV_ALARM;}
         if(ds_postfix.compare(DataPackPrefixID::CU_ALARM_DATASET_POSTFIX) == 0){return DataPackCommonKey::DPCK_DATASET_TYPE_CU_ALARM;}
         if(ds_postfix.compare(DataPackPrefixID::HEALTH_DATASET_POSTFIX) == 0){return DataPackCommonKey::DPCK_DATASET_TYPE_HEALTH;}
+        if(ds_postfix.compare(DataPackPrefixID::COMMAND_DATASET_POSTFIX) == 0){return DataPackCommonKey::DPCK_DATASET_TYPE_COMMAND;}
+
         return -1;
     }
     
@@ -1760,6 +1823,9 @@ namespace chaos {
         static const char * const CS_CMDM_ANSWER_ID                          = "rh_ans_msg_id";
         //!ker ofr the ip where to send the rpc pack
         static const char * const CS_CMDM_REMOTE_HOST_IP                     = "rh_ip";
+        //! action forwarded so the answer is given by someone else
+        static const char * const CS_CMDM_ANSWER_FORWARDED                   = "rh_ans_fwd";
+
     }
     /** @} */ // end of RpcActionDefinitionKey
     

@@ -19,12 +19,13 @@ namespace chaos {
                 MessagePSProducer();
 
                 MessagePSProducer(const std::string& clientid,const std::string& k="");
-                virtual ~MessagePSProducer();
+                ~MessagePSProducer();
                 virtual int pushMsgAsync(const chaos::common::data::CDataWrapper&data,const std::string&key,const int32_t pnum=0);
                 virtual int pushMsg(const chaos::common::data::CDataWrapper&data,const std::string&key,const int32_t pnum=0);
                 inline int pushMsg(const chaos::common::data::CDataWrapper&data,const int32_t pnum=0){if(defkey!="") return pushMsg(data,defkey,pnum);return -1;}
                 inline int pushMsgAsync(const chaos::common::data::CDataWrapper&data,const int32_t pnum=0){if(defkey!="") return pushMsgAsync(data,defkey,pnum);return -1;}
                 virtual int flush(const int timeout=MSG_TIMEOUT_MS);
+
             };
         }
         }

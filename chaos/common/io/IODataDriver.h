@@ -23,13 +23,13 @@
 #define _IODataDriver_H
 #include <map>
 #include <vector>
-#include <boost/shared_ptr.hpp>
 #include <chaos/common/exception/exception.h>
 #include <chaos/common/data/CDataWrapper.h>
 #include <chaos/common/general/Configurable.h>
 #include <chaos/common/utility/ArrayPointer.h>
 #include <chaos/common/utility/InizializableService.h>
 #include <chaos/common/io/QueryCursor.h>
+#include <chaos/common/message/MessagePublishSubscribeBase.h>
 
 namespace chaos_data = chaos::common::data;
 
@@ -71,7 +71,7 @@ namespace chaos{
                  * \return 0 if success, error otherwise
                  */
                 virtual int storeData(const std::string& key,
-                                       chaos_data::CDWShrdPtr dataToStore,
+                                       chaos_data::CDWShrdPtr& dataToStore,
                                        DataServiceNodeDefinitionType::DSStorageType storage_type,
                                        const ChaosStringSet& tag_set = ChaosStringSet()) = 0;
                 
@@ -160,6 +160,16 @@ namespace chaos{
                                                   const uint32_t        page = DEFAULT_PAGE_LEN) = 0;
 
                 virtual void releaseQuery(QueryCursor *query) = 0;
+                   virtual int subscribe(const std::string&key);
+                   /**
+                    * @brief per key handler
+                    * 
+                    * @param cb 
+                    * @return int 
+                    */
+                virtual int addHandler(const std::string&,chaos::common::message::msgHandler cb);
+                virtual int addHandler(chaos::common::message::msgHandler cb);
+
             };
             
             typedef ChaosSharedPtr<chaos::common::io::IODataDriver> IODataDriverShrdPtr;

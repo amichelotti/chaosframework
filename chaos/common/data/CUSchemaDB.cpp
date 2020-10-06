@@ -404,7 +404,6 @@ void CUSchemaDB::addBinaryAttributeAsMIMETypeToDataSet(const std::string& node_u
         addUniqueAttributeProperty(element_dataset.get(), mapDatasetKeyForID[ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_DESCRIPTION], attribute_description);
         addUniqueAttributeProperty(element_dataset.get(), mapDatasetKeyForID[ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_TYPE], (int64_t)DataType::TYPE_BYTEARRAY);
         addUniqueAttributeProperty(element_dataset.get(), mapDatasetKeyForID[ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_DIRECTION], (int64_t)attribute_direction);
-        addUniqueAttributeProperty(element_dataset.get(), mapDatasetKeyForID[ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_TYPE], (int64_t)DataType::TYPE_BYTEARRAY);
         addUniqueAttributeProperty(element_dataset.get(), mapDatasetKeyForID[ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_BINARY_SUBTYPE], (int64_t)DataType::SUB_TYPE_MIME);
         addUniqueAttributeProperty(element_dataset.get(), mapDatasetKeyForID[ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_BINARY_MIME_DESCRIPTION], mime_type);
         device->isChild(*element_dataset.get(), isChild);

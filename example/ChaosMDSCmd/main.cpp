@@ -184,7 +184,9 @@ int initialize_from_old_mds(std::string conf){
 					GET_CONFIG_STRING(drv_w,DriverDescriptionName);
 					GET_CONFIG_STRING(drv_w,DriverDescriptionVersion);
 					GET_CONFIG_STRING(drv_w,DriverDescriptionInitParam);
-					cud.addDriverDescription(DriverDescriptionName,DriverDescriptionVersion,DriverDescriptionInitParam);
+					GET_CONFIG_STRING(drv_w,DriverDescriptionProp);
+
+					cud.addDriverDescription(DriverDescriptionName,DriverDescriptionVersion,DriverDescriptionInitParam,DriverDescriptionProp);
 				}
 				//attributes
 

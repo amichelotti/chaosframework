@@ -9,7 +9,6 @@
 namespace chaos {
     namespace common {
         namespace message {
-
             class MessagePSConsumer: public virtual MessagePublishSubscribeBase {
 
                 protected:
@@ -24,7 +23,7 @@ namespace chaos {
                 public:
 
                 MessagePSConsumer(const std::string& clientid,const std::string& gid,const std::string& k="");
-                virtual ~MessagePSConsumer();
+                ~MessagePSConsumer();
                 
                 /**
                  * @brief Retrive a message with the given topic name
@@ -35,7 +34,7 @@ namespace chaos {
                  */
                 virtual int getMsgAsync(const std::string&key,const int32_t pnum=0);
                 virtual int getMsgAsync(const std::string&key,uint32_t offset,const int32_t pnum=0);
-               
+                virtual void setGroupID(const std::string& str);
                 int msgInQueue(){return que_elem;}
                 ele_uptr_t getMsg(int timeo=MSG_TIMEOUT_MS);
                // virtual int retriveMsg(const chaos::common::data::CDataWrapper&data,const std::string&key,const int32_t pnum=0);

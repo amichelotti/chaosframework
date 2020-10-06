@@ -23,6 +23,7 @@ SET(cu_lib_src ${cu_lib_src}
         driver_manager/driver/AbstractDriver.cpp
         driver_manager/driver/BaseBypassDriver.cpp
         driver_manager/driver/DriverAccessor.cpp
+        driver_manager/driver/AbstractDriverInterface.cpp
         driver_manager/driver/DriverPluginLoader.cpp
         driver_manager/driver/AbstractDriverPlugin.cpp
         driver_manager/driver/ExternalIODriver.cpp
@@ -70,6 +71,7 @@ SET(cu_lib_src ${cu_lib_src}
         control_manager/AbstractExecutionUnit.cpp
         control_manager/WorkUnitManagement.cpp
         control_manager/IOCU.cpp
+        control_manager/DriverPropertyCU.cpp
         control_manager/handler/AbstractAttributeHandler.cpp
         control_manager/handler/DatasetAttributeHandler.cpp
         control_manager/slow_command/SlowCommandExecutor.cpp

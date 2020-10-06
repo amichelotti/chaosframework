@@ -100,7 +100,11 @@ MESG("Install lz4 compression library")
 
      # 
 
-
+  IF(KAFKA_RDK_ENABLE)
+     #  message(STATUS "ENABLING KAFKA ASIO on ${PROJECT_NAME}")
+       ADD_DEFINITIONS(-DKAFKA_RDK_ENABLE)
+  ENDIF(KAFKA_RDK_ENABLE)
+     
 IF (COMPILE_HAZELCAST_LIVE_DRIVER)
   MESG("Install hazelcast c++ client")
   ExternalProject_Add(
@@ -216,7 +220,9 @@ link_directories(${CMAKE_INSTALL_PREFIX}/lib64)
 SET(cnd_src	main.cpp
             ChaosMetadataService.cpp
             DriverPoolManager.cpp
-            QueryDataConsumer.cpp)
+            QueryDataConsumer.cpp
+            QueryDataMsgPSConsumer.cpp
+            )
 
 SET(cnd_src  ${cnd_src} ../chaos_service_common/persistence/mongodb/MongoDBHAConnectionManager.cpp
                         ../chaos_service_common/persistence/mongodb/MongoDBAccessor.cpp)
@@ -321,6 +327,7 @@ SET(cnd_src  ${cnd_src}	api/node/NodeGroup.cpp
                         api/node/CommandInstanceSubmit.cpp
                         api/node/CommandCommonUtility.cpp
                         api/node/KillCurrentCommand.cpp
+                        api/node/NodeGenericCommand.cpp
                         api/node/ClearCommandQueue.cpp
                         api/node/ForwardNodeRpcMessage.cpp
                         api/node/GetPropertyDefaultValues.cpp

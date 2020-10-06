@@ -53,7 +53,6 @@ namespace chaos {
                 const uint32_t      calibration_offset_bound;
                 const bool          calibration_enable_status;
                 const std::string   remote_ntp_server;
-                static int64_t      timestamp_calibration_offset;
                 static const char* formats[];
                 static const size_t formats_n;
                 
@@ -97,7 +96,10 @@ namespace chaos {
                 void getNTPTS(uint64_t& ntp_received_ts,
                               uint64_t& ntp_reansmitted_ts);
             public:
-                
+                static int64_t      timestamp_calibration_offset;
+                static uint64_t     timestamp_uncertenty_mask;
+                static int64_t      mds_calibration_offset;
+
                 void enableTimestampCalibration();
                 void disableTimestampCalibration();
                 
@@ -111,7 +113,24 @@ namespace chaos {
                     }
                     
                 }
-                
+                static inline uint64_t getTimeCorStamp() {
+                    try{
+                        uint64_t ret=(boost::posix_time::microsec_clock::universal_time()- EPOCH + boost::posix_time::milliseconds(mds_calibration_offset)).total_milliseconds();
+                        if(timestamp_uncertenty_mask==0){
+                    ///    TU_LERR << "NO TIME ERROR CONFIGURED";
+
+                            return ret;
+                        }
+                        
+                    //    TU_LDBG << "tscor:"<<(ret&timestamp_uncertenty_mask)<<" mask:"<<std::hex<<timestamp_uncertenty_mask<<" tscor:"<<(ret&timestamp_uncertenty_mask);
+                        return (ret&timestamp_uncertenty_mask);
+
+                    } catch(boost::exception_detail::clone_impl< boost::exception_detail::error_info_injector<boost::gregorian::bad_day_of_month> >& bad_day_exce) {
+                        TU_LERR << "Bad day exception";
+                        return 0;
+                    }
+                    
+                }
                 //!Return the current timestamp in milliseconds
                 static inline uint64_t getTimeStampInMicroseconds() {
                     try{

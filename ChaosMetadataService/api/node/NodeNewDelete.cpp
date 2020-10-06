@@ -20,9 +20,9 @@
  */
 #include "NodeNewDelete.h"
 #include "../../ChaosMetadataService.h"
-#define NS_INFO INFO_LOG(NodeDelete)
-#define NS_DBG  DBG_LOG(NodeDelete)
-#define NS_ERR  ERR_LOG(NodeDelete)
+#define NS_INFO INFO_LOG(NodeNewDelete)
+#define NS_DBG  DBG_LOG(NodeNewDelete)
+#define NS_ERR  ERR_LOG(NodeNewDelete)
 
 using namespace chaos::common::data;
 using namespace chaos::metadata_service::api::node;
@@ -38,25 +38,33 @@ CDWUniquePtr NodeNewDelete::execute(CDWUniquePtr api_data) {
     bool remove=api_data->hasKey("reset");
 
     if(!api_data->hasKey(NodeDefinitionKey::NODE_UNIQUE_ID)) {
-        LOG_AND_TROW(NS_ERR, -1, "Node unique id not found: "+api_data->getJSONString())
-    }
-    
-    if(!api_data->hasKey(NodeDefinitionKey::NODE_TYPE)) {
-        LOG_AND_TROW(NS_ERR,-2, "Node type not found");
+        LOG_AND_TROW(NS_ERR, -1, "Node key unique id '"+std::string(NodeDefinitionKey::NODE_UNIQUE_ID)+"' not found: "+api_data->getJSONString())
     }
     std::string node_uid=api_data->getStringValue(NodeDefinitionKey::NODE_UNIQUE_ID);
-    std::string node_type=api_data->getStringValue(NodeDefinitionKey::NODE_TYPE);
+    std::string node_type;
+    if(!api_data->hasKey(NodeDefinitionKey::NODE_TYPE)) {
+        //LOG_AND_TROW(NS_ERR,-2, "Node type not found");
+        NS_DBG<<" NODE TYPE NOT SPECIFIED";
+    } else {
+        node_type=api_data->getStringValue(NodeDefinitionKey::NODE_TYPE);
+    }
     if(remove){
-        NS_DBG<<" delete "<<node_uid<<"("<<node_type<<")";
+        NS_DBG<<" deleting "<<node_uid<<" ("<<node_type<<")";
         // we have to delete also data.
         ChaosMetadataService::getInstance()->removeStorageData(node_uid,0,chaos::common::utility::TimingUtil::getTimeStamp());
 
         if (n_da->deleteNode(node_uid,node_type)){
               LOG_AND_TROW(NS_ERR, -5, "Cannot delete node: "+node_uid+" ["+node_type+"]");
-     }
+        } else {
+            NS_DBG<<" deleted "<<node_uid<<" ("<<node_type<<")";
+
+        }
     } else {
         if(n_da->insertNewNode(*api_data.get())){
             LOG_AND_TROW(NS_ERR, -6, "Cannot insert node: "+node_uid+" ["+node_type+"] :"+api_data->getJSONString());
+
+        } else {
+            NS_DBG<<" inserting "<<node_uid<<"("<<node_type<<") "<<api_data->getJSONString();
 
         }
 

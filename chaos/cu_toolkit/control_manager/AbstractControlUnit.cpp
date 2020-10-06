@@ -51,6 +51,9 @@ using namespace chaos::cu::data_manager;
 using namespace chaos::cu::control_manager;
 using namespace chaos::cu::driver_manager;
 using namespace chaos::cu::driver_manager::driver;
+
+#define DS_UPDATE_ANYWAY_DEF 60000
+
 #define DBG DBG_LOG(AbstractControlUnit)
 #define ERR ERR_LOG(AbstractControlUnit)
 
@@ -142,11 +145,14 @@ bool PushStorageBurst::active(void* data __attribute__((unused))) {
     , timestamp_acq_cached_value()
     , timestamp_hw_acq_cached_value()
     , thread_schedule_daly_cached_value()
+    , ds_update_anyway(DS_UPDATE_ANYWAY_DEF)
+    , last_push(0)
     , key_data_storage() {
         _initPropertyGroup();
         //!try to decode parameter string has json document
         is_control_unit_json_param = json_reader.parse(control_unit_param, json_parameter_document);
         //initialize check list
+        
         _initChecklist();
     }
     
@@ -246,6 +252,8 @@ bool PushStorageBurst::active(void* data __attribute__((unused))) {
         pg_abstract_cu.addProperty(DataServiceNodeDefinitionKey::DS_STORAGE_TYPE, "Set the control unit storage type", DataType::TYPE_INT32, 0, CDataVariant((int32_t)0));
         pg_abstract_cu.addProperty(DataServiceNodeDefinitionKey::DS_STORAGE_LIVE_TIME, "Set the control unit storage type", DataType::TYPE_INT64, 0, CDataVariant((int64_t)0));
         pg_abstract_cu.addProperty(DataServiceNodeDefinitionKey::DS_STORAGE_HISTORY_TIME, "Set the control unit storage type", DataType::TYPE_INT64, 0, CDataVariant((int64_t)0));
+        pg_abstract_cu.addProperty(DataServiceNodeDefinitionKey::DS_UPDATE_ANYWAY, "Update the dataset anyway (ms)", DataType::TYPE_INT32, 0, CDataVariant((int32_t)DS_UPDATE_ANYWAY_DEF));
+        ds_update_anyway=DS_UPDATE_ANYWAY_DEF;
         //    CDWUniquePtr burst_type_desc(new CDataWrapper());
         //    burst_type_desc->addInt32Value(DataServiceNodeDefinitionKey::DS_HISTORY_BURST_TYPE, DataServiceNodeDefinitionType::DSStorageBurstTypeUndefined);
         //    pg_abstract_cu.addProperty(DataServiceNodeDefinitionKey::DS_HISTORY_BURST, "Specify if the restore operation need to be done as real operation or not", DataType::TYPE_CLUSTER,0, CDataVariant(burst_type_desc.release()));
@@ -356,6 +364,8 @@ bool PushStorageBurst::active(void* data __attribute__((unused))) {
                                                                               &AbstractControlUnit::_setDatasetAttribute,
                                                                               ControlUnitNodeDomainAndActionRPC::CONTROL_UNIT_APPLY_INPUT_DATASET_ATTRIBUTE_CHANGE_SET,
                                                                               "method for setting the input element for the dataset");
+
+        
         
         //expose updateConfiguration Methdo to rpc
         action_description = addActionDescritionInstance<AbstractControlUnit>(this,
@@ -390,7 +400,12 @@ bool PushStorageBurst::active(void* data __attribute__((unused))) {
         action_description = addActionDescritionInstance<AbstractControlUnit>(this,
                                                                               &AbstractControlUnit::_unitRestoreToSnapshot,
                                                                               NodeDomainAndActionRPC::ACTION_NODE_RESTORE,
-                                                                              "Restore contorl unit to a snapshot tag");
+                                                                              "Restore control unit to a snapshot tag");
+        
+        action_description = addActionDescritionInstance<AbstractControlUnit>(this,
+                                                                              &AbstractControlUnit::_unitPerformCalibration,
+                                                                              NodeDomainAndActionRPC::ACTION_NODE_CALIBRATION,
+                                                                              "Perform Calibration");
         
         action_description = addActionDescritionInstance<AbstractControlUnit>(this,
                                                                               &AbstractControlUnit::_getState,
@@ -405,6 +420,23 @@ bool PushStorageBurst::active(void* data __attribute__((unused))) {
                                                                               &AbstractControlUnit::_submitStorageBurst,
                                                                               ControlUnitNodeDomainAndActionRPC::ACTION_STORAGE_BURST,
                                                                               "Execute a storage burst on control unit");
+
+
+         addActionDescritionInstance<AbstractControlUnit>(this,&AbstractControlUnit::setProperty,
+                                                NodeDomainAndActionRPC::ACTION_SET_PROPERTIES,
+                                                                              "method for set properties of a CU");
+         addActionDescritionInstance<AbstractControlUnit>(this,&AbstractControlUnit::getProperty,
+                                                NodeDomainAndActionRPC::ACTION_GET_PROPERTIES,
+                                                                              "method for get properties of a CU");   
+
+
+          addActionDescritionInstance<AbstractControlUnit>(this,&AbstractControlUnit::_setDriverProperties,
+                                                ControlUnitNodeDomainAndActionRPC::CONTROL_UNIT_DRV_SET_PROPERTIES,
+                                                                              "method for set properties of a driver");
+         addActionDescritionInstance<AbstractControlUnit>(this,&AbstractControlUnit::_getDriverProperties,
+                                                ControlUnitNodeDomainAndActionRPC::CONTROL_UNIT_DRV_GET_PROPERTIES,
+                                                                              "method for get properties of a driver");                                                                                                                                                     
+                                                                    
         action_description->addParam(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_HISTORY_BURST_TAG, DataType::TYPE_STRING, "Tag associated to the stored data during burst");
         action_description->addParam(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_HISTORY_BURST_TYPE, DataType::TYPE_INT32, "The type of burst");
         action_description->addParam(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_HISTORY_BURST_VALUE, DataType::TYPE_UNDEFINED, "The value of the burst is defined by the type");
@@ -427,7 +459,72 @@ bool PushStorageBurst::active(void* data __attribute__((unused))) {
        
 
     }
-    
+  chaos::common::data::CDWUniquePtr AbstractControlUnit::getProperty(chaos::common::data::CDWUniquePtr data){
+      chaos::common::data::CDWUniquePtr ret=getProperties();
+        ACULDBG_<<"get CU properties:"<<((ret.get())?ret->getJSONString():"");
+
+          return ret;
+
+
+  }
+  chaos::common::data::CDWUniquePtr AbstractControlUnit::setProperty(chaos::common::data::CDWUniquePtr data ){
+      if(data.get()){
+          setProperties(*data.get(),true);
+      }
+    return getProperties();
+  }
+
+  chaos::common::data::CDWUniquePtr AbstractControlUnit::_setDriverProperties(chaos::common::data::CDWUniquePtr data){
+      if(data.get()){
+          
+          for (VInstantitedDriverIterator it  = accessor_instances.begin(),
+             end = accessor_instances.end();
+             it != end;
+             it++) {
+                 if(data->hasKey("_id_")){
+                     if((*it)->getDriverName()==data->getStringValue("_id_")){
+                         ACULDBG_<<"set driver "<<(*it)->getDriverName()<<" property:"<<data->getJSONString();
+                         return (*it)->setDrvProperties(data);
+                     }
+                } else {
+                    ACULDBG_<<"set driver "<<(*it)->getDriverName()<<" property:"<<data->getJSONString();
+
+                    return (*it)->setDrvProperties(data);
+
+                }
+          
+        }
+      }
+    return chaos::common::data::CDWUniquePtr();
+  }
+  chaos::common::data::CDWUniquePtr AbstractControlUnit::_getDriverProperties(chaos::common::data::CDWUniquePtr data){
+      chaos::common::data::CDWUniquePtr ret;
+          
+          for (VInstantitedDriverIterator it  = accessor_instances.begin(),
+             end = accessor_instances.end();
+             it != end;
+             it++) {
+                 if(data.get()&&data->hasKey("_id_")){
+                     if((*it)->getDriverName()==data->getStringValue("_id_")){
+                         ret= (*it)->getDrvProperties();
+                        ACULDBG_<<"get driver "<<(*it)->getDriverName()<<" property:"<<ret->getJSONString();
+
+                     }
+                } else {
+                    ret =(*it)->getDrvProperties();
+                    ACULDBG_<<"get driver "<<(*it)->getDriverName()<<" property:"<<((ret.get())?ret->getJSONString():"");
+
+                    return ret;
+
+                }
+          
+        }
+      
+    return ret;
+
+  }
+
+
     void AbstractControlUnit::unitDefineDriver(std::vector<DrvRequestInfo>& neededDriver) {
         for (ControlUnitDriverListIterator iter = control_unit_drivers.begin();
              iter != control_unit_drivers.end();
@@ -449,23 +546,24 @@ bool PushStorageBurst::active(void* data __attribute__((unused))) {
              it != end;
              it++) {
             chaos::common::data::CDWUniquePtr res=(*it)->getDrvProperties();
-            drv.addCSDataValue((*it)->getDriverName(),*(res.get()));
+            drv.addCSDataValue((*it)->getDriverName(),(res.get()?*(res.get()):chaos::common::data::CDataWrapper()));
+            
             cnt++;
+
         }
        
         if(cnt){
 //        drv.finalizeArrayForKey(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_INFO);
-            ACULDBG_<<" Adding driver info to custom dataset "<<chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_INFO<<":"<<drv.getJSONString();
+            ACULDBG_<<" Adding driver properties to custom dataset "<<chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_INFO<<":"<<drv.getJSONString();
 
             getAttributeCache()->addCustomAttribute(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_INFO, drv);
             getAttributeCache()->setCustomAttributeValue(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_INFO, drv);
-        }
-         if(drv_info.get()){
+        } else if(drv_info.get()){
             ACULDBG_<<" Adding driver info to custom dataset "<<chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_CU_INFO<<":"<<drv_info->getJSONString();
             getAttributeCache()->addCustomAttribute(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_CU_INFO, *drv_info.get());
             getAttributeCache()->setCustomAttributeValue(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_CU_INFO, *drv_info.get());
         }
-
+        
     }
     
     void AbstractControlUnit::_undefineActionAndDataset() {
@@ -668,7 +766,7 @@ bool PushStorageBurst::active(void* data __attribute__((unused))) {
                 //init on shared cache the all the dataaset with the default value
                 //set first timestamp for simulate the run step
                 int err;
-                *timestamp_acq_cached_value->getValuePtr<uint64_t>() = TimingUtil::getTimeStamp();
+                *timestamp_acq_cached_value->getValuePtr<uint64_t>() = TimingUtil::getTimeCorStamp();
                 attribute_value_shared_cache->getSharedDomain(DOMAIN_SYSTEM).markAllAsChanged();
                 /*
                  *if ((err = pushSystemDataset()) != 0) {
@@ -733,9 +831,13 @@ bool PushStorageBurst::active(void* data __attribute__((unused))) {
                     throw CException(err, "cannot initialize custom dataset (check live services)", __PRETTY_FUNCTION__);
                 }
                 break;
+              
             }
         }
         CHAOS_CHECK_LIST_END_SCAN_TO_DO(check_list_sub_service, "_init")
+        std::string command_queue=getDeviceID()+DataPackPrefixID::COMMAND_DATASET_POSTFIX;
+        DataManager::getInstance()->getDataLiveDriverNewInstance()->subscribe(command_queue);
+        DataManager::getInstance()->getDataLiveDriverNewInstance()->addHandler(command_queue,boost::bind(&AbstractControlUnit::consumerHandler, this, _1));
     }
     void AbstractControlUnit::doInitSMCheckList() {
         //rpc initialize service
@@ -788,6 +890,7 @@ bool PushStorageBurst::active(void* data __attribute__((unused))) {
     void AbstractControlUnit::setDriverInfo(const chaos::common::data::CDataWrapper& info){
         drv_info.reset(new CDataWrapper);
         info.copyAllTo(*drv_info.get());
+        ACULDBG_ <<"Set Driving info:"<<drv_info->getJSONString();
     }
 
     void AbstractControlUnit::doStartSMCheckList() {
@@ -891,7 +994,7 @@ bool PushStorageBurst::active(void* data __attribute__((unused))) {
     void AbstractControlUnit::redoStartSMCheckList(bool throw_exception) {
         CHAOS_CHECK_LIST_START_SCAN_DONE(check_list_sub_service, "start") {
             CHAOS_CHECK_LIST_REDO(check_list_sub_service, "start", START_SM_PHASE_STAT_TIMER) {
-                //remove timer for push statistic
+                //remove timer for push statistics
                 CHEK_IF_NEED_TO_THROW(throw_exception, chaos::common::async_central::AsyncCentralManager::getInstance()->removeTimer(this);)
             }
         }
@@ -1464,6 +1567,23 @@ bool PushStorageBurst::active(void* data __attribute__((unused))) {
     //! State machine is gone into an unrecoverable error
     void AbstractControlUnit::fatalErrorFromState(int last_state, chaos::CException& ex) {
         ACULERR_ << "fatalErrorFromState with state:" << last_state;
+        // signal before  
+        HealtManager::getInstance()->addNodeMetricValue(control_unit_id,
+                                                        NodeHealtDefinitionKey::NODE_HEALT_STATUS,
+                                                        NodeHealtDefinitionValue::NODE_HEALT_STATUS_FERROR,
+                                                        false);
+        HealtManager::getInstance()->addNodeMetricValue(control_unit_id,
+                                                        NodeHealtDefinitionKey::NODE_HEALT_LAST_ERROR_CODE,
+                                                        ex.errorCode,
+                                                        false);
+        HealtManager::getInstance()->addNodeMetricValue(control_unit_id,
+                                                        NodeHealtDefinitionKey::NODE_HEALT_LAST_ERROR_MESSAGE,
+                                                        ex.errorMessage,
+                                                        false);
+        HealtManager::getInstance()->addNodeMetricValue(control_unit_id,
+                                                        NodeHealtDefinitionKey::NODE_HEALT_LAST_ERROR_DOMAIN,
+                                                        ex.errorDomain,
+                                                        true);
         switch (last_state) {
             case CUStateKey::INIT:
                 //deinit
@@ -1481,8 +1601,8 @@ bool PushStorageBurst::active(void* data __attribute__((unused))) {
                 CHAOS_NOT_THROW(redoStartRpCheckList(false);)
                 //deinit
                 //CHAOS_NOT_THROW(redoInitSMCheckList(false);)
-                deinit();
-                CHAOS_NOT_THROW(redoInitRpCheckList(false);)
+    /*            deinit();
+                CHAOS_NOT_THROW(redoInitRpCheckList(false);)*/
                 break;
             case CUStateKey::STOP:
                 break;
@@ -1503,6 +1623,7 @@ bool PushStorageBurst::active(void* data __attribute__((unused))) {
                                                         NodeHealtDefinitionKey::NODE_HEALT_LAST_ERROR_DOMAIN,
                                                         ex.errorDomain,
                                                         true);
+
     }
     
     void AbstractControlUnit::fillCachedValueVector(AttributeCache&               attribute_cache,
@@ -1608,7 +1729,11 @@ bool PushStorageBurst::active(void* data __attribute__((unused))) {
     AbstractSharedDomainCache* AbstractControlUnit::_getAttributeCache() {
         return attribute_value_shared_cache;
     }
-    
+    int AbstractControlUnit::incomingMessage(const std::string &key,const chaos::common::data::CDWShrdPtr& data){
+        ACULDBG_ << "message from :"<<key<<" data:"<<(data.get()?data->getJSONString():"NONE");
+        return 0;
+    }
+
     void AbstractControlUnit::initSystemAttributeOnSharedAttributeCache() {
         AttributeCache& domain_attribute_setting = attribute_value_shared_cache->getSharedDomain(DOMAIN_SYSTEM);
         
@@ -1650,9 +1775,9 @@ bool PushStorageBurst::active(void* data __attribute__((unused))) {
         //add history time
         domain_attribute_setting.addAttribute(DataServiceNodeDefinitionKey::DS_STORAGE_HISTORY_TIME, 0, DataType::TYPE_INT64);
         
-        //add history time
-        domain_attribute_setting.addAttribute(DataServiceNodeDefinitionKey::DS_STORAGE_HISTORY_TIME, 0, DataType::TYPE_INT64);
-
+        //add update anyway
+        domain_attribute_setting.addAttribute(DataServiceNodeDefinitionKey::DS_UPDATE_ANYWAY, 0, DataType::TYPE_INT32);
+       
         //command status
         domain_attribute_setting.addAttribute(DataPackSystemKey::DP_SYS_QUEUED_CMD, 0, DataType::TYPE_INT32);
         domain_attribute_setting.addAttribute(DataPackSystemKey::DP_SYS_STACK_CMD, 0, DataType::TYPE_INT32);
@@ -1788,6 +1913,11 @@ bool PushStorageBurst::active(void* data __attribute__((unused))) {
         HealtManager::getInstance()->addNodeMetricValue(control_unit_id,
                                                         ControlUnitHealtDefinitionValue::CU_HEALT_OUTPUT_DATASET_PUSH_RATE,
                                                         output_ds_rate);
+        
+        HealtManager::getInstance()->addNodeMetricValue(control_unit_id,
+                                                        ControlUnitHealtDefinitionValue::CU_HEALT_OUTPUT_DATASET_TSOFF,
+                                                        chaos::common::utility::TimingUtil::getTimestampWithDelay);
+                                                       
         HealtManager::getInstance()->addNodeMetricValue(control_unit_id,
                                                         ControlUnitHealtDefinitionValue::CU_HEALT_OUTPUT_DATASET_PUSH_SIZE,
                                                         output_size_rate);
@@ -1814,7 +1944,7 @@ bool PushStorageBurst::active(void* data __attribute__((unused))) {
     //!put abstract control unit state machine in recoverable error
     void AbstractControlUnit::_goInRecoverableError(chaos::CException recoverable_exception) {
         //change state machine
-        if (SWEService::goInRecoverableError(this, recoverable_exception, "RTAbstractControlUnit", __PRETTY_FUNCTION__)) {
+        if (SWEService::goInRecoverableError(this, recoverable_exception, "AbstractControlUnit", __PRETTY_FUNCTION__)) {
             //update healt the status to report recoverable error
         }
     }
@@ -1822,10 +1952,23 @@ bool PushStorageBurst::active(void* data __attribute__((unused))) {
     //!put abstract control unit state machine in fatal error
     void AbstractControlUnit::_goInFatalError(chaos::CException recoverable_exception) {
         //change state machine
-        if (SWEService::goInFatalError(this, recoverable_exception, "RTAbstractControlUnit", __PRETTY_FUNCTION__)) {
+        if (SWEService::goInFatalError(this, recoverable_exception, "AbstractControlUnit", __PRETTY_FUNCTION__)) {
+            fatalErrorHandler(recoverable_exception);
         }
+    }   
+
+   void AbstractControlUnit::goInFatalError(std::string msg,int err,std::string domain){
+        CFatalException ex(err, msg, domain);
+        _goInFatalError(ex);
+        std::stringstream ss;
+        ss<<"Fatal Error:\""<<msg<<"\" domain:\""<<domain<<"\" errcode:"<<err;
+        metadataLogging(chaos::common::metadata_logging::StandardLoggingChannel::LogLevelError,ss.str());
+
+   }
+    void AbstractControlUnit::fatalErrorHandler(const chaos::CException&ex){
+            ACULERR_<<ex.errorMessage;
     }
-    
+
     void AbstractControlUnit::_completeDatasetAttribute() {
          // alarms
         
@@ -1861,7 +2004,30 @@ bool PushStorageBurst::active(void* data __attribute__((unused))) {
     bool AbstractControlUnit::unitRestoreToSnapshot(AbstractSharedDomainCache* const snapshot_cache) {
         return true;
     }
-    
+
+    chaos::common::data::CDWUniquePtr AbstractControlUnit::_unitPerformCalibration(chaos::common::data::CDWUniquePtr data){
+         chaos::common::data::CDWUniquePtr ret;
+         std::string prev_state=HealtManager::getInstance()->getNodeMetricStringValue(control_unit_id,
+                                                            NodeHealtDefinitionKey::NODE_HEALT_STATUS);
+
+         HealtManager::getInstance()->addNodeMetricValue(control_unit_id,
+                                                            NodeHealtDefinitionKey::NODE_HEALT_STATUS,
+                                                            NodeHealtDefinitionValue::NODE_HEALT_STATUS_CALIBRATE,
+                                                            true);
+
+        ret=unitPerformCalibration(MOVE(data));
+        HealtManager::getInstance()->addNodeMetricValue(control_unit_id,
+                                                            NodeHealtDefinitionKey::NODE_HEALT_STATUS,
+                                                            prev_state,
+                                                            true);
+        return ret;
+    }
+
+    chaos::common::data::CDWUniquePtr AbstractControlUnit::unitPerformCalibration(chaos::common::data::CDWUniquePtr data){
+        ACULDBG_<<"Empty calibration:"<<(data.get()?data->getJSONString():"");
+        return CDWUniquePtr();
+    }
+
     //! this andler is called befor the input attribute will be updated
     void AbstractControlUnit::unitInputAttributePreChangeHandler() {}
     
@@ -2051,9 +2217,10 @@ if (attributeInfo.maxRange.size() && v > attributeInfo.maxRange) throw MetadataL
         pg_sdw.serialization_key = "property";
         pg_sdw.deserialize(update_pack.get());
         ACULDBG_<<"properties "<< DatasetDB::getDeviceID()<<" :"<<pg_sdw.serialize()->getJSONString();
+        key_data_storage->updateConfiguration(update_pack.get());
+
         //update the property
         PropertyCollector::applyValue(pg_sdw());
-        key_data_storage->updateConfiguration(update_pack.get());
         //mark all cache as changed
         attribute_value_shared_cache->getSharedDomain(DOMAIN_SYSTEM).markAllAsChanged();
         
@@ -2084,6 +2251,9 @@ if (attributeInfo.maxRange.size() && v > attributeInfo.maxRange) throw MetadataL
                 *attribute_value_shared_cache->getAttributeValue(DOMAIN_SYSTEM, DataServiceNodeDefinitionKey::DS_STORAGE_LIVE_TIME)->getValuePtr<uint64_t>() = new_value.asUInt64();
             } else if (property_name.compare(DataServiceNodeDefinitionKey::DS_STORAGE_HISTORY_TIME) == 0) {
                 *attribute_value_shared_cache->getAttributeValue(DOMAIN_SYSTEM, DataServiceNodeDefinitionKey::DS_STORAGE_HISTORY_TIME)->getValuePtr<uint64_t>() = new_value.asUInt64();
+            } else if (property_name.compare(DataServiceNodeDefinitionKey::DS_UPDATE_ANYWAY) == 0) {
+                *attribute_value_shared_cache->getAttributeValue(DOMAIN_SYSTEM, DataServiceNodeDefinitionKey::DS_UPDATE_ANYWAY)->getValuePtr<int32_t>() = new_value.asInt32();
+                ds_update_anyway=new_value.asInt32();
             }
         }
     }
@@ -2103,19 +2273,22 @@ if (attributeInfo.maxRange.size() && v > attributeInfo.maxRange) throw MetadataL
         AttributeCache&                       output_attribute_cache = attribute_value_shared_cache->getSharedDomain(DOMAIN_OUTPUT);
         ChaosSharedPtr<SharedCacheLockDomain> r_lock                 = attribute_value_shared_cache->getLockOnDomain(DOMAIN_OUTPUT, false);
         r_lock->lock();
-        
-        //check if something as changed
-        if (!output_attribute_cache.hasChanged()) {return err;}
-        
+        uint64_t tscor=TimingUtil::getTimeCorStamp();
+        if((tscor-last_push)<ds_update_anyway){
+            //check if something as changed
+            if (!output_attribute_cache.hasChanged()) {
+                return err;
+                }
+        }
+        last_push=tscor;
         CDWShrdPtr output_attribute_dataset = key_data_storage->getNewDataPackForDomain(KeyDataStorageDomainOutput);
         if (!output_attribute_dataset.get()) {
             ACULERR_ << " Cannot allocate packet.. err:"<<err;
             return err;
         }
         output_attribute_dataset->addInt64Value(ControlUnitDatapackCommonKey::RUN_ID, run_id);
-        output_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_TIMESTAMP, *timestamp_acq_cached_value->getValuePtr<uint64_t>());
+        output_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_TIMESTAMP, tscor/* *timestamp_acq_cached_value->getValuePtr<uint64_t>()*/);
         output_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_HIGH_RESOLUTION_TIMESTAMP, *timestamp_hw_acq_cached_value->getValuePtr<uint64_t>());
-        
         //add all other output channel
         for (int idx = 0;
              idx < ((int)cache_output_attribute_vector.size()) - 1;  //the device id and timestamp in added out of this list
@@ -2151,7 +2324,7 @@ if (attributeInfo.maxRange.size() && v > attributeInfo.maxRange) throw MetadataL
                     break;
                 case DataType::TYPE_BYTEARRAY:
                     if (value_set->size) {
-                        if (value_set->sub_type.size() == 1) {
+                        if ((value_set->sub_type.size() == 1)&&(value_set->sub_type[0]!=DataType::SUB_TYPE_MIME)) {
                             output_attribute_dataset->addBinaryValue(value_set->name, value_set->sub_type[0], value_set->getValuePtr<char>(), value_set->size);
                         } else {
                             output_attribute_dataset->addBinaryValue(value_set->name, value_set->getValuePtr<char>(), value_set->size);
@@ -2208,7 +2381,7 @@ if (attributeInfo.maxRange.size() && v > attributeInfo.maxRange) throw MetadataL
         if (input_attribute_dataset.get()) {
             input_attribute_dataset->addInt64Value(ControlUnitDatapackCommonKey::RUN_ID, run_id);
             //input dataset timestamp is added only when pushed on cache
-            input_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_TIMESTAMP, cur_us / 1000);
+            input_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_TIMESTAMP, TimingUtil::getTimeCorStamp());
             input_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_HIGH_RESOLUTION_TIMESTAMP, cur_us);
             //fill the dataset
             fillCDatawrapperWithCachedValue(cache_input_attribute_vector, *input_attribute_dataset);
@@ -2234,14 +2407,16 @@ if (attributeInfo.maxRange.size() && v > attributeInfo.maxRange) throw MetadataL
             if (custom_attribute_dataset.get()) {
                 custom_attribute_dataset->addInt64Value(ControlUnitDatapackCommonKey::RUN_ID, run_id);
                 //input dataset timestamp is added only when pushed on cache
-                custom_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_TIMESTAMP, cur_us / 1000);
+                custom_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_TIMESTAMP, TimingUtil::getTimeCorStamp());
                 custom_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_HIGH_RESOLUTION_TIMESTAMP, cur_us);
                 
                 //fill the dataset
                 fillCDatawrapperWithCachedValue(cache_custom_attribute_vector, *custom_attribute_dataset);
-                
+                ACULDBG_ << " Push custom:"<<custom_attribute_dataset->getJSONString();
+
                 //push out the system dataset
                 err = key_data_storage->pushDataSet(data_manager::KeyDataStorageDomainCustom, MOVE(custom_attribute_dataset));
+
                 if(!err){custom_attribute_cache.resetChangedIndex();}
             } else {
                 ACULERR_ << " Cannot allocate packet.. err:"<<err;
@@ -2265,7 +2440,7 @@ if (attributeInfo.maxRange.size() && v > attributeInfo.maxRange) throw MetadataL
         if (system_attribute_dataset.get()) {
             system_attribute_dataset->addInt64Value(ControlUnitDatapackCommonKey::RUN_ID, run_id);
             //input dataset timestamp is added only when pushed on cache
-            system_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_TIMESTAMP, cur_us / 1000);
+            system_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_TIMESTAMP, TimingUtil::getTimeCorStamp());
             system_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_HIGH_RESOLUTION_TIMESTAMP, cur_us);
             //fill the dataset
             fillCDatawrapperWithCachedValue(cache_system_attribute_vector, *system_attribute_dataset);
@@ -2286,7 +2461,7 @@ if (attributeInfo.maxRange.size() && v > attributeInfo.maxRange) throw MetadataL
         if (attribute_dataset) {
             //fill datapack with
             //! the dataaset can be pushed also in other moment
-            attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_TIMESTAMP, TimingUtil::getTimeStamp());
+            attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_TIMESTAMP, TimingUtil::getTimeCorStamp());
             attribute_dataset->addInt64Value(ControlUnitDatapackCommonKey::RUN_ID, run_id);
             //scan all alarm ad create the datapack
             size_t alarm_size = catalog.size();
@@ -2578,3 +2753,101 @@ if (attributeInfo.maxRange.size() && v > attributeInfo.maxRange) throw MetadataL
                         log_level,
                         message);
     }
+
+
+    void AbstractControlUnit::consumerHandler(const chaos::common::message::ele_t& data){
+
+      incomingMessage(data.key,data.cd);     
+}
+  void AbstractControlUnit::updateDatasetFromDriverProperty(){
+     for (int idx = 0;
+             idx != accessor_instances.size();
+             idx++) {
+                chaos::common::data::CDWUniquePtr ret=accessor_instances[idx]->getDrvProperties();
+                std::vector<std::string> props;
+                ret->getAllKey(props);
+                for(std::vector<std::string>::iterator i = props.begin();i!=props.end();i++){
+                    if (ret->isCDataWrapperValue(*i)) {
+                        chaos::common::data::CDWUniquePtr cd=ret->getCSDataValue(*i);
+                        if(cd->hasKey(PROPERTY_VALUE_KEY)&&cd->hasKey(PROPERTY_VALUE_PUB_KEY)){
+                            std::string attrname=cd->getStringValue(PROPERTY_VALUE_PUB_KEY);
+
+                            DataType::DataSetAttributeIOAttribute type=chaos::DataType::Bidirectional;
+                            if(cd->hasKey(PROPERTY_VALUE_IO_KEY)){
+                                type=(DataType::DataSetAttributeIOAttribute)cd->getInt32Value(PROPERTY_VALUE_IO_KEY);
+                            }
+                            if((type==chaos::DataType::Bidirectional) || (type==chaos::DataType::Output)){
+                                chaos::DataType::DataType dstype=cd->getValueType(PROPERTY_VALUE_KEY);
+
+                                 //getAttributeCache()->setOutputAttributeValue(attrname,cd->getVariantValue(PROPERTY_VALUE_KEY));
+                                if (dstype == chaos::DataType::TYPE_DOUBLE) {
+                                        getAttributeCache()->setOutputAttributeValue(attrname,cd->getDoubleValue(PROPERTY_VALUE_KEY));
+
+                                } else if (dstype == chaos::DataType::TYPE_INT32) {
+                                        getAttributeCache()->setOutputAttributeValue(attrname,cd->getInt32Value(PROPERTY_VALUE_KEY));
+
+                                } else if (dstype == chaos::DataType::TYPE_INT64) {
+                                        getAttributeCache()->setOutputAttributeValue(attrname,cd->getInt64Value(PROPERTY_VALUE_KEY));
+
+                                } else  if(dstype == chaos::DataType::TYPE_BOOLEAN) {
+                                        getAttributeCache()->setOutputAttributeValue(attrname,cd->getBoolValue(PROPERTY_VALUE_KEY));
+
+                                }else if (dstype == chaos::DataType::TYPE_STRING) {
+                                        getAttributeCache()->setOutputAttributeValue(attrname,cd->getStringValue(PROPERTY_VALUE_KEY));
+
+                                }
+     
+                            }
+                        }
+                    }
+                }
+             }
+  }
+
+  
+  void AbstractControlUnit::addPublicDriverPropertyToDataset(){
+       for (int idx = 0;
+             idx != accessor_instances.size();
+             idx++) {
+                chaos::common::data::CDWUniquePtr ret=accessor_instances[idx]->getDrvProperties();
+                std::vector<std::string> props;
+                ret->getAllKey(props);
+                for(std::vector<std::string>::iterator i = props.begin();i!=props.end();i++){
+                    if (ret->isCDataWrapperValue(*i)) {
+                        chaos::common::data::CDWUniquePtr cd=ret->getCSDataValue(*i);
+                        if(cd->hasKey(PROPERTY_VALUE_KEY)&&cd->hasKey(PROPERTY_VALUE_PUB_KEY)){
+                            std::string attrname=cd->getStringValue(PROPERTY_VALUE_PUB_KEY);
+
+                            ACULDBG_ << "ADDING ATTRIBUTE:" << *i <<" as "<<attrname;
+                            DataType::DataSetAttributeIOAttribute type=chaos::DataType::Bidirectional;
+                            if(cd->hasKey(PROPERTY_VALUE_IO_KEY)){
+                                type=(DataType::DataSetAttributeIOAttribute)cd->getInt32Value(PROPERTY_VALUE_IO_KEY);
+                            }
+                            chaos::DataType::DataType dstype=cd->getValueType(PROPERTY_VALUE_KEY);
+                            addAttributeToDataSet(attrname, cd->getStringValue(PROPERTY_VALUE_DESC_KEY),dstype ,type);
+                            if((type==chaos::DataType::Bidirectional) || (type==chaos::DataType::Input)){
+                                if (dstype == chaos::DataType::TYPE_DOUBLE) {
+                                        addHandlerOnInputAttributeName<AbstractControlUnit,double>(this, &AbstractControlUnit::setDrvProp, attrname);
+
+                                } else if (dstype == chaos::DataType::TYPE_INT32) {
+                                        addHandlerOnInputAttributeName<AbstractControlUnit,int32_t>(this, &AbstractControlUnit::setDrvProp, attrname);
+
+                                 }else if (dstype == chaos::DataType::TYPE_INT64) {
+                                        addHandlerOnInputAttributeName<AbstractControlUnit,int64_t>(this, &AbstractControlUnit::setDrvProp, attrname);
+
+                                } else  if(dstype == chaos::DataType::TYPE_BOOLEAN) {
+                                        addHandlerOnInputAttributeName<AbstractControlUnit,bool>(this, &AbstractControlUnit::setDrvProp, attrname);
+
+                                }else if (dstype == chaos::DataType::TYPE_STRING) {
+                                        addHandlerOnInputAttributeName<AbstractControlUnit,std::string>(this, &AbstractControlUnit::setDrvProp, attrname);
+
+                                }
+     
+                            }
+                        }
+                    }
+                }
+             }
+  }
+
+

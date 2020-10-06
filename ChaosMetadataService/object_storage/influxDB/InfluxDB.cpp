@@ -89,7 +89,9 @@ int InfluxDB::pushObject(const std::string&                       key,
   }
   const uint64_t now = chaos::common::utility::TimingUtil::getTimeStamp();
 
-  const uint64_t ts = stored_object.getInt64Value(NodeHealtDefinitionKey::NODE_HEALT_MDS_TIMESTAMP);
+  //
+  const int64_t ts = stored_object.getInt64Value(chaos::DataPackCommonKey::DPCK_TIMESTAMP);//TimingUtil::getTimeStamp() & 0xFFFFFFFFFFFFFF00ULL;
+
   uint8_t*       buf;
   size_t         buflen;
   int64_t        seq, runid;
@@ -105,7 +107,7 @@ int InfluxDB::pushObject(const std::string&                       key,
       return -1;
   }
   measurements << stored_object.getStringValue(chaos::DataPackCommonKey::DPCK_DEVICE_ID);
-  if (meta_tags->size() > 0) {
+  if ((meta_tags.get())&&(meta_tags->size() > 0)) {
     //tag=std::accumulate(meta_tags->begin(),meta_tags->end(),std::string("_"));
     measurements << ",tag=" << *(meta_tags->begin());
   }

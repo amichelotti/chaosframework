@@ -18,11 +18,13 @@ class MessagePSRDKafka:public virtual MessagePublishSubscribeBase {
  protected:
   rd_kafka_conf_t*       conf;
   rd_kafka_topic_conf_t* topic_conf;
+  rd_kafka_t* rk;
+  bool init_done;
   public:
   MessagePSRDKafka();
   ~MessagePSRDKafka();
 
-  int setOption(const std::string& key, const std::string& value);
+  int setOption(const std::string key, const std::string value);
 
   int init(std::set<std::string>& servers);
 

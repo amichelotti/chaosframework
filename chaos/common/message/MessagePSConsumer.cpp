@@ -32,12 +32,16 @@ static void removeElement(ele_t*p){
     delete p;
 }
 MessagePSConsumer::~MessagePSConsumer() {
+    MRDDBG_ << que_elem<<"] consuming all messages";
 
      msgs.consume_all(removeElement);
               
 }
 int MessagePSConsumer::getMsgAsync(const std::string& key, const int32_t pnum) {
   return 0;
+}
+void MessagePSConsumer::setGroupID(const std::string& str){
+  groupid=str;
 }
 
 int MessagePSConsumer::getMsgAsync(const std::string& key, uint32_t off, const int32_t pnum) {
@@ -68,7 +72,7 @@ int MessagePSConsumer::subscribe(const std::string& key) {
   std::replace(topic.begin(), topic.end(), '/', '.');
 
   keylist.insert(topic);
-  MRDDBG_ <<keylist.size()<< "] subscribed to:"<<topic;
+  //MRDDBG_ <<keylist.size()<< "] subscribing to:"<<topic;
 
   return 0;
 }

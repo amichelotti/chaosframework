@@ -87,6 +87,10 @@ namespace chaos {
          Return the description of all action into a CDataWrapper
          */
         void getActionDescrionsInDataWrapper(chaos::common::data::CDataWrapper&, bool close = true) const;
+
+        virtual chaos::common::data::CDWUniquePtr getAction(chaos::common::data::CDWUniquePtr );
+        virtual chaos::common::data::CDWUniquePtr setAction(chaos::common::data::CDWUniquePtr );
+
     };
 }
 #endif

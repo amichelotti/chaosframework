@@ -60,6 +60,7 @@ void MessagePSRDKafkaConsumer::HandleRequest(const Connection::ErrorCodeType& er
 */
 
 MessagePSRDKafkaConsumer::~MessagePSRDKafkaConsumer() {
+  MRDDBG_<<" DESTROY CONSUMER";
   if(rk){
     rd_kafka_consumer_close(rk);
 
@@ -70,12 +71,16 @@ MessagePSRDKafkaConsumer::~MessagePSRDKafkaConsumer() {
 }
 
 
-MessagePSRDKafkaConsumer::MessagePSRDKafkaConsumer(const std::string& gid,const std::string& defkey):chaos::common::message::MessagePublishSubscribeBase("kafka-rdk"), chaos::common::message::MessagePSConsumer("kafka-rdk",gid,defkey) {
+MessagePSRDKafkaConsumer::MessagePSRDKafkaConsumer(const std::string& gid,const std::string& defkey): chaos::common::message::MessagePSConsumer("kafka-rdk",gid,defkey),chaos::common::message::MessagePublishSubscribeBase("kafka-rdk") {
 }
 int MessagePSRDKafkaConsumer::getMsgAsync(const std::string&key,const int32_t pnum){
   
   return stats.last_err;
 }
+int MessagePSRDKafkaConsumer::setOption(const std::string& key, const std::string& value){
+  MRDDBG_<<"Setting Option:"<<key<<"="<<value;
+  return MessagePSRDKafka::setOption(key,value);
+  }
 
 int MessagePSRDKafkaConsumer::getMsgAsync(const std::string&key,uint32_t off,const int32_t pnum){
   
@@ -86,14 +91,6 @@ int MessagePSRDKafkaConsumer::applyConfiguration() {
   int  ret = 0;
    if ((ret = MessagePSRDKafka::init(servers)) == 0) {
     
-    if (rd_kafka_conf_set(conf, "group.id", groupid.c_str(),
-                              ers, sizeof(ers)) != RD_KAFKA_CONF_OK) {
-
-                MRDERR_<<ers;
-                errstr=ers;
-                rd_kafka_conf_destroy(conf);
-                return -1;
-    }
 
         /* If there is no previously committed offset for a partition
          * the auto.offset.reset strategy will be used to decide where
@@ -106,15 +103,24 @@ int MessagePSRDKafkaConsumer::applyConfiguration() {
                 rd_kafka_conf_destroy(conf);
         return -2;
     }*/
-    if (!(rk = rd_kafka_new(RD_KAFKA_CONSUMER, conf, ers, sizeof(ers)))) {
-      MRDERR_ << "Failed to create new consumer: " << ers;
-      errstr=ers;
-
-      return -10;
+    if(rk==NULL){
+      MRDDBG_<<"Consumer apply configuration, groupid:"<<groupid;
+      if(groupid!=""){
+        if(setOption("group.id", groupid.c_str())!=0){
+          return -2;
+        }
+      
     }
-    conf = NULL; /* Configuration object is now owned, and freed,
-                      * by the rd_kafka_t instance. */
+      if(setOption("allow.auto.create.topics","true")!=0){
+        return -3;
+      }
+      if (!(rk = rd_kafka_new(RD_KAFKA_CONSUMER, conf, ers, sizeof(ers)))) {
+        MRDERR_ << "Failed to create new consumer: " << ers;
+        errstr=ers;
 
+        return -10;
+      }
+    }
 
         /* Redirect all messages from per-partition queues to
          * the main queue so that messages can be consumed with one
@@ -156,7 +162,8 @@ int MessagePSRDKafkaConsumer::subscribe(const std::string& key){
           rd_kafka_destroy(rk);
           return -20;
         }
-        MRDDBG_<<" subscribed to "<<subscription->cnt;
+       
+        MRDDBG_<<" subscribing items "<<subscription->cnt;
       
 
         rd_kafka_topic_partition_list_destroy(subscription);
@@ -166,6 +173,12 @@ int MessagePSRDKafkaConsumer::subscribe(const std::string& key){
 
 void MessagePSRDKafkaConsumer::poll(){
   rd_kafka_message_t *rkm;
+  if(rk==NULL){
+      MRDERR_ << "Not applied configuration" << errstr;
+      errstr="Not applied configuration";
+      sleep(1);
+      return;
+  }
   rkm = rd_kafka_consumer_poll(rk, 100);
       if (!rkm)
               return; /* Timeout: no message within 100ms,
@@ -181,15 +194,28 @@ void MessagePSRDKafkaConsumer::poll(){
                 * informational as the consumer will automatically
                 * try to recover from all types of errors. */
         errstr=rd_kafka_message_errstr(rkm);
-        MRDERR_<<"Consumer error:"<<errstr;
+        MRDERR_<<"Consumer error:"<<errstr<<" err:"<<rkm->err;
         stats.errs++;
+        
+        if(handlers[ONERROR]){
+           ele_t d;
+          d.key=rd_kafka_topic_name(rkm->rkt);
+          d.off=rkm->offset;
+          d.par=rkm->partition;
+          d.cd= chaos::common::data::CDWShrdPtr( new chaos::common::data::CDataWrapper());
+          d.cd->addStringValue("msg",errstr);
+          d.cd->addInt32Value("err",rkm->err);
+          handlers[ONERROR](d);
+
+        }
+
         rd_kafka_message_destroy(rkm);
         return;
 
       }
       stats.counter++;
 
-      MRDDBG_<<" message from:"<<rd_kafka_topic_name(rkm->rkt)<<" par:"<<rkm->partition<<" off:"<<rkm->offset;
+    //  MRDDBG_<<" message from:"<<rd_kafka_topic_name(rkm->rkt)<<" par:"<<rkm->partition<<" off:"<<rkm->offset;
      
       /* Print the message key. */
     /*  if (rkm->key && is_printable(rkm->key, rkm->key_len))
@@ -202,9 +228,13 @@ void MessagePSRDKafkaConsumer::poll(){
         try{
         //  msgs.push_back(t);
           if(handlers[ONARRIVE]){
-            chaos::common::data::CDWUniquePtr t(new chaos::common::data::CDataWrapper((const char*) rkm->payload, rkm->len));
+            ele_t d;
+            d.key=rd_kafka_topic_name(rkm->rkt);
+            d.off=rkm->offset;
+            d.par=rkm->partition;
+            d.cd= chaos::common::data::CDWShrdPtr( new chaos::common::data::CDataWrapper((const char*) rkm->payload, rkm->len));
 
-            handlers[ONARRIVE](rd_kafka_topic_name(rkm->rkt),t);
+            handlers[ONARRIVE](d);
           } else {
             ele_t *ele =new ele_t();
             ele->key=rd_kafka_topic_name(rkm->rkt);
@@ -220,7 +250,7 @@ void MessagePSRDKafkaConsumer::poll(){
           stats.oks++;
         } catch(...){
           stats.errs++;
-          MRDERR_<<" invalid chaos packet";
+          MRDERR_<<" invalid chaos packet from:"<<rd_kafka_topic_name(rkm->rkt)<< " len:"<<rkm->len<<" string:"<<std::string((const char*)rkm->payload, rkm->len);
 
         }
         } 

@@ -26,9 +26,8 @@
 #include <vector>
 
 #include <boost/thread.hpp>
-
+#include <chaos/common/data/Property.h>
 #include <chaos/common/chaos_errors.h>
-#include <chaos/common/data/CDataWrapper.h>
 #include <chaos/common/utility/LockableObject.h>
 #include <chaos/common/utility/InizializableService.h>
 #include <chaos/common/thread/TemplatedConcurrentQueue.h>
@@ -71,7 +70,7 @@ namespace chaos{
                  */
 				class AbstractDriver:
                 public OpcodeExecutor,
-				public chaos::common::utility::InizializableService {
+				public chaos::common::utility::InizializableService,public chaos::common::data::Property<AbstractDriver> {
                     template<typename T>
                     friend class DriverWrapperPlugin;
                     friend class chaos::cu::driver_manager::DriverManager;
@@ -133,6 +132,7 @@ namespace chaos{
                     void scanForMessage();
 					
                 protected:
+                    std::string lastError;
                     //!Private constructor
                     AbstractDriver(BaseBypassShrdPtr custom_bypass_driver = BaseBypassShrdPtr(new BaseBypassDriver()));
                     
@@ -145,13 +145,14 @@ namespace chaos{
 					 * */
 					virtual void driverInit(const chaos::common::data::CDataWrapper&);
 
-					virtual void driverDeinit()   = 0;
+					virtual void driverDeinit();
                     const bool isDriverParamInJson() const;
                     const bool isBypass()const;
                     /*
                      * called via rpc or via user to implement the bypass
                      * */
                     void setBypass(bool val);
+                    
 
                  //   const Json::Value& getDriverParamJsonRootElement() const;
                 public:
@@ -180,7 +181,7 @@ namespace chaos{
 						\param cmd the message that needs to be executed by the driver implementation
 						\return the managment state of the message
                      */
-                    virtual MsgManagmentResultType::MsgManagmentResult execOpcode(DrvMsgPtr cmd) = 0;
+                    virtual MsgManagmentResultType::MsgManagmentResult execOpcode(DrvMsgPtr cmd);
                     std::string getUid(){return driver_uuid;}
                     /**
                      * @brief return a CDataWrapper (JSON) with the optional properties of a driver
@@ -188,6 +189,14 @@ namespace chaos{
                      * @return properties
                      */
                     virtual chaos::common::data::CDWUniquePtr getDrvProperties();
+
+                    /**
+                     * @brief Set driver properties a CDataWrapper (JSON) with the optional properties of a driver
+                     * 
+                     * @return properties
+                     */
+                    virtual chaos::common::data::CDWUniquePtr setDrvProperties(chaos::common::data::CDWUniquePtr);
+
                     /**
                      * @brief Set the Drv property 
                      * 
@@ -196,7 +205,10 @@ namespace chaos{
                      * @return 0 if success
                      */
                     virtual int setDrvProperty(const std::string& key, const std::string& value);
-
+                    /**
+                     * to set last error
+                    */
+                    void setLastError(const std::string&str);
                 };
                 
                 

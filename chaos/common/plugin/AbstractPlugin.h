@@ -66,11 +66,11 @@ namespace chaos {
                 
                 virtual void deinit() {}
                 
-                const char * const getName() {return info.name.c_str();}
+                const char *  getName() {return info.name.c_str();}
                 
-                const char * const getVersion() {return info.type.c_str();}
+                const char *  getVersion() {return info.type.c_str();}
                 
-                const char * const getType() {return info.version.c_str();}
+                const char *  getType() {return info.version.c_str();}
             };
             
             

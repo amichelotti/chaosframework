@@ -76,7 +76,7 @@ void ProcRestUtil::launchProcess(const chaos::service_common::data::agent::Agent
         //write configuration file
         std::ofstream init_file_stream;
         init_file_stream.open(init_file.string().c_str(), std::ofstream::trunc | std::ofstream::out);
-        if((node_association_info.scriptID=="")||node_association_info.log_on_mds){
+        if(node_association_info.log_on_console){
             //enable log on console that will be redirected on named pipe
          init_file_stream << CHAOS_FORMAT("%1%=true",%InitOption::OPT_LOG_ON_CONSOLE) << std::endl;
         }

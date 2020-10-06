@@ -151,7 +151,7 @@ new chaos::common::utility::TypedObjectInstancer<n c, chaos::cu::control_manager
                     bool getBusyFlag();
                     
                     void metadataLogging(const chaos::common::metadata_logging::StandardLoggingChannel::LogLevel log_level,
-                                         const std::string& message);
+                                         std::string message);
                     //!inherited methods
                     void startHandler();
                     void endHandler();

@@ -175,6 +175,17 @@ DriverAccessor *DriverManager::getNewAccessorForDriverInstance(DrvRequestInfo &r
                                              "AbstractDriver",
                                              "DriverManager::getNewAccessorForDriverInstance");
     
+     if(request_info.props.size()>0){
+        try{
+            chaos::common::data::CDataWrapper cd;
+            cd.setSerializedJsonData(request_info.props.c_str());
+            DMLAPP_ << "Setting properties of " << driverInstance->identification_string<<" :"<<cd.getJSONString();
+
+            driverInstance->importKeysAsProperties(cd);
+        }catch(...){
+
+        }
+    }
     //here the driver has been initialized and has been associated with the hash of the parameter
     DMLAPP_ << "Add device driver with hash = " << driverInstance->identification_string;
     mapParameterLiveInstance.insert(make_pair(stringForMap, driverInstance));
@@ -191,6 +202,7 @@ DriverAccessor *DriverManager::getNewAccessorForDriverInstance(DrvRequestInfo &r
        json_param->isCDataWrapperValue(INIT_DEVICE_PARAM)) {
         //driver_init_paramter is private and we are friend of accessor class
         accessor->device_param = json_param->getCSDataValue(INIT_DEVICE_PARAM);
+       
     }
     return accessor;
 }

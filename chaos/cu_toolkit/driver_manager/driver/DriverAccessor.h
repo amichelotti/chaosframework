@@ -155,6 +155,15 @@ namespace chaos{
                      */
 
                     chaos::common::data::CDWUniquePtr getDrvProperties();
+
+
+                    /**
+                     * @brief set a CDataWrapper (JSON) with the optional properties 
+                     * 
+                     * @return properties
+                     */
+
+                    chaos::common::data::CDWUniquePtr setDrvProperties(chaos::common::data::CDWUniquePtr&);
                     /**
                      * @brief Set the Drv property 
                      * 
@@ -166,6 +175,7 @@ namespace chaos{
 
                     std::string getUID() const;
                     std::string getDriverName() const;
+                    std::string getLastError();
 
                 };
             }

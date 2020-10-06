@@ -58,6 +58,10 @@ bool DriverAccessor::send(DrvMsgPtr cmd,
     command_queue->push(cmd, base_opcode_priority + inc_priority);
     //whait the answer
     accessor_sync_mq.wait_and_pop(answer_message);
+    if((*cmd->err_msg!=0) && (*cmd->err_dom!=0)&& (cmd->ret!=0)){
+        LDBG_<<"Launch Exception msg:"<<cmd->err_msg<<" dom:"<<cmd->err_dom<<" ret:"<<cmd->ret;
+        throw chaos::CFatalException(cmd->ret,cmd->err_msg,cmd->err_dom);
+    }
     //check result
     return (answer_message == MsgManagmentResultType::MMR_EXECUTED);
 }
@@ -104,14 +108,33 @@ chaos::common::data::CDWUniquePtr DriverAccessor::getDrvProperties(){
     chaos_driver::DrvMsg message;
     message.opcode=OpcodeType::OP_GET_PROPERTIES;
     send(&message);
-    chaos::common::data::CDWUniquePtr ptr(new chaos::common::data::CDataWrapper());
 
     if(message.resultData && message.resultDataLength){
-        ptr->setSerializedJsonData((const char*)message.resultData);
+        chaos::common::data::CDWUniquePtr ptr(new chaos::common::data::CDataWrapper((const char*)message.resultData));
         free(message.resultData);
+        return ptr;
     }
-    return ptr;
+    return chaos::common::data::CDWUniquePtr();
 }
+chaos::common::data::CDWUniquePtr DriverAccessor::setDrvProperties(chaos::common::data::CDWUniquePtr& data){
+    chaos_driver::DrvMsg message;
+    message.opcode=OpcodeType::OP_SET_PROPERTIES;
+    int sizeb;
+    if(data.get()){
+          char*ptr=(char*)data->getBSONRawData(sizeb);
+          message.inputData=ptr;
+          message.inputDataLength=sizeb;
+          send(&message);
+
+    if(message.resultData && message.resultDataLength){
+        chaos::common::data::CDWUniquePtr ptr(new chaos::common::data::CDataWrapper((const char*)message.resultData));
+
+        return ptr;
+    }
+    }
+    return chaos::common::data::CDWUniquePtr(); 
+}
+
 int DriverAccessor::setDrvProperty(const std::string& key, const std::string& value){
     chaos_driver::DrvMsg message;
 
@@ -125,4 +148,19 @@ int DriverAccessor::setDrvProperty(const std::string& key, const std::string& va
     return message.ret;
 
 }
+
+std::string DriverAccessor::getLastError(){
+     chaos_driver::DrvMsg message;
+
+    message.opcode=OpcodeType::OP_GET_LASTERROR;
+    send(&message);
+    if(message.resultData && message.resultDataLength){
+        std::string result((const char*)message.resultData,message.resultDataLength);
+        free(message.resultData);
+        return result;
+    }
+    return std::string();
+ 
+}
+
 
