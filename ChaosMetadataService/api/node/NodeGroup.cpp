@@ -40,6 +40,8 @@
 #include "KillCurrentCommand.h"
 #include "ClearCommandQueue.h"
 #include "NodeNewDelete.h"
+#include "NodeGenericCommand.h"
+
 #include "NodeSetDescription.h"
 
 #include "GetCommandAndTemplateDescription.h"
@@ -73,6 +75,7 @@ AbstractApiGroup(NodeDomainAndActionRPC::RPC_DOMAIN){
     addApi<GetCommandAndTemplateDescription>();
     addApi<NodeNewDelete>();
     addApi<NodeSetDescription>();
+    addApi<NodeGenericCommand>();
 
 }
 

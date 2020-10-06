@@ -19,11 +19,8 @@
  * permissions and limitations under the Licence.
  */
 
-#include <string>
-#ifndef _WIN32
-#include <sched.h>  //note Windows compiles perfectly without this. Maybe is unnecessary?
-#endif
 #include <chaos/common/utility/UUIDUtil.h>
+#include <string>
 
 #include <chaos/cu_toolkit/driver_manager/driver/AbstractDriver.h>
 #include <chaos/cu_toolkit/driver_manager/driver/DriverAccessor.h>
@@ -51,9 +48,10 @@ AbstractDriver::~AbstractDriver() {}
 // Initialize instance
 void AbstractDriver::init(void *init_param) {
   driver_need_to_deinitialize = false;
+  CDataWrapper parm;
 
   //!try to decode parameter string has json document
-  is_json_param = json_reader.parse(static_cast<const char *>(init_param), json_parameter_document);
+  is_json_param = parm.isJsonValue((const char *)init_param);
 
   ADLAPP_ << "Start in driver thread";
   //start interna thread for the waithing of the message
@@ -105,7 +103,7 @@ void AbstractDriver::deinit() {
   ResponseMessageType id_to_read;
   AccessorQueueType   result_queue;
 
-//  std::memset(&deinit_msg, 0, sizeof(DrvMsg));
+  //  std::memset(&deinit_msg, 0, sizeof(DrvMsg));
   deinit_msg.opcode        = OpcodeType::OP_DEINIT_DRIVER;
   deinit_msg.drvResponseMQ = &result_queue;
   //send opcode to driver implemetation
@@ -124,9 +122,9 @@ const bool AbstractDriver::isDriverParamInJson() const {
   return is_json_param;
 }
 
-const Json::Value &AbstractDriver::getDriverParamJsonRootElement() const {
+/*const Json::Value &AbstractDriver::getDriverParamJsonRootElement() const {
   return json_parameter_document;
-}
+}*/
 
 /*------------------------------------------------------
  
@@ -136,9 +134,9 @@ bool AbstractDriver::getNewAccessor(DriverAccessor **newAccessor) {
   DriverAccessor *result = new DriverAccessor(accessor_count++);
   if (result) {
     //set the parent uuid
-    result->driver_uuid   = driver_uuid;
-    result->driverName   = driverName;
-    
+    result->driver_uuid = driver_uuid;
+    result->driverName  = driverName;
+
     result->command_queue = command_queue.get();
     boost::unique_lock<boost::shared_mutex> lock(accesso_list_shr_mux);
     accessors.push_back(result);
@@ -192,6 +190,16 @@ void AbstractDriver::scanForMessage() {
       memset(current_message_ptr->err_dom, 0, DRVMSG_ERR_DOM_SIZE);
       //! check if we need to execute the private driver's opcode
       switch (current_message_ptr->opcode) {
+        case OpcodeType::OP_GET_LASTERROR:
+          current_message_ptr->resultData       = NULL;
+          current_message_ptr->resultDataLength = 0;
+          if(lastError.size()>0){
+            current_message_ptr->resultData       = strdup(lastError.c_str());
+            current_message_ptr->resultDataLength = lastError.size()+1;
+            lastError=""; // clear last error
+          }
+
+        break;
         case OpcodeType::OP_SET_BYPASS:
           ADLDBG_ << "Switch to bypass driver";
           setBypass(true);
@@ -214,6 +222,14 @@ void AbstractDriver::scanForMessage() {
             }
             if (isjson) {
               ADLDBG_ << "JSON PARMS:" << p->getJSONString();
+               if(p->hasKey(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_PROP)&&p->isCDataWrapperValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_PROP)){
+                 CDataWrapper cd;
+                 p->getCSDataValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_PROP,cd);
+                 importKeysAsProperties(cd);
+            //      config.getCSDataValue(CAMERA_CUSTOM_PROPERTY,camera_custom_props);
+                  ADLDBG_<<"driver properties"<<getProperties()->getJSONString();
+        
+                }
               driverInit(*p);
             } else {
               ADLDBG_ << "STRING PARMS:" << static_cast<const char *>(current_message_ptr->inputData);
@@ -227,22 +243,47 @@ void AbstractDriver::scanForMessage() {
           driverDeinit();
           opcode_submission_result = MsgManagmentResultType::MMR_EXECUTED;
           break;
-        case OpcodeType::OP_GET_PROPERTIES:{
-          chaos::common::data::CDWUniquePtr ret=getDrvProperties();
-          current_message_ptr->resultData=(void*)strdup(ret->getCompliantJSONString().c_str());
-          ADLDBG_ << "STRING PARMS:" <<(const char*)current_message_ptr->resultData;
-          current_message_ptr->resultDataLength=ret->getCompliantJSONString().size()+1;
-          
-        break;
-        }
-        case OpcodeType::OP_SET_PROPERTY:{
-          keyval_t *parms=(keyval_t *)current_message_ptr->inputData;
-          if(parms&&parms->key&&parms->value){
-            current_message_ptr->ret=setDrvProperty(parms->key,parms->value);
+        case OpcodeType::OP_GET_PROPERTIES: {
+          chaos::common::data::CDWUniquePtr ret = getDrvProperties();
+          int                               sizeb;
+          current_message_ptr->resultData       = NULL;
+          current_message_ptr->resultDataLength = 0;
+          if (ret.get()) {
+            const char *ptr = ret->getBSONRawData(sizeb);
+
+            if ((sizeb > 0) && ptr) {
+              current_message_ptr->resultData       = (char *)malloc(sizeb);
+              current_message_ptr->resultDataLength = sizeb;
+              memcpy(current_message_ptr->resultData, ptr, sizeb);
+            }
           }
-        break;
+          break;
         }
-        
+        case OpcodeType::OP_SET_PROPERTIES: {
+          chaos::common::data::CDWUniquePtr inp(new chaos::common::data::CDataWrapper((const char *)current_message_ptr->inputData));
+          chaos::common::data::CDWUniquePtr ret   = setDrvProperties(MOVE(inp));
+          int                               sizeb = 0;
+          const char *                      ptr   = NULL;
+          if (ret.get()) {
+            ptr = ret->getBSONRawData(sizeb);
+          }
+          current_message_ptr->resultData       = NULL;
+          current_message_ptr->resultDataLength = 0;
+          if ((sizeb > 0) && ptr) {
+            current_message_ptr->resultData       = (char *)malloc(sizeb);
+            current_message_ptr->resultDataLength = sizeb;
+            memcpy(current_message_ptr->resultData, ptr, sizeb);
+          }
+          break;
+        }
+        case OpcodeType::OP_SET_PROPERTY: {
+          keyval_t *parms = (keyval_t *)current_message_ptr->inputData;
+          if (parms && parms->key && parms->value) {
+            current_message_ptr->ret = setDrvProperty(parms->key, parms->value);
+          }
+          break;
+        }
+
         default: {
           //for custom opcode we call directly the driver implementation of execOpcode
           opcode_submission_result = o_exe->execOpcode(current_message_ptr);
@@ -261,15 +302,15 @@ void AbstractDriver::scanForMessage() {
       }
     } catch (CException &ex) {
       //chaos exception
+
       ADLERR_ << "an error has been catched code: " << ex.errorCode << " msg:" << ex.errorMessage.c_str() << " dom:" << ex.errorDomain.c_str() << " executing opcode:" << current_message_ptr->opcode;
-      ;
       current_message_ptr->ret = ex.errorCode;
       strncpy(current_message_ptr->err_msg, ex.errorMessage.c_str(), DRVMSG_ERR_MSG_SIZE);
       strncpy(current_message_ptr->err_dom, ex.errorDomain.c_str(), DRVMSG_ERR_DOM_SIZE);
     } catch (std::exception &e) {
       opcode_submission_result = MsgManagmentResultType::MMR_ERROR;
       std::stringstream ss;
-      ss << "Unexpected exception:" << e.what() << " executing opcode:" << current_message_ptr->opcode;
+      ss << "Unexpected exception: \"" << e.what() << "\" executing opcode:" << current_message_ptr->opcode;
       ADLERR_ << ss.str();
       strncpy(current_message_ptr->err_msg, ss.str().c_str(), DRVMSG_ERR_MSG_SIZE);
       strncpy(current_message_ptr->err_dom, __PRETTY_FUNCTION__, DRVMSG_ERR_DOM_SIZE);
@@ -296,6 +337,10 @@ void AbstractDriver::driverInit(const chaos::common::data::CDataWrapper &data) {
   driverInit(data.getCompliantJSONString().c_str());
 }
 
+void AbstractDriver::driverDeinit() {
+  ADLDBG_ << "base driver " << identification_string <<" DEINIT";
+}
+
 const bool AbstractDriver::isBypass() const {
   return o_exe != this;
 }
@@ -309,11 +354,26 @@ void AbstractDriver::setBypass(bool bypass) {
   }
 }
 
-int AbstractDriver::setDrvProperty(const std::string& key, const std::string& value){
+int AbstractDriver::setDrvProperty(const std::string &key, const std::string &value) {
   return 0;
 }
 
-chaos::common::data::CDWUniquePtr AbstractDriver::getDrvProperties(){
-  chaos::common::data::CDWUniquePtr ret(new chaos::common::data::CDataWrapper());
-  return ret;
+chaos::common::data::CDWUniquePtr AbstractDriver::getDrvProperties() {
+
+  return getProperties(true);
+}
+void AbstractDriver::setLastError(const std::string&str){
+  lastError=str;
+}
+
+chaos::common::data::CDWUniquePtr AbstractDriver::setDrvProperties(chaos::common::data::CDWUniquePtr drv) {
+  if(drv.get()){
+    return setProperties(*drv.get(),true);
+
+  }
+ return chaos::common::data::CDWUniquePtr();
+}
+MsgManagmentResultType::MsgManagmentResult AbstractDriver::execOpcode(DrvMsgPtr cmd){
+  ADLERR_<<"OPCODE:"<<cmd->opcode<< " NOT IMPLEMENTED";
+  return MsgManagmentResultType::MMR_ERROR;
 }

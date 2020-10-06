@@ -40,7 +40,9 @@ namespace chaos {
                     std::string name;
                     std::string description;
                     std::string language;
-                    
+                    std::string target;
+                    std::string group;
+
                     ScriptBaseDescription():
                     unique_id(0),
                     name(),
@@ -70,6 +72,10 @@ namespace chaos {
                     dataWrapped().name = CDW_GET_SRT_WITH_DEFAULT(serialized_data, chaos::ExecutionUnitNodeDefinitionKey::CHAOS_SBD_NAME, "");
                     dataWrapped().description = CDW_GET_SRT_WITH_DEFAULT(serialized_data, chaos::ExecutionUnitNodeDefinitionKey::CHAOS_SBD_DESCRIPTION, "");
                     dataWrapped().language = CDW_GET_SRT_WITH_DEFAULT(serialized_data, chaos::ExecutionUnitNodeDefinitionKey::EXECUTION_SCRIPT_INSTANCE_LANGUAGE, "");
+                    dataWrapped().target = CDW_GET_SRT_WITH_DEFAULT(serialized_data, chaos::ExecutionUnitNodeDefinitionKey::EXECUTION_SCRIPT_TARGET, "");
+
+                    dataWrapped().group = CDW_GET_SRT_WITH_DEFAULT(serialized_data, chaos::ExecutionUnitNodeDefinitionKey::EXECUTION_SCRIPT_GROUP, "");
+
                 }
                 
                 ChaosUniquePtr<chaos::common::data::CDataWrapper> serialize() {
@@ -78,6 +84,9 @@ namespace chaos {
                     data_serialized->addStringValue(chaos::ExecutionUnitNodeDefinitionKey::CHAOS_SBD_NAME, dataWrapped().name);
                     data_serialized->addStringValue(chaos::ExecutionUnitNodeDefinitionKey::CHAOS_SBD_DESCRIPTION, dataWrapped().description);
                     data_serialized->addStringValue(chaos::ExecutionUnitNodeDefinitionKey::EXECUTION_SCRIPT_INSTANCE_LANGUAGE, dataWrapped().language);
+                    data_serialized->addStringValue(chaos::ExecutionUnitNodeDefinitionKey::EXECUTION_SCRIPT_TARGET, dataWrapped().target);
+                    data_serialized->addStringValue(chaos::ExecutionUnitNodeDefinitionKey::EXECUTION_SCRIPT_GROUP, dataWrapped().group);
+
                     return data_serialized;
                 }
                 CHAOS_CLOSE_SDWRAPPER()

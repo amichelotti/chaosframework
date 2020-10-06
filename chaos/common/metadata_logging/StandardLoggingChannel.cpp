@@ -42,10 +42,10 @@ void StandardLoggingChannel::setLogLevel(LogLevel new_log_level) {
     current_logging_level = new_log_level;
 }
 
-int StandardLoggingChannel::logMessage(const std::string& node_uid,
-                                       const std::string& log_subject,
-                                       const LogLevel log_level,
-                                       const std::string& message) {
+int StandardLoggingChannel::logMessage( std::string node_uid,
+                                        std::string log_subject,
+                                        LogLevel log_level,
+                                        std::string message) {
     if(loggable(log_level) == false) return 0;
     
     std::string log_description;

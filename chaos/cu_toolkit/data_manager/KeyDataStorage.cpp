@@ -101,7 +101,8 @@ std::string KeyDataStorage::getDomainString(const KeyDataStorageDomain dataset_d
             break;
         case DataPackCommonKey::DPCK_DATASET_TYPE_HEALTH:
             return health_key;
-            break;
+       /* case DataPackCommonKey::DPCK_DATASET_TYPE_COMMAND:
+            return command_key;*/
     }
     return "";
 }
@@ -208,7 +209,7 @@ int KeyDataStorage::pushDataWithControlOnHistoryTime(const std::string& key,
     if(effective_storage_type) {
         effective_storage_type|=(storage_type&DataServiceNodeDefinitionType::DSStorageLogHisto);
         err=io_data_driver->storeData(key,
-                                      MOVE(dataset),
+                                      dataset,
                                       static_cast<DataServiceNodeDefinitionType::DSStorageType>(effective_storage_type),
                                       current_tags());
     }
@@ -231,14 +232,14 @@ int KeyDataStorage::pushDataSet(KeyDataStorageDomain domain,
         case KeyDataStorageDomainInput:
             //input channel need to be push ever either in live and in history
             err=io_data_driver->storeData(input_key,
-                                          MOVE(dataset),
+                                          dataset,
                                           storage_type,
                                           current_tags());
             break;
         case KeyDataStorageDomainSystem:
             //system channel need to be push ever either in live and in history
             err=io_data_driver->storeData(system_key,
-                                          MOVE(dataset),
+                                          dataset,
                                           //DataServiceNodeDefinitionType::DSStorageTypeLiveHistory,
                                           storage_type,
                                           current_tags());
@@ -246,7 +247,7 @@ int KeyDataStorage::pushDataSet(KeyDataStorageDomain domain,
         case KeyDataStorageDomainCUAlarm:
             //system channel need to be push ever either in live and in history
             err=io_data_driver->storeData(cu_alarm_key,
-                                          MOVE(dataset),
+                                          dataset,
                                           /*DataServiceNodeDefinitionType::DSStorageTypeLiveHistory*/
                                           storage_type,
                                           current_tags());
@@ -254,7 +255,7 @@ int KeyDataStorage::pushDataSet(KeyDataStorageDomain domain,
         case KeyDataStorageDomainDevAlarm:
             //system channel need to be push ever either in live and in history
             err=io_data_driver->storeData(dev_alarm_key,
-                                          MOVE(dataset),
+                                          dataset,
                                           /*DataServiceNodeDefinitionType::DSStorageTypeLiveHistory,*/
                                           storage_type,
                                           current_tags());
@@ -262,7 +263,7 @@ int KeyDataStorage::pushDataSet(KeyDataStorageDomain domain,
         case KeyDataStorageDomainHealth:
             //system channel need to be push ever either in live and in history
             err=io_data_driver->storeHealthData(health_key,
-                                                MOVE(dataset),
+                                                dataset,
                                                 DataServiceNodeDefinitionType::DSStorageTypeLive,
                                                 current_tags());
             break;
@@ -376,7 +377,7 @@ void KeyDataStorage::updateConfiguration(CDataWrapper *configuration) {
         KeyDataStorageLDBG <<" configuration to update:"<<((configuration)?configuration->getJSONString():"NULL CONFIGURATION");
         io_data_driver->updateConfiguration(configuration);
     } else {
-        KeyDataStorageLERR <<" NULL IODRIVER configuration to update:"<<(configuration)?configuration->getJSONString():"NULL CONFIGURATION";
+        KeyDataStorageLERR <<" NULL IODRIVER configuration to update:"<<((configuration)?configuration->getJSONString():"NULL CONFIGURATION");
 
     }
     

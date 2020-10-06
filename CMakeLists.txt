@@ -20,6 +20,7 @@ project(chaosframework)
 include(ExternalProject)
 #include(CTest)
 #enable_testing()
+set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 
 #find git
 find_package(Git REQUIRED)
@@ -33,6 +34,7 @@ option(CLING_VIRTUAL_MACHINE_ENABLE "Enable cling for scripting" OFF)
 option(CHAOS_ONLY_DEPENDECY "Download all the dependency" OFF)
 option(CHAOS_ARCHITECTURE_TEST "Architecture tests" OFF)
 option(CHAOS_PROMETHEUS "Enable Prometheus metrics support" OFF)
+
 if (WIN32)
 option(CHAOS_MDS "Chaos Data Service" OFF)
 option(CHAOS_AGENT "Chaos Agent Service" OFF)
@@ -40,12 +42,7 @@ option(CHAOS_DATA_EXPORT "Chaos Data Export" OFF)
 option(CHAOS_EXAMPLES "Chaos Examples" OFF)
 #warning possibile perdita di dati spento.
 add_definitions(-wd"4267")
-
-
 SET (ALL_WINDOWS_LIBPATH "DbgHelp.lib Netapi32.lib Iphlpapi.lib")
-
-
-
 else (WIN32)
 option(CHAOS_MDS "Chaos Data Service" ON)
 option(CHAOS_AGENT "Chaos Agent Service" ON)
@@ -71,9 +68,30 @@ ENDIF()
 
 ###### Required Libraries
 if (NOT WIN32)
-CheckConfigureBuild(jsoncpp jsoncpp "-DJSONCPP_WITH_TESTS=OFF;-DJSONCPP_WITH_POST_BUILD_UNITTEST=OFF" https://github.com/bisegni )
+# CheckConfigureBuild(jsoncpp jsoncpp "-DJSONCPP_WITH_TESTS=OFF;-DJSONCPP_WITH_POST_BUILD_UNITTEST=OFF" https://github.com/bisegni )
 if(CHAOS_MDS)
-  CheckConfigureBuild(mongoclient mongo-cxx-driver:legacy-1.0.0-rc0 "--extralib=boost_system;--disable-warnings-as-errors;install-mongoclient" https://github.com/mongodb)
+# ExternalProject_Add(
+# 	 mongo-client
+# 	 GIT_REPOSITORY https://github.com/mongodb/mongo-cxx-driver
+	 
+# 	 GIT_TAG legacy-1.0.0-rc0
+#      GIT_PROGRESS 1
+#      PREFIX "${CMAKE_BINARY_DIR}/ext_dep/mongo-client-legacy-prefix"
+# 	 SOURCE_DIR "${CMAKE_BINARY_DIR}/ext_dep/mongo-client-legacy-src"
+#    BUILD_IN_SOURCE TRUE
+
+#    CONFIGURE_COMMAND "scons CXXFLAGS=${CMAKE_CXX_FLAGS} CFLAGS=${CMAKE_C_FLAGS} --prefix=${CMAKE_INSTALL_PREFIX} --libpath=${CMAKE_INSTALL_PREFIX}/lib --cxx=${CMAKE_CXX_COMPILER} --cc=${CMAKE_C_COMPILER} --cpppath=${CMAKE_INSTALL_PREFIX}/include --extrapath=${CMAKE_INSTALL_PREFIX} -j ${PROCESSOR_COUNT} ${arg1} --extralib=boost_system --disable-warnings-as-errors install-mongoclient"
+#    BUILD_COMMAND make install
+#     # CMAKE_ARGS
+# 	 # -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX} -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DJSONCPP_WITH_TESTS=OFF;-DJSONCPP_WITH_POST_BUILD_UNITTEST=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+	 
+# 	 LOG_DOWNLOAD 1
+#     LOG_UPDATE 1
+#     LOG_CONFIGURE 1
+#     LOG_BUILD 1
+#     LOG_INSTALL 1
+#   )
+ CheckConfigureBuild(mongoclient mongo-cxx-driver:legacy-1.0.0-rc0 "--extralib=boost_system;--disable-warnings-as-errors;install-mongoclient" https://github.com/mongodb)
 ENDIF()
 endif()
 #########
@@ -89,7 +107,6 @@ IF (CHAOS_ONLY_DEPENDECY OR
     CHAOS_ARCHITECTURE_TEST)
   #google test
    MESG("Add google Test as external project")
-  IF(WIN32)
    ExternalProject_Add(
      googletest
      GIT_REPOSITORY https://github.com/google/googletest.git
@@ -116,36 +133,35 @@ IF (CHAOS_ONLY_DEPENDECY OR
      MESG("${GTEST_LIBRARY_DIR}")
      MESG("${GTEST_LIBRARY_PATH}")
      MESG("${GTEST_LIBRARY}")
-  ELSE(WIN32)
  
-  ExternalProject_Add(
-     googletest
-     GIT_REPOSITORY https://github.com/google/googletest.git
-	 GIT_TAG release-1.8.0
-     PREFIX "${CMAKE_BINARY_DIR}/ext_dep/googletest-prefix"
-     SOURCE_DIR "${CMAKE_BINARY_DIR}/ext_dep/googletest-src"
-     BINARY_DIR "${CMAKE_BINARY_DIR}/ext_dep/googletest-build"
-     CMAKE_ARGS
-      -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
-     LOG_DOWNLOAD ON
-     LOG_CONFIGURE ON
-     LOG_BUILD ON)
-     # Specify include dir
-     ExternalProject_Get_Property(googletest source_dir)
-     set(GTEST_INCLUDE_DIR ${source_dir}/include)
+  # ExternalProject_Add(
+  #    googletest
+  #    GIT_REPOSITORY https://github.com/google/googletest.git
+	#  GIT_TAG release-1.8.0
+  #    PREFIX "${CMAKE_BINARY_DIR}/ext_dep/googletest-prefix"
+  #    SOURCE_DIR "${CMAKE_BINARY_DIR}/ext_dep/googletest-src"
+  #    BINARY_DIR "${CMAKE_BINARY_DIR}/ext_dep/googletest-build"
+  #    CMAKE_ARGS
+  #     -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
+  #    LOG_DOWNLOAD ON
+  #    LOG_CONFIGURE ON
+  #    LOG_BUILD ON)
+  #    # Specify include dir
+  #    ExternalProject_Get_Property(googletest source_dir)
+  #    set(GTEST_INCLUDE_DIR ${source_dir}/include)
 
-     # Library
-     ExternalProject_Get_Property(googletest binary_dir)
-     set(GTEST_LIBRARY_DIR ${binary_dir})
-     ExternalProject_Get_Property(googletest binary_dir)
-     set(GTEST_LIBRARY_PATH ${binary_dir}/${CMAKE_FIND_LIBRARY_PREFIXES}gtest.a)
+  #    # Library
+  #    ExternalProject_Get_Property(googletest binary_dir)
+  #    set(GTEST_LIBRARY_DIR ${binary_dir})
+  #    ExternalProject_Get_Property(googletest binary_dir)
+  #    set(GTEST_LIBRARY_PATH ${binary_dir}/${CMAKE_FIND_LIBRARY_PREFIXES}gtest.a)
 
-     MESG("${GTEST_INCLUDE_DIR}")
-     MESG("${GTEST_LIBRARY_DIR}")
-     MESG("${GTEST_LIBRARY_PATH}")
-     MESG("${GTEST_LIBRARY}")
+  #    MESG("${GTEST_INCLUDE_DIR}")
+  #    MESG("${GTEST_LIBRARY_DIR}")
+  #    MESG("${GTEST_LIBRARY_PATH}")
+  #    MESG("${GTEST_LIBRARY}")
 
-   ENDIF(WIN32)
+  #  ENDIF(WIN32)
 ENDIF()
 
 IF (USE_GPT)
@@ -175,31 +191,17 @@ IF (USE_GPT)
     MESG("${GPT_LIBRARY_DIR}")
 ENDIF()
 
-IF (CHAOS_PROMETHEUS)
-  #google performance tools
-  MESG("Add Prometheus metrics dependency")
-  ExternalProject_Add(
-  prometheus
-  GIT_REPOSITORY https://github.com/jupp0r/prometheus-cpp.git
-  GIT_TAG v0.8.0
-  PREFIX "${CMAKE_BINARY_DIR}/ext_dep/prometheus-prefix"
-  SOURCE_DIR "${CMAKE_BINARY_DIR}/ext_dep/prometheus-src"
-  BINARY_DIR "${CMAKE_BINARY_DIR}/ext_dep/prometheus-src"
-  CMAKE_ARGS  -DBUILD_SHARED_LIBS=ON
-                -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
-  LOG_DOWNLOAD ON
-  LOG_CONFIGURE ON
-  LOG_BUILD ON)
-  # add definition for compilation
-  add_definitions(-DCHAOS_PROMETHEUS=1)
-ENDIF()
-
 SET( ${PROJECT_NAME}_MAJOR_VERSION 0 )
 SET( ${PROJECT_NAME}_MINOR_VERSION 1 )
 SET( ${PROJECT_NAME}_PATCH_LEVEL 0 )
 # ADD_DEFINITIONS(-Wno-ignored-attributes)
 INCLUDE_DIRECTORIES(. ../ ../../ ${CMAKE_INSTALL_PREFIX}/include)
 LINK_DIRECTORIES(${CMAKE_INSTALL_PREFIX}/lib)
+IF(KAFKA_ASIO_ENABLE)
+LINK_DIRECTORIES(${CMAKE_INSTALL_PREFIX}/snappy/lib)
+LINK_DIRECTORIES(${CMAKE_INSTALL_PREFIX}/snappy/lib64)
+ENDIF()
+
 LINK_DIRECTORIES(${CMAKE_INSTALL_PREFIX}/lib64)
 LINK_DIRECTORIES(${CMAKE_INSTALL_PREFIX}/lib/x86_64-linux-gnu)
 SET(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
@@ -217,9 +219,10 @@ if(NOT CHAOS_ONLY_DEPENDECY)
   MESG("Configure Chaos Metadata Service Client Library")
   ADD_SUBDIRECTORY(chaos_metadata_service_client)
 
+IF(MICRO_UNIT_TOOLKIT)
   MESG("Configure Chaos Micro Unit Toolkit")
   ADD_SUBDIRECTORY(chaos_micro_unit_toolkit)
-
+endif(MICRO_UNIT_TOOLKIT)
 endif()
 
 IF (CHAOS_AGENT AND NOT CHAOS_ONLY_DEPENDECY)
@@ -237,12 +240,12 @@ IF (CHAOS_MDS AND
     # ENDIF()
 ENDIF()
 
-IF(NOT CHAOS_ONLY_DEPENDECY)
-  if (NOT WIN32)
+IF(NOT CHAOS_ONLY_DEPENDECY AND NOT CHAOS_TARGET)
+if (NOT WIN32)
   MESG("Configure Chaos Metadata Service Client Library Test Application")
   ADD_SUBDIRECTORY(ChaosMetadataServiceClientTest)
   endif()
-  IF (CHAOS_DATA_EXPORT)
+  IF (CHAOS_DATA_EXPORT )
     MESG("Configure Chaos Data Export ")
     ADD_SUBDIRECTORY(ChaosDataExport)
   ENDIF()
@@ -273,25 +276,25 @@ IF (CHAOS_ARCHITECTURE_TEST)
 ENDIF()
 
 MESG("Done")
-IF (NOT WIN32)
-    IF( NOT ${CMAKE_INSTALL_PREFIX} MATCHES ${CMAKE_CURRENT_SOURCE_DIR}/usr/local)
-      IF(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/usr/local" )
-            FILE(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/usr)
-            MESG("linking ${CMAKE_INSTALL_PREFIX} ${CMAKE_CURRENT_SOURCE_DIR}/usr/local")
-           execute_process(
-             COMMAND ln -sf ${CMAKE_INSTALL_PREFIX} ${CMAKE_CURRENT_SOURCE_DIR}/usr/local
-             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-             RESULT_VARIABLE err
-             OUTPUT_VARIABLE out
-             )
-           IF(err)
-             ERROR("cannot create symlink ${CMAKE_INSTALL_PREFIX} ${CMAKE_CURRENT_SOURCE_DIR}/usr/local")
-           ELSE()
-            MESG("created symlink ${CMAKE_INSTALL_PREFIX}->${CMAKE_CURRENT_SOURCE_DIR}/usr/local")
-          ENDIF()
-        ENDIF()
-    ENDIF()
-ENDIF()
+# IF (NOT WIN32)
+#     IF( NOT ${CMAKE_INSTALL_PREFIX} MATCHES ${CMAKE_CURRENT_SOURCE_DIR}/usr/local)
+#       IF(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/usr/local" )
+#             FILE(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/usr)
+#             MESG("linking ${CMAKE_INSTALL_PREFIX} ${CMAKE_CURRENT_SOURCE_DIR}/usr/local")
+#            execute_process(
+#              COMMAND ln -sf ${CMAKE_INSTALL_PREFIX} ${CMAKE_CURRENT_SOURCE_DIR}/usr/local
+#              WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+#              RESULT_VARIABLE err
+#              OUTPUT_VARIABLE out
+#              )
+#            IF(err)
+#              ERROR("cannot create symlink ${CMAKE_INSTALL_PREFIX} ${CMAKE_CURRENT_SOURCE_DIR}/usr/local")
+#            ELSE()
+#             MESG("created symlink ${CMAKE_INSTALL_PREFIX}->${CMAKE_CURRENT_SOURCE_DIR}/usr/local")
+#           ENDIF()
+#         ENDIF()
+#     ENDIF()
+# ENDIF()
 
 IF(CHAOS_CCS)
     MESG("CCS compilation ENABLED.")

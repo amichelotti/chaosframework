@@ -91,8 +91,7 @@ namespace chaos {
                     return initAttributeForName.count(name);
                 }
                 
-                const char * const getInputAttributeForNameAndIndex(const char *name, size_t idx) {
-                    std::vector<std::string> initAttributes;
+                const char *  getInputAttributeForNameAndIndex(const char *name, size_t idx) {
                     //check if name exists
                     if(!initAttributeForName.count(name)) return NULL;
                     

@@ -40,9 +40,6 @@
 #include <chaos/common/utility/UUIDUtil.h>
 #include <chaos/common/network/URLServiceFeeder.h>
 
-#include <boost/thread.hpp>
-#include <boost/atomic.hpp>
-
 namespace chaos_data = chaos::common::data;
 namespace chaos_utility = chaos::common::utility;
 namespace chaos_direct_io = chaos::common::direct_io;
@@ -138,7 +135,7 @@ namespace chaos{
                  * storeRawData
                  */
                 int storeData(const std::string& key,
-                               chaos_data::CDWShrdPtr data_to_store,
+                               chaos_data::CDWShrdPtr& data_to_store,
                                DataServiceNodeDefinitionType::DSStorageType storage_type,
                                const ChaosStringSet& tag_set = ChaosStringSet());
                 /**
@@ -206,6 +203,8 @@ namespace chaos{
 
                 void releaseQuery(QueryCursor *query_cursor);
 
+             
+                
 
             };
         }

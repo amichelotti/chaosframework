@@ -100,12 +100,16 @@ namespace chaos {
                     //! the string is passed to the control unit for the load phase
                     std::string load_parameter;
                     
+                    //! the string is passed to the control unit for the load properties
+                    std::string load_props;
+                    
                     bool restore_apply;
                     uint32_t restore_type;
                     //!add a new driver description
                     void addDriverDescription(const std::string& driver_name,
                                               const std::string& driver_version,
-                                              const std::string& driver_init_parameter);
+                                              const std::string& driver_init_parameter,
+                                              const std::string& props);
                     
                     //! clear all previously added driver descriptions
                     void clearAllDriverDescriptions();

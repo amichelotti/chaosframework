@@ -100,7 +100,11 @@ MESG("Install lz4 compression library")
 
      # 
 
-
+  IF(KAFKA_RDK_ENABLE)
+     #  message(STATUS "ENABLING KAFKA ASIO on ${PROJECT_NAME}")
+       ADD_DEFINITIONS(-DKAFKA_RDK_ENABLE)
+  ENDIF(KAFKA_RDK_ENABLE)
+     
 IF (COMPILE_HAZELCAST_LIVE_DRIVER)
   MESG("Install hazelcast c++ client")
   ExternalProject_Add(
@@ -216,7 +220,9 @@ link_directories(${CMAKE_INSTALL_PREFIX}/lib64)
 SET(cnd_src	main.cpp
             ChaosMetadataService.cpp
             DriverPoolManager.cpp
-            QueryDataConsumer.cpp)
+            QueryDataConsumer.cpp
+            QueryDataMsgPSConsumer.cpp
+            )
 
 SET(cnd_src  ${cnd_src} ../chaos_service_common/persistence/mongodb/MongoDBHAConnectionManager.cpp
                         ../chaos_service_common/persistence/mongodb/MongoDBAccessor.cpp)
@@ -321,6 +327,7 @@ SET(cnd_src  ${cnd_src}	api/node/NodeGroup.cpp
                         api/node/CommandInstanceSubmit.cpp
                         api/node/CommandCommonUtility.cpp
                         api/node/KillCurrentCommand.cpp
+                        api/node/NodeGenericCommand.cpp
                         api/node/ClearCommandQueue.cpp
                         api/node/ForwardNodeRpcMessage.cpp
                         api/node/GetPropertyDefaultValues.cpp
@@ -488,7 +495,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE USE_MONGODB3_DRIVER=1)
 # SET(BUILD_LIBRARY ${BUILD_LIBRARY} cassandra)
 # target_compile_definitions(${PROJECT_NAME} PRIVATE USE_CASSANDRA_DRIVER=1)
 
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${BUILD_LIBRARY})
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE ${BUILD_LIBRARY})
 #INSTALL_TARGETS(/bin ${PROJECT_NAME})
 INSTALL(TARGETS ${PROJECT_NAME}
         DESTINATION "bin"

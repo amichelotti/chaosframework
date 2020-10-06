@@ -23,17 +23,16 @@
 
 #include "../DriverPoolManager.h"
 #include "../persistence/data_access/DataAccess.h"
-
-#include <chaos/common/network/NetworkBroker.h>
-#include <chaos/common/message/MessageChannel.h>
-#include <chaos/common/message/MultiAddressMessageChannel.h>
 #include <chaos/common/batch_command/BatchCommand.h>
-#include <chaos/common/network/CNodeNetworkAddress.h>
-#include <chaos/common/message/DeviceMessageChannel.h>
-
-#include <chaos_service_common/persistence/data_access/AbstractPersistenceDriver.h>
+#include <chaos/common/message/MessageRequestFuture.h>
 
 namespace chaos{
+    namespace common{
+        namespace message{
+            class MessageChannel;
+            class MultiAddressMessageChannel;
+        }
+    }
     namespace metadata_service {
         namespace batch {
             

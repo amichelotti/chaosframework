@@ -84,7 +84,7 @@ void ControlManager::init(void *initParameter) {
     AbstActionDescShrPtr actionDescription;
     
     //check if we need to start the unit server
-    use_unit_server = GlobalConfiguration::getInstance()->hasOption(CONTROL_MANAGER_UNIT_SERVER_ALIAS);
+    use_unit_server = GlobalConfiguration::getInstance()->hasOption(InitOption::CONTROL_MANAGER_UNIT_SERVER_ALIAS);
     
     //check for execution pools
     use_execution_pools = GlobalConfiguration::getInstance()->hasOption(CONTROL_MANAGER_EXECUTION_POOLS);
@@ -97,7 +97,7 @@ void ControlManager::init(void *initParameter) {
     if(use_unit_server) {
         LCMAPP_  << "Enable unit server";
         
-        if(!GlobalConfiguration::getInstance()->hasOption(CONTROL_MANAGER_UNIT_SERVER_ALIAS)) {
+        if(!GlobalConfiguration::getInstance()->hasOption(InitOption::CONTROL_MANAGER_UNIT_SERVER_ALIAS)) {
             throw CException(-1, "No server alias param found", __PRETTY_FUNCTION__);
         }
         
@@ -108,9 +108,9 @@ void ControlManager::init(void *initParameter) {
                 if(!fs::is_directory(key_file_path)) {
                     std::ifstream key_file_stream(key_file_path.c_str());
                     unit_server_key.assign((std::istreambuf_iterator<char>(key_file_stream)), std::istreambuf_iterator<char>());
-                    LCMAPP_ << "UUnit server ublic key----------------------------------------------";
+                    LCMAPP_ << "Unit server public key----------------------------------------------";
                     LCMAPP_ << unit_server_key;
-                    LCMAPP_ << "UUnit server ublic key----------------------------------------------";
+                    LCMAPP_ << "UUnit server public key----------------------------------------------";
                 } else {
                     LCMERR_ << "Key file is a diretory";
                 }
@@ -121,7 +121,7 @@ void ControlManager::init(void *initParameter) {
             
         }
         
-        unit_server_alias = GlobalConfiguration::getInstance()->getOption<std::string>(CONTROL_MANAGER_UNIT_SERVER_ALIAS);
+        unit_server_alias = GlobalConfiguration::getInstance()->getOption<std::string>(InitOption::CONTROL_MANAGER_UNIT_SERVER_ALIAS);
         
         //init CU action
         actionDescription = DeclareAction::addActionDescritionInstance<ControlManager>(this,
@@ -326,6 +326,11 @@ void ControlManager::submitControlUnit(ChaosSharedPtr<AbstractControlUnit> contr
     HealtManager::getInstance()->addNodeMetric(control_unit_instance->getCUID(),
                                                ControlUnitHealtDefinitionValue::CU_HEALT_OUTPUT_DATASET_PUSH_RATE,
                                                chaos::DataType::TYPE_DOUBLE);
+HealtManager::getInstance()->addNodeMetric(control_unit_instance->getCUID(),
+                                               ControlUnitHealtDefinitionValue::CU_HEALT_OUTPUT_DATASET_TSOFF,
+                                               chaos::DataType::TYPE_INT64);
+
+                                               
     HealtManager::getInstance()->addNodeMetric(control_unit_instance->getCUID(),
                                                ControlUnitHealtDefinitionValue::CU_HEALT_OUTPUT_DATASET_PUSH_SIZE,
                                                chaos::DataType::TYPE_INT32);
@@ -504,7 +509,7 @@ CDWUniquePtr ControlManager::loadControlUnit(CDWUniquePtr message_data) {
     
     std::string work_unit_id = message_data->getStringValue(NodeDefinitionKey::NODE_UNIQUE_ID);
     std::string load_options = CDW_STR_KEY(ControlUnitNodeDefinitionKey::CONTROL_UNIT_LOAD_PARAM);
-    
+    std::string load_props  =CDW_STR_KEY(ControlUnitNodeDefinitionKey::CONTROL_UNIT_PROP);
     //check if cuid is already present
     ReadLock read_registering_lock(mutex_map_cuid_reg_unreg_instance);
     ReadLock read_registered_lock(mutex_map_cuid_registered_instance);
@@ -528,10 +533,15 @@ CDWUniquePtr ControlManager::loadControlUnit(CDWUniquePtr message_data) {
             CHECK_KEY_THROW_AND_LOG(driver_desc, ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_DESCRIPTION_VERSION, LCMERR_, -5, "No driver version found");
             CHECK_KEY_THROW_AND_LOG(driver_desc, ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_DESCRIPTION_INIT_PARAMETER, LCMERR_, -6, "No driver init param name found");
             LCMDBG_ << "scan " << idx << " driver";
+            std::string props;
+            if(driver_desc->hasKey(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_PROP)){
+                props=driver_desc->getStringValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_DESCRIPTION_INIT_PARAMETER);
+            } 
+            
             cu_driver_manager::driver::DrvRequestInfo drv = {driver_desc->getStringValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_DESCRIPTION_NAME),
                 driver_desc->getStringValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_DESCRIPTION_VERSION),
-                driver_desc->getStringValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_DESCRIPTION_INIT_PARAMETER)};
-            LCMDBG_ << "adding driver  " << drv.alias << "["<<drv.version << "-" << drv.init_parameter<<"]";
+                driver_desc->getStringValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_DESCRIPTION_INIT_PARAMETER),props};
+            LCMDBG_ << "adding driver  " << drv.alias << "["<<drv.version << "-" << drv.init_parameter<<"] props:"<<drv.props  ;
             driver_params.push_back(drv);
         }
     }
@@ -540,6 +550,19 @@ CDWUniquePtr ControlManager::loadControlUnit(CDWUniquePtr message_data) {
     ChaosSharedPtr<AbstractControlUnit> instance(map_cu_alias_instancer[work_unit_type]->getInstance(work_unit_id, load_options, driver_params));
     CHECK_ASSERTION_THROW_AND_LOG(instance.get() != NULL, LCMERR_, -7, "Error creating work unit instance of type:"+work_unit_type);
     instance->setCUClass(work_unit_type);
+    if(load_props.size()){
+        try{
+            chaos::common::data::CDataWrapper cd;
+
+            cd.setSerializedJsonData(load_props.c_str());
+            LCMDBG_ << "Setting properties of " << work_unit_id<<" :"<<cd.getJSONString();
+
+            instance->importKeysAsProperties(cd);
+
+        } catch(...){
+
+        }
+    }
     //check if is a proxy control unit
     if(instance->getCUType().compare(NodeType::NODE_SUBTYPE_PROXY_CONTROL_UNIT) == 0){
         //chec if someoune has attach the handler

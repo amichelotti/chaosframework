@@ -1,6 +1,12 @@
 project(chaos_cutoolkit)
+
+IF (NOT BUILD_FORCE_STATIC)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ENDIF ()
+
 if(WIN32)
 set(CMAKE_SUPPRESS_REGENERATION true)
+
 INCLUDE_DIRECTORIES( ../../ ${ALL_WINDOWS_INCLUDE_DIR})
 INCLUDE_DIRECTORIES(${CMAKE_INSTALL_PREFIX}/boostinstall/include/boost-1_70)
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/boostinstall/include/boost-1_70)
@@ -17,6 +23,7 @@ SET(cu_lib_src ${cu_lib_src}
         driver_manager/driver/AbstractDriver.cpp
         driver_manager/driver/BaseBypassDriver.cpp
         driver_manager/driver/DriverAccessor.cpp
+        driver_manager/driver/AbstractDriverInterface.cpp
         driver_manager/driver/DriverPluginLoader.cpp
         driver_manager/driver/AbstractDriverPlugin.cpp
         driver_manager/driver/ExternalIODriver.cpp
@@ -64,6 +71,7 @@ SET(cu_lib_src ${cu_lib_src}
         control_manager/AbstractExecutionUnit.cpp
         control_manager/WorkUnitManagement.cpp
         control_manager/IOCU.cpp
+        control_manager/DriverPropertyCU.cpp
         control_manager/handler/AbstractAttributeHandler.cpp
         control_manager/handler/DatasetAttributeHandler.cpp
         control_manager/slow_command/SlowCommandExecutor.cpp
@@ -100,7 +108,7 @@ set (BOOST_LIBPATH  ${CMAKE_INSTALL_PREFIX}/boostinstall/lib )
 
 
 separate_arguments(chaos_cutoolkit_lib)
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} chaos_common ${ALL_WINDOWS_LIBS})
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} chaos_common jsoncpp ${ALL_WINDOWS_LIBS})
 
 FILE(GLOB files "*.h")
 INSTALL(FILES ${files} DESTINATION include/chaos/cu_toolkit)

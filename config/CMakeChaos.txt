@@ -1,4 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
+
+IF(NOT CMAKECHAOS)
+SET(CMAKECHAOS TRUE)
 include(${CMAKE_CURRENT_LIST_DIR}/CMakeMacroUtils.txt)
 include(ExternalProject)
 
@@ -143,6 +146,8 @@ ENDIF()
 
 IF(CHAOS_TARGET)
   SET(CHAOS_POSTFIX ${CHAOS_TARGET})
+  ADD_DEFINITIONS(-DCHAOS_TARGET)
+
 ELSE()
   SET(CHAOS_POSTFIX "${CHAOS_SYSTEM_MACHINE}-${CHAOS_SYSTEM_NAME}")
 ENDIF()
@@ -395,8 +400,9 @@ if(LIB_NEED)
   #  include_directories(${Boost_INCLUDE_DIRS})
 else()
   MESG("boost not found in ${CMAKE_INSTALL_PREFIX}/lib downloading...")
-  boostInstall(${BOOST_VERSION} ${BOOST_MINOR_VERSION}  https://dl.bintray.com/boostorg/release/1.${BOOST_VERSION}.${BOOST_MINOR_VERSION}/source "${CHAOS_BOOST_FLAGS}")
-#  boostInstall(${BOOST_VERSION} ${BOOST_MINOR_VERSION}  https://sourceforge.net/projects/boost/files/boost/1.${BOOST_VERSION}.${BOOST_MINOR_VERSION} "${CHAOS_BOOST_FLAGS}")
+#  boostInstall(${BOOST_VERSION} ${BOOST_MINOR_VERSION}  https://dl.bintray.com/boostorg/release/1.${BOOST_VERSION}.${BOOST_MINOR_VERSION}/source "${CHAOS_BOOST_FLAGS}")
+  boostInstall(${BOOST_VERSION} ${BOOST_MINOR_VERSION}  https://sourceforge.net/projects/boost/files/boost/1.${BOOST_VERSION}.${BOOST_MINOR_VERSION} "${CHAOS_BOOST_FLAGS}")
 endif()
 
+ENDIF()
 

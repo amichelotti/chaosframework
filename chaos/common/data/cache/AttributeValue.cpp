@@ -88,6 +88,91 @@ bool AttributeValue::setValue(const void* value_ptr,
     
     CHAOS_ASSERT(value_buffer)
     
+
+      switch (type) {
+        case DataType::TYPE_BOOLEAN: {
+            bool bv = *(bool*)value_ptr;
+            //copy string to buffer
+             if(old_value.bdata!=bv){
+                *(bool*)value_buffer=bv;
+                tag_has_changed =true;
+                old_value.bdata=bv;
+            } else {
+                tag_has_changed =false;
+
+            }
+         
+            break;
+        }
+        case DataType::TYPE_INT32: {
+            int32_t i32v = *(int32_t*)value_ptr;
+            if(old_value.i32data!=i32v){
+                *(int32_t*)value_buffer=i32v;
+                tag_has_changed =true;
+                old_value.i32data=i32v;
+            }else {
+                tag_has_changed =false;
+
+            }
+            //copy string to buffer
+         
+            break;
+        }
+        case DataType::TYPE_INT64: {
+            int64_t i64v = *(int64_t*)value_ptr;
+             if(old_value.i64data!=i64v){
+                *(int64_t*)value_buffer=i64v;
+                tag_has_changed =true;
+                old_value.i64data=i64v;
+            }else {
+                tag_has_changed =false;
+
+            }
+            //copy string to buffer
+          
+            break;
+        }
+        case DataType::TYPE_DOUBLE: {
+            double dv = *(double*)value_ptr;
+             if(old_value.ddata!=dv){
+                *(double*)value_buffer=dv;
+                tag_has_changed =true;
+                old_value.ddata=dv;
+            }else {
+                tag_has_changed =false;
+
+            }
+           
+            break;
+        }
+        case DataType::TYPE_CLUSTER:
+
+        case DataType::TYPE_STRING: {
+            const std::string value((const char*)value_ptr,size);
+            if(old_string!=value){
+                if(!grow((uint32_t)value.size()+1)) return false;
+                //copy string to buffer
+                char*ptr=(char*)value_buffer;
+                memcpy((void*)ptr,value.c_str(),value.size());
+                *(ptr+value.size())=0;
+                tag_has_changed =true;
+                old_string=value;
+
+            } else {
+                tag_has_changed =false;
+
+            }
+            break;
+        }
+            
+        
+        default:
+            std::memcpy(value_buffer, value_ptr, value_size);
+
+            break;
+    }
+    
+  
     //copy the new value
     std::memcpy(value_buffer, value_ptr, value_size);
     
@@ -137,48 +222,89 @@ bool AttributeValue::setValue(const CDataVariant& attribute_value,
              if(!grow(sizeof(bool))) return false;
             bool bv = attribute_value.asBool();
             //copy string to buffer
-            std::memcpy(value_buffer,
+             if(old_value.bdata!=bv){
+                *(bool*)value_buffer=bv;
+                tag_has_changed =true;
+                old_value.bdata=bv;
+            } else {
+                tag_has_changed =false;
+
+            }
+          /*  std::memcpy(value_buffer,
                         &bv,
-                        sizeof(bool));
+                        sizeof(bool));*/
             break;
         }
         case DataType::TYPE_INT32: {
             if(!grow(sizeof(int32_t))) return false;
             int32_t i32v = attribute_value.asInt32();
+            if(old_value.i32data!=i32v){
+                *(int32_t*)value_buffer=i32v;
+                tag_has_changed =true;
+                old_value.i32data=i32v;
+            }else {
+                tag_has_changed =false;
+
+            }
             //copy string to buffer
-            std::memcpy(value_buffer,
+           /* 
+           std::memcpy(value_buffer,
                         &i32v,
                         sizeof(int32_t));
+            */
             break;
         }
         case DataType::TYPE_INT64: {
             if(!grow(sizeof(int64_t))) return false;
             int64_t i64v = attribute_value.asInt64();
+             if(old_value.i64data!=i64v){
+                *(int64_t*)value_buffer=i64v;
+                tag_has_changed =true;
+                old_value.i64data=i64v;
+            }else {
+                tag_has_changed =false;
+
+            }
             //copy string to buffer
-            std::memcpy(value_buffer,
+            /*std::memcpy(value_buffer,
                         &i64v,
-                        sizeof(int64_t));
+                        sizeof(int64_t));*/
             break;
         }
         case DataType::TYPE_DOUBLE: {
             if(!grow(sizeof(double))) return false;
             double dv = attribute_value.asDouble();
+             if(old_value.ddata!=dv){
+                *(double*)value_buffer=dv;
+                tag_has_changed =true;
+                old_value.ddata=dv;
+            }else {
+                tag_has_changed =false;
+
+            }
             //copy string to buffer
-            std::memcpy(value_buffer,
+           /* std::memcpy(value_buffer,
                         &dv,
-                        sizeof(double));
+                        sizeof(double));*/
             break;
         }
         case DataType::TYPE_CLUSTER:
 
         case DataType::TYPE_STRING: {
             const std::string value = attribute_value.asString();
-            if(!grow((uint32_t)value.size()+1)) return false;
-            //copy string to buffer
-            char*ptr=(char*)value_buffer;
-            memcpy((void*)ptr,value.c_str(),value.size());
-            *(ptr+value.size())=0;
-            
+            if(old_string!=value){
+                if(!grow((uint32_t)value.size()+1)) return false;
+                //copy string to buffer
+                char*ptr=(char*)value_buffer;
+                memcpy((void*)ptr,value.c_str(),value.size());
+                *(ptr+value.size())=0;
+                tag_has_changed =true;
+                old_string=value;
+
+            } else {
+                tag_has_changed =false;
+
+            }
             break;
         }
             

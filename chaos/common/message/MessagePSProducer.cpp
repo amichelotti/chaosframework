@@ -1,7 +1,9 @@
 #include "MessagePSProducer.h"
-#ifdef KAFKA_ENABLE
-#include "impl/kafka/MessagePSKafkaProducer.h"
-#endif
+#include <chaos/common/global.h>
+#define MRDAPP_ INFO_LOG(MessagePSProducer)
+#define MRDDBG_ DBG_LOG(MessagePSProducer)
+#define MRDERR_ ERR_LOG(MessagePSProducer)
+
 namespace chaos {
     namespace common {
         namespace message {
@@ -10,35 +12,30 @@ namespace chaos {
                 
             };*/
             MessagePSProducer::MessagePSProducer():MessagePublishSubscribeBase(""),defkey(""){
-                impl=NULL;
             }
 
             MessagePSProducer::MessagePSProducer(const std::string& clientid,const std::string& k):MessagePublishSubscribeBase(clientid),defkey(k){
-                impl = NULL;
-                #ifdef KAFKA_ENABLE
-
-                if(clientid=="RDK" || clientid=="rdk"){
-                    impl = new MessagePSKafkaProducer();
-                }
-                #endif
+                
 
             };
+           
+
             MessagePSProducer::~MessagePSProducer(){
-                if(impl){delete impl;}
+                    MRDDBG_ << "destroying";
 
             }
-         int MessagePSProducer::pushMsgAsync(const chaos::common::data::CDataWrapper&data,const std::string&key){
-             return ((MessagePSProducer*)impl)->pushMsgAsync(data,key);
+         int MessagePSProducer::pushMsgAsync(const chaos::common::data::CDataWrapper&data,const std::string&key,const int32_t pnum){
+             return 0;
          }
-        void MessagePSProducer::addServer(const std::string&url){
-            return impl->addServer(url);
+        
+        int MessagePSProducer::pushMsg(const chaos::common::data::CDataWrapper&data,const std::string&key,const int32_t pnum){
+
+            return 0;
+        }
+        int MessagePSProducer::flush(const int timeout){
+            return 0;
+
         }
 
-         int MessagePSProducer::applyConfiguration(){
-             return ((MessagePSProducer*)impl)->applyConfiguration();
-         }
-        int MessagePSProducer::pushMsg(const chaos::common::data::CDataWrapper&data,const std::string&key){
-            return ((MessagePSProducer*)impl)->pushMsgAsync(data,key);
-        }
               
         }}}

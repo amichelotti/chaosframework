@@ -569,6 +569,10 @@ int MongoDBControlUnitDataAccess::setInstanceDescription(const std::string& cu_u
         if(instance_description.hasKey(ControlUnitNodeDefinitionKey::CONTROL_UNIT_LOAD_PARAM)) {
             updated_field << ControlUnitNodeDefinitionKey::CONTROL_UNIT_LOAD_PARAM << instance_description.getStringValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_LOAD_PARAM);
         }
+
+         if(instance_description.hasKey(ControlUnitNodeDefinitionKey::CONTROL_UNIT_PROP)) {
+            updated_field << ControlUnitNodeDefinitionKey::CONTROL_UNIT_PROP << instance_description.getStringValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_PROP);
+        }
         if(instance_description.hasKey(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DESC)) {
             updated_field << ControlUnitNodeDefinitionKey::CONTROL_UNIT_DESC<< instance_description.getStringValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DESC);
         }
@@ -616,6 +620,10 @@ int MongoDBControlUnitDataAccess::setInstanceDescription(const std::string& cu_u
                     driver_desc->copyKeyTo(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_DESCRIPTION_NAME, d);
                     driver_desc->copyKeyTo(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_DESCRIPTION_VERSION, d);
                     driver_desc->copyKeyTo(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_DESCRIPTION_INIT_PARAMETER, d);
+                    if(driver_desc->hasKey(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_PROP)){
+                        driver_desc->copyKeyTo(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_PROP, d);
+
+                    }
                     bab << mongo::BSONObj(d.getBSONRawData(size));
                 }
                 
@@ -798,6 +806,8 @@ int MongoDBControlUnitDataAccess::getInstanceDescription(const std::string& unit
             if(instance_description.hasField("auto_start"))(*result)->addBoolValue("auto_start", instance_description.getBoolField("auto_start"));
             
             if(instance_description.hasField(ControlUnitNodeDefinitionKey::CONTROL_UNIT_LOAD_PARAM))(*result)->addStringValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_LOAD_PARAM, instance_description.getStringField(ControlUnitNodeDefinitionKey::CONTROL_UNIT_LOAD_PARAM));
+            if(instance_description.hasField(ControlUnitNodeDefinitionKey::CONTROL_UNIT_PROP))(*result)->addStringValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_PROP, instance_description.getStringField(ControlUnitNodeDefinitionKey::CONTROL_UNIT_PROP));
+
             if(instance_description.hasField(ControlUnitDatapackSystemKey::THREAD_SCHEDULE_DELAY))(*result)->addInt64Value(ControlUnitDatapackSystemKey::THREAD_SCHEDULE_DELAY, (int64_t)instance_description.getField(ControlUnitDatapackSystemKey::THREAD_SCHEDULE_DELAY).Long());
             if(instance_description.hasField(DataServiceNodeDefinitionKey::DS_STORAGE_TYPE))(*result)->addInt32Value(DataServiceNodeDefinitionKey::DS_STORAGE_TYPE, (int32_t)instance_description.getField(DataServiceNodeDefinitionKey::DS_STORAGE_TYPE).numberInt());
             if(instance_description.hasField(DataServiceNodeDefinitionKey::DS_STORAGE_HISTORY_AGEING))(*result)->addInt32Value(DataServiceNodeDefinitionKey::DS_STORAGE_HISTORY_AGEING, (int32_t)instance_description.getField(DataServiceNodeDefinitionKey::DS_STORAGE_HISTORY_AGEING).numberInt());

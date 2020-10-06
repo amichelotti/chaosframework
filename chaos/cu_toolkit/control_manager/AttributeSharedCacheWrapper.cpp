@@ -140,18 +140,38 @@ void AttributeSharedCacheWrapper::addCustomAttribute(const std::string&  name,
 void AttributeSharedCacheWrapper::setCustomAttributeValue(const std::string& attribute_name,
 											 const chaos::common::data::CDataWrapper& value){
 												 std::string svalue=value.getCompliantJSONString();
+												 LDBG_<<"Set "<<attribute_name<<" to:"<<svalue;
 												 setCustomAttributeValue(attribute_name,(void*)svalue.c_str(),(uint32_t)svalue.size()+1);
 
 											 }
-chaos::common::data::CDWUniquePtr AttributeSharedCacheWrapper::getCDValue(SharedCacheDomain domain,const std::string& attribute_name){
-	AttributeValue *value_setting = attribute_value_shared_cache->getAttributeValue(domain, attribute_name);
-	chaos::common::data::CDWUniquePtr dret(new chaos::common::data::CDataWrapper());
-	if(value_setting->type==chaos::DataType::TYPE_CLUSTER){
-		const char* ret=value_setting->getValuePtr<char>();
-		dret->setSerializedJsonData(ret);
-		
+
+chaos::common::data::CDWUniquePtr AttributeSharedCacheWrapper::getCDValue(SharedCacheDomain domain){
+	chaos::common::data::CDWUniquePtr p(new chaos::common::data::CDataWrapper());
+	std::vector<std::string> names;
+	attribute_value_shared_cache->getAttributeNames(domain, names);
+	for(std::vector<std::string>::iterator i=names.begin();i!=names.end();i++){
+		AttributeValue *value_setting = attribute_value_shared_cache->getAttributeValue(domain, *i);
+		if(value_setting){
+			value_setting->writeToCDataWrapper(*p.get());
+		}
+
 	}
-	return dret;
+	
+	return p;
+}
+chaos::common::data::CDWUniquePtr AttributeSharedCacheWrapper::getCDValue(SharedCacheDomain domain,const std::string& attribute_name){
+	
+	AttributeValue *value_setting = attribute_value_shared_cache->getAttributeValue(domain, attribute_name);
+	if(value_setting){
+			chaos::common::data::CDWUniquePtr p(new chaos::common::data::CDataWrapper());
+
+			value_setting->writeToCDataWrapper(*p.get());
+			return p;
+
+	}
+
+	
+	return chaos::common::data::CDWUniquePtr();
 }
 
 // Set the value for a determinated variable in a determinate domain

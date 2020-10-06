@@ -36,7 +36,7 @@ CDWUniquePtr NodeGetDescription::execute(CDWUniquePtr api_data) {
     bool presence = false;
     chaos::common::data::CDataWrapper *result = NULL;
     if(!api_data->hasKey(NodeDefinitionKey::NODE_UNIQUE_ID)) {
-        LOG_AND_TROW(USRA_ERR, -1, "Node unique id not set as parameter")
+        LOG_AND_TROW(USRA_ERR, -1, "required unique id '"+ std::string(NodeDefinitionKey::NODE_UNIQUE_ID)+"' not set as parameter")
     }
     
     //!get the unit server data access

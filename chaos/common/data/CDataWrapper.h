@@ -25,8 +25,6 @@
 #include <chaos/common/bson/bson.h>
 #include <chaos/common/exception/CException.h>
 #include <chaos/common/data/CDataBuffer.h>
-#include <json/json.h>
-
 #include <chaos/common/data/CDataVariant.h>
 
 #include <boost/scoped_ptr.hpp>
@@ -119,7 +117,7 @@ namespace chaos {
                 const bson_t*getBSON() const;
 
                 static ChaosUniquePtr<CDataWrapper> instanceFromJson(const std::string& json_serialization);
-                ChaosUniquePtr<CDataWrapper>clone();
+                ChaosUniquePtr<CDataWrapper>clone() const;
                 //add a csdata value
                 void addCSDataValue(const std::string&, const CDataWrapper&);
                 //get a csdata value
@@ -145,7 +143,7 @@ namespace chaos {
                 //add a json value
                 void addJsonValue(const std::string&, const string&);
                 //add a json value
-                void addJsonValue(const std::string&, Json::Value&);
+            //    void addJsonValue(const std::string&, Json::Value&);
                 //add a strin gto array
                 void appendStringToArray(const string &value);
                 void appendInt32ToArray(int32_t value);
@@ -167,6 +165,8 @@ namespace chaos {
                 void append(const std::string& key,int64_t val);
                 void append(const std::string& key,double val);
                 void append(const std::string& key,bool val);
+                void append(const std::string& key,const char* val);
+
                 void append(const std::string& key,const std::string& val);
                 void append(const std::string& key,const CDataWrapper& val);
                 void append(const std::string& key,const std::vector<int32_t>& val);
@@ -314,6 +314,10 @@ throw chaos::CException(-2, ss.str(), __PRETTY_FUNCTION__);
                 void setSerializedJsonData(const char* jsonData);
                 //check if the key is present in data wrapper
                 bool hasKey(const std::string& key) const;
+                //
+                bool removeKey(const std::string& key);
+                bool replaceKey(const std::string& key,const CDataWrapper&d );
+
                 bool isVector(const std::string& key) const;
                 //return all key contained into the object
                 void getAllKey(ChaosStringVector& contained_key) const;

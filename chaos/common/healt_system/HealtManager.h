@@ -220,6 +220,19 @@ namespace chaos {
                                         int32_t int32_value,
                                         bool publish = false);
                 
+
+                //! return the value for a I32 metric
+                /*!
+                 \param node_uid node for wich we need to update the metric value
+                 \param node_metric identify the metric to update
+                 \return the metric  value
+                 */
+                int32_t getNodeMetricI32Value(const std::string& node_uid,
+                                        const std::string& node_metric);
+
+                std::string getNodeMetricStringValue(const std::string& node_uid,
+                                        const std::string& node_metric);
+
                 //! update the value for a metric
                 /*!
                  \param node_uid node for wich we need to update the metric value

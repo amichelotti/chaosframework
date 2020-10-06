@@ -63,12 +63,14 @@ CDWUniquePtr LoadUnloadControlUnit::execute(CDWUniquePtr api_data) {
     } else if(!cu_base_description) {
         LOG_AND_TROW(CU_LOUNLO_ERR, -5, boost::str(boost::format("No base infromation found for control unit:%1%") % cu_uid));
     } else {
+        std:string node_type;
+
         ChaosUniquePtr<chaos::common::data::CDataWrapper> cu_inf(cu_base_description);
         if(cu_inf->hasKey(chaos::NodeDefinitionKey::NODE_TYPE)) {
-        std:string type = cu_inf->getStringValue(chaos::NodeDefinitionKey::NODE_TYPE);
-            if(type.compare(chaos::NodeType::NODE_TYPE_CONTROL_UNIT) != 0) {
-                LOG_AND_TROW(CU_LOUNLO_ERR, -6, boost::str(boost::format("The node id '%1%' is not a control unit") % cu_uid));
-            }
+             node_type = cu_inf->getStringValue(chaos::NodeDefinitionKey::NODE_TYPE);
+           /* if(type.compare(chaos::NodeType::NODE_TYPE_CONTROL_UNIT) != 0) {
+                LOG_AND_TROW(CU_LOUNLO_ERR, -6, boost::str(boost::format("The node id '%1%' is not a control unit, but is : ") % cu_uid %type));
+            }*/
         } else {
             LOG_AND_TROW(CU_LOUNLO_ERR, -7, "The node doesn't has a type attribute");
         }
@@ -86,9 +88,10 @@ CDWUniquePtr LoadUnloadControlUnit::execute(CDWUniquePtr api_data) {
             if(!cu_instance->hasKey(chaos::NodeDefinitionKey::NODE_PARENT)) {
                 LOG_AND_TROW(CU_LOUNLO_ERR, -9, "Control unit instance laks of parent key(unit server)");
             }
-            
-            if(!cu_instance->hasKey("control_unit_implementation")) {
-                LOG_AND_TROW(CU_LOUNLO_ERR, -10, "No implementation found into control unit instances");
+            if(node_type == chaos::NodeType::NODE_TYPE_CONTROL_UNIT){
+                if(!cu_instance->hasKey("control_unit_implementation")) {
+                    LOG_AND_TROW(CU_LOUNLO_ERR, -10, "No implementation found into control unit instances");
+                }
             }
             std::string rpc_addr;
 
@@ -99,7 +102,10 @@ CDWUniquePtr LoadUnloadControlUnit::execute(CDWUniquePtr api_data) {
                 CU_LOUNLO_INFO<< "handling CU \""<<cu_uid<< "\" without parent info";
                 if(cu_base_description->hasKey(chaos::NodeDefinitionKey::NODE_RPC_ADDR)){
                     rpc_addr=cu_base_description->getStringValue(chaos::NodeDefinitionKey::NODE_RPC_ADDR);
-                } 
+                } else if(!cu_instance->hasKey(chaos::NodeDefinitionKey::NODE_RPC_ADDR)) {
+                    rpc_addr=cu_instance->getStringValue(chaos::NodeDefinitionKey::NODE_RPC_ADDR);
+
+                }
 
             } else {
             
@@ -121,8 +127,11 @@ CDWUniquePtr LoadUnloadControlUnit::execute(CDWUniquePtr api_data) {
             //set the type of the control unit to instance and the rpc addres sof the unit server
             load_unload_data_pack->addStringValue(chaos::NodeDefinitionKey::NODE_RPC_ADDR, rpc_addr);
             if(load_unload) {
+                if(node_type == chaos::NodeType::NODE_TYPE_CONTROL_UNIT){
+
                 //in load phase we need the type to instantiate the control unit
-                load_unload_data_pack->addStringValue(UnitServerNodeDomainAndActionRPC::PARAM_CONTROL_UNIT_TYPE, cu_instance->getStringValue("control_unit_implementation"));
+                    load_unload_data_pack->addStringValue(UnitServerNodeDomainAndActionRPC::PARAM_CONTROL_UNIT_TYPE, cu_instance->getStringValue("control_unit_implementation"));
+                }
                 //we need also the drive descriptions
                 cu_instance->copyKeyTo(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_DESCRIPTION, *load_unload_data_pack);
             }

@@ -23,6 +23,8 @@
 #include "ChaosMetadataService.h"
 #include "DriverPoolManager.h"
 #include "QueryDataConsumer.h"
+#include "QueryDataMsgPSConsumer.h"
+
 #include "object_storage/object_storage.h"
 
 #include <csignal>
@@ -160,8 +162,13 @@ void ChaosMetadataService::init(void *init_data)  {
         //api system
         api_managment_service.reset(new ApiManagment(), "ApiManagment");
         api_managment_service.init(NULL, __PRETTY_FUNCTION__);
-        
+#if defined(KAFKA_RDK_ENABLE) || defined(KAFKA_ASIO_ENABLE)
+#warning "CDS NEEDS KAFKA"
+        data_consumer.reset(new QueryDataMsgPSConsumer("cds"), "QueryDataMsgPSConsumer");
+
+#else     
         data_consumer.reset(new QueryDataConsumer(), "QueryDataConsumer");
+#endif
         if(!data_consumer.get()) throw chaos::CException(-7, "Error instantiating data consumer", __PRETTY_FUNCTION__);
         data_consumer.init(NULL, __PRETTY_FUNCTION__);
         
@@ -181,6 +188,11 @@ void ChaosMetadataService::init(void *init_data)  {
         exit(1);
     }
     //start data manager
+}
+
+int ChaosMetadataService::notifyNewNode(const std::string& nodeuid){
+    return data_consumer->consumeHealthDataEvent(nodeuid, 0, ChaosStringSetConstSPtr(),  ChaosMakeSharedPtr<Buffer>());
+
 }
 
 /*
@@ -290,7 +302,7 @@ int ChaosMetadataService::removeStorageData(const std::string& control_unit_foun
         const std::string input_key     = control_unit_found + DataPackPrefixID::INPUT_DATASET_POSTFIX;
         const std::string system_key    = control_unit_found + DataPackPrefixID::SYSTEM_DATASET_POSTFIX;
         const std::string custom_key    = control_unit_found + DataPackPrefixID::CUSTOM_DATASET_POSTFIX;
-        const std::string health_key    = control_unit_found + NodeHealtDefinitionKey::HEALT_KEY_POSTFIX;
+       // const std::string health_key    = control_unit_found + NodeHealtDefinitionKey::HEALT_KEY_POSTFIX;
         const std::string dev_alarm_key    = control_unit_found + DataPackPrefixID::DEV_ALARM_DATASET_POSTFIX;
         const std::string cu_alarm_key    = control_unit_found + DataPackPrefixID::CU_ALARM_DATASET_POSTFIX;
       
@@ -324,13 +336,13 @@ int ChaosMetadataService::removeStorageData(const std::string& control_unit_foun
                 log(CHAOS_FORMAT("Error erasing key %1% for control unit %2% with error %3%", %custom_key%control_unit_found%err));
             }
             
-            log(CHAOS_FORMAT("Remove data for key %1%", %health_key));
+          /*  log(CHAOS_FORMAT("Remove data for key %1%", %health_key));
             if((err = obj_storage_da->deleteObject(health_key,
                                                    start,
                                                    remove_until_ts))){
                 log(CHAOS_FORMAT("Error erasing key %1% for control unit %2% with error %3%", %health_key%control_unit_found%err));
             }
-            
+            */
             log(CHAOS_FORMAT("Remove data for key %1%", %dev_alarm_key));
             if((err = obj_storage_da->deleteObject(dev_alarm_key,
                                                    start,

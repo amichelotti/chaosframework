@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 2.8)
 project(chaos_metadata_service_client)
 
+IF (NOT  BUILD_FORCE_STATIC)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ENDIF ()
 
 
 IF (WIN32)
@@ -87,6 +90,8 @@ SET(mcl_src ${mcl_src}      api_proxy/node/GetNodeDescription.cpp
 			                api_proxy/node/UpdatePropertyDefaultValues.cpp
                             api_proxy/node/GetCommandAndTemplateDescription.cpp
                             api_proxy/node/KillCurrentCommand.cpp
+                            api_proxy/node/NodeGenericCommand.cpp
+
 			                api_proxy/node/ClearCommandQueue.cpp)
 
 SET(mcl_src ${mcl_src}      api_proxy/data_service/NewDS.cpp
