@@ -1916,7 +1916,7 @@ bool PushStorageBurst::active(void* data __attribute__((unused))) {
         
         HealtManager::getInstance()->addNodeMetricValue(control_unit_id,
                                                         ControlUnitHealtDefinitionValue::CU_HEALT_OUTPUT_DATASET_TSOFF,
-                                                        chaos::common::utility::TimingUtil::getTimestampWithDelay);
+                                                        chaos::common::utility::TimingUtil::mds_calibration_offset);
                                                        
         HealtManager::getInstance()->addNodeMetricValue(control_unit_id,
                                                         ControlUnitHealtDefinitionValue::CU_HEALT_OUTPUT_DATASET_PUSH_SIZE,
