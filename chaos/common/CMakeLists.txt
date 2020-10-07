@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.7)
 project(chaos_common)
 #### required libraries
 MESSAGE(" CMAKELIST framework/chaos/common")
@@ -150,13 +150,13 @@ MESG("Install lz4 compression library")
   ExternalProject_Add(
      liblz4
      GIT_REPOSITORY https://github.com/lz4/lz4.git
-    # GIT_TAG v1.9.2
-    GIT_TAG dev
+    GIT_TAG v1.9.2
+   # GIT_TAG dev
      PREFIX "${CMAKE_BINARY_DIR}/ext_dep/lz4-prefix"
      SOURCE_DIR "${CMAKE_BINARY_DIR}/ext_dep/lz4-src"
      BINARY_DIR "${CMAKE_BINARY_DIR}/ext_dep/lz4-build"
-   #  SOURCE_SUBDIR contrib/cmake_unofficial
-   SOURCE_SUBDIR build/cmake
+     SOURCE_SUBDIR contrib/cmake_unofficial
+   #  SOURCE_SUBDIR build/cmake
      CMAKE_ARGS 
       -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
       -DCMAKE_BUILD_TYPE=Release
