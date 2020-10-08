@@ -79,19 +79,22 @@ ELSE(WIN32)
   ENDIF()
 ENDIF(WIN32)
 
-IF (CHAOS_TARGET)
-  IF(NEW_ZMQ)
-      MESG("Configure NEW libzmq with autotools")  
-      CheckConfigureBuild(zmq libzmq:v4.3.1 "${ZMQ_FLAGS}" https://github.com/zeromq)
+# IF (CHAOS_TARGET)
+#   IF(NEW_ZMQ)
+#       MESG("Configure NEW libzmq with autotools")  
+#       CheckConfigureBuild(zmq libzmq:v4.3.1 "${ZMQ_FLAGS}" https://github.com/zeromq)
 
-    ELSE()
-      ## ifdef to support OLD ZMQ into code
-      ADD_DEFINITIONS(-DOLD_ZMQ)
-      CheckConfigureBuild(zmq zeromq4-1 "" https://github.com/zeromq)
-   ENDIF()
-	ELSE()
-	  MESG("Configure libzmq as CMake")
-	ExternalProject_Add(
+#     ELSE()
+#       ## ifdef to support OLD ZMQ into code
+#       ADD_DEFINITIONS(-DOLD_ZMQ)
+#       CheckConfigureBuild(zmq zeromq4-1 "" https://github.com/zeromq)
+#    ENDIF()
+# 	ELSE()
+# 	  MESG("Configure libzmq as CMake")
+	
+#   ENDIF()
+
+  ExternalProject_Add(
 	 libzmq
 	 GIT_REPOSITORY https://github.com/zeromq/libzmq.git
 	 GIT_TAG v4.3.1
@@ -103,8 +106,6 @@ IF (CHAOS_TARGET)
 	 LOG_DOWNLOAD ON
 	 LOG_CONFIGURE ON
 	 LOG_BUILD ON)
-     ENDIF()
-
 
      ExternalProject_Add(
       zlib
