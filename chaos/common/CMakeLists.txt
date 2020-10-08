@@ -49,6 +49,7 @@ if(WIN32)
     LOG_BUILD 1
     LOG_INSTALL 1
 	)
+  add_dependencies(${PROJECT_NAME} jsonCpp)
 
 ELSE(WIN32)
   ExternalProject_Add(
@@ -77,24 +78,23 @@ ELSE(WIN32)
       SET(ZMQ_FLAGS "")
     ENDIF()
   ENDIF()
+
 ENDIF(WIN32)
 
-# IF (CHAOS_TARGET)
-#   IF(NEW_ZMQ)
-#       MESG("Configure NEW libzmq with autotools")  
-#       CheckConfigureBuild(zmq libzmq:v4.3.1 "${ZMQ_FLAGS}" https://github.com/zeromq)
 
-#     ELSE()
-#       ## ifdef to support OLD ZMQ into code
-#       ADD_DEFINITIONS(-DOLD_ZMQ)
-#       CheckConfigureBuild(zmq zeromq4-1 "" https://github.com/zeromq)
-#    ENDIF()
-# 	ELSE()
-# 	  MESG("Configure libzmq as CMake")
-	
-#   ENDIF()
+IF (CHAOS_TARGET)
+  IF(NEW_ZMQ)
+      MESG("Configure NEW libzmq with autotools")  
+      CheckConfigureBuild(zmq libzmq:v4.3.1 "${ZMQ_FLAGS}" https://github.com/zeromq)
 
-  ExternalProject_Add(
+    ELSE()
+      ## ifdef to support OLD ZMQ into code
+      ADD_DEFINITIONS(-DOLD_ZMQ)
+      CheckConfigureBuild(zmq zeromq4-1 "" https://github.com/zeromq)
+   ENDIF()
+	ELSE()
+	  MESG("Configure libzmq as CMake")
+	ExternalProject_Add(
 	 libzmq
 	 GIT_REPOSITORY https://github.com/zeromq/libzmq.git
 	 GIT_TAG v4.3.1
@@ -105,7 +105,10 @@ ENDIF(WIN32)
 	  -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX} ${ZMQ_FLAGS} -DCMAKE_BUILD_TYPE=Release -DENABLE_DRAFTS=1 -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
 	 LOG_DOWNLOAD ON
 	 LOG_CONFIGURE ON
-	 LOG_BUILD ON)
+   LOG_BUILD ON)
+
+  ENDIF()
+
 
      ExternalProject_Add(
       zlib
@@ -251,6 +254,7 @@ IF (CLING_VIRTUAL_MACHINE_ENABLE)
 	   add_dependencies(${PROJECT_NAME} cling)
   ENDIF()
 ENDIF()
+
 
 SET(BUILD_LIBRARY )
 #add_subdirectory(libbson)
@@ -633,8 +637,6 @@ IF (CHAOS_PROMETHEUS)
 add_dependencies(${PROJECT_NAME} prometheus)
 endif()
 
-add_dependencies(${PROJECT_NAME} libzmq)
-add_dependencies(${PROJECT_NAME} jsonCpp)
 
 IF (CLING_VIRTUAL_MACHINE)
   add_dependencies(${PROJECT_NAME} cling)
