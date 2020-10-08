@@ -2412,7 +2412,7 @@ if (attributeInfo.maxRange.size() && v > attributeInfo.maxRange) throw MetadataL
                 
                 //fill the dataset
                 fillCDatawrapperWithCachedValue(cache_custom_attribute_vector, *custom_attribute_dataset);
-                ACULDBG_ << " Push custom:"<<custom_attribute_dataset->getJSONString();
+             //   ACULDBG_ << " Push custom:"<<custom_attribute_dataset->getJSONString();
 
                 //push out the system dataset
                 err = key_data_storage->pushDataSet(data_manager::KeyDataStorageDomainCustom, MOVE(custom_attribute_dataset));

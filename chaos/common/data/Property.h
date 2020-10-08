@@ -293,7 +293,7 @@ chaos::common::data::CDWUniquePtr createProperty(
   chaos::common::data::CDWUniquePtr
   setProperty(const std::string &propname,
               const chaos::common::data::CDataWrapper &val, bool sync = false) {
-    boost::mutex::scoped_lock ll (lock);
+   // boost::mutex::scoped_lock ll (lock);
     std::string realpropname = propname;
     if(!val.hasKey(PROPERTY_VALUE_KEY)){
         throw chaos::CException(-10,propname+" missing required key 'value' in:"+val.getJSONString(),__FUNCTION__);
