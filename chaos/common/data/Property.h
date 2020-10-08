@@ -581,7 +581,7 @@ chaos::common::data::CDWUniquePtr createProperty(
       }
     }
 
-    if (prop->hasKey(PROPERTY_VALUE_KEY)) {
+    if (prop.get()&&prop->hasKey(PROPERTY_VALUE_KEY)) {
       chaos::common::data::CDWUniquePtr pp=props.getCSDataValue(realpropname);
       value = pp->getValue<T>(PROPERTY_VALUE_KEY);
       return 0;
