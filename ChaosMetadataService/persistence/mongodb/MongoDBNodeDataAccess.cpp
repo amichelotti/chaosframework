@@ -215,6 +215,10 @@ int MongoDBNodeDataAccess::updateNode(chaos::common::data::CDataWrapper& node_de
         if(node_description.hasKey(chaos::NodeDefinitionKey::NODE_TIMESTAMP)) {
             updated_field << chaos::NodeDefinitionKey::NODE_TIMESTAMP << mongo::Date_t(node_description.getUInt64Value(chaos::NodeDefinitionKey::NODE_TIMESTAMP));
         }
+        if(node_description.hasKey(chaos::NodeDefinitionKey::NODE_DESC)) {
+            updated_field << chaos::NodeDefinitionKey::NODE_DESC << node_description.getStringValue(chaos::NodeDefinitionKey::NODE_DESC);
+        
+        }
         if(node_description.hasKey(chaos::RpcActionDefinitionKey::CS_CMDM_ACTION_DESC)) {
             CMultiTypeDataArrayWrapperSPtr description_array(node_description.getVectorValue(chaos::RpcActionDefinitionKey::CS_CMDM_ACTION_DESC));
             for(int desc_idx = 0;

@@ -515,8 +515,8 @@ CDWUniquePtr ControlManager::loadControlUnit(CDWUniquePtr message_data) {
     ReadLock read_registered_lock(mutex_map_cuid_registered_instance);
     
     // we can't have two different work unit with the same unique identifier within the same process
-    CHECK_ASSERTION_THROW_AND_LOG(!map_cuid_reg_unreg_instance.count(work_unit_id), LCMERR_, -3, "Another work unit use the same id")
-    CHECK_ASSERTION_THROW_AND_LOG(!map_cuid_registered_instance.count(work_unit_id), LCMERR_, -4, "Another work unit use the same id")
+    CHECK_ASSERTION_THROW_AND_LOG(!map_cuid_reg_unreg_instance.count(work_unit_id), LCMERR_, -3, "Another work unit use the same id:"+work_unit_id)
+    CHECK_ASSERTION_THROW_AND_LOG(!map_cuid_registered_instance.count(work_unit_id), LCMERR_, -4, "Another work unit use the same id:"+work_unit_id)
     
     LCMDBG_ << "instantiate work unit ->" << "device_id:" <<work_unit_id<< " load_options:"<< load_options;
     //scan all the driver description forwarded
@@ -607,6 +607,13 @@ CDWUniquePtr ControlManager::unloadControlUnit(CDWUniquePtr message_data) {
     
     LCMAPP_ << "Unload operation for: " << work_unit_id;// << " of type "<<work_unit_type;
     WriteLock write_instancer_lock(mutex_map_cuid_registered_instance);
+    if(map_cuid_reg_unreg_instance.count(work_unit_id)){
+        LCMDBG_ << "CU : " << work_unit_id <<" was not running turning off";// << " of type "<<work_unit_type;
+
+        map_cuid_reg_unreg_instance[work_unit_id]->turnOFF();
+        thread_waith_semaphore.unlock();
+        return CDWUniquePtr();
+    }
     IN_ACTION_PARAM_CHECK(!map_cuid_registered_instance.count(work_unit_id), -3, "Work unit not found on registered's map")
     
     if(load_handler != NULL &&

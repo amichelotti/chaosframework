@@ -93,7 +93,14 @@ CDWUniquePtr GetSetFullUnitServer::execute(CDWUniquePtr api_data) {
         	    }
 
         }
-        
+        if(presence){
+             // update the common part
+            US_ACT_DBG<<"Updating unit server '"<<us_uid<<"'";
+
+            if((err = n_da->updateNode(*api_data.get()))) {
+                LOG_AND_TROW(US_ACT_ERR, err, CHAOS_FORMAT("Error updating US node properties:%1%",%us_uid));
+            }
+        }
         // look for UnitServer full description
         if(api_data->hasKey("us_desc")&& api_data->isCDataWrapperValue("us_desc")){
             ChaosUniquePtr<chaos::common::data::CDataWrapper> udesc(api_data->getCSDataValue("us_desc"));
@@ -166,6 +173,8 @@ CDWUniquePtr GetSetFullUnitServer::execute(CDWUniquePtr api_data) {
                 
             }
         }
+       
+
     } else {
         CDataWrapper tot_res;
         chaos::common::data::CDataWrapper *result = NULL;

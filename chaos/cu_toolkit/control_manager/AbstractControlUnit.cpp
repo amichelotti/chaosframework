@@ -1571,15 +1571,15 @@ bool PushStorageBurst::active(void* data __attribute__((unused))) {
         HealtManager::getInstance()->addNodeMetricValue(control_unit_id,
                                                         NodeHealtDefinitionKey::NODE_HEALT_STATUS,
                                                         NodeHealtDefinitionValue::NODE_HEALT_STATUS_FERROR,
-                                                        false);
+                                                        true);
         HealtManager::getInstance()->addNodeMetricValue(control_unit_id,
                                                         NodeHealtDefinitionKey::NODE_HEALT_LAST_ERROR_CODE,
                                                         ex.errorCode,
-                                                        false);
+                                                        true);
         HealtManager::getInstance()->addNodeMetricValue(control_unit_id,
                                                         NodeHealtDefinitionKey::NODE_HEALT_LAST_ERROR_MESSAGE,
                                                         ex.errorMessage,
-                                                        false);
+                                                        true);
         HealtManager::getInstance()->addNodeMetricValue(control_unit_id,
                                                         NodeHealtDefinitionKey::NODE_HEALT_LAST_ERROR_DOMAIN,
                                                         ex.errorDomain,
