@@ -110,7 +110,8 @@ chaos::common::data::CDWUniquePtr DriverAccessor::getDrvProperties(){
     send(&message);
 
     if(message.resultData && message.resultDataLength){
-        chaos::common::data::CDWUniquePtr ptr(new chaos::common::data::CDataWrapper((const char*)message.resultData));
+        chaos::common::data::CDWUniquePtr ptr(new chaos::common::data::CDataWrapper());
+        ptr->setSerializedData((const char*)message.resultData);
         free(message.resultData);
         return ptr;
     }
@@ -120,15 +121,17 @@ chaos::common::data::CDWUniquePtr DriverAccessor::setDrvProperties(chaos::common
     chaos_driver::DrvMsg message;
     message.opcode=OpcodeType::OP_SET_PROPERTIES;
     int sizeb;
+    chaos::common::data::CDWUniquePtr tmp;
     if(data.get()){
-          char*ptr=(char*)data->getBSONRawData(sizeb);
+          tmp=data->clone();
+          char*ptr=(char*)tmp->getBSONRawData(sizeb);
           message.inputData=ptr;
           message.inputDataLength=sizeb;
           send(&message);
 
     if(message.resultData && message.resultDataLength){
         chaos::common::data::CDWUniquePtr ptr(new chaos::common::data::CDataWrapper((const char*)message.resultData));
-
+        free(message.resultData);
         return ptr;
     }
     }

@@ -195,7 +195,7 @@ namespace chaos{
                      * 
                      * @return properties
                      */
-                    virtual chaos::common::data::CDWUniquePtr setDrvProperties(chaos::common::data::CDWUniquePtr);
+                    virtual chaos::common::data::CDWUniquePtr setDrvProperties(chaos::common::data::CDWUniquePtr&);
 
                     /**
                      * @brief Set the Drv property 

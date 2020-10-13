@@ -186,8 +186,7 @@ void AbstractDriver::scanForMessage() {
 
     try {
       //clean error message and domain
-      memset(current_message_ptr->err_msg, 0, DRVMSG_ERR_MSG_SIZE);
-      memset(current_message_ptr->err_dom, 0, DRVMSG_ERR_DOM_SIZE);
+     
       //! check if we need to execute the private driver's opcode
       switch (current_message_ptr->opcode) {
         case OpcodeType::OP_GET_LASTERROR:
@@ -260,19 +259,22 @@ void AbstractDriver::scanForMessage() {
           break;
         }
         case OpcodeType::OP_SET_PROPERTIES: {
-          chaos::common::data::CDWUniquePtr inp(new chaos::common::data::CDataWrapper((const char *)current_message_ptr->inputData));
-          chaos::common::data::CDWUniquePtr ret   = setDrvProperties(MOVE(inp));
-          int                               sizeb = 0;
-          const char *                      ptr   = NULL;
-          if (ret.get()) {
-            ptr = ret->getBSONRawData(sizeb);
-          }
-          current_message_ptr->resultData       = NULL;
-          current_message_ptr->resultDataLength = 0;
-          if ((sizeb > 0) && ptr) {
-            current_message_ptr->resultData       = (char *)malloc(sizeb);
-            current_message_ptr->resultDataLength = sizeb;
-            memcpy(current_message_ptr->resultData, ptr, sizeb);
+          chaos::common::data::CDWUniquePtr inp(new chaos::common::data::CDataWrapper());
+          if(current_message_ptr->inputData){
+            inp->setSerializedData((const char*)current_message_ptr->inputData);
+            chaos::common::data::CDWUniquePtr ret   = setDrvProperties(inp);
+            int                               sizeb = 0;
+            const char *                      ptr   = NULL;
+            if (ret.get()) {
+              ptr = ret->getBSONRawData(sizeb);
+            }
+            current_message_ptr->resultData       = NULL;
+            current_message_ptr->resultDataLength = 0;
+            if ((sizeb > 0) && ptr) {
+              current_message_ptr->resultData       = (char *)malloc(sizeb);
+              current_message_ptr->resultDataLength = sizeb;
+              memcpy(current_message_ptr->resultData, ptr, sizeb);
+            }
           }
           break;
         }
@@ -366,7 +368,7 @@ void AbstractDriver::setLastError(const std::string&str){
   lastError=str;
 }
 
-chaos::common::data::CDWUniquePtr AbstractDriver::setDrvProperties(chaos::common::data::CDWUniquePtr drv) {
+chaos::common::data::CDWUniquePtr AbstractDriver::setDrvProperties(chaos::common::data::CDWUniquePtr& drv) {
   if(drv.get()){
     return setProperties(*drv.get(),true);
 

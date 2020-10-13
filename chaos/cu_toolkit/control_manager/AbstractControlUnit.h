@@ -36,20 +36,20 @@
 #include <chaos/common/alarm/MultiSeverityAlarm.h>
 #include <chaos/common/async_central/async_central.h>
 #include <chaos/common/data/DatasetDB.h>
+#include <chaos/common/data/Property.h>
 #include <chaos/common/data/cache/AttributeValueSharedCache.h>
 #include <chaos/common/data/structured/Dataset.h>
+#include <chaos/common/message/MessagePublishSubscribeBase.h>
 #include <chaos/common/metadata_logging/metadata_logging.h>
 #include <chaos/common/property/property.h>
 #include <chaos/common/utility/AggregatedCheckList.h>
 #include <chaos/common/utility/ArrayPointer.h>
 #include <chaos/common/utility/SWEService.h>
-#include <chaos/common/message/MessagePublishSubscribeBase.h>
 #include <chaos/cu_toolkit/control_manager/AttributeSharedCacheWrapper.h>
 #include <chaos/cu_toolkit/control_manager/ControlUnitTypes.h>
 #include <chaos/cu_toolkit/control_manager/handler/handler.h>
 #include <chaos/cu_toolkit/data_manager/KeyDataStorage.h>
 #include <chaos/cu_toolkit/driver_manager/DriverErogatorInterface.h>
-#include <chaos/common/data/Property.h>
 #define CUINFO LAPP_ << "[" << __FUNCTION__ << " - " << getDeviceID() << "]"
 #define CUDBG LDBG_ << "[- " << __FUNCTION__ << " - " << getDeviceID() << "]"
 #define CUERR LERR_ << "[" << __PRETTY_FUNCTION__ << " - " << getDeviceID() << "]"
@@ -131,7 +131,7 @@ class AbstractControlUnit : public DeclareAction,
                             public chaos::common::property::PropertyCollector,
                             protected chaos::common::async_central::TimerHandler,
                             public chaos::cu::driver_manager::DriverErogatorInterface,
-                            public chaos::common::data::Property< AbstractControlUnit > {
+                            public chaos::common::data::Property<AbstractControlUnit> {
   //friendly class declaration
   friend class ControlManager;
   friend class ProxyControlUnit;
@@ -144,7 +144,7 @@ class AbstractControlUnit : public DeclareAction,
   friend class slow_command::SlowCommand;
   friend class slow_command::SlowCommandExecutor;
 
-  void setCUClass(const std::string&cl);
+  void setCUClass(const std::string& cl);
 
  public:
   CHAOS_DEFINE_VECTOR_FOR_TYPE(chaos::cu::driver_manager::driver::DrvRequestInfo, ControlUnitDriverList);
@@ -173,7 +173,7 @@ class AbstractControlUnit : public DeclareAction,
   //! default destructor
   virtual ~AbstractControlUnit();
   // get the actual C++ class
-  const std::string& getCUClass(){return control_unit_class;}
+  const std::string& getCUClass() { return control_unit_class; }
   //! Return the control unit instance
   const std::string& getCUInstance();
 
@@ -256,7 +256,6 @@ class AbstractControlUnit : public DeclareAction,
   //! contains the class of the type of the control unit
   std::string control_unit_class;
 
-  
   //! is the unique identification code associated to the control unit instance(rand benerated by contructor)
   std::string control_unit_id;
 
@@ -292,11 +291,11 @@ class AbstractControlUnit : public DeclareAction,
 
   //! keep track of how many push has been done for every dataset
   //! 0 - output, 1-input, 2-custom
-  uint32_t push_dataset_counter,push_errors,packet_lost;
+  uint32_t push_dataset_counter, push_errors, packet_lost;
   uint32_t push_dataset_size;
   uint64_t push_tot_size;
   uint64_t last_push;
-  int32_t ds_update_anyway;
+  int32_t  ds_update_anyway;
   //! identify last timestamp whene the push rate has been acquired;
   uint64_t last_push_rate_grap_ts;
 
@@ -374,9 +373,7 @@ class AbstractControlUnit : public DeclareAction,
                  */
   virtual chaos::common::data::CDWUniquePtr _unitRestoreToSnapshot(chaos::common::data::CDWUniquePtr data);
 
-
-    chaos::common::data::CDWUniquePtr _unitPerformCalibration(chaos::common::data::CDWUniquePtr data);
-
+  chaos::common::data::CDWUniquePtr _unitPerformCalibration(chaos::common::data::CDWUniquePtr data);
 
   /*!
                  Define the control unit DataSet and Action into
@@ -478,23 +475,20 @@ class AbstractControlUnit : public DeclareAction,
                  */
   chaos::common::data::CDWUniquePtr _setDatasetAttribute(chaos::common::data::CDWUniquePtr data);
 
- //! Set the driver properties values, if "_id_" specified, the control unit search for the specified driver, otherwise is called the first driver
+  //! Set the driver properties values, if "_id_" specified, the control unit search for the specified driver, otherwise is called the first driver
   /*!
                  */
   chaos::common::data::CDWUniquePtr _setDriverProperties(chaos::common::data::CDWUniquePtr data);
 
-
-//! Get the driver properties values,if "_id_" specified, the control unit search for the specified driver, otherwise is called the first driver
+  //! Get the driver properties values,if "_id_" specified, the control unit search for the specified driver, otherwise is called the first driver
   /*!
                  */
   chaos::common::data::CDWUniquePtr _getDriverProperties(chaos::common::data::CDWUniquePtr data);
 
-
-  // virtual get CU properties 
-  virtual chaos::common::data::CDWUniquePtr getProperty(chaos::common::data::CDWUniquePtr );
+  // virtual get CU properties
+  virtual chaos::common::data::CDWUniquePtr getProperty(chaos::common::data::CDWUniquePtr);
   // virtual set CU properties
-  virtual chaos::common::data::CDWUniquePtr setProperty(chaos::common::data::CDWUniquePtr );
-
+  virtual chaos::common::data::CDWUniquePtr setProperty(chaos::common::data::CDWUniquePtr);
 
   //! Return the state of the control unit
   /*!
@@ -520,8 +514,6 @@ class AbstractControlUnit : public DeclareAction,
   void _updateAcquistionTimestamp(uint64_t alternative_ts);
 
   void _updateRunScheduleDelay(uint64_t new_scehdule_delay);
-
-
 
   //!timer for update push metric
   void _updatePushRateMetric();
@@ -552,32 +544,39 @@ class AbstractControlUnit : public DeclareAction,
 
   virtual void consumerHandler(const chaos::common::message::ele_t& data);
 
- protected:
-   void addPublicDriverPropertyToDataset();
-    void updateDatasetFromDriverProperty();
-
-    template <typename T>
-   bool setDrvProp(const std::string &name, T value, uint32_t size){
-chaos::common::data::CDataWrapper cd,props;
-      cd.append(PROPERTY_VALUE_KEY,value);
-      props.append(name,cd);
-      for (int idx = 0;
-             idx != accessor_instances.size();
-             idx++) {
-                 chaos::common::data::CDWUniquePtr p=props.clone();
-                accessor_instances[idx]->setDrvProperties(p); 
-             }
+  template <typename T>
+  bool _setDrvProp(const std::string& name, const T& value, uint32_t size) {
+    chaos::common::data::CDataWrapper cd, props;
+    cd.append(PROPERTY_VALUE_KEY, value);
+    props.append(name, cd);
+    for (int idx = 0;
+         idx != accessor_instances.size();
+         idx++) {
+      chaos::common::data::CDWUniquePtr p = props.clone();
+      accessor_instances[idx]->setDrvProperties(p);
+    }
 
     return true;
-   }
-   /*
+  }
+
+ protected:
+  void addPublicDriverPropertyToDataset(bool addDriverHandlers = true);
+  void updateDatasetFromDriverProperty();
+
+  virtual bool setDrvProp(const std::string& name, const bool value, uint32_t size);
+  virtual bool setDrvProp(const std::string& name, const int32_t value, uint32_t size);
+  virtual bool setDrvProp(const std::string& name, const int64_t value, uint32_t size);
+  virtual bool setDrvProp(const std::string& name, const double value, uint32_t size);
+  virtual bool setDrvProp(const std::string& name, const std::string value, uint32_t size);
+
+  /*
    bool setDrvProp(const std::string &name, double value, uint32_t size=sizeof(double));
    bool setDrvProp(const std::string &name, const std::string& value, uint32_t size);
    bool setDrvProp(const std::string &name, const bool& value, uint32_t size=sizeof(bool));
 */
 
-   void goInFatalError(std::string msg,int err=-1000,std::string domain=__PRETTY_FUNCTION__);
-   virtual void fatalErrorHandler(const chaos::CException&ex);
+  void         goInFatalError(std::string msg, int err = -1000, std::string domain = __PRETTY_FUNCTION__);
+  virtual void fatalErrorHandler(const chaos::CException& ex);
 
   void useCustomHigResolutionTimestamp(bool _use_custom_high_resolution_timestamp);
   void setHigResolutionAcquistionTimestamp(uint64_t high_resolution_timestamp);
@@ -648,7 +647,6 @@ chaos::common::data::CDataWrapper cd,props;
                  */
   virtual bool unitRestoreToSnapshot(AbstractSharedDomainCache* const snapshot_cache);
 
-
   //!handler called  to perform a calibration on the unit
   /*!
                  This handler if defined perform a calibration for the given CU
@@ -656,8 +654,6 @@ chaos::common::data::CDataWrapper cd,props;
                  \return optional calibration data
     */
   virtual chaos::common::data::CDWUniquePtr unitPerformCalibration(chaos::common::data::CDWUniquePtr data);
-
-
 
   //! this andler is called befor the input attribute will be updated
   virtual void unitInputAttributePreChangeHandler();
@@ -691,7 +687,7 @@ chaos::common::data::CDataWrapper cd,props;
    * @param data pack
    * @return int return 0 if succefully handled
    */
-  virtual int incomingMessage(const std::string &key,const chaos::common::data::CDWShrdPtr& data);
+  virtual int incomingMessage(const std::string& key, const chaos::common::data::CDWShrdPtr& data);
 
   //!callback for put a veto on property value change request
   virtual bool propertyChangeHandler(const std::string&                       group_name,
@@ -735,7 +731,8 @@ chaos::common::data::CDataWrapper cd,props;
   // \param logmaxfreq_ms max frequence of logging error on DB (0 always, <0 never, >0 log frequency in ms)
   void addStateVariable(chaos::cu::control_manager::StateVariableType variable_type,
                         const std::string&                            state_variable_name,
-                        const std::string&                            state_variable_description,int32_t logmaxfreq_ms=5000);
+                        const std::string&                            state_variable_description,
+                        int32_t                                       logmaxfreq_ms = 5000);
 
   //!set the severity on all state_variable
   void setStateVariableSeverity(chaos::cu::control_manager::StateVariableType variable_type,
@@ -763,6 +760,9 @@ chaos::common::data::CDataWrapper cd,props;
                  to manage the burst
                  */
   void manageBurstQueue();
+
+  void addTag(const std::string& tname);
+  void removeTag(const std::string& tname);
 
   //! set the value on the busy flag
   void setBusyFlag(bool state);
@@ -852,10 +852,10 @@ chaos::common::data::CDataWrapper cd,props;
         if (ret->hasKey(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_TYPE)) {
           //assume attribute described in chaos format
           typ = ret->getInt32Value(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_TYPE);
-        } 
+        }
         if (ret->hasKey(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_DESCRIPTION)) {
           desc = ret->getStringValue(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_DESCRIPTION);
-        } 
+        }
       } else {
         typ = attribute_name.getValueType(name);
       }
