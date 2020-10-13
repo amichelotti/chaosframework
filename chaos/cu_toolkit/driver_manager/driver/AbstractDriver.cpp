@@ -330,7 +330,7 @@ void AbstractDriver::scanForMessage() {
     }
 
   } while (current_message_ptr == NULL ||
-           ((current_message_ptr->opcode != OpcodeType::OP_DEINIT_DRIVER) && (!driver_need_to_deinitialize)));
+           ((!driver_need_to_deinitialize)&&(current_message_ptr->opcode != OpcodeType::OP_DEINIT_DRIVER) ));
   ADLAPP_ << "Scanner thread terminated for driver[" << driver_uuid << "]";
 }
 
