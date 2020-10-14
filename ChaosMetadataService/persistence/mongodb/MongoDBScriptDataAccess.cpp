@@ -160,7 +160,7 @@ int MongoDBScriptDataAccess::updateScript(ChaosUniquePtr<chaos::common::data::CD
 
     try {
         mongo::BSONObj q = BSON("seq"<< (long long)uid<<
-                                chaos::ExecutionUnitNodeDefinitionKey::CHAOS_SBD_NAME << name);
+                                chaos::ExecutionUnitNodeDefinitionKey::CHAOS_SBD_NAME << description_name);
         
         
         mongo::BSONObj u(serialization->getBSONRawData(size));

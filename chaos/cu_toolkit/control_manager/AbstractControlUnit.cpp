@@ -2417,7 +2417,13 @@ int AbstractControlUnit::pushCustomDataset() {
 int AbstractControlUnit::pushSystemDataset() {
   int             err                    = 0;
   AttributeCache& system_attribute_cache = attribute_value_shared_cache->getSharedDomain(DOMAIN_SYSTEM);
-  if (!system_attribute_cache.hasChanged()) return err;
+  uint64_t tscor = TimingUtil::getTimeCorStamp();
+  if ((tscor - last_push) < ds_update_anyway) {
+    //check if something as changed
+    if (!system_attribute_cache.hasChanged()) {
+      return err;
+    }
+  }
   //get the cdatawrapper for the pack
   int64_t cur_us = TimingUtil::getTimeStampInMicroseconds();
   if (key_data_storage.get() == NULL) {
@@ -2427,9 +2433,10 @@ int AbstractControlUnit::pushSystemDataset() {
   }
   CDWShrdPtr system_attribute_dataset = key_data_storage->getNewDataPackForDomain(KeyDataStorageDomainSystem);
   if (system_attribute_dataset.get()) {
+
     system_attribute_dataset->addInt64Value(ControlUnitDatapackCommonKey::RUN_ID, run_id);
     //input dataset timestamp is added only when pushed on cache
-    system_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_TIMESTAMP, TimingUtil::getTimeCorStamp());
+    system_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_TIMESTAMP, tscor);
     system_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_HIGH_RESOLUTION_TIMESTAMP, cur_us);
     //fill the dataset
     fillCDatawrapperWithCachedValue(cache_system_attribute_vector, *system_attribute_dataset);
