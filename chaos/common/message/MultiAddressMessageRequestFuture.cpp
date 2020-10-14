@@ -112,7 +112,9 @@ bool MultiAddressMessageRequestFuture::wait() {
                                                                                CHECK_NULL_MESSAGE(message_pack),
                                                                                last_used_address);
             if(current_future.get() == NULL) {
-                MAMRF_ERR << "Retramission has not ben possible, no other server are available";
+                std::string msg=((message_pack.get())?message_pack->getJSONString():"");
+
+                MAMRF_ERR << "Retramission has not ben possible, no other server are available:dom:"<<action_domain<<" act:"<<action_name<<" msg:"<<msg<<" last used address:"<<last_used_address;
                 working = false;
             }
         }
