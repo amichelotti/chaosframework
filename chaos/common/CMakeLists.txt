@@ -179,7 +179,8 @@ MESSAGE("ENABLING RDK KAFKA")
 
 ExternalProject_Add(
 	 librdkafa
-	 GIT_REPOSITORY https://github.com/edenhill/librdkafka.git
+#	 GIT_REPOSITORY https://github.com/edenhill/librdkafka.git
+	 GIT_REPOSITORY https://github.com/amichelotti/librdkafka.git
 
      PREFIX "${CMAKE_BINARY_DIR}/ext_dep/librdkafka-prefix"
 	 SOURCE_DIR "${CMAKE_BINARY_DIR}/ext_dep/librdkafka-src"
