@@ -217,7 +217,9 @@ int MongoDBNodeDataAccess::updateNode(chaos::common::data::CDataWrapper& node_de
         }
         if(node_description.hasKey(chaos::NodeDefinitionKey::NODE_DESC)) {
             updated_field << chaos::NodeDefinitionKey::NODE_DESC << node_description.getStringValue(chaos::NodeDefinitionKey::NODE_DESC);
-        
+        }
+         if(node_description.hasKey(chaos::NodeDefinitionKey::NODE_REST_PORT)) {
+            updated_field << chaos::NodeDefinitionKey::NODE_REST_PORT << node_description.getInt32Value(chaos::NodeDefinitionKey::NODE_REST_PORT);
         }
         if(node_description.hasKey(chaos::RpcActionDefinitionKey::CS_CMDM_ACTION_DESC)) {
             CMultiTypeDataArrayWrapperSPtr description_array(node_description.getVectorValue(chaos::RpcActionDefinitionKey::CS_CMDM_ACTION_DESC));

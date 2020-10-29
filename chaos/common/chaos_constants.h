@@ -240,6 +240,13 @@ namespace chaos {
          that is given by the network broker where the node si attacched.
          */
         static const char * const NODE_RPC_ADDR         = "ndk_rpc_addr";
+
+         //! identify the node rest port if any
+        /*!
+         
+         */
+        static const char * const NODE_REST_PORT         = "ndk_rest_port";
+        
         
         //! identify the node rpc address[string:string]
         /*!

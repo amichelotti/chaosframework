@@ -170,6 +170,7 @@ ChaosUniquePtr<chaos::common::data::CDataWrapper> AgentRegister::getAgentRegistr
                           TimingUtil::getTimeStamp());
     result->addStringValue(AgentNodeDefinitionKey::WORKING_DIRECTORY,
                            ChaosAgent::getInstance()->settings.working_directory);
+    result->addInt32Value(NodeDefinitionKey::NODE_REST_PORT,ChaosAgent::getInstance()->settings.restport);
     //add control unit alias
     for(MapWorkerIterator iter = map_worker.begin();
         iter != map_worker.end();

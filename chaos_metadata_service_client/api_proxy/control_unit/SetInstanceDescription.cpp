@@ -104,10 +104,15 @@ ApiProxyResult SetInstanceDescription::execute(SetInstanceDescriptionHelper& api
 ApiProxyResult SetInstanceDescription::execute(const std::string& uid,chaos::common::data::CDataWrapper& instance_description){
     CDWUniquePtr message(new CDataWrapper());
     //add the control unit unique id
+    
     message->addStringValue(chaos::NodeDefinitionKey::NODE_UNIQUE_ID, uid);
     // set the type for control unit
-    message->addStringValue(chaos::NodeDefinitionKey::NODE_TYPE, chaos::NodeType::NODE_TYPE_CONTROL_UNIT);
-    
+    if(instance_description.hasKey(chaos::NodeDefinitionKey::NODE_TYPE)){
+     message->addStringValue(chaos::NodeDefinitionKey::NODE_TYPE, instance_description.getStringValue(chaos::NodeDefinitionKey::NODE_TYPE));
+
+    } else {
+     message->addStringValue(chaos::NodeDefinitionKey::NODE_TYPE, chaos::NodeType::NODE_TYPE_CONTROL_UNIT);
+    }
     
     message->addCSDataValue("instance_description", instance_description);
     return callApi(message);
