@@ -178,15 +178,13 @@ CDWUniquePtr GetSetFullUnitServer::execute(CDWUniquePtr api_data) {
     } else {
         CDataWrapper tot_res;
         chaos::common::data::CDataWrapper *result = NULL;
-        CDataWrapper *res;
+        CDataWrapper *desc;
         // read US
         tot_res.addStringValue("ndk_uid",us_uid);
-        if((err = us_da->getDescription(us_uid, &res))) {
+        if((err = us_da->getDescription(us_uid, &desc))) {
             LOG_AND_TROW(US_ACT_ERR, err, "Error fetching unit server decription")
         }
-        if(res->hasKey(NodeDefinitionKey::NODE_DESC)){
-            tot_res.addStringValue(NodeDefinitionKey::NODE_DESC,res->getStringValue(NodeDefinitionKey::NODE_DESC));
-        }
+       
         std::vector<ChaosSharedPtr<CDataWrapper> > page_result;
         uint32_t last_sequence_id = 0;
         uint32_t page_length = 1000;
@@ -223,6 +221,9 @@ CDWUniquePtr GetSetFullUnitServer::execute(CDWUniquePtr api_data) {
                 tot_res.finalizeArrayForKey("cu_desc");
             }
             result->addCSDataValue("us_desc",tot_res);
+            if(desc){
+                result->appendAllElement(*desc);
+            }
             return CDWUniquePtr(result);
         }
     }

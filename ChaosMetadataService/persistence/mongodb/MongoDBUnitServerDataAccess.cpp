@@ -223,10 +223,12 @@ int MongoDBUnitServerDataAccess::getDescription(const std::string& unit_server_u
     if((err = node_data_access->getNodeDescription(unit_server_uid,
                                                    unit_server_description))) {
         MDBUSDA_ERR << "Error fetching the base node attribute with code:" << err;
-    } else if(!*unit_server_description) {
+    } 
+    
+    if(!*unit_server_description) {
         MDBUSDA_ERR << "No data basic node attribute found for unit server" << unit_server_uid;
         err = -1;
-    }else{
+    } else{
         //fetch the other unit server attribute
         mongo::BSONObj q =  BSON(chaos::NodeDefinitionKey::NODE_UNIQUE_ID << unit_server_uid);
         mongo::BSONObj p =  BSON(chaos::UnitServerNodeDefinitionKey::UNIT_SERVER_HOSTED_CONTROL_UNIT_CLASS << 1);
