@@ -279,6 +279,9 @@ namespace chaos {
         
         //! brief node host name [string]
         static const char * const NODE_HOST_NAME        = "ndk_host_name";
+
+        //! brief node build information [JSOJ string]
+        static const char * const NODE_BUILD_INFO        = "ndk_build_info";
     }
     /** @} */ // end of NodeDefinitionKey
     
