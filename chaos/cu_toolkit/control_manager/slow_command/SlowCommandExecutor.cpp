@@ -167,17 +167,20 @@ void SlowCommandExecutor::handleCommandEvent(const std::string& command_alias,
                 const std::string message = command_info->command_and_fault->getStringValue(MetadataServerLoggingDefinitionKeyRPC::ErrorLogging::PARAM_NODE_LOGGING_LOG_ERROR_MESSAGE);
                 const std::string domain = command_info->command_and_fault->getStringValue(MetadataServerLoggingDefinitionKeyRPC::ErrorLogging::PARAM_NODE_LOGGING_LOG_ERROR_DOMAIN);
                 
-                //log error on metadata server
-                error_logging_channel->logError(control_unit_instance->getCUID(),
-                                                command_alias,
-                                                code,
-                                                message,
-                                                domain);
+                
                 if(type==BatchCommandEventType::EVT_FATAL_FAULT){
                     CFatalException ex(code, message, domain);
                     //async go into recoverable error
                    // boost::thread(boost::bind(&AbstractControlUnit::_goInRecoverableError, control_unit_instance, ex)).detach();
+                    //log error on metadata server
+                    error_logging_channel->logError(control_unit_instance->getCUID(),
+                                                command_alias,
+                                                code,
+                                                message,
+                                                domain);
                     boost::thread(boost::bind(&AbstractControlUnit::_goInFatalError, control_unit_instance, ex)).detach();
+                } else {
+                    control_unit_instance->setAlarm("command_fault",2);
                 }
             }
             sys_cache.getValueSettingByName(ControlUnitDatapackSystemKey::RUNNING_COMMAND_ALIAS)->setStringValue("");
@@ -189,7 +192,10 @@ void SlowCommandExecutor::handleCommandEvent(const std::string& command_alias,
         case BatchCommandEventType::EVT_COMPLETED:
         case BatchCommandEventType::EVT_KILLED:
         case BatchCommandEventType::EVT_DEQUEUE:
+
         case BatchCommandEventType::EVT_QUEUED: {
+            control_unit_instance->setAlarm("command_fault",0);
+
 //            if(command_info &&
 //               command_info->cmdImpl) {
 //                sys_cache.getValueSettingByName(ControlUnitDatapackSystemKey::RUNNING_COMMAND_ALIAS)->setStringValue(command_info->cmdImpl->getAlias(), true, true);
@@ -199,6 +205,7 @@ void SlowCommandExecutor::handleCommandEvent(const std::string& command_alias,
             break;
         }
         case BatchCommandEventType::EVT_RUNNING:{
+
             sys_cache.getValueSettingByName(ControlUnitDatapackSystemKey::RUNNING_COMMAND_ALIAS)->setStringValue(command_info->cmdImpl->getAlias(), true, true);
            if(*sys_cache.getValueSettingByName(ControlUnitDatapackSystemKey::SETPOINT_STATE)->getValuePtr<int32_t>()==3){
                // in case we have successfully reached a setpoint, a command will reset the tags and state

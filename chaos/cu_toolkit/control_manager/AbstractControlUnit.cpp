@@ -319,6 +319,17 @@ const std::string& AbstractControlUnit::getCUType() {
   return control_unit_type;
 }
 
+  void AbstractControlUnit::setAlarm(const std::string& name,int level){
+     common::alarm::MultiSeverityAlarmLevel lvl=MultiSeverityAlarmLevelClear;
+     if(level==1){
+       lvl=MultiSeverityAlarmLevelWarning;
+     } else if(level>=2){
+       lvl=MultiSeverityAlarmLevelHigh;
+     }
+        setStateVariableSeverity(StateVariableTypeAlarmCU, name, lvl);
+
+  }
+
 /*
      fill the CDataWrapper with AbstractCU system configuration, this method
      is called after getStartConfiguration directly by sandbox. in this method

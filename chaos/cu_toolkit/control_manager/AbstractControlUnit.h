@@ -802,7 +802,8 @@ class AbstractControlUnit : public DeclareAction,
                                                                      attribute_name,
                                                                      handler_ptr);
   }
-
+  
+  void setAlarm(const std::string& name,int level);
   template <typename O>
   bool addVariantHandlerOnInputAttributeName(O*                                                                                          object_reference,
                                              typename handler::DatasetAttributeVariantHandlerDescription<O>::HandlerDescriptionActionPtr handler_ptr,
