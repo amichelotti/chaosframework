@@ -29,7 +29,7 @@ namespace chaos {
     namespace common {
         namespace data {
             class CDataBuffer;
-            
+            class CDataWrapper;
             //!type def for shamrt pointer
             typedef ChaosUniquePtr<chaos::common::data::CDataBuffer> CDBufferUniquePtr;
             //!type def for shamrt pointer
@@ -122,6 +122,8 @@ namespace chaos {
                  * @return CDataBuffer& 
                  */
                 CDataBuffer& operator=(CDataBuffer const &rhs);
+
+                ChaosUniquePtr<chaos::common::data::CDataWrapper> getAsCDW();
             };
         }
     }

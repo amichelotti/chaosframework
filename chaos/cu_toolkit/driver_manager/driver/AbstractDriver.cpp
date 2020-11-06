@@ -129,14 +129,14 @@ const bool AbstractDriver::isDriverParamInJson() const {
 /*------------------------------------------------------
  
  ------------------------------------------------------*/
-bool AbstractDriver::getNewAccessor(DriverAccessor **newAccessor) {
+bool AbstractDriver::getNewAccessor(DriverAccessor **newAccessor,const std::string& owner) {
   //allocate new accessor;
   DriverAccessor *result = new DriverAccessor(accessor_count++);
   if (result) {
     //set the parent uuid
     result->driver_uuid = driver_uuid;
     result->driverName  = driverName;
-
+    result->owner.push_back(owner);
     result->command_queue = command_queue.get();
     boost::unique_lock<boost::shared_mutex> lock(accesso_list_shr_mux);
     accessors.push_back(result);
@@ -179,6 +179,7 @@ void AbstractDriver::scanForMessage() {
   do {
     //wait for the new command
     command_queue->wait_and_pop(current_message_ptr);
+    
     //check i opcode pointer is valid
     if (current_message_ptr == NULL) {
       continue;

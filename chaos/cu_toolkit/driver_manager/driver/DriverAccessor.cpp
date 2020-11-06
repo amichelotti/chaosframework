@@ -46,18 +46,32 @@ DriverAccessor::~DriverAccessor() {}
 /*------------------------------------------------------
  
  ------------------------------------------------------*/
+uint64_t DriverAccessor::getMessageCount(){
+    return messages_count;
+
+}
+
 bool DriverAccessor::send(DrvMsgPtr cmd,
                           uint32_t  inc_priority) {
+    static int counter=0;
     CHAOS_ASSERT(cmd)
     ResponseMessageType answer_message = 0;
+    {
+        //boost::unique_lock<boost::shared_mutex> lock(mutex_queue);
+
     //fill the cmd with the information for retrieve it
-    cmd->id            = messages_count++;
-    cmd->drvResponseMQ = &accessor_sync_mq;
-    cmd->device_param = device_param;
-    //send command
-    command_queue->push(cmd, base_opcode_priority + inc_priority);
+        cmd->id            = messages_count++;
+        cmd->drvResponseMQ = &accessor_sync_mq;
+        cmd->device_param = device_param;
+        //send command
+       // command_queue->push(cmd, base_opcode_priority + inc_priority);
+        command_queue->push(cmd);
+    //LDBG_<<owner<<" ["<<counter<<"] send opcode:"<<cmd->opcode;
+    }
     //whait the answer
     accessor_sync_mq.wait_and_pop(answer_message);
+  //  LDBG_<<owner<<" ["<<counter<<"] returned :"<<cmd->opcode;
+    counter++;
     if((*cmd->err_msg!=0) && (*cmd->err_dom!=0)&& (cmd->ret!=0)){
         LDBG_<<"Launch Exception msg:"<<cmd->err_msg<<" dom:"<<cmd->err_dom<<" ret:"<<cmd->ret;
         throw chaos::CFatalException(cmd->ret,cmd->err_msg,cmd->err_dom);
@@ -77,7 +91,8 @@ bool DriverAccessor::sendAsync(DrvMsgPtr cmd, ResponseMessageType& message_id, u
     cmd->drvResponseMQ   = &accessor_async_mq;
     cmd->device_param = device_param;
     //send message
-    command_queue->push(cmd, base_opcode_priority + inc_priority);
+  //  command_queue->push(cmd, base_opcode_priority + inc_priority);
+  command_queue->push(cmd);
     return true;
 }
 
@@ -85,7 +100,7 @@ bool DriverAccessor::sendAsync(DrvMsgPtr cmd, ResponseMessageType& message_id, u
  
  ------------------------------------------------------*/
 bool DriverAccessor::getLastAsyncMsg(ResponseMessageType& message_id) {
-    return accessor_sync_mq.try_pop(message_id);
+    return accessor_sync_mq.pop(message_id);
 }
 
 /*------------------------------------------------------

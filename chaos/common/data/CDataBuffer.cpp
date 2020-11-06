@@ -20,7 +20,7 @@
  */
 
 #include <chaos/common/data/CDataBuffer.h>
-
+#include "CDataWrapper.h"
 #include <cstring>
 #include <stdlib.h>
 
@@ -52,6 +52,13 @@ const char *CDataBuffer::getBuffer() const {
 
 std::size_t CDataBuffer::getBufferSize() const {
     return internal_buffer.size();
+}
+CDWUniquePtr CDataBuffer::getAsCDW(){
+    if(internal_buffer.data()){
+        CDataWrapper cd(internal_buffer.data());
+        return cd.clone();
+    }
+    return CDWUniquePtr();
 }
 
 CDBufferUniquePtr CDataBuffer::newOwnBufferFromBuffer(char * buffer,

@@ -409,7 +409,7 @@ namespace chaos {
                                 
                             case RDConnectionPhaseConfigured:
                                 //we can proceeed
-                                AbstractRemoteIODriver_DBG<<" Configuration OK!, start working";
+                              //  AbstractRemoteIODriver_DBG<<" Configuration OK!, start working";
                                 break;
                         }
                         return err;

@@ -161,11 +161,12 @@ int MongoDBNodeDataAccess::insertNewNode(CDataWrapper& node_description) {
         
         ChaosUniquePtr<SerializationBuffer> ser(node_description.getBSONData());
         mongo::BSONObj obj_to_insert(ser->getBufferPtr());
-        
+        MDBNDA_DBG<<"inserting:"<<node_description.getCompliantJSONString();
         DEBUG_CODE(MDBNDA_DBG<<log_message("insertNewNode",
                                            "insert",
                                            DATA_ACCESS_LOG_1_ENTRY("Query",
                                                                    obj_to_insert));)
+
         
         if((err = connection->insert(MONGO_DB_COLLECTION_NAME(MONGODB_COLLECTION_NODES),
                                      obj_to_insert))) {
@@ -453,7 +454,7 @@ int MongoDBNodeDataAccess::searchNode(chaos::common::data::CDataWrapper **result
     //compose query
     
     //filter on sequence
-    if(search_type!=chaos::NodeType::NodeSearchType::node_type_cds){
+    if((search_type!=chaos::NodeType::NodeSearchType::node_type_cds)&&(search_type!=chaos::NodeType::NodeSearchType::node_type_all_server)){
         bson_find_and << BSON( "seq" << BSON("$gt"<<last_unique_id));
     }
     
@@ -485,7 +486,13 @@ int MongoDBNodeDataAccess::searchNode(chaos::common::data::CDataWrapper **result
 
             bson_find_and << BSON( chaos::NodeDefinitionKey::NODE_TYPE << type_of_node);
         } else {
-                MDBNDA_DBG << "QUERY EVERITHING but:"<<criteria;
+                MDBNDA_DBG << "QUERY SERVER but:"<<criteria;
+                bson_find_or<<BSON( chaos::NodeDefinitionKey::NODE_TYPE << chaos::NodeType::NODE_TYPE_ROOT)<<
+                BSON( chaos::NodeDefinitionKey::NODE_TYPE << chaos::NodeType::NODE_TYPE_UNIT_SERVER)<<
+                BSON( chaos::NodeDefinitionKey::NODE_TYPE << chaos::NodeType::NODE_TYPE_WAN_PROXY)<<
+                BSON( chaos::NodeDefinitionKey::NODE_TYPE << chaos::NodeType::NODE_TYPE_AGENT)<<
+                BSON( chaos::NodeDefinitionKey::NODE_TYPE << chaos::NodeType::NODE_TYPE_DATA_SERVICE);
+                bson_find_and<<BSON("$or"<<bson_find_or.arr());
 
         }
     }
@@ -494,7 +501,9 @@ int MongoDBNodeDataAccess::searchNode(chaos::common::data::CDataWrapper **result
     if(alive_only){bson_find_and << getAliveOption(6);}
 #endif    
     //compose the 'or' condition for all token of unique_id filed
-    bson_find_and << BSON("$or" << getSearchTokenOnFiled(criteria, chaos::NodeDefinitionKey::NODE_UNIQUE_ID));
+    if(criteria.size()>0){
+        bson_find_and << BSON("$or" << getSearchTokenOnFiled(criteria, chaos::NodeDefinitionKey::NODE_UNIQUE_ID));
+    }
     if(impl.size()>0){
             bson_find_and << BSON("$or" << getSearchTokenOnFiled(impl, "instance_description.control_unit_implementation"));
 

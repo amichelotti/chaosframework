@@ -212,7 +212,7 @@ void AbstractControlUnit::_initDrivers() {
   for (int idx = 0;
        idx != unit_needed_drivers.size();
        idx++) {
-    driver_manager::driver::DriverAccessor* accessor_instance = driver_manager::DriverManager::getInstance()->getNewAccessorForDriverInstance(unit_needed_drivers[idx]);
+    driver_manager::driver::DriverAccessor* accessor_instance = driver_manager::DriverManager::getInstance()->getNewAccessorForDriverInstance(unit_needed_drivers[idx],control_unit_id);
     accessor_instances.push_back(accessor_instance);
   }
 }

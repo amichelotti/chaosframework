@@ -29,7 +29,7 @@
 
 #include <chaos/common/data/CDataWrapper.h>
 #include <chaos/common/utility/Atomic.h>
-#include <chaos/common/thread/TemplatedConcurrentQueue.h>
+#include <chaos/common/thread/TLockFreeQueue.h>
 #ifdef __GNUC__
 #ifndef UINT16_MAX
 #define UINT16_MAX 65535
@@ -100,8 +100,11 @@ namespace chaos{
 
                 
                 //typedef boost::interprocess::message_queue drvqueue_t;
-                typedef chaos_thread_ns::TemplatedConcurrentQueue<DrvMsg*> DriverQueueType;
-                typedef chaos_thread_ns::TemplatedConcurrentQueue<ResponseMessageType> AccessorQueueType;
+               // typedef chaos_thread_ns::TemplatedConcurrentQueue<DrvMsg*> DriverQueueType;
+                typedef chaos_thread_ns::TLockFreeQueue<DrvMsg*,256> DriverQueueType;
+
+                //typedef chaos_thread_ns::TemplatedConcurrentQueue<ResponseMessageType> AccessorQueueType;
+                typedef chaos_thread_ns::TLockFreeQueue<ResponseMessageType,256> AccessorQueueType;
 
 #define DRVMSG_ERR_MSG_SIZE 255
 #define DRVMSG_ERR_DOM_SIZE 255

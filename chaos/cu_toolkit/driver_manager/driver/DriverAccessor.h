@@ -59,6 +59,8 @@ namespace chaos{
                     std::string driverName;
                     //! identificaiton of the driver that has created the accessor
 					std::string driver_uuid;
+
+                    std::vector<std::string> owner;
 					
                     //specified isntance driver parameter
                     /*!
@@ -105,7 +107,8 @@ namespace chaos{
                     
                     //Private destructor
                     ~DriverAccessor();
-                    
+                    //!Mutex for priority queue managment
+				    boost::shared_mutex    mutex_queue;
                 public:
                     
                     //! base priority of the accessor(the default value is 50)
@@ -176,7 +179,8 @@ namespace chaos{
                     std::string getUID() const;
                     std::string getDriverName() const;
                     std::string getLastError();
-
+                    std::vector<std::string> getOwner(){return owner;}
+                    uint64_t getMessageCount();
                 };
             }
         }

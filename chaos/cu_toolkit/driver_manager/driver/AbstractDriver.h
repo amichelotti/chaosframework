@@ -164,7 +164,7 @@ namespace chaos{
                         the message queue for comunicating with this driver is
                         allocated.
                      */
-                    bool getNewAccessor(DriverAccessor **newAccessor);
+                    bool getNewAccessor(DriverAccessor **newAccessor,const std::string& owner="");
                     
                     //! Dispose and accessor
                     /*!
