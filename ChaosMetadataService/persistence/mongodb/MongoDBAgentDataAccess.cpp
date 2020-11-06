@@ -68,10 +68,10 @@ int MongoDBAgentDataAccess::insertUpdateAgentDescription(CDataWrapper& agent_des
 
         if(presence == false) {
             //create new empty node
-            CDataWrapper new_node;
-            new_node.addStringValue(NodeDefinitionKey::NODE_UNIQUE_ID, agent_uid);
-            new_node.addStringValue(NodeDefinitionKey::NODE_TYPE,  NodeType::NODE_TYPE_AGENT);
-            if((err = node_data_access->insertNewNode(new_node))) {
+          //  CDataWrapper new_node;
+          //  new_node.addStringValue(NodeDefinitionKey::NODE_UNIQUE_ID, agent_uid);
+          //  new_node.addStringValue(NodeDefinitionKey::NODE_TYPE,  NodeType::NODE_TYPE_AGENT);
+            if((err = node_data_access->insertNewNode(agent_description))) {
                 ERR << CHAOS_FORMAT("Error creating a new node structure for agent %1% with error %2%" , %agent_uid%err);
                 return err;
             } else if((err = node_data_access->addAgeingManagementDataToNode(agent_uid))) {
