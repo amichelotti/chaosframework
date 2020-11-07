@@ -155,7 +155,7 @@ int DirectIODispatcher::priorityDataReceived(DirectIODataPackSPtr data_pack,
         api_err = endpoint_slot_array[data_pack->header.dispatcher_header.fields.route_addr]->endpoint->priorityDataReceived(MOVE(data_pack),
                                                                                                                              synchronous_answer);
     } else {
-        DIOD_LERR_ << "The endpoint address " << tmp_addr << "is disable";
+        DIOD_LERR_ << "The endpoint address " << tmp_addr << " is disable";
         return -2;
     }
     if(synchronous_answer.get()) {

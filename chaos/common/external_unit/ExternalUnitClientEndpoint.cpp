@@ -41,14 +41,14 @@ int ExternalUnitClientEndpoint::sendMessage(const std::string& connection_identi
    // already locked on sendData
    // LExternalUnitConnectionReadLock rl = current_connection.getReadLockObject();
    static int counter=0;
-   DBG<<counter<<"] "<<connection_identifier<<" sending "<<message->getCompliantJSONString();
+  // DBG<<counter<<"] "<<connection_identifier<<" sending "<<message->getCompliantJSONString();
     if(current_connection() == NULL) {
         return -1;
     }
 
     int ret=current_connection()->sendData(MOVE(message),
                                           opcode);
-    DBG<<counter<<"] "<<connection_identifier<<" sent ";
+ //   DBG<<counter<<"] "<<connection_identifier<<" sent ";
     counter++;
     //send data to the coneection
     return ret;

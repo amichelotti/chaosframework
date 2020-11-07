@@ -51,6 +51,9 @@ namespace chaos {
                 boost::condition_variable some_read;
 
             public:
+                ~TLockFreeQueue(){                              
+                     some_read.notify_all();
+                 the_condition_variable.notify_all();}
                 TLockFreeQueue():maxsize(N),element_queue(N){};
                 int push(T const& data) {
                     if(element_queue.push(data)){
