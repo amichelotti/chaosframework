@@ -71,7 +71,7 @@ MsgManagmentResultType::MsgManagmentResult BasicIODriver::execOpcode(DrvMsgPtr c
                     int ch=cmd->parm[0];
                     int sizeb=cmd->parm[1];
                     cmd->resultDataLength= sizeb;
-                    BasicIODriverLDBG_<<"Read add:"<<ch<<" size:"<<sizeb;
+                  //  BasicIODriverLDBG_<<"Read add:"<<ch<<" size:"<<sizeb;
                     cmd->ret=read(cmd->resultData,ch,sizeb);
                     break;
                 }
@@ -81,7 +81,7 @@ MsgManagmentResultType::MsgManagmentResult BasicIODriver::execOpcode(DrvMsgPtr c
                     int sizeb=cmd->parm[1];
 
                     cmd->inputDataLength= sizeb;
-                    BasicIODriverLDBG_<<"Write add:"<<ch<<" size:"<<sizeb;
+              //      BasicIODriverLDBG_<<"Write add:"<<ch<<" size:"<<sizeb;
                     cmd->ret=write(cmd->inputData,ch,sizeb);
                     break;
                 }
@@ -91,20 +91,20 @@ MsgManagmentResultType::MsgManagmentResult BasicIODriver::execOpcode(DrvMsgPtr c
                     int sizeb=cmd->parm[1];
 
                     cmd->inputDataLength= sizeb;
-                    BasicIODriverLDBG_<<"iop :"<<op<<" size:"<<sizeb;
+                //    BasicIODriverLDBG_<<"iop :"<<op<<" size:"<<sizeb;
                     cmd->ret=iop(op,cmd->inputData,sizeb);
                     break;
                 }
                 
                 case BasicIODriverOpcode_INIT:{
-                    BasicIODriverLDBG_<<"Init";
+                //    BasicIODriverLDBG_<<"Init";
                     int sizeb=cmd->parm[0];
                     cmd->inputDataLength=sizeb;
                     cmd->ret=initIO(cmd->inputData,sizeb);
                     break;
                 }
                 case BasicIODriverOpcode_DEINIT:{
-                    BasicIODriverLDBG_<<"DeInit";
+                //    BasicIODriverLDBG_<<"DeInit";
 
                     cmd->ret=deinitIO();
                     break;
