@@ -62,6 +62,7 @@ namespace chaos {
                         the_condition_variable.notify_all();
                         return size;
                     } else {
+                        LDBG_<<"Queue FULL";
                         boost::mutex::scoped_lock lock(mutex_read);
                         some_read.wait(lock); 
                     }
@@ -71,6 +72,8 @@ namespace chaos {
                         the_condition_variable.notify_all();
                         return size;
                     }
+                    LERR_<<"Queue Error pushing";
+
                     return -1;
                 }
                 
@@ -116,13 +119,9 @@ namespace chaos {
                     if(pop(popped_value)){
                             return size;
                     }
-                        
+                    LERR_<<"Queue Error pop";
                     return -1;
-                    }
-
-
-                 
-                
+                }     
                 
             };
         }

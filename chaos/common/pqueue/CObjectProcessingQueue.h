@@ -147,7 +147,11 @@ namespace chaos {
             virtual bool push(QueueElementShrdPtr data) {
                 boost::unique_lock<boost::mutex> lock(qMutex);
                 if(in_deinit ||
-                   buffer_queue.size() > CObjectProcessingQueue_MAX_ELEMENT_IN_QUEUE) return false;
+                   (buffer_queue.size() > CObjectProcessingQueue_MAX_ELEMENT_IN_QUEUE)) {
+                        COPQUEUE_LERR_ << "cannot push deinit:"<<in_deinit<<" size:"<<buffer_queue.size();
+
+                       return false;
+                   }
                 buffer_queue.push(MOVE(data));
                 liveThreadConditionLock.notify_one();
                 return true;
