@@ -119,7 +119,7 @@ namespace chaos {
                     if(pop(popped_value)){
                             return size;
                     }
-                    LERR_<<"Queue Error pop";
+                    LERR_<<"Queue Error pop size:"<<size;
                     return -1;
                 }     
                 
