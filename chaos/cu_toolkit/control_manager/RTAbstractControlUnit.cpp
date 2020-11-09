@@ -187,12 +187,20 @@ void RTAbstractControlUnit::deinit() {
 void RTAbstractControlUnit::threadStartStopManagment(bool startAction) {
     try{
         if(startAction) {
-            if(scheduler_thread.get() && scheduler_run){
+            if(!scheduler_thread.get()){
+                RTCULERR_ << "invalid thread";
+                return;
+            }
+            if( scheduler_run){
                 RTCULAPP_ << "thread already running";
                 return;
             }
             scheduler_run = true;
             scheduler_thread.reset(new boost::thread(boost::bind(&RTAbstractControlUnit::executeOnThread, this)));
+             if(!scheduler_thread.get()){
+                RTCULERR_ << "Cannot allocate thread";
+                return;
+            }
 #if defined(__linux__) || defined(__APPLE__)
             int retcode;
             int policy;
