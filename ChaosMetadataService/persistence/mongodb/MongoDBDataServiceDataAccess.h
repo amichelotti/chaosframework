@@ -56,7 +56,8 @@ namespace chaos {
                     int registerNode(const std::string& ds_zone,
                                      const std::string& ds_unique_id,
                                      const std::string& ds_direct_io_addr,
-                                     uint32_t endpoint);
+                                     uint32_t endpoint,
+                                     const chaos::common::data::CDWUniquePtr=chaos::common::data::CDWUniquePtr());
                     
                     //inherited method
 //                    int updateNodeStatistic(const std::string& ds_unique_id,

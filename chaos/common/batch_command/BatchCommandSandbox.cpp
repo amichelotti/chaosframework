@@ -137,6 +137,10 @@ void BatchCommandSandbox::start()  {
     //allocate thread
     thread_scheduler.reset(new boost::thread(boost::bind(&BatchCommandSandbox::runCommand, this)));
     thread_next_command_checker.reset(new boost::thread(boost::bind(&BatchCommandSandbox::checkNextCommand, this)));
+    if(!thread_scheduler.get() || !thread_next_command_checker.get()){
+        SCSLERR_<<"Cannot create thread scheduler || thread_next_";
+        return;
+    }
     DEBUG_CODE(SCSLDBG_ << "Allocated thread for the scheduler runCommand "<<std::hex<<thread_scheduler->native_handle()<<" and checker "<< thread_next_command_checker->native_handle()<<std::dec;);
     
     //set the scheduler thread priority

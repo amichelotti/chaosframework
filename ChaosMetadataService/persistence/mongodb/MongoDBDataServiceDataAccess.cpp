@@ -96,7 +96,7 @@ int MongoDBDataServiceDataAccess::getDescription(const std::string& ds_unique_id
 int MongoDBDataServiceDataAccess::registerNode(const std::string& ds_zone,
                                                const std::string& ds_unique_id,
                                                const std::string& ds_direct_io_addr,
-                                               uint32_t endpoint) {
+                                               uint32_t endpoint,const chaos::common::data::CDWUniquePtr info) {
     int err = 0;
     CHAOS_ASSERT(node_data_access)
     
@@ -104,11 +104,21 @@ int MongoDBDataServiceDataAccess::registerNode(const std::string& ds_zone,
         //now update proprietary fields
         mongo::BSONObj query = BSON(NodeDefinitionKey::NODE_UNIQUE_ID << ds_unique_id
                                     << NodeDefinitionKey::NODE_TYPE << NodeType::NODE_TYPE_DATA_SERVICE);
-        
-        mongo::BSONObj update = BSON("$set" << BSON(NodeDefinitionKey::NODE_DIRECT_IO_ADDR << ds_direct_io_addr <<
+        mongo::BSONObj update;
+        if(info.get()){
+            info->addStringValue(NodeDefinitionKey::NODE_DIRECT_IO_ADDR,ds_direct_io_addr);
+            info->addStringValue(DataServiceNodeDefinitionKey::DS_HA_ZONE,ds_zone);
+            info->addInt32Value(DataServiceNodeDefinitionKey::DS_DIRECT_IO_ENDPOINT,endpoint);
+
+            ChaosUniquePtr<SerializationBuffer> chaos_bson(info->getBSONData());
+            update = BSON("$set" << mongo::BSONObj(chaos_bson->getBufferPtr()));
+        } else {
+            update= BSON("$set" << BSON(NodeDefinitionKey::NODE_DIRECT_IO_ADDR << ds_direct_io_addr <<
                                                     DataServiceNodeDefinitionKey::DS_DIRECT_IO_ENDPOINT << endpoint <<
                                                     DataServiceNodeDefinitionKey::DS_HA_ZONE << ds_zone));
-        
+        }
+       
+         
         DEBUG_CODE(MDBDSDA_DBG<<log_message("registerNode",
                                             "update",
                                             DATA_ACCESS_LOG_2_ENTRY("Query",

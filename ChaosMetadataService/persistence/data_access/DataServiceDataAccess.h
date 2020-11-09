@@ -53,7 +53,7 @@ namespace chaos {
                     virtual int registerNode(const std::string& ds_zone,
                                              const std::string& ds_unique_id,
                                              const std::string& ds_direct_io_addr,
-                                             uint32_t endpoint) = 0;
+                                             uint32_t endpoint,const chaos::common::data::CDWUniquePtr info=chaos::common::data::CDWUniquePtr()) = 0;
                     
                     virtual int deleteDataService(const std::string& ds_unique_id) = 0;
                     
