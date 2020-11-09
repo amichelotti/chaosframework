@@ -151,7 +151,7 @@ int MessagePSRDKafkaConsumer::subscribe(const std::string& key){
                                                   /* the partition is ignored
                                                    * by subscribe() */
                                                   RD_KAFKA_PARTITION_UA);
-        MRDDBG_<<" subscribing to "<<*i;
+      //  MRDDBG_<<" subscribing to "<<*i;
                                           
       }
        rd_kafka_resp_err_t err = rd_kafka_subscribe(rk, subscription);
@@ -163,7 +163,7 @@ int MessagePSRDKafkaConsumer::subscribe(const std::string& key){
           return -20;
         }
        
-        MRDDBG_<<" subscribing items "<<subscription->cnt;
+      //  MRDDBG_<<" subscribing items "<<subscription->cnt;
       
 
         rd_kafka_topic_partition_list_destroy(subscription);
