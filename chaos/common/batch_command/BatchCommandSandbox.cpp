@@ -179,12 +179,12 @@ void BatchCommandSandbox::stop()  {
     thread_scheduler_pause_condition.unlock();
     whait_for_next_check.unlock();
     
-    if (thread_scheduler->joinable()) {
+    if (thread_scheduler.get()&&thread_scheduler->joinable()) {
         SCSLDBG_ << "Join on schedulerThread";
         
         thread_scheduler->join();
     }
-    if (thread_next_command_checker->joinable()) {
+    if (thread_next_command_checker.get()&& thread_next_command_checker->joinable()) {
         SCSLDBG_ << "Join on thread_next_command_checker";
         thread_next_command_checker->join();
     }
