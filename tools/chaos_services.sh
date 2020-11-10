@@ -148,21 +148,11 @@ fi
 }
 
 start_us(){
-    if check_proc  "$CHAOS_PREFIX/bin/$US_EXEC";then
-        info_mesg "already running " "UnitServer.."
-        
-    else
         if [ ! -e "$CHAOS_PREFIX/etc/cu.cfg" ]; then
             warn_mesg "UnitServer configuration file not found in \"$CHAOS_PREFIX/etc/cu.cfg\" " "start skipped"
             return
         fi
        
-        # info_mesg "transferring configuration to MDS " "$CHAOS_PREFIX/etc/localhost/MDSConfig.json"
-        # if ! run_proc "$CHAOS_PREFIX/bin/ChaosMDSCmd --mds-conf $CHAOS_PREFIX/etc/localhost/MDSConfig.json $CHAOS_OVERALL_OPT -r 1 --log-on-file --log-file $CHAOS_PREFIX/log/ChaosMDSCmd.$MYPID.log > $CHAOS_PREFIX/log/ChaosMDSCmd.$MYPID.std.out 2>&1 " "ChaosMDSCmd";then
-        #     error_mesg "failed initialization of " "MDS"
-        #     exit 1
-        # fi
- 
        
         sleep 5
         info_mesg "starting US through agent " "TEST"
@@ -170,9 +160,7 @@ start_us(){
             error_mesg "failed starting of " "TEST"
             exit 1
         fi
-#        info_mesg "starting " "$US_EXEC"
-#        run_proc "$CHAOS_PREFIX/bin/$US_EXEC --conf-file $CHAOS_PREFIX/etc/cu.cfg $CHAOS_OVERALL_OPT --log-on-file 1 --log-file $CHAOS_PREFIX/log/$US_EXEC.$MYPID.log > $CHAOS_PREFIX/log/$US_EXEC.$MYPID.std.out 2>&1 &" "$US_EXEC"
-    fi
+    
 }
 
 ui_stop()
