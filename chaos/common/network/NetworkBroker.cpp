@@ -547,6 +547,9 @@ bool NetworkBroker::submiteRequest(const string& host,
         nfi->sender_request_id = sender_request_id;
         nfi->setMessage(MOVE(request));
         return rpc_client->submitMessage(MOVE(nfi), false); 
+    } else {
+        LERR_<<sender_request_id<<"] to '"<<host<<"' invalid NetworkForwardInfo for:'"<<published_host_and_port<<"' sender node id:"<<sender_node_id;
+
     }
     return false;
 }

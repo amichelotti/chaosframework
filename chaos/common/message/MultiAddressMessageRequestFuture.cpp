@@ -73,18 +73,18 @@ bool MultiAddressMessageRequestFuture::wait() {
            working) {
         while (current_future.get() &&
                working) {
-            MAMRF_DBG << "Waiting on server " << last_used_address << " for " << timeout_in_milliseconds << " ms";
+            MAMRF_DBG << current_future->getRequestID()<<"] Waiting on server '" << last_used_address << "' for " << timeout_in_milliseconds << " ms";
             //! waith for future
             
             if (current_future->wait(timeout_in_milliseconds)) {
-                MAMRF_DBG << "Exit Waiting on server " << last_used_address << " for " << timeout_in_milliseconds << " ms got:" << current_future->isRemoteMeaning();
+                MAMRF_DBG << current_future->getRequestID()<<"] Exit Waiting on server '" << last_used_address << "' for " << timeout_in_milliseconds << " ms got:" << current_future->isRemoteMeaning();
                 if (current_future->isRemoteMeaning()) {
                     //we have received from remote server somenthing
                     working = false;
                 } else {
                     //we have submission error
                     if (current_future->getError()) {
-                        MAMRF_ERR << "We have submission error:" << current_future->getError() << " message:" << current_future->getErrorMessage() << " domain:" << current_future->getErrorDomain();
+                        MAMRF_ERR << current_future->getRequestID()<<"] We have submission error:" << current_future->getError() << " message:" << current_future->getErrorMessage() << " domain:" << current_future->getErrorDomain();
                         
                         //set current server offline
                         parent_mn_message_channel->setURLAsOffline(last_used_address);

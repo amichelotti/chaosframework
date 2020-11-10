@@ -55,7 +55,7 @@ class TLockFreeQueue {
   int push(T const& data) {
     if (element_queue.push(data)) {
       //notify the withing thread
-      the_condition_variable.notify_all();
+      the_condition_variable.notify_one();
       return 0;
     } else {
       LDBG_ << "Queue FULL";
@@ -64,7 +64,7 @@ class TLockFreeQueue {
     }
     if (element_queue.push(data)) {
       //notify the withing thread
-      the_condition_variable.notify_all();
+      the_condition_variable.notify_one();
       return 0;
     }
     LERR_ << "Queue Error pushing";
@@ -78,13 +78,12 @@ class TLockFreeQueue {
   bool pop(T& popped_value) {
     bool ret = element_queue.pop(popped_value);
     if (ret) {
-      some_read.notify_all();
+      some_read.notify_one();
     }
     return ret;
   }
   int wait_and_pop(T& popped_value, int timeout_ms = 0) {
     int ret = 0;
-    while (maxsize) {
       if (element_queue.empty()) {
         boost::mutex::scoped_lock lock(the_mutex);
 
@@ -109,9 +108,9 @@ class TLockFreeQueue {
       if (pop(popped_value)) {
         return 0;
       }
-    }
-    // LERR_<<"Queue Error pop"<<size;
-    return 0;
+    
+     LERR_<<"Queue Error pop";
+    return -1;
   }
 };
 }  // namespace thread

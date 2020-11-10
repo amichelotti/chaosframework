@@ -86,6 +86,19 @@ int MessagePSRDKafkaConsumer::getMsgAsync(const std::string&key,uint32_t off,con
   
   return stats.last_err;
 }
+
+static void err_cb (rd_kafka_t *rk, int err, const char *reason, void *opaque) {
+        if (err == RD_KAFKA_RESP_ERR__FATAL) {
+                char errstr[512];
+                err = rd_kafka_fatal_error(rk, errstr, sizeof(errstr));
+                MRDERR_<<"## FATAL ERROR CALLBACK:"<<rd_kafka_name(rk)<<" :"<< rd_kafka_err2str((rd_kafka_resp_err_t)err)<<" :"<<errstr;
+                
+        } else {
+                MRDERR_<<"## ERROR CALLBACK:"<<rd_kafka_name(rk)<<" :"<< rd_kafka_err2str((rd_kafka_resp_err_t)err)<<" :"<<reason;
+
+               
+        }
+}
 int MessagePSRDKafkaConsumer::applyConfiguration() {
   char ers[512];
   int  ret = 0;
@@ -114,6 +127,8 @@ int MessagePSRDKafkaConsumer::applyConfiguration() {
       if(setOption("allow.auto.create.topics","true")!=0){
         return -3;
       }
+      rd_kafka_conf_set_error_cb(conf, err_cb);
+
       if (!(rk = rd_kafka_new(RD_KAFKA_CONSUMER, conf, ers, sizeof(ers)))) {
         MRDERR_ << "Failed to create new consumer: " << ers;
         errstr=ers;
@@ -136,6 +151,7 @@ int MessagePSRDKafkaConsumer::applyConfiguration() {
   }
   return ret;
 }
+
 int MessagePSRDKafkaConsumer::subscribe(const std::string& key){
   MessagePSConsumer::subscribe(key);
   if(rk==NULL){
@@ -151,7 +167,7 @@ int MessagePSRDKafkaConsumer::subscribe(const std::string& key){
                                                   /* the partition is ignored
                                                    * by subscribe() */
                                                   RD_KAFKA_PARTITION_UA);
-      //  MRDDBG_<<" subscribing to "<<*i;
+       // MRDDBG_<<" subscribing to "<<*i;
                                           
       }
        rd_kafka_resp_err_t err = rd_kafka_subscribe(rk, subscription);
@@ -163,7 +179,7 @@ int MessagePSRDKafkaConsumer::subscribe(const std::string& key){
           return -20;
         }
        
-      //  MRDDBG_<<" subscribing items "<<subscription->cnt;
+        MRDDBG_<<" subscribing items "<<subscription->cnt;
       
 
         rd_kafka_topic_partition_list_destroy(subscription);
@@ -188,13 +204,18 @@ void MessagePSRDKafkaConsumer::poll(){
 
       /* consumer_poll() will return either a proper message
         * or a consumer error (rkm->err is set). */
-
+       
       if (rkm->err) {
               /* Consumer errors are generally to be considered
                 * informational as the consumer will automatically
                 * try to recover from all types of errors. */
         errstr=rd_kafka_message_errstr(rkm);
-        MRDERR_<<"Consumer error:"<<errstr<<" err:"<<rkm->err;
+        if(rkm->err==RD_KAFKA_RESP_ERR__FATAL){
+          MRDERR_<<"FATAL ERROR error:"<<errstr<<" err:"<<rkm->err;
+
+        } else {
+          MRDERR_<<"Consumer error:"<<errstr<<" err:"<<rkm->err;
+        }
         stats.errs++;
         
         if(handlers[ONERROR]){
