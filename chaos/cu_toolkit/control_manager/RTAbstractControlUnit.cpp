@@ -223,12 +223,16 @@ void RTAbstractControlUnit::threadStartStopManagment(bool startAction) {
 #endif
         } else {
             if(!scheduler_run){
-                RTCULAPP_ << "thread already stopped";
-            }
-            RTCULAPP_ << "Stopping and joining scheduling thread";
+                RTCULDBG_ << "thread already stopped";
+            } 
             scheduler_run = false;
-            scheduler_thread->join();
-            RTCULAPP_ << "Thread stopped";
+
+            if(scheduler_thread.get()){
+                RTCULDBG_ << "Stopping and joining scheduling thread";
+                scheduler_thread->join();
+            }
+            RTCULDBG_ << "Thread stopped";
+
         }
     } catch(boost::exception_detail::clone_impl<boost::exception_detail::error_info_injector<boost::thread_resource_error> >& exc) {
         RTCULERR_ << exc.what();
