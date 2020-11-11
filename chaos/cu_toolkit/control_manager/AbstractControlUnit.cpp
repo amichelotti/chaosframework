@@ -1140,7 +1140,7 @@ CDWUniquePtr AbstractControlUnit::_stop(CDWUniquePtr stopParam) {
                                                     NodeHealtDefinitionValue::NODE_HEALT_STATUS_STOPING,
                                                     true);
     redoStartRpCheckList();
-
+    usleep(100000);
     HealtManager::getInstance()->addNodeMetricValue(control_unit_id,
                                                     NodeHealtDefinitionKey::NODE_HEALT_STATUS,
                                                     NodeHealtDefinitionValue::NODE_HEALT_STATUS_STOP,

@@ -46,9 +46,11 @@ class TLockFreeQueue {
   boost::atomic<uint32_t> size;
  public:
   ~TLockFreeQueue() {
+    maxsize=0;
     unblock();
   }
   void unblock() {
+
     some_read.notify_all();
     the_condition_variable.notify_all();
   }
@@ -101,6 +103,7 @@ class TLockFreeQueue {
     return ret;
   }
   int wait_and_pop(T& popped_value, int timeout_ms = 0) {
+    while(maxsize){
     if (element_queue.empty()) {
       boost::mutex::scoped_lock lock(the_mutex);
 
@@ -125,9 +128,9 @@ class TLockFreeQueue {
     if (pop(popped_value)) {
       return size;
     }
+    }
 
-    LERR_ << "Queue Error pop";
-    return -1;
+    return size;
   }
 };
 }  // namespace thread
