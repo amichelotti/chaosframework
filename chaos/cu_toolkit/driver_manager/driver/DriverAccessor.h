@@ -120,11 +120,10 @@ namespace chaos{
                         answere is waith from the driver.
                         \param cmd a command pack filled with all infromation
                                 for the command.
-                        \param inc_priority the incremental priority repsect to the base that permit to be forward a message
-                                before message with minor priority.
+                        \param timeout_ms the timeout for the execution 0= no timeout
                         \return true if operation has been done sucessfull.
                      */
-                    bool send(DrvMsgPtr cmd, uint32_t inc_priority = 0);
+                    bool send(DrvMsgPtr cmd, uint32_t timeout_ms = 0);
                     
                     //! Send an asynchronous command
                     /*!

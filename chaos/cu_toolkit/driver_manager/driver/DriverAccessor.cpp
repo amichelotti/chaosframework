@@ -52,8 +52,8 @@ uint64_t DriverAccessor::getMessageCount(){
 }
 
 bool DriverAccessor::send(DrvMsgPtr cmd,
-                          uint32_t  inc_priority) {
-    static int counter=0;
+                          uint32_t  timeout_ms) {
+//    static int counter=0;
     CHAOS_ASSERT(cmd)
     ResponseMessageType answer_message = 0;
     {
@@ -68,14 +68,21 @@ bool DriverAccessor::send(DrvMsgPtr cmd,
         command_queue->push(cmd);
     //LDBG_<<owner<<" ["<<counter<<"] send opcode:"<<cmd->opcode;
     }
-    //whait the answer
-    accessor_sync_mq.wait_and_pop(answer_message);
+    //wait the answer
+    int ret=accessor_sync_mq.wait_and_pop(answer_message,timeout_ms);
+    if(ret<0){
+        std::stringstream ss;
+        ss<<cmd->id<<","<<accessor_sync_mq.length()<<"] Timeout of:"<<timeout_ms<<" ms expired, executing opcode:"<<cmd->opcode;
+        throw chaos::CFatalException(ret,ss.str(),__FUNCTION__);
+
+    }
   //  LDBG_<<owner<<" ["<<counter<<"] returned :"<<cmd->opcode;
-    counter++;
+//    counter++;
     if((*cmd->err_msg!=0) && (*cmd->err_dom!=0)&& (cmd->ret!=0)){
         LDBG_<<"Launch Exception msg:"<<cmd->err_msg<<" dom:"<<cmd->err_dom<<" ret:"<<cmd->ret;
         throw chaos::CFatalException(cmd->ret,cmd->err_msg,cmd->err_dom);
     }
+    
     //check result
     return (answer_message == MsgManagmentResultType::MMR_EXECUTED);
 }

@@ -43,73 +43,90 @@ class TLockFreeQueue {
   int                                                            maxsize;
   boost::condition_variable                                      the_condition_variable;
   boost::condition_variable                                      some_read;
-
+  boost::atomic<uint32_t> size;
  public:
   ~TLockFreeQueue() {
-    maxsize = 0; //exit loop
+    unblock();
+  }
+  void unblock() {
     some_read.notify_all();
     the_condition_variable.notify_all();
   }
+  boost::lockfree::queue<T, boost::lockfree::fixed_sized<true> >& get() {
+    return element_queue;
+  }
   TLockFreeQueue()
-      : maxsize(N), element_queue(N){};
-  int push(T const& data) {
+      : maxsize(N), element_queue(N),size(0){};
+  int push(T const& data, int timeout_ms = 0) {
     if (element_queue.push(data)) {
+      size++;
       //notify the withing thread
       the_condition_variable.notify_one();
-      return 0;
+      return size;
     } else {
-      LDBG_ << "Queue FULL";
       boost::mutex::scoped_lock lock(mutex_read);
-      some_read.wait(lock);
+      if (timeout_ms > 0) {
+        boost::system_time const tim =
+            boost::get_system_time() + boost::posix_time::milliseconds(timeout_ms);
+        if (some_read.timed_wait(lock, tim) == false) {
+          return chaos::ErrorCode::EC_GENERIC_TIMEOUT;
+        }
+
+      } else {
+        some_read.wait(lock);
+      }
     }
     if (element_queue.push(data)) {
       //notify the withing thread
+      size++;
+
       the_condition_variable.notify_one();
-      return 0;
+      return size;
     }
     LERR_ << "Queue Error pushing";
 
     return -1;
   }
-
+  uint32_t length()const {return size;}
   bool empty() const {
     return element_queue.empty();
   }
   bool pop(T& popped_value) {
     bool ret = element_queue.pop(popped_value);
     if (ret) {
+        size--;
+      
       some_read.notify_one();
     }
     return ret;
   }
   int wait_and_pop(T& popped_value, int timeout_ms = 0) {
-    int ret = 0;
-      if (element_queue.empty()) {
-        boost::mutex::scoped_lock lock(the_mutex);
+    if (element_queue.empty()) {
+      boost::mutex::scoped_lock lock(the_mutex);
 
-        if (timeout_ms) {
-          boost::system_time const tim =
-              boost::get_system_time() + boost::posix_time::milliseconds(timeout_ms);
-          if (the_condition_variable.timed_wait(lock, tim)) {
-            if (pop(popped_value)) {
-              return 0;
-            }
-          } else {
-            // timeout
-            if (pop(popped_value)) {
-              return 0;
-            }
-            return chaos::ErrorCode::EC_GENERIC_TIMEOUT;
+      if (timeout_ms > 0) {
+        boost::system_time const tim =
+            boost::get_system_time() + boost::posix_time::milliseconds(timeout_ms);
+        if (the_condition_variable.timed_wait(lock, tim)) {
+          if (pop(popped_value)) {
+            return size;
           }
         } else {
-          the_condition_variable.wait(lock);
+          // timeout
+          if (pop(popped_value)) {
+            return size;
+          }
+          return chaos::ErrorCode::EC_GENERIC_TIMEOUT;
         }
+      } else {
+        the_condition_variable.wait(lock);
       }
-      if (pop(popped_value)) {
-        return 0;
-      }
-    
-     LERR_<<"Queue Error pop";
+    }
+    if (pop(popped_value)) {
+      return size;
+    }
+
+    LERR_ << "Queue Error pop";
     return -1;
   }
 };
