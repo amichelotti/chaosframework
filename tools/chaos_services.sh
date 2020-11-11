@@ -145,6 +145,8 @@ if ! jchaosctl --server localhost:8081 --upload $MDS_CONFIG >& $CHAOS_PREFIX/log
             error_mesg "failed initialization of " "MDS with $MDS_CONFIG"
             exit 1
 fi
+        info_mesg "initialization " "OK, wait 20s"
+        sleep 20
 }
 
 start_us(){
@@ -154,7 +156,7 @@ start_us(){
         fi
        
        
-        sleep 5
+
         info_mesg "starting US through agent " "TEST"
         if ! jchaosctl --server localhost:8081 --op start --uid TEST;then
             error_mesg "failed starting of " "TEST"
