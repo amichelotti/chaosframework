@@ -1566,7 +1566,7 @@ namespace chaos {
         //! stopped status
         static const char * const NODE_HEALT_STATUS_STOP        = "Stop";
         //! stopped status
-        static const char * const NODE_HEALT_STATUS_STOPING     = "Stoping";
+        static const char * const NODE_HEALT_STATUS_STOPING     = "Stopping";
         //! recoverable error status
         static const char * const NODE_HEALT_STATUS_RERROR      = "Recoverable Error";
         //! fatal error status
