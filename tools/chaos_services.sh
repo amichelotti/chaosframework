@@ -26,16 +26,33 @@ fi
 
 backend_checks(){
     if [ -z "$CHAOS_DB_SERVERS" ];then
-        if ! ps -fe |grep [m]ongod >/dev/null ;then
-            error_mesg "mongod not running" ; exit 1
+        # if ! ps -fe |grep [m]ongod >/dev/null ;then
+        #     error_mesg "mongod not running" ; exit 1
+        # else
+        #     ok_mesg "mongod check"
+        # fi
+        if jmongoctl --server localhost --count_nodes > /dev/null;then
+            ok_mesg "mongo localhost check"
+            a=`jmongoctl --server localhost --count_nodes`
+            info_mesg "number of chaos nodes " "$a"
+            
         else
-            ok_mesg "mongod check"
+            error_mesg "cannot access or is not intialized localhost mongo"
+            return -1
+        fi
+    else
+        if jmongoctl --server $CHAOS_DB_SERVERS --count_nodes > /dev/null;then
+            ok_mesg "mongo $CHAOS_DB_SERVERS check"
+        else
+            error_mesg "cannot access or is not intialized $CHAOS_DB_SERVERS mongo"
+            return -1;
         fi
     fi
     if [ -z "$CHAOS_LIVE_SERVERS" ]; then
         if ! ps -fe |grep [e]pmd >/dev/null ;then
             if ! ps -fe |grep [m]emcached >/dev/null;then
-                error_mesg "epmd (couchbase) nor memcached  running" ; exit 1
+                error_mesg "epmd (couchbase) nor memcached  running" ;
+                return -1
             fi
         else
             ok_mesg "couchbase check"
@@ -105,7 +122,7 @@ start_ui(){
             return 1
         fi
     fi
-
+    
     if check_proc "$CHAOS_PREFIX/bin/$UI_EXEC";then
         info_mesg "already running " "webui.."
         
@@ -125,7 +142,7 @@ start_agent(){
             return 1
         fi
     fi
-
+    
     if check_proc "$CHAOS_PREFIX/bin/$AGENT_EXEC";then
         info_mesg "already running " "agent.."
         
@@ -136,32 +153,34 @@ start_agent(){
 }
 
 load_config(){
-if [ ! -e "$MDS_CONFIG" ]; then
-            error_mesg "localhost configuration file not found in \"$MDS_CONFIG\" " "start skipped"
-            exit 1
-fi
-info_mesg "transferring configuration to MDS " "$MDS_CONFIG"
-if ! jchaosctl --server localhost:8081 --upload $MDS_CONFIG >& $CHAOS_PREFIX/log/jchaosctl.config.std.out ;then
-            error_mesg "failed initialization of " "MDS with $MDS_CONFIG"
-            exit 1
-fi
-        info_mesg "initialization " "OK, wait 20s"
-        sleep 20
+    if [ ! -e "$MDS_CONFIG" ]; then
+        error_mesg "localhost configuration file not found in \"$MDS_CONFIG\" " "start skipped"
+        exit 1
+    fi
+    
+    info_mesg "transferring configuration to MDS " "$MDS_CONFIG"
+    if ! jchaosctl --server localhost:8081 --upload $MDS_CONFIG >& $CHAOS_PREFIX/log/jchaosctl.config.std.out ;then
+        error_mesg "failed initialization of " "MDS with $MDS_CONFIG"
+        exit 1
+    fi
+    info_mesg "initialization " "OK, wait 20s"
+    sleep 20
+    backend_checks
 }
 
 start_us(){
-        if [ ! -e "$CHAOS_PREFIX/etc/cu.cfg" ]; then
-            warn_mesg "UnitServer configuration file not found in \"$CHAOS_PREFIX/etc/cu.cfg\" " "start skipped"
-            return
-        fi
-       
-       
-
-        info_mesg "starting US through agent " "TEST"
-        if ! jchaosctl --server localhost:8081 --op start --uid TEST;then
-            error_mesg "failed starting of " "TEST"
-            exit 1
-        fi
+    if [ ! -e "$CHAOS_PREFIX/etc/cu.cfg" ]; then
+        warn_mesg "UnitServer configuration file not found in \"$CHAOS_PREFIX/etc/cu.cfg\" " "start skipped"
+        return
+    fi
+    
+    
+    
+    info_mesg "starting US through agent " "TEST"
+    if ! jchaosctl --server localhost:8081 --op start --uid TEST;then
+        error_mesg "failed starting of " "TEST"
+        exit 1
+    fi
     
 }
 
@@ -179,9 +198,9 @@ agent_stop()
 
 
 us_stop(){
-
+    
     if check_proc "$CHAOS_PREFIX/bin/$MDS_EXEC"  && check_proc "$CHAOS_PREFIX/bin/$UI_EXEC";then
-
+        
         info_mesg "stopping... " "TEST"
         if ! jchaosctl --server localhost:8081 --op stop --uid TEST > $CHAOS_PREFIX/log/jchaosctl.stop.std.out ;then
             error_mesg "failed stopping of " "TEST"
@@ -237,9 +256,11 @@ stop_all(){
 
 status(){
     local status=0
-    check_proc "mongod"
-    status=$((status + $?))
-    check_proc "epmd"
+    #    check_proc "mongod"
+    #    status=$((status + $?))
+    #    check_proc "epmd"
+    
+    backend_checks
     status=$((status + $?))
     check_proc "$CHAOS_PREFIX/bin/$MDS_EXEC"
     status=$((status + $?))
@@ -288,7 +309,7 @@ case "$cmd" in
                     start_agent
                     exit 0
                 ;;
-
+                
                 us)
                     start_us
                     exit 0
@@ -299,7 +320,7 @@ case "$cmd" in
                     start_ui
                     start_agent
                     load_config
-        		    
+                    
                     sleep 1
                     start_us
                     
