@@ -223,7 +223,7 @@ void RTAbstractControlUnit::threadStartStopManagment(bool startAction) {
             } 
             scheduler_run = false;
 
-            if(scheduler_thread.get()){
+            if(scheduler_thread.get()&&scheduler_thread->joinable()){
                 RTCULDBG_ << "Stopping and joining scheduling thread";
                 scheduler_thread->join();
             }
