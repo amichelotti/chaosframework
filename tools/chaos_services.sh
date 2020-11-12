@@ -43,6 +43,9 @@ backend_checks(){
     else
         if jmongoctl --server $CHAOS_DB_SERVERS --count_nodes > /dev/null;then
             ok_mesg "mongo $CHAOS_DB_SERVERS check"
+            a=`jmongoctl --server $CHAOS_DB_SERVERS --count_nodes`
+            info_mesg "number of chaos nodes " "$a"
+            
         else
             error_mesg "cannot access or is not intialized $CHAOS_DB_SERVERS mongo"
             return -1;
