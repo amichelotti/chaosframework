@@ -69,8 +69,11 @@ bool DriverAccessor::send(DrvMsgPtr cmd,
     //LDBG_<<owner<<" ["<<counter<<"] send opcode:"<<cmd->opcode;
     }
     //wait the answer
-    int ret=accessor_sync_mq.wait_and_pop(answer_message,timeout_ms);
+    int ret=accessor_sync_mq.wait_and_pop(answer_message,5000 /*timeout_ms*/);
     if(ret<0){
+
+            return false;
+
         std::stringstream ss;
         ss<<cmd->id<<","<<accessor_sync_mq.length()<<"] Timeout of:"<<timeout_ms<<" ms expired, executing opcode:"<<cmd->opcode;
         throw chaos::CFatalException(ret,ss.str(),__FUNCTION__);
