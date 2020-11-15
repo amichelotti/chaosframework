@@ -59,7 +59,7 @@ uint64_t DriverAccessor::getMessageCount(){
 
 bool DriverAccessor::send(DrvMsgPtr cmd,
                           uint32_t  timeout_ms) {
-//    static int counter=0;
+    //static int counter=0;
     CHAOS_ASSERT(cmd)
     ResponseMessageType answer_message = 0;
     {
@@ -69,21 +69,28 @@ bool DriverAccessor::send(DrvMsgPtr cmd,
         cmd->id            = messages_count++;
         cmd->drvResponseMQ = &accessor_sync_mq;
         cmd->device_param = device_param;
+        *cmd->err_msg=0;
+        *cmd->err_dom=0;
+        cmd->ret=0;
         //send command
        // command_queue->push(cmd, base_opcode_priority + inc_priority);
         command_queue->push(cmd);
     //DALDBG_<<owner<<" ["<<counter<<"] send opcode:"<<cmd->opcode;
     }
     //wait the answer
+ //   DALDBG_<<owner[0]<<" ["<<cmd->id<<"] send opcode:"<<cmd->opcode<<" timeout:"<<timeout_ms;
+
     int ret=accessor_sync_mq.wait_and_pop(answer_message,timeout_ms);
     if(ret<0){
         std::stringstream ss;
         ss<<cmd->id<<","<<accessor_sync_mq.length()<<"] Timeout of:"<<timeout_ms<<" ms expired, executing opcode:"<<cmd->opcode;
-        throw chaos::CFatalException(ret,ss.str(),__FUNCTION__);
-
-    }
-  //  DALDBG_<<owner<<" ["<<counter<<"] returned :"<<cmd->opcode;
-//    counter++;
+       // throw chaos::CFatalException(ret,ss.str(),__FUNCTION__);
+        DALERR_<<ss.str();
+        strncpy(cmd->err_msg,ss.str().c_str(),DRVMSG_ERR_MSG_SIZE);
+        strncpy(cmd->err_dom,__FUNCTION__,DRVMSG_ERR_MSG_SIZE);
+        cmd->ret=ret;
+        return false;
+    } 
     if((*cmd->err_msg!=0) && (*cmd->err_dom!=0)&& (cmd->ret!=0)){
         DALERR_<<"Launch Exception msg:"<<cmd->err_msg<<" dom:"<<cmd->err_dom<<" ret:"<<cmd->ret;
         throw chaos::CFatalException(cmd->ret,cmd->err_msg,cmd->err_dom);
@@ -93,10 +100,12 @@ bool DriverAccessor::send(DrvMsgPtr cmd,
     return (answer_message == MsgManagmentResultType::MMR_EXECUTED);
 }
 int DriverAccessor::stop(){
-    DALDBG_<<" Stopping:"<<getDriverName()<<" signaling queues";
+    DALDBG_<<" Stopping:'"<<driverName<<"' signaling queues";
     accessor_sync_mq.unblock();
+    return 0;
 }
 int DriverAccessor::start(){
+    return 0;
 
 }
 /*------------------------------------------------------

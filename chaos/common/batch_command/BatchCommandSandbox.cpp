@@ -178,15 +178,23 @@ void BatchCommandSandbox::stop()  {
     //se the flag to the end o fthe scheduler
     SCSLDBG_ << "Set scheduler work flag to false";
     schedule_work_flag = false;
-    
     SCSLDBG_ << "Notify pauseCondition variable";
     thread_scheduler_pause_condition.unlock();
     whait_for_next_check.unlock();
     
     if (thread_scheduler.get()&&thread_scheduler->joinable()) {
         SCSLDBG_ << "Join on schedulerThread";
-        
-        thread_scheduler->join();
+         if (thread_scheduler->try_join_for(boost::chrono::seconds(5))){
+                SCSLDBG_ << "schedulerThread joined!";
+
+        } else {
+            thread_scheduler->interrupt();
+            SCSLDBG_ << "schedulerThread interrupted";
+        }
+        //thread_scheduler->join();
+    } else {
+        SCSLERR_ << "schedulerThread unjoinable";
+
     }
     if (thread_next_command_checker.get()&& thread_next_command_checker->joinable()) {
         SCSLDBG_ << "Join on thread_next_command_checker";
@@ -587,7 +595,7 @@ void BatchCommandSandbox::checkNextCommand() {
             WAIT_ON_NEXT_CMD
         }
     }
-    SCSLAPP_ << "[checkNextCommand] Check next command thread ended";
+    SCSLDBG_ << "[checkNextCommand] Check next command thread ended";
 }
 
 inline ChaosUniquePtr<chaos::common::data::CDataWrapper> BatchCommandSandbox::flatErrorInformationInCommandInfo(CDataWrapper *command_info,

@@ -1140,7 +1140,7 @@ CDWUniquePtr AbstractControlUnit::_stop(CDWUniquePtr stopParam) {
                                                     NodeHealtDefinitionKey::NODE_HEALT_STATUS,
                                                     NodeHealtDefinitionValue::NODE_HEALT_STATUS_STOPING,
                                                     true);
-    {
+   /* {
   for (VInstantitedDriverIterator it  = accessor_instances.begin(),
                                   end = accessor_instances.end();
        it != end;
@@ -1150,7 +1150,7 @@ CDWUniquePtr AbstractControlUnit::_stop(CDWUniquePtr stopParam) {
             (*it)->stop();
          }
   }
-    }
+    }*/
     redoStartRpCheckList();
     HealtManager::getInstance()->addNodeMetricValue(control_unit_id,
                                                     NodeHealtDefinitionKey::NODE_HEALT_STATUS,
