@@ -1140,6 +1140,17 @@ CDWUniquePtr AbstractControlUnit::_stop(CDWUniquePtr stopParam) {
                                                     NodeHealtDefinitionKey::NODE_HEALT_STATUS,
                                                     NodeHealtDefinitionValue::NODE_HEALT_STATUS_STOPING,
                                                     true);
+    {
+  for (VInstantitedDriverIterator it  = accessor_instances.begin(),
+                                  end = accessor_instances.end();
+       it != end;
+       it++) {
+         // signal blocked queue
+         if((*it)){
+            (*it)->stop();
+         }
+  }
+    }
     redoStartRpCheckList();
     HealtManager::getInstance()->addNodeMetricValue(control_unit_id,
                                                     NodeHealtDefinitionKey::NODE_HEALT_STATUS,
@@ -1992,7 +2003,7 @@ void AbstractControlUnit::_setBypassState(bool bypass_stage,
                                   end = accessor_instances.end();
        it != end;
        it++) {
-    (*it)->send(&cmd, (high_priority ? 1000 : 0));
+    (*it)->send(&cmd, chaos::common::constants::CUTimersTimeoutinMSec);
   }
   //update dateset
   *attribute_value_shared_cache->getAttributeValue(DOMAIN_SYSTEM, ControlUnitDatapackSystemKey::BYPASS_STATE)->getValuePtr<bool>() = bypass_stage;

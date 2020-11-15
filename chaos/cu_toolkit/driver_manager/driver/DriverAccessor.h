@@ -180,6 +180,8 @@ namespace chaos{
                     std::string getLastError();
                     std::vector<std::string> getOwner(){return owner;}
                     uint64_t getMessageCount();
+                    int stop();
+                    int start();
                 };
             }
         }
