@@ -269,9 +269,15 @@ void MessagePSRDKafkaConsumer::poll(){
             cond.notify_all();
           }
           stats.oks++;
+        }catch(chaos::CException&e){
+          stats.errs++;
+          MRDERR_<<" invalid chaos packet from:"<<rd_kafka_topic_name(rkm->rkt)<< " len:"<<rkm->len<<" msg:"<<e.what();
+          //<<" string:"<<std::string((const char*)rkm->payload, rkm->len);
+
         } catch(...){
           stats.errs++;
-          MRDERR_<<" invalid chaos packet from:"<<rd_kafka_topic_name(rkm->rkt)<< " len:"<<rkm->len<<" string:"<<std::string((const char*)rkm->payload, rkm->len);
+          MRDERR_<<" invalid chaos packet from:"<<rd_kafka_topic_name(rkm->rkt)<< " len:"<<rkm->len;
+          //<<" string:"<<std::string((const char*)rkm->payload, rkm->len);
 
         }
         } 
