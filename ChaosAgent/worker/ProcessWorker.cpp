@@ -158,7 +158,7 @@ CDWUniquePtr ProcessWorker::launchNode(CDWUniquePtr data) {
     chaos::common::data::CDWUniquePtr param=ChaosAgent::getInstance()->checkAndPrepareScript(ass);
 
     if(CHECK_PROCESS(ass) == false) {
-        LAUNCH_PROCESS(ass);
+        LAUNCH_PROCESS(ass,param);
     }
 
 

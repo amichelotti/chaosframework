@@ -59,7 +59,12 @@ void ProcRestUtil::launchProcess(const chaos::service_common::data::agent::Agent
         exec_command = COMPOSE_NODE_LAUNCH_CMD_LINE(node_association_info);
         init_file = CHAOS_FORMAT("%1%/%2%", %INIT_FILE_PATH()%INIT_FILE_NAME(node_association_info));
         queue_file = CHAOS_FORMAT("%1%/%2%", %QUEUE_FILE_PATH()%NPIPE_FILE_NAME(node_association_info));
-    
+        if(param.get()&&param->hasKey("workdir")){
+            
+            
+            boost::replace_all(exec_command,"$WORKDIR",param->getStringValue("workdir"));
+            USRA_DBG<<"replacing $WORKDIR, exec:"<<exec_command;
+        }
         boost::filesystem::path init_file_parent_path = INIT_FILE_PATH();
         if (boost::filesystem::exists(init_file_parent_path) == false &&
             boost::filesystem::create_directory(init_file_parent_path) == false) {
