@@ -243,14 +243,19 @@ void MessagePSRDKafkaConsumer::poll() {
         d.cd = chaos::common::data::CDWShrdPtr(new chaos::common::data::CDataWrapper((const char*)rkm->payload, rkm->len));
       } catch (chaos::CException& e) {
         stats.errs++;
-        MRDERR_ << rkm->offset << "," << rkm->partition << " invalid chaos packet from:" << rd_kafka_topic_name(rkm->rkt) << " len:" << rkm->len << " msg:" << e.what();
+        std::stringstream ss;
+        ss<< rkm->offset << "," << rkm->partition << " invalid chaos packet from:" << rd_kafka_topic_name(rkm->rkt) << " len:" << rkm->len << " msg:" << e.what();
+        MRDERR_ <<ss.str();
         //<<" string:"<<std::string((const char*)rkm->payload, rkm->len);
         if (handlers[ONERROR]) {
           ele_t d;
           d.key = rd_kafka_topic_name(rkm->rkt);
           d.off = rkm->offset;
           d.par = rkm->partition;
-          d.cd  = chaos::common::data::CDWShrdPtr();
+
+          d.cd  = chaos::common::data::CDWShrdPtr(new chaos::common::data::CDataWrapper());
+          d.cd->addStringValue("msg",ss.str());
+          d.cd->addInt32Value("err",-1);
 
           handlers[ONERROR](d);
         }
@@ -269,14 +274,18 @@ void MessagePSRDKafkaConsumer::poll() {
         ele->cd = chaos::common::data::CDWShrdPtr(new chaos::common::data::CDataWrapper((const char*)rkm->payload, rkm->len));
       } catch (chaos::CException& e) {
         stats.errs++;
-        MRDERR_ << rkm->offset << "," << rkm->partition << " invalid chaos packet from:" << rd_kafka_topic_name(rkm->rkt) << " len:" << rkm->len << " msg:" << e.what();
+         std::stringstream ss;
+         ss<< rkm->offset << "," << rkm->partition << " invalid chaos packet from:" << rd_kafka_topic_name(rkm->rkt) << " len:" << rkm->len << " msg:" << e.what();
+        MRDERR_ <<ss.str();
         //<<" string:"<<std::string((const char*)rkm->payload, rkm->len);
         if (handlers[ONERROR]) {
           ele_t d;
           d.key = rd_kafka_topic_name(rkm->rkt);
           d.off = rkm->offset;
           d.par = rkm->partition;
-          d.cd  = chaos::common::data::CDWShrdPtr();
+          d.cd  = chaos::common::data::CDWShrdPtr(new chaos::common::data::CDataWrapper());
+          d.cd->addStringValue("msg",ss.str());
+          d.cd->addInt32Value("err",-1);
 
           handlers[ONERROR](d);
         }
