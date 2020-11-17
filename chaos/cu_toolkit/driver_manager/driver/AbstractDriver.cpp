@@ -53,7 +53,7 @@ void AbstractDriver::init(void *init_param) {
   //!try to decode parameter string has json document
   is_json_param = parm.isJsonValue((const char *)init_param);
 
-  ADLAPP_ << "Start in driver thread";
+  ADLDBG_ << "Start in driver thread";
   //start interna thread for the waithing of the message
   thread_message_receiver.reset(new boost::thread(boost::bind(&AbstractDriver::scanForMessage, this)));
 
@@ -80,6 +80,7 @@ void AbstractDriver::init(void *init_param) {
   ADLAPP_ << "Call custom driver initialization";
 
   DrvMsg              init_msg;
+  int retry=3;
   ResponseMessageType id_to_read;
   AccessorQueueType   result_queue;
   std::memset(&init_msg, 0, sizeof(DrvMsg));
@@ -87,12 +88,18 @@ void AbstractDriver::init(void *init_param) {
   init_msg.id            = 0;
   init_msg.inputData     = init_param;
   init_msg.drvResponseMQ = &result_queue;
-  command_queue->push(&init_msg);
-  result_queue.wait_and_pop(id_to_read);
-  if (init_msg.ret) {
-    //in case we have error throw the exception
-    throw CException(init_msg.ret, init_msg.err_msg, init_msg.err_dom);
-  }
+  int ret;
+  do{
+  ret=command_queue->push(&init_msg);
+    if(ret){
+      result_queue.wait_and_pop(id_to_read);
+      if (init_msg.ret) {
+        //in case we have error throw the exception
+        throw CException(init_msg.ret, init_msg.err_msg, init_msg.err_dom);
+      }
+    }
+  
+  } while((ret==false) && (retry--));
 }
 
 // Deinit the implementation
@@ -108,10 +115,11 @@ void AbstractDriver::deinit() {
   deinit_msg.drvResponseMQ = &result_queue;
   //send opcode to driver implemetation
   driver_need_to_deinitialize = true;
-  command_queue->push(&deinit_msg);
+  int ret=command_queue->push(&deinit_msg);
+  if(ret){
   //wait for completition
-  result_queue.wait_and_pop(id_to_read);
-
+    result_queue.wait_and_pop(id_to_read);
+  }
   //now join to  the thread if joinable
   if (thread_message_receiver->joinable()) {
     thread_message_receiver->join();
@@ -156,7 +164,7 @@ bool AbstractDriver::releaseAccessor(DriverAccessor *accessor) {
   }
 
   if (accessor->driver_uuid.compare(driver_uuid) != 0) {
-    ADLERR_ << "has been requested to relase an accessor with uuid=" << accessor->driver_uuid << "that doesn't belong to this driver with uuid =" << driver_uuid;
+    ADLERR_ << "has been requested to release an accessor with uuid=" << accessor->driver_uuid << "that doesn't belong to this driver with uuid =" << driver_uuid;
     return false;
   }
   boost::unique_lock<boost::shared_mutex> lock(accesso_list_shr_mux);
