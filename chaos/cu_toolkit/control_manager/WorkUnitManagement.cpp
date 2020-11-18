@@ -256,7 +256,7 @@ void WorkUnitManagement::scheduleSM()  {
             //send load completion to the mds
             sendLoadCompletionToMDS(work_unit_instance->getCUID());
             
-            //set healt to load
+            //set healt to start
             HealtManager::getInstance()->addNodeMetricValue(work_unit_instance->getCUID(),
                                                             NodeHealtDefinitionKey::NODE_HEALT_STATUS,
                                                             NodeHealtDefinitionValue::NODE_HEALT_STATUS_START);
