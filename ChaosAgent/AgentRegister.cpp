@@ -223,7 +223,7 @@ void AgentRegister::timeout() {
         case AgentRegisterStateRegistered: {
             HealtManager::getInstance()->addNodeMetricValue(agent_uid,
                                                             NodeHealtDefinitionKey::NODE_HEALT_STATUS,
-                                                            NodeHealtDefinitionValue::NODE_HEALT_STATUS_LOAD);
+                                                            NodeHealtDefinitionValue::NODE_HEALT_STATUS_START);
             //stop timer
             TimerHandler::stopMe();
             

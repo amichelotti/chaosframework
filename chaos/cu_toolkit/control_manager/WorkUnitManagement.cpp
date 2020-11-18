@@ -259,7 +259,7 @@ void WorkUnitManagement::scheduleSM()  {
             //set healt to load
             HealtManager::getInstance()->addNodeMetricValue(work_unit_instance->getCUID(),
                                                             NodeHealtDefinitionKey::NODE_HEALT_STATUS,
-                                                            NodeHealtDefinitionValue::NODE_HEALT_STATUS_LOAD);
+                                                            NodeHealtDefinitionValue::NODE_HEALT_STATUS_START);
             break;
         }
         case UnitStateStartUnpublishing: {
