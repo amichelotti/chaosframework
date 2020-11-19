@@ -241,8 +241,8 @@ chaos::common::data::CDWUniquePtr ChaosAgent::checkAndPrepareScript(chaos::servi
                 path=writeScript(wd,it.scriptID,param->getStringValue("eudk_script_content"));
                 if(path.size()>0){
                     it.working_dir=wd;
-                    param->addStringValue("workdir",wd);
-                    INFO <<"WORKDIR PARAMETER:"<<param->getJSONString();
+                    param->addStringValue("workdir",boost::filesystem::current_path().string()+"/"+wd);
+                    INFO <<"WORKDIR PARAMETER:"<<param->getStringValue("workdir");
 
                     return param;
                 }
