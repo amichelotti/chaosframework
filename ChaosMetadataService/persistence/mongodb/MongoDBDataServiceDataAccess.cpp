@@ -349,7 +349,7 @@ int MongoDBDataServiceDataAccess::getBestNDataService(const std::string& ds_zone
     try{
         mongo::Query query = BSON(DataServiceNodeDefinitionKey::DS_HA_ZONE << ds_zone <<
                                   NodeDefinitionKey::NODE_TYPE << NodeType::NODE_TYPE_DATA_SERVICE <<
-                                  CHAOS_FORMAT("health_stat.%1%", %NodeHealtDefinitionKey::NODE_HEALT_MDS_TIMESTAMP) << BSON("$gte" << mongo::Date_t(TimingUtil::getTimeStamp()-chaos::common::contants::RefreshEndpointMSec)));
+                                  CHAOS_FORMAT("health_stat.%1%", %NodeHealtDefinitionKey::NODE_HEALT_MDS_TIMESTAMP) << BSON("$gte" << mongo::Date_t(TimingUtil::getTimeStamp()-chaos::common::constants::RefreshEndpointMSec)));
         //filter on sequence
         mongo::BSONObj projection = BSON(NodeDefinitionKey::NODE_UNIQUE_ID << 1 <<
                                          NodeDefinitionKey::NODE_RPC_ADDR << 1 <<
