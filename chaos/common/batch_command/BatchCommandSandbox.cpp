@@ -347,7 +347,7 @@ void BatchCommandSandbox::checkNextCommand() {
                 PRIORITY_ELEMENT(CommandInfoAndImplementation) command_to_delete;
                 PRIORITY_ELEMENT(CommandInfoAndImplementation) next_available_command;
                 //compute the runnig state or fault
-                boost::mutex::scoped_lock lockForCurrentCommandMutex(mutext_access_current_command);
+              //  boost::mutex::scoped_lock lockForCurrentCommandMutex(mutext_access_current_command);
                 // cehck waht we need to do with current and submitted command
                //// How many locks? 
                lock_next_command_queue.lock();
@@ -367,7 +367,7 @@ void BatchCommandSandbox::checkNextCommand() {
                     case RSR_NO_CHANGE:
                         DEBUG_CODE(SCSLDBG_ << "[checkNextCommand] RSR_NO_CHANGE";)
                         
-                        lockForCurrentCommandMutex.unlock();
+                       // lockForCurrentCommandMutex.unlock();
                         lock_next_command_queue.unlock();
                         WAIT_ON_NEXT_CMD
                         continue; //we must recontorl the top element because it could be have changed
@@ -375,7 +375,7 @@ void BatchCommandSandbox::checkNextCommand() {
                         
                     case RSR_TIMED_RETRY:
                         DEBUG_CODE(SCSLDBG_ << "[checkNextCommand] RSR_TIMED_RETRY";)
-                        lockForCurrentCommandMutex.unlock();
+                     //   lockForCurrentCommandMutex.unlock();
                         lock_next_command_queue.unlock();
                         TIMED_WAIT_ON_NEXT_CMD(next_available_command->element->cmdImpl->commandFeatures.featureSubmissionRetryDelay);
                         continue; //we must recontorl the top element because it could be have changed
@@ -468,7 +468,7 @@ void BatchCommandSandbox::checkNextCommand() {
                         break;
                     }
                 }
-                lockForCurrentCommandMutex.unlock();
+               // lockForCurrentCommandMutex.unlock();
                 //delete
                 if (command_to_delete && !command_to_delete->element->cmdImpl->sticky) {
                     DEBUG_CODE(SCSLDBG_ << "[checkNextCommand] Delete command with pointer " << std::hex << command_to_delete << std::dec;)
@@ -637,8 +637,11 @@ void BatchCommandSandbox::runCommand() {
     int64_t next_prediction_error = 0;
     BatchCommand *curr_executing_impl = NULL;
     //check if the current command has ended or need to be substitute
+
     boost::mutex::scoped_lock lockForCurrentCommand(mutext_access_current_command);
+
     do {
+
         if (current_executing_command) {
             //consume oepration on current command
             consumeRunCmdOps();

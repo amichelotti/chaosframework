@@ -211,7 +211,7 @@ ChaosUniquePtr<MessageRequestFuture> MultiAddressMessageChannel::_sendRequestWit
                                                        MOVE(request_pack));
 
     } else {
-        MAMC_ERR << "Cannot get Service feeder, Sending request to:" << used_remote_address<<"  action:"<<action_name<<" domain:"<<action_domain<<" request pack:"<<((request_pack.get())?request_pack->getJSONString():"");
+        MAMC_ERR << "Cannot get Service feeder, Sending request to:'" << used_remote_address<<"'  action:"<<action_name<<" domain:"<<action_domain<<" request pack:"<<((request_pack.get())?request_pack->getJSONString():"");
 
         used_remote_address.clear();
 

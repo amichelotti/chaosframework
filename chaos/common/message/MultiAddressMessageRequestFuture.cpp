@@ -98,7 +98,9 @@ bool MultiAddressMessageRequestFuture::wait() {
                 } else {
                     MAMRF_INFO << "We have retried " << retry_on_same_server << " times on " << last_used_address;
                     //switchOnOtherServer();
-                    parent_mn_message_channel->setURLAsOffline(last_used_address);
+                    if(parent_mn_message_channel->getNumberOfManagedNodes()>1){
+                     parent_mn_message_channel->setURLAsOffline(last_used_address);
+                    }
                     break;
                 }
             }
