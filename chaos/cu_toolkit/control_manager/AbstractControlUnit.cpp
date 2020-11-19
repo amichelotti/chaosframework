@@ -174,6 +174,7 @@ AbstractControlUnit::AbstractControlUnit(const std::string&           _control_u
     , control_unit_id(_control_unit_id)
     , control_unit_param(_control_unit_param)
     , run_id(0)
+    , hasstopped(true)
     , standard_logging_channel()
     , alarm_logging_channel()
     , push_dataset_counter(0)
@@ -1053,6 +1054,8 @@ CDWUniquePtr AbstractControlUnit::_init(CDWUniquePtr init_configuration) {
 }
 
 CDWUniquePtr AbstractControlUnit::_start(CDWUniquePtr startParam) {
+  hasstopped=false;
+
   if (getServiceState() == CUStateKey::START) {
     return CDWUniquePtr();
   }
@@ -1106,6 +1109,7 @@ CDWUniquePtr AbstractControlUnit::_start(CDWUniquePtr startParam) {
 }
 
 CDWUniquePtr AbstractControlUnit::_stop(CDWUniquePtr stopParam) {
+  hasstopped=true;
   if (getServiceState() == CUStateKey::STOP) {
     ERR<<" ALREADY IN STOP";
     return CDWUniquePtr();

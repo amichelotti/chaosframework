@@ -150,6 +150,7 @@ void RTAbstractControlUnit::init(void *initData) {
  Starto the  Control Unit scheduling for device
  */
 void RTAbstractControlUnit::start() {
+
     //call parent impl
     AbstractControlUnit::start();
     
@@ -163,6 +164,7 @@ void RTAbstractControlUnit::start() {
  */
 void RTAbstractControlUnit::stop() {
     //manage the thread
+
     RTCULAPP_ << "Stopping thread for device:" << DatasetDB::getDeviceID();
     threadStartStopManagment(false);
     RTCULAPP_ << "Thread for device stopped:" << DatasetDB::getDeviceID();
@@ -187,14 +189,12 @@ void RTAbstractControlUnit::deinit() {
 void RTAbstractControlUnit::threadStartStopManagment(bool startAction) {
     try{
         if(startAction) {
-                  
-            if( scheduler_run){
-                RTCULDBG_ << "thread already running";
-            }
+                
             scheduler_run = true;
             scheduler_thread.reset(new boost::thread(boost::bind(&RTAbstractControlUnit::executeOnThread, this)));
              if(!scheduler_thread.get()){
                 RTCULERR_ << "Cannot allocate thread";
+                scheduler_run=false;
                 return;
             }
 #if defined(__linux__) || defined(__APPLE__)
@@ -218,14 +218,19 @@ void RTAbstractControlUnit::threadStartStopManagment(bool startAction) {
             }
 #endif
         } else {
-            if(!scheduler_run){
-                RTCULDBG_ << "thread already stopped";
-            } 
+           
             scheduler_run = false;
 
             if(scheduler_thread.get()&&scheduler_thread->joinable()){
                 RTCULDBG_ << "Stopping and joining scheduling thread";
-                scheduler_thread->join();
+                //scheduler_thread->join();
+                  if (scheduler_thread->try_join_for(boost::chrono::milliseconds(chaos::common::constants::CUTimersTimeoutinMSec))){
+                        RTCULDBG_ << "schedulerThread joined!";
+
+                    } else {
+                        scheduler_thread->interrupt();
+                        RTCULERR_ << "Timeout of schedulerThread interrupted";
+                    }
             }
             RTCULDBG_ << "Thread stopped";
 

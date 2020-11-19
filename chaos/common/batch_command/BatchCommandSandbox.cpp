@@ -184,7 +184,7 @@ void BatchCommandSandbox::stop()  {
     
     if (thread_scheduler.get()&&thread_scheduler->joinable()) {
         SCSLDBG_ << "Join on schedulerThread";
-         if (thread_scheduler->try_join_for(boost::chrono::seconds(5))){
+         if (thread_scheduler->try_join_for(boost::chrono::milliseconds(chaos::common::constants::CUTimersTimeoutinMSec))){
                 SCSLDBG_ << "schedulerThread joined!";
 
         } else {

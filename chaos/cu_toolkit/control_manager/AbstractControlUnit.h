@@ -243,6 +243,8 @@ class AbstractControlUnit : public DeclareAction,
   void checkForRestoreOnInit();
 
  private:
+   bool hasstopped;
+
   //enable trace for heap into control unit environment
 #ifdef __CHAOS_DEBUG_MEMORY_CU__
   tracey::scope sc;
@@ -298,6 +300,8 @@ class AbstractControlUnit : public DeclareAction,
   int32_t  ds_update_anyway;
   //! identify last timestamp whene the push rate has been acquired;
   uint64_t last_push_rate_grap_ts;
+
+
 
   //! control unit driver information list
   //! definition of the type for the driver list
@@ -793,7 +797,7 @@ class AbstractControlUnit : public DeclareAction,
     //call the DeclareAction action register method, the domain will be associated to the control unit isntance
     return DeclareAction::addActionDescritionInstance(objectReference, actionHandler, control_unit_instance.c_str(), actionAliasName, actionDescription);
   }
-
+  bool hasStopped() const {return hasstopped;}
   template <typename O, typename T>
   bool addHandlerOnInputAttributeName(O*                                                                                      object_reference,
                                       typename handler::DatasetAttributeHandlerDescription<O, T>::HandlerDescriptionActionPtr handler_ptr,
