@@ -28,8 +28,8 @@
 using namespace chaos::cu::driver_manager::driver;
 
 #define DALAPP_ INFO_LOG(DriverAccessor)
-#define DALDBG_ DBG_LOG(DriverAccessor)
-#define DALERR_ ERR_LOG(DriverAccessor)
+#define DALDBG_ DBG_LOG(DriverAccessor)<< "-owned by:"<<owner.size()<<" cu,[0]:"<<owner[0]<<"-"
+#define DALERR_ ERR_LOG(DriverAccessor)<< "-owned by:"<<owner.size()<<" cu,[0]:"<<owner[0]<<"-"
 
 /*------------------------------------------------------
  
@@ -69,27 +69,37 @@ bool DriverAccessor::send(DrvMsgPtr cmd,
   // command_queue->push(cmd, base_opcode_priority + inc_priority);
   int retry = 3;
   int ret;
+  int len;
   do {
+    if((len=command_queue->length())>0){
+      DALDBG_<<"["<<cmd->id<<"] send opcode:"<<cmd->opcode<<" queue len:"<<command_queue->length();
+    }
+
      ret = command_queue->push(cmd);
 
-    //DALDBG_<<owner<<" ["<<counter<<"] send opcode:"<<cmd->opcode;
 
     //wait the answer
-    //   DALDBG_<<owner[0]<<" ["<<cmd->id<<"] send opcode:"<<cmd->opcode<<" timeout:"<<timeout_ms;
+     //  DALDBG_<<owner[0]<<" ["<<cmd->id<<"] send opcode:"<<cmd->opcode<<" timeout:"<<timeout_ms;
+    
     if (ret) {
       int rett = accessor_sync_mq.wait_and_pop(answer_message, timeout_ms);
+         
+      if(len>0){
+
+        DALDBG_<<"["<<cmd->id<<"] returned id:"<<answer_message<<" opcode:"<<cmd->opcode<<" ret:"<<ret<<command_queue->length();
+      }
       if (rett < 0) {
         std::stringstream ss;
         ss << cmd->id << "," << accessor_sync_mq.length() << "] Timeout of:" << timeout_ms << " ms expired, executing opcode:" << cmd->opcode;
         // throw chaos::CFatalException(ret,ss.str(),__FUNCTION__);
-        DALERR_ << ss.str();
+        DALERR_ <<"##"<< ss.str();
         strncpy(cmd->err_msg, ss.str().c_str(), DRVMSG_ERR_MSG_SIZE);
         strncpy(cmd->err_dom, __FUNCTION__, DRVMSG_ERR_MSG_SIZE);
         cmd->ret = ret;
         return false;
       }
       if ((*cmd->err_msg != 0) && (*cmd->err_dom != 0) && (cmd->ret != 0)) {
-        DALERR_ << "Launch Exception msg:" << cmd->err_msg << " dom:" << cmd->err_dom << " ret:" << cmd->ret;
+        DALERR_ << "## Launch Exception msg:" << cmd->err_msg << " dom:" << cmd->err_dom << " ret:" << cmd->ret;
         throw chaos::CFatalException(cmd->ret, cmd->err_msg, cmd->err_dom);
       }
     }

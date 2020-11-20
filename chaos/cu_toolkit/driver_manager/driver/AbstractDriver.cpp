@@ -83,7 +83,6 @@ void AbstractDriver::init(void *init_param) {
   int retry=3;
   ResponseMessageType id_to_read;
   AccessorQueueType   result_queue;
-  std::memset(&init_msg, 0, sizeof(DrvMsg));
   init_msg.opcode        = OpcodeType::OP_INIT_DRIVER;
   init_msg.id            = 0;
   init_msg.inputData     = init_param;
@@ -185,6 +184,8 @@ void AbstractDriver::scanForMessage() {
 
   DrvMsgPtr current_message_ptr;
   do {
+//        boost::unique_lock<boost::shared_mutex> lock(accesso_list_shr_mux);
+
     //wait for the new command
     command_queue->wait_and_pop(current_message_ptr);
     
@@ -195,7 +196,7 @@ void AbstractDriver::scanForMessage() {
 
     try {
       //clean error message and domain
-     
+
       //! check if we need to execute the private driver's opcode
       switch (current_message_ptr->opcode) {
         case OpcodeType::OP_GET_LASTERROR:
@@ -357,10 +358,16 @@ const bool AbstractDriver::isBypass() const {
 }
 
 void AbstractDriver::setBypass(bool bypass) {
+   // boost::unique_lock<boost::shared_mutex> lock(accesso_list_shr_mux);
+
   if (bypass) {
     LBypassDriverUnqPtrReadLock rl = bypass_driver.getReadLockObject();
     o_exe                          = bypass_driver().get();
   } else {
+/*      DrvMsgPtr              msg;
+    while(command_queue->pop(msg)){
+        ADLDBG_ << "removing messages on bypass id:" << msg->id <<" message opcode:"<<msg->opcode;
+    }*/
     o_exe = this;
   }
 }

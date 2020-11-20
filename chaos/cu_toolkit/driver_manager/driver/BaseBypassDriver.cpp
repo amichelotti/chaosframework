@@ -21,11 +21,16 @@
 #include <chaos/cu_toolkit/driver_manager/driver/BaseBypassDriver.h>
 
 using namespace chaos::cu::driver_manager::driver;
+#define ADLAPP_ INFO_LOG_1_P(BaseBypassDriver, "BYPASS")
+#define ADLDBG_ DBG_LOG_1_P(BaseBypassDriver, "BYPASS")
+#define ADLERR_ ERR_LOG_1_P(BaseBypassDriver, "BYPASS")
 
 BaseBypassDriver::BaseBypassDriver(){}
 BaseBypassDriver::~BaseBypassDriver(){}
 
 MsgManagmentResultType::MsgManagmentResult BaseBypassDriver::execOpcode(DrvMsgPtr cmd) {
     //do nothing and return as executed
+    ADLDBG_<<cmd->id<<"] bypass opcode="<<cmd->opcode;
+    usleep(400000);
     return MsgManagmentResultType::MMR_EXECUTED;
 }
