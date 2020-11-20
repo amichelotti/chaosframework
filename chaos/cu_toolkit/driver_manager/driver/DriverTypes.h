@@ -101,7 +101,8 @@ namespace chaos{
                 
                 //typedef boost::interprocess::message_queue drvqueue_t;
                // typedef chaos_thread_ns::TemplatedConcurrentQueue<DrvMsg*> DriverQueueType;
-                typedef chaos_thread_ns::TLockFreeQueue<DrvMsg*,256> DriverQueueType;
+                typedef chaos_thread_ns::TLockFreeQueue<DrvMsg*,1> DriverQueueType;
+                typedef chaos_thread_ns::TLockFreeQueue<DrvMsg*,256> DriverAsyncQueueType;
 
                 //typedef chaos_thread_ns::TemplatedConcurrentQueue<ResponseMessageType> AccessorQueueType;
                 typedef chaos_thread_ns::TLockFreeQueue<ResponseMessageType,256> AccessorQueueType;

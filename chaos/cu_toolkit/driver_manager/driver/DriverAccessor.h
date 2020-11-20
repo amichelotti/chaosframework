@@ -101,7 +101,8 @@ namespace chaos{
                      */
                     //boost::interprocess::message_queue *commandQueue;
                     DriverQueueType *command_queue;
-                    
+                    DriverQueueType *command_async_queue;
+
                     //Private constructor
                     DriverAccessor(unsigned int _accessor_index);
                     
