@@ -30,7 +30,7 @@ BaseBypassDriver::~BaseBypassDriver(){}
 
 MsgManagmentResultType::MsgManagmentResult BaseBypassDriver::execOpcode(DrvMsgPtr cmd) {
     //do nothing and return as executed
-    ADLDBG_<<cmd->id<<"] bypass opcode="<<cmd->opcode;
-    usleep(400000);
+  //  ADLDBG_<<cmd->id<<"] bypass opcode="<<cmd->opcode;
+  //  usleep(1000);
     return MsgManagmentResultType::MMR_EXECUTED;
 }

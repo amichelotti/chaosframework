@@ -70,18 +70,30 @@ bool DriverAccessor::send(DrvMsgPtr cmd,
   int retry = 3;
   int ret;
   int len;
-  do {
+  
     if((len=command_queue->length())>0){
       DALDBG_<<"["<<cmd->id<<"] send opcode:"<<cmd->opcode<<" queue len:"<<command_queue->length();
     }
+    if(accessor_sync_mq.length()>0){
+        DALERR_<<"["<<cmd->id<<"] ## Already an answer!! send opcode:"<<cmd->opcode<<" answer queue len:"<<accessor_sync_mq.length()<<" queue len:"<<command_queue->length();
 
+    }
+    do{
      ret = command_queue->push(cmd);
+     if(ret==false ){
+        DALERR_<<owner[0]<<" ["<<cmd->id<<"] ## push failed send opcode:"<<cmd->opcode<<" timeout:"<<timeout_ms<<" retry:"<<retry;
 
+     }
+    }while ((ret == false) && (retry--));
 
+    if(ret==false){
+        DALERR_<<owner[0]<<" ["<<cmd->id<<"] ## FAILED send opcode:"<<cmd->opcode<<" timeout:"<<timeout_ms<<" retry:"<<retry;
+
+      return ret;
+    }
     //wait the answer
      //  DALDBG_<<owner[0]<<" ["<<cmd->id<<"] send opcode:"<<cmd->opcode<<" timeout:"<<timeout_ms;
     
-    if (ret) {
       int rett = accessor_sync_mq.wait_and_pop(answer_message, timeout_ms);
          
       if(len>0){
@@ -102,8 +114,8 @@ bool DriverAccessor::send(DrvMsgPtr cmd,
         DALERR_ << "## Launch Exception msg:" << cmd->err_msg << " dom:" << cmd->err_dom << " ret:" << cmd->ret;
         throw chaos::CFatalException(cmd->ret, cmd->err_msg, cmd->err_dom);
       }
-    }
-  } while (ret == false && (retry--));
+    
+  
   //check result
   return (answer_message == MsgManagmentResultType::MMR_EXECUTED);
 }
