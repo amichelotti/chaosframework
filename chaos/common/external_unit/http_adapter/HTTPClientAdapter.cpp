@@ -262,7 +262,7 @@ void HTTPClientAdapter::ev_handler(struct mg_connection *conn,
                 } else {
                     conn_info->ext_unit_conn->accepted_state = accept_result;
                     std::string json_string((const char *)wm->data, wm->size);
-                    DBG << json_string;
+                  //  DBG << json_string;
                 }
             } else {
                 //accepted connection can received data

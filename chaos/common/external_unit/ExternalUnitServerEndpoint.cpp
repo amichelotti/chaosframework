@@ -53,7 +53,7 @@ int ExternalUnitServerEndpoint::sendMessage(const std::string& connection_identi
     //send data to the connection
     int ret=map_connection()[connection_identifier]->sendData(MOVE(message),
                                                      opcode);
-    AbstractRemoteIODriver_DBG<<counter<<"] -"<< connection_identifier<<"-  message sent:"<<message->getJSONString();
+    AbstractRemoteIODriver_DBG<<counter<<"] -"<< connection_identifier<<"-  message sent";
     counter++;
     rl->unlock();
 

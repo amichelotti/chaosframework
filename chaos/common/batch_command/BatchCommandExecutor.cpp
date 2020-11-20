@@ -406,7 +406,7 @@ ChaosUniquePtr<CommandState> BatchCommandExecutor::getStateForCommandID(uint64_t
     // get upgradable access
     ChaosUniquePtr<CommandState> result;
     // NOTE: is necessary?
-    // ReadLock lock(command_state_rwmutex);
+    ReadLock lock(command_state_rwmutex);
     ChaosSharedPtr<CommandState> _internal_state = getCommandState(command_id);
     if(_internal_state.get()) {
         result.reset(new CommandState());

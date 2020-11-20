@@ -85,9 +85,15 @@ bool MultiAddressMessageRequestFuture::wait() {
                     //we have submission error
                     if (current_future->getError()) {
                         MAMRF_ERR << current_future->getRequestID()<<"] We have submission error:" << current_future->getError() << " message:" << current_future->getErrorMessage() << " domain:" << current_future->getErrorDomain();
-                        
+                        if(parent_mn_message_channel->getNumberOfManagedNodes()>1){
+
                         //set current server offline
-                        parent_mn_message_channel->setURLAsOffline(last_used_address);
+                            parent_mn_message_channel->setURLAsOffline(last_used_address);
+
+                        } else {
+                            retry_other_server++;
+
+                        }
                         break;
                     }
                 }
@@ -96,10 +102,12 @@ bool MultiAddressMessageRequestFuture::wait() {
                     MAMRF_INFO << "Retry to wait on same server for " << timeout_in_milliseconds;
                     continue;
                 } else {
-                    MAMRF_INFO << "We have retried " << retry_on_same_server << " times on " << last_used_address;
+                    MAMRF_INFO << "We have retried " << retry_on_same_server << " times on " << last_used_address <<" retries:"<<retry_other_server;
                     //switchOnOtherServer();
                     if(parent_mn_message_channel->getNumberOfManagedNodes()>1){
                      parent_mn_message_channel->setURLAsOffline(last_used_address);
+                    } else {
+                        retry_other_server++;
                     }
                     break;
                 }
