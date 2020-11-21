@@ -90,7 +90,7 @@ void AbstractDriver::init(void *init_param) {
   int ret;
   do{
   ret=command_queue->push(&init_msg);
-    if(ret){
+    if(ret>=0){
       result_queue.wait_and_pop(id_to_read);
       if (init_msg.ret) {
         //in case we have error throw the exception
@@ -98,7 +98,7 @@ void AbstractDriver::init(void *init_param) {
       }
     }
   
-  } while((ret==false) && (retry--));
+  } while((ret<0) && (retry--));
 }
 
 // Deinit the implementation
@@ -115,7 +115,7 @@ void AbstractDriver::deinit() {
   //send opcode to driver implemetation
   driver_need_to_deinitialize = true;
   int ret=command_queue->push(&deinit_msg);
-  if(ret){
+  if(ret>=0){
   //wait for completition
     result_queue.wait_and_pop(id_to_read);
   }

@@ -76,17 +76,21 @@ bool DriverAccessor::send(DrvMsgPtr cmd,
     }
     if(accessor_sync_mq.length()>0){
         DALERR_<<"["<<cmd->id<<"] ## Already an answer!! send opcode:"<<cmd->opcode<<" answer queue len:"<<accessor_sync_mq.length()<<" queue len:"<<command_queue->length();
+        while(accessor_sync_mq.pop(answer_message)){
+                DALERR_<<"["<<cmd->id<<"] ## popping out answer:"<<answer_message;
+
+        }
 
     }
     do{
      ret = command_queue->push(cmd);
-     if(ret==false ){
+     if(ret<0){
         DALERR_<<owner[0]<<" ["<<cmd->id<<"] ## push failed send opcode:"<<cmd->opcode<<" timeout:"<<timeout_ms<<" retry:"<<retry;
 
      }
-    }while ((ret == false) && (retry--));
+    }while ((ret <0) && (retry--));
 
-    if(ret==false){
+    if(ret<0){
         DALERR_<<owner[0]<<" ["<<cmd->id<<"] ## FAILED send opcode:"<<cmd->opcode<<" timeout:"<<timeout_ms<<" retry:"<<retry;
 
       return ret;
