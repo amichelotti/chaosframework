@@ -72,7 +72,7 @@ bool DriverAccessor::send(DrvMsgPtr cmd,
   int len;
   
     if((len=command_queue->length())>0){
-      DALDBG_<<"["<<cmd->id<<"] send opcode:"<<cmd->opcode<<" queue len:"<<command_queue->length();
+     // DALDBG_<<"["<<cmd->id<<"] send opcode:"<<cmd->opcode<<" queue len:"<<command_queue->length()<<" timeout:"<<timeout_ms;
     }
     if(accessor_sync_mq.length()>0){
         DALERR_<<"["<<cmd->id<<"] ## Already an answer!! send opcode:"<<cmd->opcode<<" answer queue len:"<<accessor_sync_mq.length()<<" queue len:"<<command_queue->length();
