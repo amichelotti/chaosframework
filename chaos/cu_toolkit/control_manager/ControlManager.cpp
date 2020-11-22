@@ -779,7 +779,7 @@ CDWUniquePtr ControlManager::unitServerRegistrationACK(CDWUniquePtr message_data
                     //update healt status
                     HealtManager::getInstance()->addNodeMetricValue(unit_server_alias,
                                                                     NodeHealtDefinitionKey::NODE_HEALT_STATUS,
-                                                                    NodeHealtDefinitionValue::NODE_HEALT_STATUS_LOAD,
+                                                                    NodeHealtDefinitionValue::NODE_HEALT_STATUS_START,
                                                                     true);
                     
                     //now we can start the execution pool manager becuase our unit server has ben successfully registered on the mds
