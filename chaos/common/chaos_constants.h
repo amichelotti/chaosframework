@@ -373,19 +373,21 @@ namespace chaos {
             //!Search cu
             node_type_cu = 2,
             //!search agent
-            node_type_agent = 3,
+            node_type_agent = 4,
             //!search cds
-            node_type_cds = 4,
+            node_type_cds = 8,
             //!search wan
-            node_type_wan = 5,
+            node_type_wan = 16,
             //!search variable for compatibility and reuse  here all the search 
-            node_type_variable = 6,
+            node_type_variable = 32,
             //!search tags
-            node_type_tag = 7,
+            node_type_tag = 64,
             //! all server_nodes
-            node_type_all_server=8,
+            node_type_all_server=128,
             //!search root processes
-            node_type_root = 9
+            node_type_root = 256,
+            node_type_ceu = 512
+
             
             
             
@@ -810,6 +812,9 @@ namespace chaos {
 
         //! param control unit description
         static const char * const CONTROL_UNIT_DESC                                = "cudk_desc";
+
+         //! used to build dedicated view, used in EU
+        static const char * const CONTROL_UNIT_VIEW                                = "cudk_view";
         
         //! param to pass to the control unit during init operation[ int64]
         static const char * const CONTROL_UNIT_RUN_ID                               = "cudk_run_id";

@@ -48,13 +48,13 @@ CDWUniquePtr NodeLoadCompletion::execute(CDWUniquePtr api_data) {
     if(!api_data->isStringValue(chaos::NodeDefinitionKey::NODE_RPC_ADDR)){LOG_AND_TROW(CU_LC_ERR, -3, "The ndk_rpc_addr key need to be string");}
     
     const std::string node_type = api_data->getStringValue(NodeDefinitionKey::NODE_TYPE);
-    if(node_type.compare(NodeType::NODE_TYPE_UNIT_SERVER) == 0) {
+/*    if(node_type.compare(NodeType::NODE_TYPE_UNIT_SERVER) == 0) {
         
     } else if(boost::starts_with(node_type, NodeType::NODE_TYPE_CONTROL_UNIT)) {
         //the control units type value start with the default but are followe by custom type
 
     } else {
         throw CException(-3, "Type of node not managed for registration", __PRETTY_FUNCTION__);
-    }
+    }*/
     return result;
 }

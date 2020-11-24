@@ -225,6 +225,9 @@ int MongoDBNodeDataAccess::updateNode(chaos::common::data::CDataWrapper& node_de
         if(node_description.hasKey(chaos::NodeDefinitionKey::NODE_BUILD_INFO)) {
             updated_field << chaos::NodeDefinitionKey::NODE_BUILD_INFO << node_description.getStringValue(chaos::NodeDefinitionKey::NODE_BUILD_INFO);
         }
+         if(node_description.hasKey(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_VIEW)) {
+            updated_field << chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_VIEW << node_description.getStringValue(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_VIEW);
+        }
         if(node_description.hasKey(chaos::RpcActionDefinitionKey::CS_CMDM_ACTION_DESC)) {
             CMultiTypeDataArrayWrapperSPtr description_array(node_description.getVectorValue(chaos::RpcActionDefinitionKey::CS_CMDM_ACTION_DESC));
             for(int desc_idx = 0;
@@ -482,10 +485,8 @@ int MongoDBNodeDataAccess::searchNode(chaos::common::data::CDataWrapper **result
             default:
                 break;
         }
-        if(search_type!=chaos::NodeType::NodeSearchType::node_type_all_server){
-
-            bson_find_and << BSON( chaos::NodeDefinitionKey::NODE_TYPE << type_of_node);
-        } else {
+        switch(search_type){
+            case chaos::NodeType::NodeSearchType::node_type_all_server:{
                 MDBNDA_DBG << "QUERY SERVER but:"<<criteria;
                 bson_find_or<<BSON( chaos::NodeDefinitionKey::NODE_TYPE << chaos::NodeType::NODE_TYPE_ROOT)<<
                 BSON( chaos::NodeDefinitionKey::NODE_TYPE << chaos::NodeType::NODE_TYPE_UNIT_SERVER)<<
@@ -493,8 +494,20 @@ int MongoDBNodeDataAccess::searchNode(chaos::common::data::CDataWrapper **result
                 BSON( chaos::NodeDefinitionKey::NODE_TYPE << chaos::NodeType::NODE_TYPE_AGENT)<<
                 BSON( chaos::NodeDefinitionKey::NODE_TYPE << chaos::NodeType::NODE_TYPE_DATA_SERVICE);
                 bson_find_and<<BSON("$or"<<bson_find_or.arr());
+                break;
+            }
+            case chaos::NodeType::NodeSearchType::node_type_ceu:{
+                bson_find_or<<BSON( chaos::NodeDefinitionKey::NODE_TYPE << chaos::NodeType::NODE_TYPE_ROOT)<<
+                BSON( chaos::NodeDefinitionKey::NODE_TYPE << chaos::NodeType::NODE_TYPE_CONTROL_UNIT);
+                bson_find_and<<BSON("$or"<<bson_find_or.arr());
+                break;
+            }
+            default:
+                bson_find_and << BSON( chaos::NodeDefinitionKey::NODE_TYPE << type_of_node);
+
 
         }
+        
     }
 #ifdef HEALTH_ON_DB
  
@@ -504,7 +517,7 @@ int MongoDBNodeDataAccess::searchNode(chaos::common::data::CDataWrapper **result
     if(criteria.size()>0){
         bson_find_and << BSON("$or" << getSearchTokenOnFiled(criteria, chaos::NodeDefinitionKey::NODE_UNIQUE_ID));
     }
-    if(impl.size()>0){
+    if((impl.size()>0)&&(search_type!=chaos::NodeType::NodeSearchType::node_type_ceu)){
             bson_find_and << BSON("$or" << getSearchTokenOnFiled(impl, "instance_description.control_unit_implementation"));
 
     }

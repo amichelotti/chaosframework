@@ -433,9 +433,16 @@ int MongoDBControlUnitDataAccess::getFullDescription(const std::string& cu_uniqu
                                                      chaos::common::data::CDataWrapper **dataset_description){
     int err = 0;
     mongo::BSONObj result;
+    mongo::BSONArrayBuilder bson_find_or,bson_find_and;
+
     try {
-        mongo::BSONObj query = BSON(NodeDefinitionKey::NODE_UNIQUE_ID << cu_unique_id
-                                    << NodeDefinitionKey::NODE_TYPE << NodeType::NODE_TYPE_CONTROL_UNIT);
+         bson_find_or<<BSON( chaos::NodeDefinitionKey::NODE_TYPE << chaos::NodeType::NODE_TYPE_ROOT)<<
+                BSON( chaos::NodeDefinitionKey::NODE_TYPE << chaos::NodeType::NODE_TYPE_CONTROL_UNIT);
+          bson_find_and<<BSON(NodeDefinitionKey::NODE_UNIQUE_ID << cu_unique_id);
+          bson_find_and<<BSON("$or"<<bson_find_or.arr());
+               
+        mongo::BSONObj query = bson_find_and.obj();/*BSON(NodeDefinitionKey::NODE_UNIQUE_ID << cu_unique_id
+                                    << NodeDefinitionKey::NODE_TYPE << NodeType::NODE_TYPE_CONTROL_UNIT);*/
         
         //remove the field of the document
         if((err = connection->findOne(result,
