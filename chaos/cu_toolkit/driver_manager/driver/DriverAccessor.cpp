@@ -56,7 +56,7 @@ bool DriverAccessor::send(DrvMsgPtr cmd,
   CHAOS_ASSERT(cmd)
   ResponseMessageType answer_message = 0;
 
-  //boost::unique_lock<boost::shared_mutex> lock(mutex_queue);
+  boost::unique_lock<boost::shared_mutex> lock(mutex_queue);
 
   //fill the cmd with the information for retrieve it
   cmd->id            = messages_count++;
@@ -72,7 +72,7 @@ bool DriverAccessor::send(DrvMsgPtr cmd,
   int len;
   
     if((len=command_queue->length())>0){
-     // DALDBG_<<"["<<cmd->id<<"] send opcode:"<<cmd->opcode<<" queue len:"<<command_queue->length()<<" timeout:"<<timeout_ms;
+      DALDBG_<<"["<<cmd->id<<"] send opcode:"<<cmd->opcode<<" queue len:"<<command_queue->length()<<" timeout:"<<timeout_ms;
     }
     if(accessor_sync_mq.length()>0){
         DALERR_<<"["<<cmd->id<<"] ## Already an answer!! send opcode:"<<cmd->opcode<<" answer queue len:"<<accessor_sync_mq.length()<<" queue len:"<<command_queue->length();
@@ -83,9 +83,9 @@ bool DriverAccessor::send(DrvMsgPtr cmd,
 
     }
     do{
-     ret = command_queue->push(cmd);
+     ret = command_queue->push(cmd,timeout_ms);
      if(ret<0){
-        DALERR_<<owner[0]<<" ["<<cmd->id<<"] ## push failed send opcode:"<<cmd->opcode<<" timeout:"<<timeout_ms<<" retry:"<<retry;
+        DALERR_<<owner[0]<<" ["<<cmd->id<<"] ## push failed send opcode:"<<cmd->opcode<<" timeout:"<<timeout_ms<<" ret:"<<ret<<" retry:"<<retry;
 
      }
     }while ((ret <0) && (retry--));
@@ -102,11 +102,11 @@ bool DriverAccessor::send(DrvMsgPtr cmd,
          
       if(len>0){
 
-        DALDBG_<<"["<<cmd->id<<"] returned id:"<<answer_message<<" opcode:"<<cmd->opcode<<" ret:"<<ret<<command_queue->length();
+        DALDBG_<<"["<<cmd->id<<"] returned id:"<<answer_message<<" opcode:"<<cmd->opcode<<" ret:"<<rett<<" cmdqueue len:"<<command_queue->length()<<" timeout:"<<timeout_ms;
       }
       if (rett < 0) {
         std::stringstream ss;
-        ss << cmd->id << "," << accessor_sync_mq.length() << "] Timeout of:" << timeout_ms << " ms expired, executing opcode:" << cmd->opcode;
+        ss << cmd->id << "," << accessor_sync_mq.length() << "] Timeout of:" << timeout_ms << " ms expired, executing opcode:" << cmd->opcode<<" ret:"<<rett;
         // throw chaos::CFatalException(ret,ss.str(),__FUNCTION__);
         DALERR_ <<"##"<< ss.str();
         strncpy(cmd->err_msg, ss.str().c_str(), DRVMSG_ERR_MSG_SIZE);
