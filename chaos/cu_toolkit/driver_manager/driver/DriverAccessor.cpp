@@ -100,7 +100,7 @@ bool DriverAccessor::send(DrvMsgPtr cmd,
     
       int rett = accessor_sync_mq.wait_and_pop(answer_message, timeout_ms);
          
-      if(len>0){
+     if(len>0){
 
         DALDBG_<<"["<<cmd->id<<"] returned id:"<<answer_message<<" opcode:"<<cmd->opcode<<" ret:"<<rett<<" cmdqueue len:"<<command_queue->length()<<" timeout:"<<timeout_ms;
       }
@@ -173,7 +173,7 @@ std::string DriverAccessor::getDriverName() const {
 chaos::common::data::CDWUniquePtr DriverAccessor::getDrvProperties() {
   chaos_driver::DrvMsg message;
   message.opcode = OpcodeType::OP_GET_PROPERTIES;
-  send(&message);
+  send(&message,chaos::common::constants::CUTimersTimeoutinMSec);
 
   if (message.resultData && message.resultDataLength) {
     chaos::common::data::CDWUniquePtr ptr(new chaos::common::data::CDataWrapper());
@@ -193,7 +193,7 @@ chaos::common::data::CDWUniquePtr DriverAccessor::setDrvProperties(chaos::common
     char* ptr               = (char*)tmp->getBSONRawData(sizeb);
     message.inputData       = ptr;
     message.inputDataLength = sizeb;
-    send(&message);
+    send(&message,chaos::common::constants::CUTimersTimeoutinMSec);
 
     if (message.resultData && message.resultDataLength) {
       chaos::common::data::CDWUniquePtr ptr(new chaos::common::data::CDataWrapper((const char*)message.resultData));
@@ -213,7 +213,7 @@ int DriverAccessor::setDrvProperty(const std::string& key, const std::string& va
   message.opcode          = OpcodeType::OP_SET_PROPERTY;
   message.inputData       = &args;
   message.inputDataLength = sizeof(keyval_t);
-  send(&message);
+  send(&message,chaos::common::constants::CUTimersTimeoutinMSec);
   return message.ret;
 }
 
