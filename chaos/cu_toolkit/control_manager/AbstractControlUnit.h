@@ -549,7 +549,7 @@ class AbstractControlUnit : public DeclareAction,
   virtual void consumerHandler(const chaos::common::message::ele_t& data);
 
   template <typename T>
-  bool _setDrvProp(const std::string& name, const T& value, uint32_t size) {
+  bool _setDrvProp(const std::string& name, const T& value, uint32_t size,bool bi) {
     chaos::common::data::CDataWrapper cd, props;
     cd.append(PROPERTY_VALUE_KEY, value);
     props.append(name, cd);
@@ -557,7 +557,16 @@ class AbstractControlUnit : public DeclareAction,
          idx != accessor_instances.size();
          idx++) {
       chaos::common::data::CDWUniquePtr p = props.clone();
-      accessor_instances[idx]->setDrvProperties(p);
+      chaos::common::data::CDWUniquePtr ret=accessor_instances[idx]->setDrvProperties(p);
+      if(ret.get()){
+        LDBG_<<"SET PROP:"<<name<<"="<<value<<" returned:"<<ret->getJSONString();
+        if(bi){
+          LDBG_<<"SETTING output "<<name<<" accordingly";
+
+          getAttributeCache()->setOutputAttributeValue(name,value);
+
+        }
+      }
     }
 
     return true;
@@ -572,7 +581,7 @@ class AbstractControlUnit : public DeclareAction,
   virtual bool setDrvProp(const std::string& name, const int64_t value, uint32_t size);
   virtual bool setDrvProp(const std::string& name, const double value, uint32_t size);
   virtual bool setDrvProp(const std::string& name, const std::string value, uint32_t size);
-
+  
   /*
    bool setDrvProp(const std::string &name, double value, uint32_t size=sizeof(double));
    bool setDrvProp(const std::string &name, const std::string& value, uint32_t size);

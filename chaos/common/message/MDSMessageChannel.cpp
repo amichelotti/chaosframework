@@ -72,12 +72,13 @@ void MDSMessageChannel::manageResource() {
     CDWUniquePtr bestEndpointConf;
     
     //run multimessage layer task
-    
-    if(MultiAddressMessageChannel::getNumberOfManagedNodes() == NORMAL_NUMBER_OF_ENDPOINT ||
+    int nmnode=MultiAddressMessageChannel::getNumberOfManagedNodes() ;
+    if(nmnode== NORMAL_NUMBER_OF_ENDPOINT ||
        !auto_configure_endpoint) return;
     
     //try to get the number of remote url to maximum number
-    if((err = getDataDriverBestConfiguration(bestEndpointConf)) || (bestEndpointConf.get() == NULL)) {
+    
+    if((bestEndpointConf.get() == NULL) || (err = getDataDriverBestConfiguration(bestEndpointConf))) {
         MSG_ERR << "Error fetching best endpoint";
         return;
     }
@@ -87,7 +88,7 @@ void MDSMessageChannel::manageResource() {
         MSG_ERR << "Node key has not been found";
         return;
     }
-    unsigned int server_to_add = (unsigned int)(NORMAL_NUMBER_OF_ENDPOINT - MultiAddressMessageChannel::getNumberOfManagedNodes());
+    unsigned int server_to_add = (unsigned int)(NORMAL_NUMBER_OF_ENDPOINT - nmnode);
     
     CMultiTypeDataArrayWrapperSPtr vec = bestEndpointConf->getVectorValue(chaos::NodeDefinitionKey::NODE_RPC_ADDR);
     for(int idx = 0;
@@ -135,7 +136,11 @@ int MDSMessageChannel::sendEchoMessage(CDWUniquePtr data, CDWUniquePtr& result) 
     int err = 0;
     ChaosUniquePtr<MultiAddressMessageRequestFuture> request_future = sendRequestWithFuture(NodeDomainAndActionRPC::RPC_DOMAIN,
                                                                                             NodeDomainAndActionRPC::ACTION_ECHO_TEST,
-                                                                                            MOVE(data));
+                                                                                           MOVE(data));
+    if(request_future.get()==NULL){
+        MSG_ERR<<"Invalid Future response";
+        return -1;
+    }                                                                                      
     if(request_future->wait()) {
         result = MOVE(request_future->detachResult());
     } else {

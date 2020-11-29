@@ -294,5 +294,7 @@ void URLServiceFeeder::setFeedMode(URLServiceFeedMode new_feed_mode) {
 
 size_t URLServiceFeeder::getNumberOfURL() {
     boost::unique_lock<boost::mutex> wl(mutex_internal);
-    return mapping_url_index.size();
+    int ret=mapping_url_index.size();
+
+    return ret;
 }

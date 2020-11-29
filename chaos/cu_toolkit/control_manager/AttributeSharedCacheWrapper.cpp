@@ -82,6 +82,10 @@ bool AttributeSharedCacheWrapper::setOutputAttributeNewSize(const std::string& a
                                         new_size,
                                         clear_mem);
 }
+bool AttributeSharedCacheWrapper::exist(SharedCacheDomain domain,const std::string&name){
+		AttributeCache& attribute_setting = attribute_value_shared_cache->getSharedDomain(domain);
+		return attribute_setting.hasName(name);
+}
 
 bool AttributeSharedCacheWrapper::setOutputAttributeNewSize(VariableIndexType attribute_index,
                                                             uint32_t new_size,

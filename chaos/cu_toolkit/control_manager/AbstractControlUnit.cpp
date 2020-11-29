@@ -2832,21 +2832,30 @@ void AbstractControlUnit::updateDatasetFromDriverProperty() {
 }
 
 bool AbstractControlUnit::setDrvProp(const std::string& name, const bool value, uint32_t size) {
-  return _setDrvProp(name, value, size);
+  bool bidir=getAttributeCache()->exist(DOMAIN_OUTPUT,name);
+  return _setDrvProp(name, value, size,bidir);
 }
 bool AbstractControlUnit::setDrvProp(const std::string& name, const int32_t value, uint32_t size) {
-  return _setDrvProp(name, value, size);
+    bool bidir=getAttributeCache()->exist(DOMAIN_OUTPUT,name);
+
+  return _setDrvProp(name, value, size,bidir);
 }
 bool AbstractControlUnit::setDrvProp(const std::string& name, const int64_t value, uint32_t size) {
-  return _setDrvProp(name, value, size);
+    bool bidir=getAttributeCache()->exist(DOMAIN_OUTPUT,name);
+
+  return _setDrvProp(name, value, size,bidir);
 }
 bool AbstractControlUnit::setDrvProp(const std::string& name, const double value, uint32_t size) {
-  return _setDrvProp(name, value, size);
-}
-bool AbstractControlUnit::setDrvProp(const std::string& name, const std::string value, uint32_t size) {
-                                           return _setDrvProp(name, value, size);
+    bool bidir=getAttributeCache()->exist(DOMAIN_OUTPUT,name);
 
+  return _setDrvProp(name, value, size,bidir);
 }
+bool AbstractControlUnit::setDrvProp(const std::string& name, std::string value, uint32_t size) {
+    bool bidir=getAttributeCache()->exist(DOMAIN_OUTPUT,name);
+
+  return _setDrvProp(name, value, size,bidir);
+}
+
 void AbstractControlUnit::addPublicDriverPropertyToDataset(bool addDriverHandlers) {
   for (int idx = 0;
        idx != accessor_instances.size();

@@ -202,6 +202,7 @@ namespace chaos{
 				//!
 				void resetChangedInputIndex();
 				
+				bool exist(SharedCacheDomain domain,const std::string&name);
 				//! Return the names of all variabl einto a determinated domain
 				void getAttributeNames(SharedCacheDomain domain,
 									   std::vector<std::string>& names);

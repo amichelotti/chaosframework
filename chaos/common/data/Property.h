@@ -343,10 +343,10 @@ chaos::common::data::CDWUniquePtr createProperty(
         replaceProperty(realpropname,*towrite.get());
          
       }
-      LDBG_ << __FUNCTION__ << "-"
+     /* LDBG_ << __FUNCTION__ << "-"
             << "4 set property " << realpropname
             << " props:" << props.getJSONString()<<" input:"<<val.getJSONString();
-
+*/
       return retriveProp(realpropname);
     } else {
         LERR_ << __FUNCTION__ << "-"
