@@ -93,20 +93,21 @@ bool DriverAccessor::send(DrvMsgPtr cmd,
     if(ret<0){
         DALERR_<<owner[0]<<" ["<<cmd->id<<"] ## FAILED send opcode:"<<cmd->opcode<<" timeout:"<<timeout_ms<<" retry:"<<retry;
 
-      return ret;
+    } else {
+        ret = accessor_sync_mq.wait_and_pop(answer_message, timeout_ms);
     }
     //wait the answer
      //  DALDBG_<<owner[0]<<" ["<<cmd->id<<"] send opcode:"<<cmd->opcode<<" timeout:"<<timeout_ms;
     
-      int rett = accessor_sync_mq.wait_and_pop(answer_message, timeout_ms);
+    
          
      if(len>0){
 
-        DALDBG_<<"["<<cmd->id<<"] returned id:"<<answer_message<<" opcode:"<<cmd->opcode<<" ret:"<<rett<<" cmdqueue len:"<<command_queue->length()<<" timeout:"<<timeout_ms;
+        DALDBG_<<"["<<cmd->id<<"] returned id:"<<answer_message<<" opcode:"<<cmd->opcode<<" ret:"<<ret<<" cmdqueue len:"<<command_queue->length()<<" timeout:"<<timeout_ms;
       }
-      if (rett < 0) {
+      if (ret < 0) {
         std::stringstream ss;
-        ss << cmd->id << "," << accessor_sync_mq.length() << "] Timeout of:" << timeout_ms << " ms expired, executing opcode:" << cmd->opcode<<" ret:"<<rett;
+        ss << cmd->id << ",command queue:"<<len<<", response queue" << accessor_sync_mq.length() << "] Timeout of:" << timeout_ms << " ms expired, executing opcode:" << cmd->opcode<<" ret:"<<ret;
         // throw chaos::CFatalException(ret,ss.str(),__FUNCTION__);
         DALERR_ <<"##"<< ss.str();
         strncpy(cmd->err_msg, ss.str().c_str(), DRVMSG_ERR_MSG_SIZE);
