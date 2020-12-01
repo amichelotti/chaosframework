@@ -72,7 +72,7 @@ bool DriverAccessor::send(DrvMsgPtr cmd,
   int len;
   
     if((len=command_queue->length())>0){
-      DALDBG_<<"["<<cmd->id<<"] send opcode:"<<cmd->opcode<<" queue len:"<<command_queue->length()<<" timeout:"<<timeout_ms;
+      DALDBG_<<"["<<cmd->id<<"] send opcode:"<<cmd->opcode<<" command queue len:"<<command_queue->length()<<" timeout:"<<timeout_ms;
     }
     if(accessor_sync_mq.length()>0){
         DALERR_<<"["<<cmd->id<<"] ## Already an answer!! send opcode:"<<cmd->opcode<<" answer queue len:"<<accessor_sync_mq.length()<<" queue len:"<<command_queue->length();
@@ -85,7 +85,7 @@ bool DriverAccessor::send(DrvMsgPtr cmd,
     do{
      ret = command_queue->push(cmd,timeout_ms);
      if(ret<0){
-        DALERR_<<owner[0]<<" ["<<cmd->id<<"] ## push failed send opcode:"<<cmd->opcode<<" timeout:"<<timeout_ms<<" ret:"<<ret<<" retry:"<<retry;
+        DALERR_<<owner[0]<<" ["<<cmd->id<<"] ## push failed send opcode:"<<cmd->opcode<<" timeout:"<<timeout_ms<<" ret:"<<ret<<" retry:"<<retry<<" command queue len:"<<command_queue->length();
 
      }
     }while ((ret <0) && (retry--));
@@ -112,6 +112,15 @@ bool DriverAccessor::send(DrvMsgPtr cmd,
         DALERR_ <<"##"<< ss.str();
         strncpy(cmd->err_msg, ss.str().c_str(), DRVMSG_ERR_MSG_SIZE);
         strncpy(cmd->err_dom, __FUNCTION__, DRVMSG_ERR_MSG_SIZE);
+        DrvMsgPtr cmdt;
+         while(command_queue->pop(cmdt)){
+                DALERR_<<"["<<cmdt->id<<"] ## popping out command:"<<cmdt->opcode;
+                //if(cmdt->inputData){free(cmdt->inputData);}
+                //if(cmdt->resultData);free(cmdt->resultData);}
+
+        }
+
+
         cmd->ret = ret;
         return false;
       }
