@@ -2042,7 +2042,10 @@ chaos::common::data::CDWUniquePtr AbstractControlUnit::unitPerformCalibration(ch
 }
 
 //! this andler is called befor the input attribute will be updated
-void AbstractControlUnit::unitInputAttributePreChangeHandler() {}
+bool AbstractControlUnit::unitInputAttributePreChangeHandler(chaos::common::data::CDWUniquePtr&pp) {
+  return true;
+
+}
 
 //! attribute change handler
 /*!
@@ -2113,11 +2116,13 @@ CDWUniquePtr AbstractControlUnit::setDatasetAttribute(CDWUniquePtr dataset_attri
 
   try {
     //call pre handler
-    unitInputAttributePreChangeHandler();
-
+    if(unitInputAttributePreChangeHandler(dataset_attribute_values)){
     //first call attribute handler
-    dataset_attribute_manager.executeHandlers(dataset_attribute_values.get());
+      dataset_attribute_manager.executeHandlers(dataset_attribute_values.get());
 
+    }
+
+ 
     //get all input attribute name for input and bidirectional directions
     getDatasetAttributesName(DataType::Input, in_attribute_name);
     getDatasetAttributesName(DataType::Bidirectional, in_attribute_name);

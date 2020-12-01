@@ -74,12 +74,6 @@ protected:
      */
     void unitDeinit();
 
-		//! Pre input attribute change
-		/*!(Optional)
-		This handler is called befor the update of the
-		cached input attribute with the requested valure
-		*/
-		void unitInputAttributePreChangeHandler();
 
 		//! Handler called on the update of one or more input attribute
 		/*!(Optional)

@@ -669,7 +669,8 @@ class AbstractControlUnit : public DeclareAction,
   virtual chaos::common::data::CDWUniquePtr unitPerformCalibration(chaos::common::data::CDWUniquePtr data);
 
   //! this andler is called befor the input attribute will be updated
-  virtual void unitInputAttributePreChangeHandler();
+  // if return false the handlers are not called
+  virtual bool unitInputAttributePreChangeHandler(chaos::common::data::CDWUniquePtr& data);
 
   //! attribute change handler
   /*!

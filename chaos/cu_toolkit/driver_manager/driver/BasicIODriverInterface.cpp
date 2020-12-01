@@ -39,7 +39,7 @@ int BasicIODriverInterface::read(void *buffer,int addr,int bcount){
     message.resultData = (void*)buffer;
     message.ret=DRV_BYPASS_DEFAULT_CODE;
 ;
-    ret2=accessor->send(&message);
+    ret2=accessor->send(&message,chaos::common::constants::CUTimersTimeoutinMSec);
     ret=message.ret;
     BasicIODriverLDBG_<<"readChannel addr:"<<addr<<", count:"<<bcount<<",func ret:"<<ret<<",accessor ret "<<ret2;
     return ret;
@@ -55,7 +55,7 @@ int BasicIODriverInterface::iop(int operation,void*data,int sizeb){
     message.inputData = (void*)data;
     message.ret=DRV_BYPASS_DEFAULT_CODE;
 
-    ret2=accessor->send(&message);
+    ret2=accessor->send(&message,chaos::common::constants::CUTimersTimeoutinMSec);
     ret=message.ret;
     //BasicIODriverLDBG_<<"iop op:"<<operation<<", size:"<<sizeb<<",func ret:"<<ret<<",accessor ret "<<ret2;
     return ret;
@@ -72,7 +72,7 @@ int BasicIODriverInterface::write(void *buffer,int addr,int bcount){
     message.inputData = (void*)buffer;
     message.ret=DRV_BYPASS_DEFAULT_CODE;
 
-    ret2=accessor->send(&message);
+    ret2=accessor->send(&message,chaos::common::constants::CUTimersTimeoutinMSec);
     ret=message.ret;
     BasicIODriverLDBG_<<"writeChannel addr:"<<addr<<", count:"<<bcount<<",func ret:"<<ret<<",accessor ret "<<ret2;
     return ret;
@@ -86,7 +86,7 @@ int BasicIODriverInterface::initIO(void *buffer,int sizeb){
     message.inputDataLength=sizeb;
     message.ret=DRV_BYPASS_DEFAULT_CODE;
 
-    ret2=accessor->send(&message);
+    ret2=accessor->send(&message,chaos::common::constants::CUTimersTimeoutinMSec);
     ret=message.ret;
     BasicIODriverLDBG_<<"Init,func ret:"<<ret<<",accessor ret "<<ret2;
     return ret;
@@ -101,7 +101,7 @@ int BasicIODriverInterface::deinitIO(){
     message.inputDataLength=0;
     message.ret=DRV_BYPASS_DEFAULT_CODE;
 
-    ret2=accessor->send(&message);
+    ret2=accessor->send(&message,chaos::common::constants::CUTimersTimeoutinMSec);
     ret=message.ret;
     BasicIODriverLDBG_<<"DeInit,func ret:"<<ret<<",accessor ret "<<ret2;
     return ret;
@@ -116,7 +116,7 @@ int BasicIODriverInterface::getDataset(ddDataSet_t*data,int sizen){
     message.inputDataLength=0;
     message.ret=DRV_BYPASS_DEFAULT_CODE;
 
-    ret2=accessor->send(&message);
+    ret2=accessor->send(&message,chaos::common::constants::CUTimersTimeoutinMSec);
     size=message.ret;
 
     BasicIODriverLDBG_<<"getDataset,func ret:"<<size<<",accessor ret "<<ret2;
@@ -133,7 +133,7 @@ int BasicIODriverInterface::getDatasetSize(){
     message.inputDataLength=0;
     message.ret=DRV_BYPASS_DEFAULT_CODE;
 
-    ret2=accessor->send(&message);
+    ret2=accessor->send(&message,chaos::common::constants::CUTimersTimeoutinMSec);
     size=message.ret;
 
     BasicIODriverLDBG_<<"getDatasetSize,func ret:"<<size<<",accessor ret "<<ret2;
