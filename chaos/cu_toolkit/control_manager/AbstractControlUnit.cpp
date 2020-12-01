@@ -2794,6 +2794,12 @@ void AbstractControlUnit::updateDatasetFromDriverProperty() {
        idx++) {
     chaos::common::data::CDWUniquePtr ret = accessor_instances[idx]->getDrvProperties();
     std::vector<std::string>          props;
+    if(ret.get()==NULL){
+        ACULDBG_ << "No driver properties";
+        return;
+
+    }
+
     ret->getAllKey(props);
     for (std::vector<std::string>::iterator i = props.begin(); i != props.end(); i++) {
       if (ret->isCDataWrapperValue(*i)) {

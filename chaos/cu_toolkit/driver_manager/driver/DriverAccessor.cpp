@@ -119,7 +119,14 @@ bool DriverAccessor::send(DrvMsgPtr cmd,
                 //if(cmdt->resultData);free(cmdt->resultData);}
 
         }
+        ResponseMessageType answer_tmp = 0;
 
+        while(accessor_sync_mq.pop(answer_tmp)){
+                DALERR_<<"["<<cmd->id<<"] ## popping out answer:"<<answer_tmp;
+                //if(cmdt->inputData){free(cmdt->inputData);}
+                //if(cmdt->resultData);free(cmdt->resultData);}
+
+        }
 
         cmd->ret = ret;
         return false;

@@ -182,7 +182,7 @@ void AbstractDriver::scanForMessage() {
   ADLAPP_ << "Scanner thread started for driver[" << driver_uuid << "]";
   MsgManagmentResultType::MsgManagmentResult opcode_submission_result = MsgManagmentResultType::MMR_ERROR;
 
-  DrvMsgPtr current_message_ptr;
+  DrvMsgPtr current_message_ptr=NULL;
   do {
 //        boost::unique_lock<boost::shared_mutex> lock(accesso_list_shr_mux);
 
