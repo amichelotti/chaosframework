@@ -190,7 +190,9 @@ void AbstractDriver::scanForMessage() {
     //wait for the new command
     ret=command_queue->wait_and_pop(current_message_ptr,chaos::common::constants::CUTimersTimeoutinMSec);
     if(ret<0){
-        ADLDBG_ << "Scanner thread Timeout nothing received yed [" << driver_uuid << "]";
+        ADLDBG_ << "Scanner thread Timeout nothing received yet [" << driver_uuid << "]";
+        current_message_ptr=NULL;
+
         continue;
     } 
     //check i opcode pointer is valid
