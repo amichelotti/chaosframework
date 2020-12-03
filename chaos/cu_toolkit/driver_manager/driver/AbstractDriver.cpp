@@ -182,13 +182,17 @@ void AbstractDriver::scanForMessage() {
   ADLAPP_ << "Scanner thread started for driver[" << driver_uuid << "]";
   MsgManagmentResultType::MsgManagmentResult opcode_submission_result = MsgManagmentResultType::MMR_ERROR;
 
-  DrvMsgPtr current_message_ptr=NULL;
+  DrvMsgPtr current_message_ptr;
+  int ret;
   do {
 //        boost::unique_lock<boost::shared_mutex> lock(accesso_list_shr_mux);
-
+    current_message_ptr=NULL;
     //wait for the new command
-    command_queue->wait_and_pop(current_message_ptr);
-    
+    ret=command_queue->wait_and_pop(current_message_ptr,chaos::common::constants::CUTimersTimeoutinMSec);
+    if(ret<0){
+        ADLDBG_ << "Scanner thread Timeout nothing received yed [" << driver_uuid << "]";
+        continue;
+    } 
     //check i opcode pointer is valid
     if (current_message_ptr == NULL) {
       continue;

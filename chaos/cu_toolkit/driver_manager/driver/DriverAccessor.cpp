@@ -70,9 +70,16 @@ bool DriverAccessor::send(DrvMsgPtr cmd,
   int retry = 3;
   int ret;
   int len;
-  
+  // if the queue of 1 has another command there is something wird
     if((len=command_queue->length())>0){
-      DALDBG_<<"["<<cmd->id<<"] send opcode:"<<cmd->opcode<<" command queue len:"<<command_queue->length()<<" timeout:"<<timeout_ms;
+      DALERR_<<"["<<cmd->id<<"] WARNING send opcode:"<<cmd->opcode<<" command queue len:"<<command_queue->length()<<" timeout:"<<timeout_ms;
+        DrvMsgPtr cmdt;
+        while(command_queue->pop(cmdt)){
+                DALERR_<<"["<<cmdt->id<<"] ## popping out command:"<<cmdt->opcode;
+                if(cmdt->inputData){free(cmdt->inputData);}
+                if(cmdt->resultData);free(cmdt->resultData);
+        }
+        
     }
     if(accessor_sync_mq.length()>0){
         DALERR_<<"["<<cmd->id<<"] ## Already an answer!! send opcode:"<<cmd->opcode<<" answer queue len:"<<accessor_sync_mq.length()<<" queue len:"<<command_queue->length();
@@ -80,22 +87,17 @@ bool DriverAccessor::send(DrvMsgPtr cmd,
                 DALERR_<<"["<<cmd->id<<"] ## popping out answer:"<<answer_message;
 
         }
-
     }
-    do{
+    
      ret = command_queue->push(cmd,timeout_ms);
      if(ret<0){
         DALERR_<<owner[0]<<" ["<<cmd->id<<"] ## push failed send opcode:"<<cmd->opcode<<" timeout:"<<timeout_ms<<" ret:"<<ret<<" retry:"<<retry<<" command queue len:"<<command_queue->length();
 
-     }
-    }while ((ret <0) && (retry--));
-
-    if(ret<0){
-        DALERR_<<owner[0]<<" ["<<cmd->id<<"] ## FAILED send opcode:"<<cmd->opcode<<" timeout:"<<timeout_ms<<" retry:"<<retry;
-
-    } else {
+     } else {
         ret = accessor_sync_mq.wait_and_pop(answer_message, timeout_ms);
     }
+    
+     
     //wait the answer
      //  DALDBG_<<owner[0]<<" ["<<cmd->id<<"] send opcode:"<<cmd->opcode<<" timeout:"<<timeout_ms;
     
