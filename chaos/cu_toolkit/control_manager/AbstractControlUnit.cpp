@@ -2840,6 +2840,9 @@ void AbstractControlUnit::updateDatasetFromDriverProperty() {
       }
     }
   }
+  getAttributeCache()->setInputDomainAsChanged();
+  getAttributeCache()->setOutputDomainAsChanged();
+
 }
 
 bool AbstractControlUnit::setDrvProp(const std::string& name, const bool value, uint32_t size) {

@@ -342,7 +342,16 @@ void AbstractDriver::scanForMessage() {
 
     //notify the caller
     if (current_message_ptr->drvResponseMQ) {
-      current_message_ptr->drvResponseMQ->push(current_message_ptr->id,chaos::common::constants::CUTimersTimeoutinMSec);
+      int len=current_message_ptr->drvResponseMQ->length();
+      if(len>0){
+          ADLERR_ << current_message_ptr->id<<"] WARNING SOME ANSWER ALREADY, opcode:" << current_message_ptr->opcode<<" ret:"<<ret<<" qlen:"<<len ;
+
+      }
+      int ret=current_message_ptr->drvResponseMQ->push(current_message_ptr->id,chaos::common::constants::CUTimersTimeoutinMSec);
+      if(ret<0){
+              ADLERR_ << current_message_ptr->id<<"] Timeout on answer, opcode:" << current_message_ptr->opcode<<" ret:"<<ret<< " qlen:"<<len;
+
+      }
     }
 
   } while (current_message_ptr == NULL ||

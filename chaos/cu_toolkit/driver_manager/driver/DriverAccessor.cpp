@@ -76,8 +76,8 @@ bool DriverAccessor::send(DrvMsgPtr cmd,
         DrvMsgPtr cmdt;
         while(command_queue->pop(cmdt)){
                 DALERR_<<"["<<cmdt->id<<"] ## popping out command:"<<cmdt->opcode;
-                if(cmdt->inputData){free(cmdt->inputData);}
-                if(cmdt->resultData);free(cmdt->resultData);
+                if(cmdt->inputData){cmdt->inputData=0;free(cmdt->inputData);}
+                if(cmdt->resultData){cmdt->resultData=0;free(cmdt->resultData);}
         }
         
     }
@@ -109,7 +109,7 @@ bool DriverAccessor::send(DrvMsgPtr cmd,
       }
       if (ret < 0) {
         std::stringstream ss;
-        ss << cmd->id << ",command queue:"<<len<<", response queue" << accessor_sync_mq.length() << "] Timeout of:" << timeout_ms << " ms expired, executing opcode:" << cmd->opcode<<" ret:"<<ret;
+        ss << cmd->id << ",command queue:"<<len<<", rqueue:" << accessor_sync_mq.length() << "] Timeout of:" << timeout_ms << " ms expired, executing opcode:" << cmd->opcode<<" ret:"<<ret;
         // throw chaos::CFatalException(ret,ss.str(),__FUNCTION__);
         DALERR_ <<"##"<< ss.str();
         strncpy(cmd->err_msg, ss.str().c_str(), DRVMSG_ERR_MSG_SIZE);

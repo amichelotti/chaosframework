@@ -103,7 +103,6 @@ class TLockFreeQueue {
     return ret;
   }
   int wait_and_pop(T& popped_value, int timeout_ms = 0) {
-    while(maxsize){
     if (element_queue.empty()) {
       boost::mutex::scoped_lock lock(the_mutex);
 
@@ -116,9 +115,6 @@ class TLockFreeQueue {
           }
         } else {
           // timeout
-          if (pop(popped_value)) {
-            return size;
-          }
           return chaos::ErrorCode::EC_GENERIC_TIMEOUT;
         }
       } else {
@@ -128,9 +124,10 @@ class TLockFreeQueue {
     if (pop(popped_value)) {
       return size;
     }
-    }
+    
+    LERR_ << "Queue Error popping";
 
-    return size;
+    return -2;
   }
 };
 }  // namespace thread
