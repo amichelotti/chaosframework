@@ -69,9 +69,8 @@ bool DriverAccessor::send(DrvMsgPtr cmd,
   // command_queue->push(cmd, base_opcode_priority + inc_priority);
   int retry = 3;
   int ret;
-  int len;
   // if the queue of 1 has another command there is something wird
-    if((len=command_queue->length())>0){
+    if(command_queue->empty()==false){
       DALERR_<<"["<<cmd->id<<"] WARNING send opcode:"<<cmd->opcode<<" command queue len:"<<command_queue->length()<<" timeout:"<<timeout_ms;
         DrvMsgPtr cmdt;
         while(command_queue->pop(cmdt)){
@@ -81,7 +80,7 @@ bool DriverAccessor::send(DrvMsgPtr cmd,
         }
         
     }
-    if(accessor_sync_mq.length()>0){
+    if(accessor_sync_mq.empty()==false){
         DALERR_<<"["<<cmd->id<<"] ## Already an answer!! send opcode:"<<cmd->opcode<<" answer queue len:"<<accessor_sync_mq.length()<<" queue len:"<<command_queue->length();
         while(accessor_sync_mq.pop(answer_message)){
                 DALERR_<<"["<<cmd->id<<"] ## popping out answer:"<<answer_message;
@@ -103,13 +102,10 @@ bool DriverAccessor::send(DrvMsgPtr cmd,
     
     
          
-     if(len>0){
-
-        DALDBG_<<"["<<cmd->id<<"] returned id:"<<answer_message<<" opcode:"<<cmd->opcode<<" ret:"<<ret<<" cmdqueue len:"<<command_queue->length()<<" timeout:"<<timeout_ms;
-      }
+    
       if (ret < 0) {
         std::stringstream ss;
-        ss << cmd->id << ",command queue:"<<len<<", rqueue:" << accessor_sync_mq.length() << "] Timeout of:" << timeout_ms << " ms expired, executing opcode:" << cmd->opcode<<" ret:"<<ret;
+        ss << cmd->id << ",cqueue:"<<command_queue->length()<<", rqueue:" << accessor_sync_mq.length() << "] Timeout of:" << timeout_ms << " ms expired, executing opcode:" << cmd->opcode<<" ret:"<<ret;
         // throw chaos::CFatalException(ret,ss.str(),__FUNCTION__);
         DALERR_ <<"##"<< ss.str();
         strncpy(cmd->err_msg, ss.str().c_str(), DRVMSG_ERR_MSG_SIZE);

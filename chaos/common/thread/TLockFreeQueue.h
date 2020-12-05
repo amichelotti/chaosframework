@@ -85,7 +85,7 @@ class TLockFreeQueue {
       the_condition_variable.notify_one();
       return size;
     }
-    LERR_ << "Queue Error pushing";
+    LERR_ << "Queue Error pushing size:"<<size;
 
     return -1;
   }
@@ -125,7 +125,7 @@ class TLockFreeQueue {
       return size;
     }
     
-    LERR_ << "Queue Error popping";
+    LERR_ << "Queue Error popping size:"<<size;
 
     return -2;
   }
