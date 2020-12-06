@@ -106,6 +106,7 @@ bool DriverAccessor::send(DrvMsgPtr cmd,
       if (ret < 0) {
         std::stringstream ss;
         ss << cmd->id << ",cqueue:"<<command_queue->length()<<", rqueue:" << accessor_sync_mq.length() << "] Timeout of:" << timeout_ms << " ms expired, executing opcode:" << cmd->opcode<<" ret:"<<ret;
+
         // throw chaos::CFatalException(ret,ss.str(),__FUNCTION__);
         DALERR_ <<"##"<< ss.str();
         strncpy(cmd->err_msg, ss.str().c_str(), DRVMSG_ERR_MSG_SIZE);
@@ -118,8 +119,13 @@ bool DriverAccessor::send(DrvMsgPtr cmd,
 
         }
         ResponseMessageType answer_tmp = 0;
-
+  
         while(accessor_sync_mq.pop(answer_tmp)){
+          if(answer_tmp == cmd->id){
+            DALDBG_<<"["<<cmd->id<<"]answer has been delayed:"<<answer_tmp;
+
+            return true;
+          }
                 DALERR_<<"["<<cmd->id<<"] ## popping out answer:"<<answer_tmp;
                 //if(cmdt->inputData){free(cmdt->inputData);}
                 //if(cmdt->resultData);free(cmdt->resultData);}
