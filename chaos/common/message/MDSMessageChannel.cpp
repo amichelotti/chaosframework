@@ -77,8 +77,7 @@ void MDSMessageChannel::manageResource() {
        !auto_configure_endpoint) return;
     
     //try to get the number of remote url to maximum number
-    
-    if((bestEndpointConf.get() == NULL) || (err = getDataDriverBestConfiguration(bestEndpointConf))) {
+    if((err = getDataDriverBestConfiguration(bestEndpointConf)) || (bestEndpointConf.get() == NULL)) {
         MSG_ERR << "Error fetching best endpoint";
         return;
     }
