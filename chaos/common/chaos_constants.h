@@ -1058,6 +1058,9 @@ namespace chaos {
          amount of time or cu cicle
          */
         static const char * const BURST_STATE               = "cudk_burst_state";
+        
+        static const char * const BURST_CNT_DOWN            = "cudk_burst_cnt";
+        
         //! is the tag associated to the current burst oepration
         static const char * const BURST_TAG                 = "cudk_burst_tag";
         //! is the device alarm state (0=no alarm)

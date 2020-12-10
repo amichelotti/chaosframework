@@ -93,11 +93,14 @@ CHAOS_DEFINE_LOCKABLE_OBJECT(QueueBurst, LQueueBurst);
 
 //!class that defin ethe abstraction of data storage burst
 class StorageBurst {
+  protected:
+  int64_t _remaining;
  public:
   chaos::common::data::structured::DatasetBurstShrdPtr dataset_burst;
   StorageBurst(chaos::common::data::structured::DatasetBurstShrdPtr _dataset_burst);
   virtual ~StorageBurst();
-  virtual bool active(void* data) = 0;
+  virtual bool active(int64_t data) = 0;
+  int64_t remaining(){return _remaining;}
 };
 
 class PushStorageBurst : public StorageBurst {
@@ -106,7 +109,7 @@ class PushStorageBurst : public StorageBurst {
  public:
   PushStorageBurst(chaos::common::data::structured::DatasetBurstShrdPtr _dataset_burst);
   virtual ~PushStorageBurst();
-  bool active(void* data);
+  bool active(int64_t data);
 };
 
 class MSecStorageBurst : public StorageBurst {
@@ -115,7 +118,7 @@ class MSecStorageBurst : public StorageBurst {
  public:
   MSecStorageBurst(chaos::common::data::structured::DatasetBurstShrdPtr _dataset_burst);
   virtual ~MSecStorageBurst();
-  bool active(void* data);
+  bool active(int64_t data);
 };
 
 //!  Base class for control unit !CHAOS node

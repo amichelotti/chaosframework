@@ -185,7 +185,7 @@ void AbstractDriver::scanForMessage() {
   DrvMsgPtr current_message_ptr;
   int ret;
   do {
-//        boost::unique_lock<boost::shared_mutex> lock(accesso_list_shr_mux);
+   // boost::unique_lock<boost::shared_mutex> lock(accesso_list_shr_mux);
     current_message_ptr=NULL;
     //wait for the new command
     ret=command_queue->wait_and_pop(current_message_ptr,chaos::common::constants::CUTimersTimeoutinMSec);
@@ -342,14 +342,13 @@ void AbstractDriver::scanForMessage() {
 
     //notify the caller
     if (current_message_ptr->drvResponseMQ) {
-      int len=current_message_ptr->drvResponseMQ->length();
-      if(len>0){
-          ADLERR_ << current_message_ptr->id<<"] WARNING SOME ANSWER ALREADY, opcode:" << current_message_ptr->opcode<<" ret:"<<ret<<" qlen:"<<len ;
+      if(current_message_ptr->drvResponseMQ->empty()==false){
+          ADLERR_ << current_message_ptr->id<<"] WARNING SOME ANSWER ALREADY, opcode:" << current_message_ptr->opcode<<" ret:"<<ret<<" qlen:"<<current_message_ptr->drvResponseMQ->length() ;
 
       }
       int ret=current_message_ptr->drvResponseMQ->push(current_message_ptr->id,chaos::common::constants::CUTimersTimeoutinMSec);
       if(ret<0){
-              ADLERR_ << current_message_ptr->id<<"] Timeout on answer, opcode:" << current_message_ptr->opcode<<" ret:"<<ret<< " qlen:"<<len;
+              ADLERR_ << current_message_ptr->id<<"] Timeout on answer, opcode:" << current_message_ptr->opcode<<" ret:"<<ret<< " qlen:"<<current_message_ptr->drvResponseMQ->length();
 
       }
     }

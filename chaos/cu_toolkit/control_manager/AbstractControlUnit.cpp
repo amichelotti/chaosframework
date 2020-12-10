@@ -87,7 +87,7 @@ using namespace chaos::cu::driver_manager::driver;
 
 #pragma mark StorageBurst
 StorageBurst::StorageBurst(DatasetBurstShrdPtr _dataset_burst)
-    : dataset_burst(_dataset_burst) {}
+    : dataset_burst(_dataset_burst),_remaining(0) {}
 
 StorageBurst::~StorageBurst() {}
 
@@ -97,11 +97,11 @@ PushStorageBurst::PushStorageBurst(DatasetBurstShrdPtr _dataset_burst)
 
 PushStorageBurst::~PushStorageBurst() {}
 #ifndef _WIN32
-bool PushStorageBurst::active(void* data __attribute__((unused))) {
+bool PushStorageBurst::active(int64_t data __attribute__((unused))) {
 #else
-bool PushStorageBurst::active(void* data) {
+bool PushStorageBurst::active(int64_t data) {
 #endif
-
+  _remaining=StorageBurst::dataset_burst->value.asUInt32()-current_pushes-1;
   return ++current_pushes < StorageBurst::dataset_burst->value.asUInt32();
 }
 
@@ -111,9 +111,9 @@ MSecStorageBurst::MSecStorageBurst(DatasetBurstShrdPtr _dataset_burst)
 
 MSecStorageBurst::~MSecStorageBurst() {}
 
-bool MSecStorageBurst::active(void* data) {
-  int64_t* now = static_cast<int64_t*>(data);
-  return timeout_msec > *now;
+bool MSecStorageBurst::active(int64_t now) {
+  _remaining=timeout_msec-now;
+  return timeout_msec > now;
 }
 
 #pragma mark AbstractControlUnit
@@ -1756,6 +1756,10 @@ void AbstractControlUnit::initSystemAttributeOnSharedAttributeCache() {
   //add burst operation state
   domain_attribute_setting.addAttribute(ControlUnitDatapackSystemKey::BURST_STATE, 0, DataType::TYPE_BOOLEAN);
 
+
+//add burst operation state
+  domain_attribute_setting.addAttribute(ControlUnitDatapackSystemKey::BURST_CNT_DOWN, 0, DataType::TYPE_INT32);
+
   //add burst operation tag
   domain_attribute_setting.addAttribute(ControlUnitDatapackSystemKey::BURST_TAG, 0, DataType::TYPE_STRING);
 
@@ -1842,6 +1846,8 @@ void AbstractControlUnit::removeTag(const std::string& tname) {
   key_data_storage->removeTag(tname);
   *attribute_value_shared_cache->getAttributeValue(DOMAIN_SYSTEM, ControlUnitDatapackSystemKey::BURST_STATE)->getValuePtr<bool>() = false;
   attribute_value_shared_cache->getAttributeValue(DOMAIN_SYSTEM, ControlUnitDatapackSystemKey::BURST_TAG)->setStringValue("");
+  *attribute_value_shared_cache->getAttributeValue(DOMAIN_SYSTEM, ControlUnitDatapackSystemKey::BURST_CNT_DOWN)->getValuePtr<int32_t>()=0;
+
   attribute_value_shared_cache->getSharedDomain(DOMAIN_SYSTEM).markAllAsChanged();
 }
 
@@ -2531,6 +2537,7 @@ int AbstractControlUnit::pushCUAlarmDataset() {
 }
 
 void AbstractControlUnit::manageBurstQueue() {
+  static int64_t old_ts=0;
   if (!current_burst.get()) {
     DatasetBurstShrdPtr next_burst;
     LQueueBurstReadLock wl = burst_queue.getReadLockObject();
@@ -2551,7 +2558,7 @@ void AbstractControlUnit::manageBurstQueue() {
         default:
           break;
       }
-
+      old_ts=0;
       //set the tag for burst
       ACULDBG_ << "======= Start Burst tag:'" << current_burst->dataset_burst->tag << "' =======";
       key_data_storage->addTag(current_burst->dataset_burst->tag);
@@ -2559,11 +2566,14 @@ void AbstractControlUnit::manageBurstQueue() {
       key_data_storage->setOverrideStorageType(DataServiceNodeDefinitionType::DSStorageTypeHistory);
       *attribute_value_shared_cache->getAttributeValue(DOMAIN_SYSTEM, ControlUnitDatapackSystemKey::BURST_STATE)->getValuePtr<bool>() = true;
       attribute_value_shared_cache->getAttributeValue(DOMAIN_SYSTEM, ControlUnitDatapackSystemKey::BURST_TAG)->setStringValue(current_burst->dataset_burst->tag, true, true);
+      *attribute_value_shared_cache->getAttributeValue(DOMAIN_SYSTEM, ControlUnitDatapackSystemKey::BURST_CNT_DOWN)->getValuePtr<int32_t>() = current_burst->remaining();
+
       attribute_value_shared_cache->getSharedDomain(DOMAIN_SYSTEM).markAllAsChanged();
       pushSystemDataset();
     }
   } else {
-    if (!current_burst->active(timestamp_acq_cached_value->getValuePtr<int64_t>())) {
+    int64_t tim=*timestamp_acq_cached_value->getValuePtr<int64_t>();
+    if (!current_burst->active(tim)) {
       //remove the tag for the burst
       ACULDBG_ << "======= End Burst tag:'" << current_burst->dataset_burst->tag << "' =======";
       key_data_storage->removeTag(current_burst->dataset_burst->tag);
@@ -2571,12 +2581,23 @@ void AbstractControlUnit::manageBurstQueue() {
       key_data_storage->setOverrideStorageType(DataServiceNodeDefinitionType::DSStorageTypeUndefined);
       *attribute_value_shared_cache->getAttributeValue(DOMAIN_SYSTEM, ControlUnitDatapackSystemKey::BURST_STATE)->getValuePtr<bool>() = false;
       attribute_value_shared_cache->getAttributeValue(DOMAIN_SYSTEM, ControlUnitDatapackSystemKey::BURST_TAG)->setStringValue("");
+      *attribute_value_shared_cache->getAttributeValue(DOMAIN_SYSTEM, ControlUnitDatapackSystemKey::BURST_CNT_DOWN)->getValuePtr<int32_t>() = 0;
+
       attribute_value_shared_cache->getSharedDomain(DOMAIN_SYSTEM).markAllAsChanged();
       //we need to remove it
       current_burst.reset();
       pushSystemDataset();
     } else {
-      ACULDBG_ << "======= Active Burst tag:'" << current_burst->dataset_burst->tag << "' =======";
+      int32_t rem=current_burst->remaining();
+      *attribute_value_shared_cache->getAttributeValue(DOMAIN_SYSTEM, ControlUnitDatapackSystemKey::BURST_CNT_DOWN)->getValuePtr<int32_t>() = rem;
+      if((tim-old_ts>chaos::common::constants::CUTimersTimeoutinMSec)==0){
+          ACULDBG_ << "======= Active Burst tag:'" << current_burst->dataset_burst->tag << "' remaining:"<<rem<<" =======";
+
+        attribute_value_shared_cache->getSharedDomain(DOMAIN_SYSTEM).markAllAsChanged();
+        pushSystemDataset();
+
+      }
+      old_ts=tim;
     }
   }
 }
