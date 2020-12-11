@@ -54,9 +54,10 @@ void AbstractDriver::init(void *init_param) {
   is_json_param = parm.isJsonValue((const char *)init_param);
 
   ADLDBG_ << "Start in driver thread";
+  started=false;
   //start interna thread for the waithing of the message
   thread_message_receiver.reset(new boost::thread(boost::bind(&AbstractDriver::scanForMessage, this)));
-
+  
   //set the scheduler thread priority
 #if defined(__linux__) || defined(__APPLE__)
   int                policy;
@@ -77,6 +78,12 @@ void AbstractDriver::init(void *init_param) {
     }
   }
 #endif
+  if(thread_message_receiver.get()){
+    // wait scan thread is running
+    while(started==false){
+      usleep(100);
+    }
+  }
   ADLAPP_ << "Call custom driver initialization";
 
   DrvMsg              init_msg;
@@ -90,13 +97,22 @@ void AbstractDriver::init(void *init_param) {
   int ret;
   do{
   ret=command_queue->push(&init_msg,chaos::common::constants::CUTimersTimeoutinMSec);
-    if(ret>=0){
-      result_queue.wait_and_pop(id_to_read,chaos::common::constants::CUTimersTimeoutinMSec);
-      if (init_msg.ret) {
-        //in case we have error throw the exception
-        throw CException(init_msg.ret, init_msg.err_msg, init_msg.err_dom);
-      }
+  if(ret>=0){
+    ret=result_queue.wait_and_pop(id_to_read,chaos::common::constants::CUTimersTimeoutinMSec);
+    if (init_msg.ret) {
+      //in case we have error throw the exception
+      throw CException(init_msg.ret, init_msg.err_msg, init_msg.err_dom);
     }
+    if(ret<0) {
+        ADLERR_ << "Timeout on init";
+
+    }
+  } else {
+        ADLERR_ << "Error pushing init";
+
+  } 
+    
+  
   
   } while((ret<0) && (retry--));
 }
@@ -181,7 +197,7 @@ bool AbstractDriver::releaseAccessor(DriverAccessor *accessor) {
 void AbstractDriver::scanForMessage() {
   ADLAPP_ << "Scanner thread started for driver[" << driver_uuid << "]";
   MsgManagmentResultType::MsgManagmentResult opcode_submission_result = MsgManagmentResultType::MMR_ERROR;
-
+  started=true;
   DrvMsgPtr current_message_ptr;
   int ret;
   do {
@@ -345,11 +361,12 @@ void AbstractDriver::scanForMessage() {
       if(current_message_ptr->drvResponseMQ->empty()==false){
           ADLERR_ << current_message_ptr->id<<"] WARNING SOME ANSWER ALREADY, opcode:" << current_message_ptr->opcode<<" ret:"<<ret<<" qlen:"<<current_message_ptr->drvResponseMQ->length() ;
 
-      }
-      int ret=current_message_ptr->drvResponseMQ->push(current_message_ptr->id,chaos::common::constants::CUTimersTimeoutinMSec);
-      if(ret<0){
-              ADLERR_ << current_message_ptr->id<<"] Timeout on answer, opcode:" << current_message_ptr->opcode<<" ret:"<<ret<< " qlen:"<<current_message_ptr->drvResponseMQ->length();
+      } else {
+        int ret=current_message_ptr->drvResponseMQ->push(current_message_ptr->id,chaos::common::constants::CUTimersTimeoutinMSec);
+        if(ret<0){
+                ADLERR_ << current_message_ptr->id<<"] Timeout on answer, opcode:" << current_message_ptr->opcode<<" ret:"<<ret<< " qlen:"<<current_message_ptr->drvResponseMQ->length();
 
+        }
       }
     }
 

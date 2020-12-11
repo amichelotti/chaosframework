@@ -130,7 +130,7 @@ namespace chaos{
 					 in this case it will quit.
                      */
                     void scanForMessage();
-					
+					bool started;
                 protected:
                     std::string lastError;
                     //!Private constructor
