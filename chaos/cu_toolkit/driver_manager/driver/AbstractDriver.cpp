@@ -96,9 +96,9 @@ void AbstractDriver::init(void *init_param) {
   init_msg.drvResponseMQ = &result_queue;
   int ret;
   do{
-  ret=command_queue->push(&init_msg,chaos::common::constants::CUTimersTimeoutinMSec);
+  ret=command_queue->push(&init_msg,10*chaos::common::constants::CUTimersTimeoutinMSec);
   if(ret>=0){
-    ret=result_queue.wait_and_pop(id_to_read,chaos::common::constants::CUTimersTimeoutinMSec);
+    ret=result_queue.wait_and_pop(id_to_read,10*chaos::common::constants::CUTimersTimeoutinMSec);
     if (init_msg.ret) {
       //in case we have error throw the exception
       throw CException(init_msg.ret, init_msg.err_msg, init_msg.err_dom);
@@ -130,10 +130,10 @@ void AbstractDriver::deinit() {
   deinit_msg.drvResponseMQ = &result_queue;
   //send opcode to driver implemetation
   driver_need_to_deinitialize = true;
-  int ret=command_queue->push(&deinit_msg,chaos::common::constants::CUTimersTimeoutinMSec);
+  int ret=command_queue->push(&deinit_msg,10*chaos::common::constants::CUTimersTimeoutinMSec);
   if(ret>=0){
   //wait for completition
-    result_queue.wait_and_pop(id_to_read,chaos::common::constants::CUTimersTimeoutinMSec);
+    result_queue.wait_and_pop(id_to_read,10*chaos::common::constants::CUTimersTimeoutinMSec);
   }
   //now join to  the thread if joinable
   if (thread_message_receiver->joinable()) {

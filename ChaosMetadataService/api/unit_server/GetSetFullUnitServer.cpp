@@ -161,6 +161,9 @@ CDWUniquePtr GetSetFullUnitServer::execute(CDWUniquePtr api_data) {
                            if(cuw->hasKey(DataServiceNodeDefinitionKey::DS_STORAGE_LIVE_TIME)) {
                                pg.addProperty(DataServiceNodeDefinitionKey::DS_STORAGE_LIVE_TIME, cuw->getVariantValue(DataServiceNodeDefinitionKey::DS_STORAGE_LIVE_TIME));
                            }
+                           if(cuw->hasKey(DataServiceNodeDefinitionKey::DS_UPDATE_ANYWAY)) {
+                               pg.addProperty(DataServiceNodeDefinitionKey::DS_UPDATE_ANYWAY, cuw->getVariantValue(DataServiceNodeDefinitionKey::DS_UPDATE_ANYWAY));
+                           }
                            PropertyGroupVectorSDWrapper pgv_sdw;
                            pgv_sdw().push_back(pg);
                            if((err = n_da->updatePropertyDefaultValue(cu_id, pgv_sdw()))){

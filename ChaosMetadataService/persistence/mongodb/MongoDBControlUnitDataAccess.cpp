@@ -604,7 +604,9 @@ int MongoDBControlUnitDataAccess::setInstanceDescription(const std::string& cu_u
         if(instance_description.hasKey(DataServiceNodeDefinitionKey::DS_STORAGE_LIVE_TIME)) {
             updated_field << DataServiceNodeDefinitionKey::DS_STORAGE_LIVE_TIME << (long long)instance_description.getInt64Value(DataServiceNodeDefinitionKey::DS_STORAGE_LIVE_TIME);
         }
-        
+       if(instance_description.hasKey(DataServiceNodeDefinitionKey::DS_UPDATE_ANYWAY)) {
+            updated_field << DataServiceNodeDefinitionKey::DS_UPDATE_ANYWAY << (uint32_t)instance_description.getInt32Value(DataServiceNodeDefinitionKey::DS_UPDATE_ANYWAY);
+        } 
         if(instance_description.hasKey("control_unit_implementation")) {
             updated_field << "control_unit_implementation" << instance_description.getStringValue("control_unit_implementation");
         }
