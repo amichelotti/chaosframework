@@ -28,7 +28,7 @@ using namespace chaos::cu::driver_manager::driver;
 #define BasicIODriverLAPP_		INFO_LOG(BasicIODriverInterface)
 #define BasicIODriverLDBG_		DBG_LOG(BasicIODriverInterface)
 #define BasicIODriverLERR_		ERR_LOG(BasicIODriverInterface)
-
+#ifdef DETACHED_DRIVER
 int BasicIODriverInterface::read(void *buffer,int addr,int bcount){
     
     int ret,ret2;
@@ -141,3 +141,42 @@ int BasicIODriverInterface::getDatasetSize(){
     
 
 }
+#else
+int BasicIODriverInterface::read(void *buffer,int addr,int bcount){
+   return impl->read(buffer,addr,bcount);
+    
+}
+
+int BasicIODriverInterface::iop(int operation,void*data,int sizeb){
+    return impl->iop(operation,data,sizeb);
+
+}
+
+int BasicIODriverInterface::write(void *buffer,int addr,int bcount){
+    return impl->write(buffer,addr,bcount);
+
+}
+
+int BasicIODriverInterface::initIO(void *buffer,int sizeb){
+    return impl->initIO(buffer,sizeb);
+
+
+}
+
+int BasicIODriverInterface::deinitIO(){
+    return impl->deinitIO();
+}
+
+int BasicIODriverInterface::getDataset(ddDataSet_t*data,int sizeb){
+    return impl->getDataset(data,sizeb);
+   
+}
+
+
+int BasicIODriverInterface::getDatasetSize(){
+  return impl->getDatasetSize();
+    
+
+}
+
+#endif

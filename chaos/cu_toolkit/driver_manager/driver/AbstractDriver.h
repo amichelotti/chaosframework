@@ -117,10 +117,10 @@ namespace chaos{
                     OpcodeExecutor *o_exe;
                     
                     // Initialize instance
-                    void init(void *init_param);
+                    virtual void init(void *init_param);
                     
                     // Deinit the implementation
-                    void deinit();
+                    virtual void deinit();
 					
 					
                     //! Wait the new command and broadcast it
@@ -209,6 +209,7 @@ namespace chaos{
                      * to set last error
                     */
                     void setLastError(const std::string&str);
+                    std::string getLastError(){return lastError;}
                 };
                 
                 

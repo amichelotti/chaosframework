@@ -209,6 +209,7 @@ DriverAccessor *DriverManager::getNewAccessorForDriverInstance(DrvRequestInfo &r
         accessor->device_param = json_param->getCSDataValue(INIT_DEVICE_PARAM);
        
     }
+    accessor->impl=driverInstance;
     return accessor;
 }
 

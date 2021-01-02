@@ -137,3 +137,8 @@ void BasicIODriver::setDataSet(ddDataSet_t*data,int sizeb){
     dataset = data;
     datasetSize=sizeb;
 }
+int BasicIODriver::iop(int operation,void*data,int sizeb){
+    BasicIODriverLDBG_<<" not implemented";
+    return -1;
+}
+

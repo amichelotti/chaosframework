@@ -35,7 +35,7 @@ using namespace chaos::cu::driver_manager::driver;
  
  ------------------------------------------------------*/
 DriverAccessor::DriverAccessor(unsigned int _accessor_index)
-    : accessor_index(_accessor_index), messages_count(0), accessor_async_mq(), accessor_sync_mq(), command_queue(NULL), base_opcode_priority(0) {}
+    : accessor_index(_accessor_index),impl(NULL), messages_count(0), accessor_async_mq(), accessor_sync_mq(), command_queue(NULL), base_opcode_priority(0) {}
 
 /*------------------------------------------------------
  
@@ -49,6 +49,7 @@ DriverAccessor::~DriverAccessor() {
 uint64_t DriverAccessor::getMessageCount() {
   return messages_count;
 }
+AbstractDriver*DriverAccessor::getImpl(){return impl;}
 
 bool DriverAccessor::send(DrvMsgPtr cmd,
                           uint32_t  timeout_ms) {
@@ -192,6 +193,8 @@ std::string DriverAccessor::getDriverName() const {
 }
 
 chaos::common::data::CDWUniquePtr DriverAccessor::getDrvProperties() {
+  #ifdef DETACHED_DRIVER
+
   chaos_driver::DrvMsg message;
   message.opcode = OpcodeType::OP_GET_PROPERTIES;
   send(&message,chaos::common::constants::CUTimersTimeoutinMSec);
@@ -203,8 +206,14 @@ chaos::common::data::CDWUniquePtr DriverAccessor::getDrvProperties() {
     return ptr;
   }
   return chaos::common::data::CDWUniquePtr();
+
+  #else
+  return impl->getDrvProperties();
+  #endif
 }
 chaos::common::data::CDWUniquePtr DriverAccessor::setDrvProperties(chaos::common::data::CDWUniquePtr& data) {
+    #ifdef DETACHED_DRIVER
+
   chaos_driver::DrvMsg message;
   message.opcode = OpcodeType::OP_SET_PROPERTIES;
   int                               sizeb;
@@ -223,9 +232,14 @@ chaos::common::data::CDWUniquePtr DriverAccessor::setDrvProperties(chaos::common
     }
   }
   return chaos::common::data::CDWUniquePtr();
+  #else
+  return impl->setDrvProperties(data);
+  #endif
 }
 
 int DriverAccessor::setDrvProperty(const std::string& key, const std::string& value) {
+     #ifdef DETACHED_DRIVER
+
   chaos_driver::DrvMsg message;
 
   keyval_t args;
@@ -236,9 +250,15 @@ int DriverAccessor::setDrvProperty(const std::string& key, const std::string& va
   message.inputDataLength = sizeof(keyval_t);
   send(&message,chaos::common::constants::CUTimersTimeoutinMSec);
   return message.ret;
+  #else
+    return impl->setDrvProperty(key,value);
+
+  #endif
 }
 
 std::string DriverAccessor::getLastError() {
+#ifdef DETACHED_DRIVER
+
   chaos_driver::DrvMsg message;
 
   message.opcode = OpcodeType::OP_GET_LASTERROR;
@@ -249,4 +269,8 @@ std::string DriverAccessor::getLastError() {
     return result;
   }
   return std::string();
+#else
+    return impl->getLastError();
+
+#endif
 }

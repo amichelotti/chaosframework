@@ -26,7 +26,7 @@
 #include <boost/atomic/atomic.hpp>
 #include <chaos/cu_toolkit/driver_manager/driver/DriverTypes.h>
 #include <chaos/common/thread/TemplatedConcurrentQueue.h>
-
+#include <chaos/cu_toolkit/driver_manager/DriverManager.h>
 namespace chaos_thread_ns = chaos::common::thread;
 
 namespace chaos{
@@ -38,8 +38,10 @@ namespace chaos{
     namespace cu {
         namespace driver_manager {
 			//forward declaration
-			class DriverManager;
+		//	class DriverManager;
             namespace driver {
+                class AbstractDriver;
+
                 //! Driver accessor comminication class
                 /*!
                     The accessor class represent the way used by another class for communiate with the driver.
@@ -102,7 +104,7 @@ namespace chaos{
                     //boost::interprocess::message_queue *commandQueue;
                     DriverQueueType *command_queue;
                     DriverQueueType *command_async_queue;
-
+                    chaos::cu::driver_manager::driver::AbstractDriver *impl;
                     //Private constructor
                     DriverAccessor(unsigned int _accessor_index);
                     
@@ -183,6 +185,7 @@ namespace chaos{
                     uint64_t getMessageCount();
                     int stop();
                     int start();
+                    AbstractDriver* getImpl();
                 };
             }
         }

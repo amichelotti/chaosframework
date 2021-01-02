@@ -31,15 +31,15 @@ namespace chaos {
         
         namespace driver_manager {
             namespace driver {
-
+            
             class BasicIODriverInterface:public BasicIODriver{
                 
             protected:
                 chaos::cu::driver_manager::driver::DrvMsg message;
-                
+                BasicIODriver* impl;
             public:
                 
-                BasicIODriverInterface(chaos::cu::driver_manager::driver::DriverAccessor*_accessor):accessor(_accessor){assert (_accessor);};
+                BasicIODriverInterface(chaos::cu::driver_manager::driver::DriverAccessor*_accessor):accessor(_accessor){assert (_accessor);impl=(BasicIODriver*)_accessor->getImpl();};
                 
                 chaos::cu::driver_manager::driver::DriverAccessor* accessor;
                 

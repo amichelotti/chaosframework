@@ -52,6 +52,7 @@ void AbstractDriver::init(void *init_param) {
 
   //!try to decode parameter string has json document
   is_json_param = parm.isJsonValue((const char *)init_param);
+#ifdef DETACHED_DRIVER
 
   ADLDBG_ << "Start in driver thread";
   started=false;
@@ -115,12 +116,40 @@ void AbstractDriver::init(void *init_param) {
   
   
   } while((ret<0) && (retry--));
+  #else
+      int isjson=0;
+ChaosUniquePtr<CDataWrapper> p;
+  try {
+        p  = CDataWrapper::instanceFromJson((const char*)init_param);
+              isjson = (p->isEmpty() == false);
+     } catch (...) {
+              isjson = 0;
+    }
+    if (isjson) {
+      ADLDBG_ << "JSON PARMS:" << p->getJSONString();
+      if(p->hasKey(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_PROP)&&p->isCDataWrapperValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_PROP)){
+        CDataWrapper cd;
+        p->getCSDataValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_PROP,cd);
+        importKeysAsProperties(cd);
+    //      config.getCSDataValue(CAMERA_CUSTOM_PROPERTY,camera_custom_props);
+          ADLDBG_<<"driver properties"<<getProperties()->getJSONString();
+
+        }
+      driverInit(*p);
+    } else {
+      ADLDBG_ << "STRING PARMS:" << static_cast<const char *>(init_param);
+      driverInit(static_cast<const char *>(init_param));
+    }
+  
+  #endif
 }
 
 // Deinit the implementation
 void AbstractDriver::deinit() {
   ADLAPP_ << "Call custom driver deinitialization";
   // driverDeinit();
+  #ifdef DETACHED_DRIVER
+
   DrvMsg              deinit_msg;
   ResponseMessageType id_to_read;
   AccessorQueueType   result_queue;
@@ -139,6 +168,7 @@ void AbstractDriver::deinit() {
   if (thread_message_receiver->joinable()) {
     thread_message_receiver->join();
   }
+  #endif
 }
 
 const bool AbstractDriver::isDriverParamInJson() const {
