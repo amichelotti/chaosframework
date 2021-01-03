@@ -191,6 +191,7 @@ bool AbstractDriver::getNewAccessor(DriverAccessor **newAccessor,const std::stri
     result->driverName  = driverName;
     result->owner.push_back(owner);
     result->command_queue = command_queue.get();
+    result->impl=this;
     boost::unique_lock<boost::shared_mutex> lock(accesso_list_shr_mux);
     accessors.push_back(result);
     lock.unlock();
