@@ -145,14 +145,24 @@ void* MultiAddressMessageChannel::serviceForURL(const URL& url,
 bool MultiAddressMessageChannel::serviceOnlineCheck(void *service_ptr) {
     bool result = false;
     int retry = 3;
-    MMCFeederService *service = static_cast<MMCFeederService*>(service_ptr);
-    ChaosUniquePtr<MessageRequestFuture> request = MessageChannel::echoTest(service->ip_port,
-                                                                            CDWUniquePtr());
-    while(--retry>0) {
-        if(request->wait(2000)) {
-            retry = 0;
-            result = (request->getError() == 0);
+    if(service_ptr){
+        MMCFeederService *service = static_cast<MMCFeederService*>(service_ptr);
+        if(service->ip_port.size()){
+        ChaosUniquePtr<MessageRequestFuture> request = MessageChannel::echoTest(service->ip_port,
+                                                                                CDWUniquePtr());
+        while(--retry>0) {
+            if(request->wait(2000)) {
+                retry = 0;
+                result = (request->getError() == 0);
+            }
         }
+        } else {
+             MAMC_ERR << "INVALID IP:PORT";
+
+        }
+    } else {
+        MAMC_ERR << "INVALID SERVICE";
+
     }
     return result;
 }
@@ -193,7 +203,7 @@ ChaosUniquePtr<MessageRequestFuture> MultiAddressMessageChannel::_sendRequestWit
     ChaosUniquePtr<MessageRequestFuture> result;
     MMCFeederService *service =  static_cast<MMCFeederService*>(service_feeder.getService());
     if(service) {
-        DEBUG_CODE(MAMC_DBG << "Sending request to:" << used_remote_address<<" action:"<<action_name<<" domain:"<<action_domain<<" request pack:"<<((request_pack.get())?request_pack->getJSONString():""));
+        DEBUG_CODE(MAMC_DBG << "Sending request to:" << service->ip_port<<" action:"<<action_name<<" domain:"<<action_domain<<" request pack:"<<((request_pack.get())?request_pack->getJSONString():""));
 
         result = MessageChannel::sendRequestWithFuture((used_remote_address = service->ip_port),
                                                        action_domain,
@@ -201,7 +211,10 @@ ChaosUniquePtr<MessageRequestFuture> MultiAddressMessageChannel::_sendRequestWit
                                                        MOVE(request_pack));
 
     } else {
+        MAMC_ERR << "Cannot get Service feeder, Sending request to:'" << used_remote_address<<"'  action:"<<action_name<<" domain:"<<action_domain<<" request pack:"<<((request_pack.get())?request_pack->getJSONString():"");
+
         used_remote_address.clear();
+
     }
     return result;
 }

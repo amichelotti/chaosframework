@@ -89,7 +89,9 @@ chaos::error::ChaosErrorCodeMapping::getInstance()->getErrorMessage(error_code)
             //! has been called a not supported method
             //! to be used for instance in driver methods that not are supported in a particular Abstraction
             EC_NODE_OPERATION_NOT_SUPPORTED=-10000,
-            
+                        
+            EC_GENERIC_TIMEOUT=-200,
+
             //!unit server registration is gone well
             EC_MDS_NODE_REGISTRATION_OK = 500,
             //!unit server registration has failed for invalid alias

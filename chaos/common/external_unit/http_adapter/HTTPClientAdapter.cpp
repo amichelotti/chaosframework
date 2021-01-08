@@ -149,16 +149,23 @@ int HTTPClientAdapter::addNewConnectionForEndpoint(ExternalUnitClientEndpoint *e
 int HTTPClientAdapter::sendDataToConnection(const std::string& connection_identifier,
                                             chaos::common::data::CDBufferUniquePtr data,
                                             const EUCMessageOpcode opcode) {
+  //  static int counter=0;
+  //  DBG<<counter<<"] "<<connection_identifier<<" waiting send";
     LMapConnectionInfoReadLock wlm = map_connection.getReadLockObject();
     MapConnectionInfoIterator conn_it = map_connection().find(connection_identifier);
+
     if(conn_it == map_connection().end()) return 0;
     OpcodeShrdPtr op(new Opcode());
     op->identifier = connection_identifier;
     op->op_type = OpcodeInfoTypeSend;
+    //CDWUniquePtr deb=data->getAsCDW(); // remove 
     op->data = MOVE(data);
     op->data_opcode = opcode;
     ChaosWriteLock conn_wl(conn_it->second->smutex);
     conn_it->second->opcode_queue.push(op);
+    
+ //   DBG<<counter<<"] "<<connection_identifier<<"sent";
+ //   counter++;
     return 0;
 }
 
@@ -255,7 +262,7 @@ void HTTPClientAdapter::ev_handler(struct mg_connection *conn,
                 } else {
                     conn_info->ext_unit_conn->accepted_state = accept_result;
                     std::string json_string((const char *)wm->data, wm->size);
-                    DBG << json_string;
+                  //  DBG << json_string;
                 }
             } else {
                 //accepted connection can received data

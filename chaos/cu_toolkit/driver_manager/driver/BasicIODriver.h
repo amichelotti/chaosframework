@@ -21,6 +21,7 @@
 #ifndef __BASICIODRIVER_H__
 #define __BASICIODRIVER_H__
 #include <chaos/cu_toolkit/driver_manager/driver/AbstractDriverPlugin.h>
+
 namespace chaos {
     namespace cu  {
         namespace driver_manager {
@@ -111,7 +112,7 @@ namespace chaos {
                      \param sizeb[in] operation data size/maxsize
                      \return 0 if success, error otherwise
                      */
-                    virtual int iop(int operation,void*data,int sizeb) = 0;
+                    virtual int iop(int operation,void*data,int sizeb);
                     /**
                        \brief return the size in byte of the dataset
                        \return the size of the dataset if success, zero otherwise

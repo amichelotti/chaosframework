@@ -144,7 +144,7 @@ int MetadataLoggingManager::sendLogEntry(CDWUniquePtr log_entry) {
                                                                                                          MOVE(log_entry),
                                                                                                          2000);
     //wait for ack
-    if(log_future->wait()) {
+    if(log_future.get()&&log_future->wait()) {
         err = log_future->getError();
     } else {
         //we can't be able to send log to any mds server so detach it and need to store it

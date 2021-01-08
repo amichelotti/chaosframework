@@ -305,7 +305,9 @@ namespace chaos {
                      A new message has been received from the rmeote server in an asyc way. It
                      will be forward to sublcass only if remote server has been successfully registered
                      */
-                    virtual int asyncMessageReceived(chaos::common::data::CDWUniquePtr message) = 0;
+                    virtual int asyncMessageReceived(chaos::common::data::CDWUniquePtr message) {    AbstractRemoteIODriver_INFO << "async message:"<<message->getJSONString();
+    return 0;
+};
                     
                     //!send an errore to remote driver
                     int sendError(int error_code,
@@ -409,7 +411,7 @@ namespace chaos {
                                 
                             case RDConnectionPhaseConfigured:
                                 //we can proceeed
-                                AbstractRemoteIODriver_DBG<<" Configuration OK!, start working";
+                              //  AbstractRemoteIODriver_DBG<<" Configuration OK!, start working";
                                 break;
                         }
                         return err;

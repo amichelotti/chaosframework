@@ -163,9 +163,6 @@ void IOCU::unitStop() {
 void IOCU::unitDeinit() {
 }
 
-//! pre imput attribute change
-void IOCU::unitInputAttributePreChangeHandler() {
-}
 
 //! attribute changed handler
 void IOCU::unitInputAttributeChangedHandler() {

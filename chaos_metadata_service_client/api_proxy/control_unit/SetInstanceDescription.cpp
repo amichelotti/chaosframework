@@ -60,6 +60,8 @@ ApiProxyResult SetInstanceDescription::execute(SetInstanceDescriptionHelper& api
 
     //add the deafult scheduler delay
     instance_description.addInt64Value(ControlUnitDatapackSystemKey::THREAD_SCHEDULE_DELAY, api_data.default_schedule_delay);
+    instance_description.addInt32Value(DataServiceNodeDefinitionKey::DS_UPDATE_ANYWAY, api_data.update_anyway);
+
     if(legacy_support) {
         //add the storage type
         instance_description.addInt32Value(DataServiceNodeDefinitionKey::DS_STORAGE_TYPE, api_data.storage_type);
@@ -104,10 +106,15 @@ ApiProxyResult SetInstanceDescription::execute(SetInstanceDescriptionHelper& api
 ApiProxyResult SetInstanceDescription::execute(const std::string& uid,chaos::common::data::CDataWrapper& instance_description){
     CDWUniquePtr message(new CDataWrapper());
     //add the control unit unique id
+    
     message->addStringValue(chaos::NodeDefinitionKey::NODE_UNIQUE_ID, uid);
     // set the type for control unit
-    message->addStringValue(chaos::NodeDefinitionKey::NODE_TYPE, chaos::NodeType::NODE_TYPE_CONTROL_UNIT);
-    
+    if(instance_description.hasKey(chaos::NodeDefinitionKey::NODE_TYPE)){
+     message->addStringValue(chaos::NodeDefinitionKey::NODE_TYPE, instance_description.getStringValue(chaos::NodeDefinitionKey::NODE_TYPE));
+
+    } else {
+     message->addStringValue(chaos::NodeDefinitionKey::NODE_TYPE, chaos::NodeType::NODE_TYPE_CONTROL_UNIT);
+    }
     
     message->addCSDataValue("instance_description", instance_description);
     return callApi(message);
@@ -128,6 +135,7 @@ storage_type(DataServiceNodeDefinitionType::DSStorageTypeLive),
 history_ageing(0),
 history_time(0),
 live_time(0),
+update_anyway(60000),
 restore_apply(false),
 restore_type(0),
 default_schedule_delay(1000000),

@@ -326,7 +326,7 @@ void ZMQDirectIOServer::worker(unsigned int w_type,
                         }
                     }
                 } else {
-                    ZMQDIO_SRV_LAPP_ << CHAOS_FORMAT("Error dispatching received message with code %1%", %err);
+                    ZMQDIO_SRV_LERR_ << CHAOS_FORMAT("Error dispatching received message with code %1%", %err);
                 }
             }
         } catch (CException& ex) {

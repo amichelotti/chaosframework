@@ -293,7 +293,7 @@ chaos::common::data::CDWUniquePtr createProperty(
   chaos::common::data::CDWUniquePtr
   setProperty(const std::string &propname,
               const chaos::common::data::CDataWrapper &val, bool sync = false) {
-    boost::mutex::scoped_lock ll (lock);
+   // boost::mutex::scoped_lock ll (lock);
     std::string realpropname = propname;
     if(!val.hasKey(PROPERTY_VALUE_KEY)){
         throw chaos::CException(-10,propname+" missing required key 'value' in:"+val.getJSONString(),__FUNCTION__);
@@ -343,10 +343,10 @@ chaos::common::data::CDWUniquePtr createProperty(
         replaceProperty(realpropname,*towrite.get());
          
       }
-      LDBG_ << __FUNCTION__ << "-"
+     /* LDBG_ << __FUNCTION__ << "-"
             << "4 set property " << realpropname
             << " props:" << props.getJSONString()<<" input:"<<val.getJSONString();
-
+*/
       return retriveProp(realpropname);
     } else {
         LERR_ << __FUNCTION__ << "-"
@@ -581,7 +581,7 @@ chaos::common::data::CDWUniquePtr createProperty(
       }
     }
 
-    if (prop->hasKey(PROPERTY_VALUE_KEY)) {
+    if (prop.get()&&prop->hasKey(PROPERTY_VALUE_KEY)) {
       chaos::common::data::CDWUniquePtr pp=props.getCSDataValue(realpropname);
       value = pp->getValue<T>(PROPERTY_VALUE_KEY);
       return 0;

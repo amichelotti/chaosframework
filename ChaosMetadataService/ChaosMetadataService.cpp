@@ -218,7 +218,7 @@ void ChaosMetadataService::start()  {
         ds_da->registerNode(setting.ha_zone_name,
                             unique_uid,
                             NetworkBroker::getInstance()->getDirectIOUrl(),
-                            0);
+                            0,getBuildInfo(chaos::common::data::CDWUniquePtr()));
 
         //at this point i must with for end signal
         chaos::common::async_central::AsyncCentralManager::getInstance()->addTimer(this,
@@ -268,7 +268,8 @@ void ChaosMetadataService::timeout() {
         ds_da->registerNode(setting.ha_zone_name,
                             NetworkBroker::getInstance()->getRPCUrl(),
                             NetworkBroker::getInstance()->getDirectIOUrl(),
-                            0);
+                            0,
+                            getBuildInfo(chaos::common::data::CDWUniquePtr()));
     }
 
     //update proc stat

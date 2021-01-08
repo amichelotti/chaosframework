@@ -68,10 +68,10 @@ int MongoDBAgentDataAccess::insertUpdateAgentDescription(CDataWrapper& agent_des
 
         if(presence == false) {
             //create new empty node
-            CDataWrapper new_node;
-            new_node.addStringValue(NodeDefinitionKey::NODE_UNIQUE_ID, agent_uid);
-            new_node.addStringValue(NodeDefinitionKey::NODE_TYPE,  NodeType::NODE_TYPE_AGENT);
-            if((err = node_data_access->insertNewNode(new_node))) {
+          //  CDataWrapper new_node;
+          //  new_node.addStringValue(NodeDefinitionKey::NODE_UNIQUE_ID, agent_uid);
+          //  new_node.addStringValue(NodeDefinitionKey::NODE_TYPE,  NodeType::NODE_TYPE_AGENT);
+            if((err = node_data_access->insertNewNode(agent_description))) {
                 ERR << CHAOS_FORMAT("Error creating a new node structure for agent %1% with error %2%" , %agent_uid%err);
                 return err;
             } else if((err = node_data_access->addAgeingManagementDataToNode(agent_uid))) {
@@ -83,7 +83,7 @@ int MongoDBAgentDataAccess::insertUpdateAgentDescription(CDataWrapper& agent_des
                 return err;
         }
         
-        mongo::BSONObj query = BSON(NodeDefinitionKey::NODE_UNIQUE_ID << agent_uid
+     /*   mongo::BSONObj query = BSON(NodeDefinitionKey::NODE_UNIQUE_ID << agent_uid
                                     << NodeDefinitionKey::NODE_TYPE << NodeType::NODE_TYPE_AGENT);
         mongo::BSONArrayBuilder array_descirption_builder;
         CMultiTypeDataArrayWrapperSPtr description_array = agent_description.getVectorValue(AgentNodeDefinitionKey::HOSTED_WORKER);
@@ -111,7 +111,8 @@ int MongoDBAgentDataAccess::insertUpdateAgentDescription(CDataWrapper& agent_des
                                      true,
                                      false))){
             ERR << "Error registering agent" << agent_uid << " with error:" << err;
-        } 
+        }
+        */
     } catch (const mongo::DBException &e) {
         ERR << e.what();
         err = -1;

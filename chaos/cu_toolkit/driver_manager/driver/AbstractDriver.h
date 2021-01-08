@@ -117,10 +117,10 @@ namespace chaos{
                     OpcodeExecutor *o_exe;
                     
                     // Initialize instance
-                    void init(void *init_param);
+                    virtual void init(void *init_param);
                     
                     // Deinit the implementation
-                    void deinit();
+                    virtual void deinit();
 					
 					
                     //! Wait the new command and broadcast it
@@ -130,7 +130,7 @@ namespace chaos{
 					 in this case it will quit.
                      */
                     void scanForMessage();
-					
+					bool started;
                 protected:
                     std::string lastError;
                     //!Private constructor
@@ -164,7 +164,7 @@ namespace chaos{
                         the message queue for comunicating with this driver is
                         allocated.
                      */
-                    bool getNewAccessor(DriverAccessor **newAccessor);
+                    bool getNewAccessor(DriverAccessor **newAccessor,const std::string& owner="");
                     
                     //! Dispose and accessor
                     /*!
@@ -195,7 +195,7 @@ namespace chaos{
                      * 
                      * @return properties
                      */
-                    virtual chaos::common::data::CDWUniquePtr setDrvProperties(chaos::common::data::CDWUniquePtr);
+                    virtual chaos::common::data::CDWUniquePtr setDrvProperties(chaos::common::data::CDWUniquePtr&);
 
                     /**
                      * @brief Set the Drv property 
@@ -209,6 +209,7 @@ namespace chaos{
                      * to set last error
                     */
                     void setLastError(const std::string&str);
+                    std::string getLastError(){return lastError;}
                 };
                 
                 

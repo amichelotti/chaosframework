@@ -123,14 +123,7 @@ CDWUniquePtr NodeRegister::simpleRegistration(CDWUniquePtr api_data) {
     alive=ChaosMetadataService::getInstance()->isNodeAlive(node_uid);
 #endif
     
-    if(alive) {
-        USRA_ERR<<"NODE:"<<node_uid<<" already alive wait 10s";
-        api_data->addInt32Value(MetadataServerNodeDefinitionKeyRPC::PARAM_REGISTER_NODE_RESULT,
-                                ErrorCode::EC_MDS_NODE_REGISTRATION_FAILURE_INSTANCE_ALREADY_RUNNING);
-        getBatchExecutor()->submitCommand(GET_MDS_COMMAND_ALIAS(batch::node::NodeAckCommand),
-                                          api_data->clone().release());
-        return CDWUniquePtr();
-    }
+  
     //we can porceed with uniserver registration
     USRA_INFO << "Registering NODE: " << node_uid;
     std::string ttype;
@@ -144,6 +137,14 @@ CDWUniquePtr NodeRegister::simpleRegistration(CDWUniquePtr api_data) {
             LOG_AND_TROW(USRA_ERR, -3, "error checking the NODE presence")
         }
         if(is_present) {
+              if(alive) {
+                    USRA_ERR<<"NODE:"<<node_uid<<" already alive wait 10s";
+                    api_data->addInt32Value(MetadataServerNodeDefinitionKeyRPC::PARAM_REGISTER_NODE_RESULT,
+                                            ErrorCode::EC_MDS_NODE_REGISTRATION_FAILURE_INSTANCE_ALREADY_RUNNING);
+                    getBatchExecutor()->submitCommand(GET_MDS_COMMAND_ALIAS(batch::node::NodeAckCommand),
+                                                    api_data->clone().release());
+                    return CDWUniquePtr();
+            }
             //present
             USRA_DBG<<"UPDATE EXISTING NODE:"<<node_uid << " type:"<<ttype;
 

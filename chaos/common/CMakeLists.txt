@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.7)
 project(chaos_common)
 #### required libraries
 MESSAGE(" CMAKELIST framework/chaos/common")
@@ -49,6 +49,7 @@ if(WIN32)
     LOG_BUILD 1
     LOG_INSTALL 1
 	)
+  add_dependencies(${PROJECT_NAME} jsonCpp)
 
 ELSE(WIN32)
   ExternalProject_Add(
@@ -77,7 +78,9 @@ ELSE(WIN32)
       SET(ZMQ_FLAGS "")
     ENDIF()
   ENDIF()
+
 ENDIF(WIN32)
+
 
 IF (CHAOS_TARGET)
   IF(NEW_ZMQ)
@@ -102,8 +105,9 @@ IF (CHAOS_TARGET)
 	  -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX} ${ZMQ_FLAGS} -DCMAKE_BUILD_TYPE=Release -DENABLE_DRAFTS=1 -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
 	 LOG_DOWNLOAD ON
 	 LOG_CONFIGURE ON
-	 LOG_BUILD ON)
-     ENDIF()
+   LOG_BUILD ON)
+
+  ENDIF()
 
 
      ExternalProject_Add(
@@ -146,12 +150,37 @@ ExternalProject_Add(
 	)
 
 ENDIF()
-
+MESG("Install lz4 compression library")
+  ExternalProject_Add(
+     liblz4
+     GIT_REPOSITORY https://github.com/lz4/lz4.git
+    GIT_TAG v1.9.2
+   # GIT_TAG dev
+     PREFIX "${CMAKE_BINARY_DIR}/ext_dep/lz4-prefix"
+     SOURCE_DIR "${CMAKE_BINARY_DIR}/ext_dep/lz4-src"
+     BINARY_DIR "${CMAKE_BINARY_DIR}/ext_dep/lz4-build"
+     SOURCE_SUBDIR contrib/cmake_unofficial
+   #  SOURCE_SUBDIR build/cmake
+     CMAKE_ARGS 
+      -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
+      -DCMAKE_BUILD_TYPE=Release
+      -DBUILD_STATIC_LIBS=ON
+      -DBUILD_SHARED_LIBS=OFF
+      -DCMAKE_POSITION_INDEPENDENT_CODE=ON 
+      -DCMAKE_CXX_STANDARD=11
+      -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} 
+      -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+     LOG_DOWNLOAD ON
+     LOG_CONFIGURE ON
+     LOG_BUILD ON)
+  
 IF(KAFKA_RDK_ENABLE)
 MESSAGE("ENABLING RDK KAFKA")
+
 ExternalProject_Add(
 	 librdkafa
 	 GIT_REPOSITORY https://github.com/edenhill/librdkafka.git
+#	 GIT_REPOSITORY https://github.com/amichelotti/librdkafka.git
 
      PREFIX "${CMAKE_BINARY_DIR}/ext_dep/librdkafka-prefix"
 	 SOURCE_DIR "${CMAKE_BINARY_DIR}/ext_dep/librdkafka-src"
@@ -230,6 +259,7 @@ IF (CLING_VIRTUAL_MACHINE_ENABLE)
 	   add_dependencies(${PROJECT_NAME} cling)
   ENDIF()
 ENDIF()
+
 
 SET(BUILD_LIBRARY )
 #add_subdirectory(libbson)
@@ -603,11 +633,11 @@ ENDIF()
 
 IF (BUILD_FORCE_STATIC  )
   ADD_LIBRARY(${PROJECT_NAME} STATIC ${common_lib_src})
-  TARGET_LINK_LIBRARIES(${PROJECT_NAME} z ${FrameworkLib} ${BUILD_LIBRARY})
+  TARGET_LINK_LIBRARIES(${PROJECT_NAME} z lz4 ${FrameworkLib} ${BUILD_LIBRARY})
 ELSE (BUILD_FORCE_STATIC)
   ADD_LIBRARY(${PROJECT_NAME} SHARED ${common_lib_src})
   set_target_properties(${PROJECT_NAME} PROPERTIES VERSION 1.0.0 SOVERSION 1)
-  TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC z ${FrameworkLib} PRIVATE ${BUILD_LIBRARY})
+  TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC z lz4 ${FrameworkLib} PRIVATE ${BUILD_LIBRARY})
 ENDIF (BUILD_FORCE_STATIC)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE CLING_VIRTUAL_MACHINE=${CLING_VIRTUAL_MACHINE})
@@ -616,8 +646,6 @@ IF (CHAOS_PROMETHEUS)
 add_dependencies(${PROJECT_NAME} prometheus)
 endif()
 
-add_dependencies(${PROJECT_NAME} libzmq)
-add_dependencies(${PROJECT_NAME} jsonCpp)
 
 IF (CLING_VIRTUAL_MACHINE)
   add_dependencies(${PROJECT_NAME} cling)

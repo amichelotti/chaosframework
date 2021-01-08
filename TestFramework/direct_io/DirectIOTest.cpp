@@ -85,12 +85,13 @@ TEST_F(DirectIOTest, Echo) {
   if (client_channel->echo(message_buffer, message_buffer_echo) == 0) {
     ASSERT_TRUE(message_buffer_echo);
     ASSERT_EQ(message_buffer_echo->size(), message_string_echo.size());
+    const std::string echo_message_string(message_buffer_echo->data(), message_buffer_echo->size());
+    ASSERT_STREQ(echo_message_string.c_str(), message_string_echo.c_str());
+ 
   } else {
     lost_eco_message++;
   }
 
-  const std::string echo_message_string(message_buffer_echo->data(), message_buffer_echo->size());
-  ASSERT_STREQ(echo_message_string.c_str(), message_string_echo.c_str());
   std::cout << "[          ] "
             << "eco_count = " << handler.eco_count << std::endl;
   std::cout << "[          ] "
@@ -122,6 +123,9 @@ void echoClientEchoMultiThreadingSameChannel(DirectIOSystemAPIClientChannel *cli
     }
     boost::this_thread::sleep_for(boost::chrono::microseconds(rnd.rand()));
   }
+
+
+  
 }
 
 TEST_F(DirectIOTest, EchoMultiThreadingSameChannel) {

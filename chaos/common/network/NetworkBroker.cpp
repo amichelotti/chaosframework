@@ -541,11 +541,17 @@ bool NetworkBroker::submiteRequest(const string& host,
     CHAOS_ASSERT(rpc_client)
     request->addStringValue(RpcActionDefinitionKey::CS_CMDM_ANSWER_HOST_IP, published_host_and_port);
     ChaosSharedPtr<NetworkForwardInfo> nfi = ChaosMakeSharedPtr<NetworkForwardInfo>(true);
-    nfi->destinationAddr = host;
-    nfi->sender_node_id = sender_node_id;
-    nfi->sender_request_id = sender_request_id;
-    nfi->setMessage(MOVE(request));
-    return rpc_client->submitMessage(MOVE(nfi), false);
+    if(nfi.get()){
+        nfi->destinationAddr = host;
+        nfi->sender_node_id = sender_node_id;
+        nfi->sender_request_id = sender_request_id;
+        nfi->setMessage(MOVE(request));
+        return rpc_client->submitMessage(MOVE(nfi), false); 
+    } else {
+        LERR_<<sender_request_id<<"] to '"<<host<<"' invalid NetworkForwardInfo for:'"<<published_host_and_port<<"' sender node id:"<<sender_node_id;
+
+    }
+    return false;
 }
 
 /*

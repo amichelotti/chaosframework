@@ -218,7 +218,7 @@ TEST_F(RPCMultiaddressMessageChannelTest, RemoveRemoteURL) {
     DEBUG_PRINTER("Destroied server 2")
     NetworkBroker::getInstance()->disposeMessageChannel(msg_chnl);
 }
-
+/*
 TEST_F(RPCMultiaddressMessageChannelTest, AutoEviction) {
     ChaosSharedPtr<RpcHandler2> handler1 = ChaosMakeSharedPtr<RpcHandler2>();
     //allcoate one remote server
@@ -320,6 +320,7 @@ TEST_F(RPCMultiaddressMessageChannelTest, Reconnection) {
     DEBUG_PRINTER("Destroied server 1")
     NetworkBroker::getInstance()->disposeMessageChannel(msg_chnl);
 }
+*/
 
 TEST_F(RPCMultiaddressMessageChannelTest, Failover) {
     ChaosSharedPtr<RpcHandler2> handler1 = ChaosMakeSharedPtr<RpcHandler2>();

@@ -99,7 +99,7 @@ void DriverManager::registerDriver(ChaosSharedPtr<ObjectInstancer<AbstractDriver
     mapDriverAliasVersionInstancer.insert(make_pair(composedDriverName, driver_plugin_info));
 }
 
-DriverAccessor *DriverManager::getNewAccessorForDriverInstance(DrvRequestInfo &request_info)  {
+DriverAccessor *DriverManager::getNewAccessorForDriverInstance(DrvRequestInfo &request_info,const std::string& owner)  {
     boost::unique_lock<boost::shared_mutex> lock(mutextMapAccess);
     
     std::string composedDriverName;
@@ -112,7 +112,7 @@ DriverAccessor *DriverManager::getNewAccessorForDriverInstance(DrvRequestInfo &r
     
     //befor hashing we need to check if the driver with alias and version has been registered
     
-    DMLDBG_ << "Has been requested a driver with the information -> " << request_info.alias << "/" << request_info.version << "/" << request_info.init_parameter;
+    DMLDBG_ << owner<< " requested a driver with the information -> " << request_info.alias << "/" << request_info.version << "/" << request_info.init_parameter;
     composedDriverName = request_info.alias;
     composedDriverName.append(request_info.version);
     
@@ -123,7 +123,12 @@ DriverAccessor *DriverManager::getNewAccessorForDriverInstance(DrvRequestInfo &r
     if(!json_param->isEmpty() &&
        json_param->hasKey(INIT_HARDWARE_PARAM) &&
        json_param->isCDataWrapperValue(INIT_HARDWARE_PARAM)) {
-        stringForMap.append(json_param->getCSDataValue(INIT_HARDWARE_PARAM)->getJSONString());
+       chaos::common::data::CDWUniquePtr par=json_param->getCSDataValue(INIT_HARDWARE_PARAM);
+       if(par->hasKey("simulOpt")){
+           // this key doesnt involve hash
+           par->removeKey("simulOpt");
+       }
+        stringForMap.append(par->getJSONString());
     } else {
         stringForMap.append(request_info.init_parameter);
     }
@@ -133,7 +138,7 @@ DriverAccessor *DriverManager::getNewAccessorForDriverInstance(DrvRequestInfo &r
     if (mapParameterLiveInstance.count(stringForMap)) {
         DMLDBG_ << "Driver \"" << stringForMap << "\" is already been instantiated";
         
-        if (mapParameterLiveInstance[stringForMap]->getNewAccessor(&accessor)) {
+        if (mapParameterLiveInstance[stringForMap]->getNewAccessor(&accessor,owner)) {
             //new accessor has been allocated
             DMLAPP_ << "Retrieve driver accessor with index =" << accessor->accessor_index << " for driver " << driverInfo << " with uuid =" << mapParameterLiveInstance[stringForMap];
             //check if the driver confguration has the opcode parameter
@@ -191,8 +196,8 @@ DriverAccessor *DriverManager::getNewAccessorForDriverInstance(DrvRequestInfo &r
     mapParameterLiveInstance.insert(make_pair(stringForMap, driverInstance));
     mapDriverUUIDHashLiveInstance.insert(make_pair(driverInstance->driver_uuid, driverInstance));
     //now can get new accessor
-    if (driverInstance->getNewAccessor(&accessor)) {
-        DMLAPP_ << "Got new driver accessor with index =\"" << accessor->accessor_index << "\" for driver:" << driverInfo << " driver with uuid =" << driverInstance->driver_uuid;
+    if (driverInstance->getNewAccessor(&accessor,owner)) {
+        DMLAPP_ << owner <<" got new driver accessor with index =\"" << accessor->accessor_index << "\" for driver:" << driverInfo << " driver with uuid =" << driverInstance->driver_uuid;
     }
     
     //check if the driver confguration has the opcode parameter
@@ -204,6 +209,7 @@ DriverAccessor *DriverManager::getNewAccessorForDriverInstance(DrvRequestInfo &r
         accessor->device_param = json_param->getCSDataValue(INIT_DEVICE_PARAM);
        
     }
+    accessor->impl=driverInstance;
     return accessor;
 }
 
