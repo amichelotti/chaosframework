@@ -69,36 +69,48 @@ bool MultiAddressMessageRequestFuture::wait() {
     bool working              = true;
     //unitl we have valid future and don't have have answer
     
-    while (retry_other_server < 2 &&
+    while (retry_other_server < 3 &&
            working) {
         while (current_future.get() &&
                working) {
-            MAMRF_DBG << "Waiting on server " << last_used_address << " for " << timeout_in_milliseconds << " ms";
+            MAMRF_DBG << current_future->getRequestID()<<"] Waiting on server '" << last_used_address << "' for " << timeout_in_milliseconds << " ms";
             //! waith for future
             
             if (current_future->wait(timeout_in_milliseconds)) {
-                MAMRF_DBG << "Exit Waiting on server " << last_used_address << " for " << timeout_in_milliseconds << " ms got:" << current_future->isRemoteMeaning();
+                MAMRF_DBG << current_future->getRequestID()<<"] Exit Waiting on server '" << last_used_address << "' for " << timeout_in_milliseconds << " ms got:" << current_future->isRemoteMeaning()<<" retries:"<<retry_other_server;
+                    //switchOnOtherServer();
                 if (current_future->isRemoteMeaning()) {
                     //we have received from remote server somenthing
-                    working = false;
+                    return true;
                 } else {
                     //we have submission error
                     if (current_future->getError()) {
-                        MAMRF_ERR << "We have submission error:" << current_future->getError() << " message:" << current_future->getErrorMessage() << " domain:" << current_future->getErrorDomain();
-                        
+                        MAMRF_ERR << current_future->getRequestID()<<"] We have submission error:" << current_future->getError() << " message:" << current_future->getErrorMessage() << " domain:" << current_future->getErrorDomain();
+                        if(parent_mn_message_channel->getNumberOfManagedNodes()>1){
+
                         //set current server offline
-                        parent_mn_message_channel->setURLAsOffline(last_used_address);
+                            parent_mn_message_channel->setURLAsOffline(last_used_address);
+
+                        } else {
+                            retry_other_server++;
+
+                        }
                         break;
                     }
+
                 }
             } else {
                 if (retry_on_same_server++ < 3) {
-                    MAMRF_INFO << "Retry to wait on same server for " << timeout_in_milliseconds;
+                    MAMRF_INFO << "Retry to wait on same server for " << timeout_in_milliseconds <<" retries:"<<retry_other_server;
                     continue;
                 } else {
-                    MAMRF_INFO << "We have retried " << retry_on_same_server << " times on " << last_used_address;
+                    MAMRF_INFO << "We have retried " << retry_on_same_server << " times on " << last_used_address <<" retries:"<<retry_other_server;
                     //switchOnOtherServer();
-                    parent_mn_message_channel->setURLAsOffline(last_used_address);
+                    if(parent_mn_message_channel->getNumberOfManagedNodes()>1){
+                     parent_mn_message_channel->setURLAsOffline(last_used_address);
+                    } else {
+                        retry_other_server++;
+                    }
                     break;
                 }
             }
@@ -111,8 +123,11 @@ bool MultiAddressMessageRequestFuture::wait() {
                                                                                action_name,
                                                                                CHECK_NULL_MESSAGE(message_pack),
                                                                                last_used_address);
+            retry_on_same_server=0;
             if(current_future.get() == NULL) {
-                MAMRF_ERR << "Retramission has not ben possible, no other server are available";
+                std::string msg=((message_pack.get())?message_pack->getJSONString():"");
+
+                MAMRF_ERR << "Retramission has not ben possible, no other server are available:dom:"<<action_domain<<" act:"<<action_name<<" msg:"<<msg<<" last used address:"<<last_used_address;
                 working = false;
             }
         }

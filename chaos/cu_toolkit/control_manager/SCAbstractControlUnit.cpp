@@ -99,6 +99,7 @@ void SCAbstractControlUnit::_defineActionAndDataset(CDataWrapper& setup_configur
 
   //call superclass method
   AbstractControlUnit::_defineActionAndDataset(setup_configuration);
+  addStateVariable(StateVariableTypeAlarmCU, "command_fault", "Notify when a command faulted");
 
   std::vector<ChaosSharedPtr<BatchCommandDescription> > batch_command_description;
   slow_command_executor->getCommandsDescriptions(batch_command_description);

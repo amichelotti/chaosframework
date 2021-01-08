@@ -433,9 +433,16 @@ int MongoDBControlUnitDataAccess::getFullDescription(const std::string& cu_uniqu
                                                      chaos::common::data::CDataWrapper **dataset_description){
     int err = 0;
     mongo::BSONObj result;
+    mongo::BSONArrayBuilder bson_find_or,bson_find_and;
+
     try {
-        mongo::BSONObj query = BSON(NodeDefinitionKey::NODE_UNIQUE_ID << cu_unique_id
-                                    << NodeDefinitionKey::NODE_TYPE << NodeType::NODE_TYPE_CONTROL_UNIT);
+         bson_find_or<<BSON( chaos::NodeDefinitionKey::NODE_TYPE << chaos::NodeType::NODE_TYPE_ROOT)<<
+                BSON( chaos::NodeDefinitionKey::NODE_TYPE << chaos::NodeType::NODE_TYPE_CONTROL_UNIT);
+          bson_find_and<<BSON(NodeDefinitionKey::NODE_UNIQUE_ID << cu_unique_id);
+          bson_find_and<<BSON("$or"<<bson_find_or.arr());
+               
+        mongo::BSONObj query = bson_find_and.obj();/*BSON(NodeDefinitionKey::NODE_UNIQUE_ID << cu_unique_id
+                                    << NodeDefinitionKey::NODE_TYPE << NodeType::NODE_TYPE_CONTROL_UNIT);*/
         
         //remove the field of the document
         if((err = connection->findOne(result,
@@ -597,7 +604,9 @@ int MongoDBControlUnitDataAccess::setInstanceDescription(const std::string& cu_u
         if(instance_description.hasKey(DataServiceNodeDefinitionKey::DS_STORAGE_LIVE_TIME)) {
             updated_field << DataServiceNodeDefinitionKey::DS_STORAGE_LIVE_TIME << (long long)instance_description.getInt64Value(DataServiceNodeDefinitionKey::DS_STORAGE_LIVE_TIME);
         }
-        
+       if(instance_description.hasKey(DataServiceNodeDefinitionKey::DS_UPDATE_ANYWAY)) {
+            updated_field << DataServiceNodeDefinitionKey::DS_UPDATE_ANYWAY << (uint32_t)instance_description.getInt32Value(DataServiceNodeDefinitionKey::DS_UPDATE_ANYWAY);
+        } 
         if(instance_description.hasKey("control_unit_implementation")) {
             updated_field << "control_unit_implementation" << instance_description.getStringValue("control_unit_implementation");
         }

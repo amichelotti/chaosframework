@@ -203,7 +203,7 @@ void CUCommonUtility::addDataServicePack(ChaosUniquePtr<chaos::common::data::CDa
             throw CException( err, "Error fetching best available data service",__PRETTY_FUNCTION__);
         }
         //update cache on first call after ten seconds
-        nu_cache_ts = now + 10000;
+        nu_cache_ts = now + chaos::common::constants::RefreshEndpointMSec;
     }
     std::string msgbroker=GlobalConfiguration::getInstance()->getOption<std::string>(InitOption::OPT_MSG_BROKER_SERVER);
 

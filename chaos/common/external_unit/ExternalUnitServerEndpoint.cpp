@@ -18,11 +18,14 @@
  * See the Licence for the specific language governing
  * permissions and limitations under the Licence.
  */
+#include <chaos/common/global.h>
 #include <chaos/common/external_unit/ExternalUnitServerEndpoint.h>
 
 using namespace chaos::common::data;
 using namespace chaos::common::external_unit;
-
+#define AbstractRemoteIODriver_INFO    INFO_LOG(ExternalUnitServerEndpoint)
+#define AbstractRemoteIODriver_DBG     DBG_LOG(ExternalUnitServerEndpoint)
+#define AbstractRemoteIODriver_ERR     ERR_LOG(ExternalUnitServerEndpoint)
 ExternalUnitServerEndpoint::ExternalUnitServerEndpoint():
 number_of_connection_accepted(-1){}
 
@@ -35,7 +38,9 @@ ExternalUnitServerEndpoint::~ExternalUnitServerEndpoint() {}
 int ExternalUnitServerEndpoint::sendMessage(const std::string& connection_identifier,
                                       CDWUniquePtr message,
                                       const EUCMessageOpcode opcode) {
+    static int counter=0;
     LMapConnectionReadLock rl;
+    AbstractRemoteIODriver_DBG<<counter<<"] -"<< connection_identifier<<"- Wating lock to send";
     do {
         rl = map_connection.getReadLockObject(utility::ChaosLockTypeTry);
 #ifndef _WIN32
@@ -46,8 +51,13 @@ int ExternalUnitServerEndpoint::sendMessage(const std::string& connection_identi
     }while(rl->owns_lock() == false);
     if(map_connection().count(connection_identifier) == 0) return -1;
     //send data to the connection
-    return map_connection()[connection_identifier]->sendData(MOVE(message),
-                                                             opcode);
+    int ret=map_connection()[connection_identifier]->sendData(MOVE(message),
+                                                     opcode);
+    AbstractRemoteIODriver_DBG<<counter<<"] -"<< connection_identifier<<"-  message sent";
+    counter++;
+    rl->unlock();
+
+    return ret;
 }
 
 std::string ExternalUnitServerEndpoint::getIdentifier() {

@@ -26,7 +26,7 @@
 #include <boost/atomic/atomic.hpp>
 #include <chaos/cu_toolkit/driver_manager/driver/DriverTypes.h>
 #include <chaos/common/thread/TemplatedConcurrentQueue.h>
-
+#include <chaos/cu_toolkit/driver_manager/DriverManager.h>
 namespace chaos_thread_ns = chaos::common::thread;
 
 namespace chaos{
@@ -38,8 +38,10 @@ namespace chaos{
     namespace cu {
         namespace driver_manager {
 			//forward declaration
-			class DriverManager;
+		//	class DriverManager;
             namespace driver {
+                class AbstractDriver;
+
                 //! Driver accessor comminication class
                 /*!
                     The accessor class represent the way used by another class for communiate with the driver.
@@ -59,6 +61,8 @@ namespace chaos{
                     std::string driverName;
                     //! identificaiton of the driver that has created the accessor
 					std::string driver_uuid;
+
+                    std::vector<std::string> owner;
 					
                     //specified isntance driver parameter
                     /*!
@@ -99,13 +103,15 @@ namespace chaos{
                      */
                     //boost::interprocess::message_queue *commandQueue;
                     DriverQueueType *command_queue;
-                    
+                    DriverQueueType *command_async_queue;
+                    chaos::cu::driver_manager::driver::AbstractDriver *impl;
                     //Private constructor
                     DriverAccessor(unsigned int _accessor_index);
                     
                     //Private destructor
                     ~DriverAccessor();
-                    
+                    //!Mutex for priority queue managment
+				    boost::shared_mutex    mutex_queue;
                 public:
                     
                     //! base priority of the accessor(the default value is 50)
@@ -117,11 +123,10 @@ namespace chaos{
                         answere is waith from the driver.
                         \param cmd a command pack filled with all infromation
                                 for the command.
-                        \param inc_priority the incremental priority repsect to the base that permit to be forward a message
-                                before message with minor priority.
+                        \param timeout_ms the timeout for the execution 0= no timeout
                         \return true if operation has been done sucessfull.
                      */
-                    bool send(DrvMsgPtr cmd, uint32_t inc_priority = 0);
+                    bool send(DrvMsgPtr cmd, uint32_t timeout_ms = 0);
                     
                     //! Send an asynchronous command
                     /*!
@@ -176,7 +181,11 @@ namespace chaos{
                     std::string getUID() const;
                     std::string getDriverName() const;
                     std::string getLastError();
-
+                    std::vector<std::string> getOwner(){return owner;}
+                    uint64_t getMessageCount();
+                    int stop();
+                    int start();
+                    AbstractDriver* getImpl();
                 };
             }
         }

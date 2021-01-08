@@ -20,9 +20,13 @@
  */
 
 #include <chaos/common/external_unit/ExternalUnitClientEndpoint.h>
-
+#include <chaos/common/global.h>
 using namespace chaos::common::data;
 using namespace chaos::common::external_unit;
+
+#define INFO    INFO_LOG(ExternalUnitClientEndpoint)
+#define DBG     DBG_LOG(ExternalUnitClientEndpoint)
+#define ERR     ERR_LOG(ExternalUnitClientEndpoint)
 
 ExternalUnitClientEndpoint::ExternalUnitClientEndpoint() {}
 
@@ -34,11 +38,20 @@ ExternalUnitClientEndpoint::~ExternalUnitClientEndpoint() {}
 int ExternalUnitClientEndpoint::sendMessage(const std::string& connection_identifier,
                                             CDWUniquePtr message,
                                             const EUCMessageOpcode opcode) {
-    LExternalUnitConnectionReadLock rl = current_connection.getReadLockObject();
-    if(current_connection() == NULL) return -1;
-    //send data to the coneection
-    return current_connection()->sendData(MOVE(message),
+   // already locked on sendData
+   // LExternalUnitConnectionReadLock rl = current_connection.getReadLockObject();
+   static int counter=0;
+  // DBG<<counter<<"] "<<connection_identifier<<" sending "<<message->getCompliantJSONString();
+    if(current_connection() == NULL) {
+        return -1;
+    }
+
+    int ret=current_connection()->sendData(MOVE(message),
                                           opcode);
+ //   DBG<<counter<<"] "<<connection_identifier<<" sent ";
+    counter++;
+    //send data to the coneection
+    return ret;
 }
 
 std::string ExternalUnitClientEndpoint::getIdentifier() {

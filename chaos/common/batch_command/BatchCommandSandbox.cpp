@@ -137,6 +137,10 @@ void BatchCommandSandbox::start()  {
     //allocate thread
     thread_scheduler.reset(new boost::thread(boost::bind(&BatchCommandSandbox::runCommand, this)));
     thread_next_command_checker.reset(new boost::thread(boost::bind(&BatchCommandSandbox::checkNextCommand, this)));
+    if(!thread_scheduler.get() || !thread_next_command_checker.get()){
+        SCSLERR_<<"Cannot create thread scheduler || thread_next_";
+        return;
+    }
     DEBUG_CODE(SCSLDBG_ << "Allocated thread for the scheduler runCommand "<<std::hex<<thread_scheduler->native_handle()<<" and checker "<< thread_next_command_checker->native_handle()<<std::dec;);
     
     //set the scheduler thread priority
@@ -174,17 +178,25 @@ void BatchCommandSandbox::stop()  {
     //se the flag to the end o fthe scheduler
     SCSLDBG_ << "Set scheduler work flag to false";
     schedule_work_flag = false;
-    
     SCSLDBG_ << "Notify pauseCondition variable";
     thread_scheduler_pause_condition.unlock();
     whait_for_next_check.unlock();
     
-    if (thread_scheduler->joinable()) {
+    if (thread_scheduler.get()&&thread_scheduler->joinable()) {
         SCSLDBG_ << "Join on schedulerThread";
-        
-        thread_scheduler->join();
+         if (thread_scheduler->try_join_for(boost::chrono::milliseconds(chaos::common::constants::CUTimersTimeoutinMSec))){
+                SCSLDBG_ << "schedulerThread joined!";
+
+        } else {
+            thread_scheduler->interrupt();
+            SCSLDBG_ << "schedulerThread interrupted";
+        }
+        //thread_scheduler->join();
+    } else {
+        SCSLERR_ << "schedulerThread unjoinable";
+
     }
-    if (thread_next_command_checker->joinable()) {
+    if (thread_next_command_checker.get()&& thread_next_command_checker->joinable()) {
         SCSLDBG_ << "Join on thread_next_command_checker";
         thread_next_command_checker->join();
     }
@@ -328,15 +340,17 @@ void BatchCommandSandbox::checkNextCommand() {
         
         //check for emptiness
         if (!queue_empty) {
-            SCSLDBG_ << "[checkNextCommand] checkNextCommand can work, queue size:"<<command_submitted_queue.size();
+            SCSLDBG_ << "[checkNextCommand] checkNextCommand can work, queue size:"<<command_submitted_queue.size()<<" is executing command:"<<((current_executing_command)?(current_executing_command->element->cmdImpl?current_executing_command->element->cmdImpl->getAlias():""):"NULL");
             
             if (current_executing_command) {
+
                 PRIORITY_ELEMENT(CommandInfoAndImplementation) command_to_delete;
                 PRIORITY_ELEMENT(CommandInfoAndImplementation) next_available_command;
                 //compute the runnig state or fault
                 boost::mutex::scoped_lock lockForCurrentCommandMutex(mutext_access_current_command);
                 // cehck waht we need to do with current and submitted command
-                lock_next_command_queue.lock();
+               //// How many locks? 
+               lock_next_command_queue.lock();
                 next_available_command = command_submitted_queue.top();
                 DEBUG_CODE(SCSLDBG_ << "[checkNextCommand] check installation for new command with pointer =" << std::hex << next_available_command << " alias:\""<<next_available_command->element->cmdImpl->getAlias()<<"\""<<std::dec;)
                 
@@ -521,8 +535,9 @@ void BatchCommandSandbox::checkNextCommand() {
                         cmd_stat.stacked_commands = (uint32_t)command_stack.size();
                         thread_scheduler_pause_condition.unlock();
                         if(command_to_delete->element->cmdImpl->sticky == false){
-                            
+                            if(command_to_delete->element->cmdInfo){
                             DEBUG_CODE(SCSLDBG_ << "[checkNextCommand] Delete command "<< command_to_delete->element->cmdInfo->getJSONString()<<" with pointer " << std::hex << command_to_delete << std::dec;)
+                            }
                             command_to_delete.reset();
                         }
                     } else {
@@ -582,7 +597,7 @@ void BatchCommandSandbox::checkNextCommand() {
             WAIT_ON_NEXT_CMD
         }
     }
-    SCSLAPP_ << "[checkNextCommand] Check next command thread ended";
+    SCSLDBG_ << "[checkNextCommand] Check next command thread ended";
 }
 
 inline ChaosUniquePtr<chaos::common::data::CDataWrapper> BatchCommandSandbox::flatErrorInformationInCommandInfo(CDataWrapper *command_info,
@@ -623,12 +638,18 @@ void BatchCommandSandbox::runCommand() {
     int64_t next_prediction_error = 0;
     BatchCommand *curr_executing_impl = NULL;
     //check if the current command has ended or need to be substitute
+
     boost::mutex::scoped_lock lockForCurrentCommand(mutext_access_current_command);
+
     do {
+
         if (current_executing_command) {
             //consume oepration on current command
             consumeRunCmdOps();
-            
+            if(!(current_executing_command&&current_executing_command->element&&current_executing_command->element->cmdImpl)) {
+                canWork=!schedule_work_flag;
+                continue;
+            }
             //run command
             curr_executing_impl = current_executing_command->element->cmdImpl;
             

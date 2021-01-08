@@ -186,7 +186,7 @@ void WorkUnitManagement::scheduleSM()  {
                                                            ex.errorDomain);
                 chaos::common::utility::SWEService::goInFatalError(work_unit_instance.get(), logged_exception, "Setup phase", __PRETTY_FUNCTION__);
                 DECODE_CHAOS_EXCEPTION(ex)
-              //  SWITCH_SM_TO(work_unit_state_machine::UnitEventType::UnitEventTypeFailure())
+                SWITCH_SM_TO(work_unit_state_machine::UnitEventType::UnitEventTypeFailure())
             }catch(...) {
                 MetadataLoggingCException logged_exception(work_unit_instance->getCUID(),
                                                            -10000,
@@ -194,7 +194,7 @@ void WorkUnitManagement::scheduleSM()  {
                                                            __PRETTY_FUNCTION__);
                 chaos::common::utility::SWEService::goInFatalError(work_unit_instance.get(), logged_exception, "Setup phase", __PRETTY_FUNCTION__);
                 WUMERR_ << "Unexpected error during control unit definition";
-            //    SWITCH_SM_TO(work_unit_state_machine::UnitEventType::UnitEventTypeFailure())
+               SWITCH_SM_TO(work_unit_state_machine::UnitEventType::UnitEventTypeFailure())
             }
             SWITCH_SM_TO(work_unit_state_machine::UnitEventType::UnitEventTypePublishing())
             break;
@@ -256,7 +256,7 @@ void WorkUnitManagement::scheduleSM()  {
             //send load completion to the mds
             sendLoadCompletionToMDS(work_unit_instance->getCUID());
             
-            //set healt to load
+            //set healt to start
             HealtManager::getInstance()->addNodeMetricValue(work_unit_instance->getCUID(),
                                                             NodeHealtDefinitionKey::NODE_HEALT_STATUS,
                                                             NodeHealtDefinitionValue::NODE_HEALT_STATUS_LOAD);
@@ -283,7 +283,7 @@ void WorkUnitManagement::scheduleSM()  {
             WUMAPP_  << "there was been error during control unit registration we end here";
             HealtManager::getInstance()->addNodeMetricValue(work_unit_instance->getCUID(),
                                                             NodeHealtDefinitionKey::NODE_HEALT_STATUS,
-                                                            NodeHealtDefinitionValue::NODE_HEALT_STATUS_UNLOAD);
+                                                            NodeHealtDefinitionValue::NODE_HEALT_STATUS_FERROR);
             active = false;
             break;
         }

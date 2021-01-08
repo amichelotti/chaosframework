@@ -93,6 +93,10 @@ namespace chaos {
                     uint64_t history_time;
                     
                     /*!
+                        update_anyway
+                     */
+                    uint32_t update_anyway;
+                    /*!
                      the time that need to pass before store another datapack into the live system
                      */
                     uint64_t live_time;

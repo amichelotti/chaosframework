@@ -58,7 +58,7 @@ CDWUniquePtr InitDeinit::execute(CDWUniquePtr api_data) {
         LOG_AND_TROW(CU_INDEIN_ERR, err, boost::str(boost::format("No control unit node dafault description found for unique id:%1% ") % cu_uid));
     }
     ChaosUniquePtr<chaos::common::data::CDataWrapper> cu_desk(tmp_ptr);
-    CHECK_KEY_THROW_AND_LOG(cu_desk.get(), NodeDefinitionKey::NODE_RPC_ADDR, CU_INDEIN_ERR, -4, "No rpc addres in the control unit descirption")
+    CHECK_KEY_THROW_AND_LOG(cu_desk.get(), NodeDefinitionKey::NODE_RPC_ADDR, CU_INDEIN_ERR, -4, "No rpc addres in the control unit description")
     CHECK_KEY_THROW_AND_LOG(cu_desk.get(), NodeDefinitionKey::NODE_RPC_DOMAIN, CU_INDEIN_ERR, -5, "No rpc domain in the control unit descirption")
     
     //set the control unique id in the init datapack

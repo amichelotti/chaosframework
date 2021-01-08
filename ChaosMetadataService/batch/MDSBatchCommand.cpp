@@ -206,7 +206,7 @@ void MDSBatchCommand::manageRequestPhase(RequestInfo& request_info)  {
             throw chaos::CException(-1, "Request is unsent", __PRETTY_FUNCTION__);
             break;
         case MESSAGE_PHASE_SENT: {
-            MDSBC_DBG << "Waith for "<< request_info.remote_action <<
+            MDSBC_DBG << "Wait for "<< request_info.remote_action <<
             " action ack from the control unit:" << request_info.remote_address <<
             " on rpc[" << request_info.remote_domain <<":"<<request_info.remote_action<<"]";
             MDSBC_DBG << CHAOS_FORMAT("Wait for %1% action ack from control unit %2% on rpc [%3%:%4%]",

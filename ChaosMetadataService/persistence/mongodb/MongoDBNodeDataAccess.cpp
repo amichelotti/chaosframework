@@ -18,7 +18,7 @@
  * See the Licence for the specific language governing
  * permissions and limitations under the Licence.
  */
-#undef DEBUG
+//#undef DEBUG
 
 #include <mongo/client/dbclient.h>
 #include "MongoDBNodeDataAccess.h"
@@ -161,11 +161,12 @@ int MongoDBNodeDataAccess::insertNewNode(CDataWrapper& node_description) {
         
         ChaosUniquePtr<SerializationBuffer> ser(node_description.getBSONData());
         mongo::BSONObj obj_to_insert(ser->getBufferPtr());
-        
+        MDBNDA_DBG<<"inserting:"<<node_description.getCompliantJSONString();
         DEBUG_CODE(MDBNDA_DBG<<log_message("insertNewNode",
                                            "insert",
                                            DATA_ACCESS_LOG_1_ENTRY("Query",
                                                                    obj_to_insert));)
+
         
         if((err = connection->insert(MONGO_DB_COLLECTION_NAME(MONGODB_COLLECTION_NODES),
                                      obj_to_insert))) {
@@ -214,6 +215,18 @@ int MongoDBNodeDataAccess::updateNode(chaos::common::data::CDataWrapper& node_de
         }
         if(node_description.hasKey(chaos::NodeDefinitionKey::NODE_TIMESTAMP)) {
             updated_field << chaos::NodeDefinitionKey::NODE_TIMESTAMP << mongo::Date_t(node_description.getUInt64Value(chaos::NodeDefinitionKey::NODE_TIMESTAMP));
+        }
+        if(node_description.hasKey(chaos::NodeDefinitionKey::NODE_DESC)) {
+            updated_field << chaos::NodeDefinitionKey::NODE_DESC << node_description.getStringValue(chaos::NodeDefinitionKey::NODE_DESC);
+        }
+         if(node_description.hasKey(chaos::NodeDefinitionKey::NODE_REST_PORT)) {
+            updated_field << chaos::NodeDefinitionKey::NODE_REST_PORT << node_description.getInt32Value(chaos::NodeDefinitionKey::NODE_REST_PORT);
+        }
+        if(node_description.hasKey(chaos::NodeDefinitionKey::NODE_BUILD_INFO)) {
+            updated_field << chaos::NodeDefinitionKey::NODE_BUILD_INFO << node_description.getStringValue(chaos::NodeDefinitionKey::NODE_BUILD_INFO);
+        }
+         if(node_description.hasKey(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_VIEW)) {
+            updated_field << chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_VIEW << node_description.getStringValue(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_VIEW);
         }
         if(node_description.hasKey(chaos::RpcActionDefinitionKey::CS_CMDM_ACTION_DESC)) {
             CMultiTypeDataArrayWrapperSPtr description_array(node_description.getVectorValue(chaos::RpcActionDefinitionKey::CS_CMDM_ACTION_DESC));
@@ -444,7 +457,7 @@ int MongoDBNodeDataAccess::searchNode(chaos::common::data::CDataWrapper **result
     //compose query
     
     //filter on sequence
-    if(search_type!=chaos::NodeType::NodeSearchType::node_type_cds){
+    if((search_type!=chaos::NodeType::NodeSearchType::node_type_cds)&&(search_type!=chaos::NodeType::NodeSearchType::node_type_all_server)){
         bson_find_and << BSON( "seq" << BSON("$gt"<<last_unique_id));
     }
     
@@ -472,21 +485,39 @@ int MongoDBNodeDataAccess::searchNode(chaos::common::data::CDataWrapper **result
             default:
                 break;
         }
-        if(search_type!=chaos::NodeType::NodeSearchType::node_type_all_server){
+        switch(search_type){
+            case chaos::NodeType::NodeSearchType::node_type_all_server:{
+                MDBNDA_DBG << "QUERY SERVER but:"<<criteria;
+                bson_find_or<<BSON( chaos::NodeDefinitionKey::NODE_TYPE << chaos::NodeType::NODE_TYPE_ROOT)<<
+                BSON( chaos::NodeDefinitionKey::NODE_TYPE << chaos::NodeType::NODE_TYPE_UNIT_SERVER)<<
+                BSON( chaos::NodeDefinitionKey::NODE_TYPE << chaos::NodeType::NODE_TYPE_WAN_PROXY)<<
+                BSON( chaos::NodeDefinitionKey::NODE_TYPE << chaos::NodeType::NODE_TYPE_AGENT)<<
+                BSON( chaos::NodeDefinitionKey::NODE_TYPE << chaos::NodeType::NODE_TYPE_DATA_SERVICE);
+                bson_find_and<<BSON("$or"<<bson_find_or.arr());
+                break;
+            }
+            case chaos::NodeType::NodeSearchType::node_type_ceu:{
+                bson_find_or<<BSON( chaos::NodeDefinitionKey::NODE_TYPE << chaos::NodeType::NODE_TYPE_ROOT)<<
+                BSON( chaos::NodeDefinitionKey::NODE_TYPE << chaos::NodeType::NODE_TYPE_CONTROL_UNIT);
+                bson_find_and<<BSON("$or"<<bson_find_or.arr());
+                break;
+            }
+            default:
+                bson_find_and << BSON( chaos::NodeDefinitionKey::NODE_TYPE << type_of_node);
 
-            bson_find_and << BSON( chaos::NodeDefinitionKey::NODE_TYPE << type_of_node);
-        } else {
-                MDBNDA_DBG << "QUERY EVERITHING";
 
         }
+        
     }
 #ifdef HEALTH_ON_DB
  
     if(alive_only){bson_find_and << getAliveOption(6);}
 #endif    
     //compose the 'or' condition for all token of unique_id filed
-    bson_find_and << BSON("$or" << getSearchTokenOnFiled(criteria, chaos::NodeDefinitionKey::NODE_UNIQUE_ID));
-    if(impl.size()>0){
+    if(criteria.size()>0){
+        bson_find_and << BSON("$or" << getSearchTokenOnFiled(criteria, chaos::NodeDefinitionKey::NODE_UNIQUE_ID));
+    }
+    if((impl.size()>0)&&(search_type!=chaos::NodeType::NodeSearchType::node_type_ceu)){
             bson_find_and << BSON("$or" << getSearchTokenOnFiled(impl, "instance_description.control_unit_implementation"));
 
     }

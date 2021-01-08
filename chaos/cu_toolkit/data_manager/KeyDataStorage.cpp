@@ -223,6 +223,7 @@ int KeyDataStorage::pushDataSet(KeyDataStorageDomain domain,
     int err=0;
     //lock for protect the access
     boost::unique_lock<boost::mutex> l(mutex_push_data);
+  
     switch(domain) {
         case KeyDataStorageDomainOutput:
             err=pushDataWithControlOnHistoryTime(output_key,

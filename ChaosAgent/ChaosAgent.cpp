@@ -94,6 +94,8 @@ void ChaosAgent::init(void *init_data)  {
     std::string script_path=getGlobalConfigurationInstance()->getOption< std::string >(OPT_SCRIPT_DIR) +"/"+ ChaosAgent::getInstance()->settings.agent_uid;
     boost::filesystem::path p(script_path);
     ChaosAgent::getInstance()->settings.script_dir=script_path;
+    ChaosAgent::getInstance()->settings.restport=restport;
+
     if ((boost::filesystem::exists(p) == false)) {
         try {
         if ((boost::filesystem::create_directories(p) == false) && ((boost::filesystem::exists(p) == false))) {
@@ -207,7 +209,12 @@ std::string ChaosAgent::scriptWorkingDir(std::string scriptname,std::string uid)
   }
   chaos::common::data::CDBufferUniquePtr towrite=Base64Util::decode(content);
   std::string fname=boost::filesystem::current_path().string()+"/"+working_dir+"/"+name;
-  DBG<<"creating file \""<<fname<<"\"";
+    if(towrite.get()==NULL){
+        ERROR<<"Empty content :\""<<content<<"\"";
+         return std::string("");
+
+    }
+      DBG<<"creating file \""<<fname<<"\"";
 
   std::ofstream fs(fname);
   if(fs.is_open()){
@@ -228,12 +235,15 @@ chaos::common::data::CDWUniquePtr ChaosAgent::checkAndPrepareScript(chaos::servi
         // probably is a script get the description.
         std::string path,wd;
         if(chaos::common::network::NetworkBroker::getInstance()->getMetadataserverMessageChannel()->getScriptDesc(it.scriptID,param)==0){
-            INFO <<" AGENT HAS TO START:"<<param->getJSONString();
+            INFO <<" AGENT HAS TO START "<<it.scriptID<<" content:"<<param->getJSONString();
             wd=scriptWorkingDir(it.scriptID,it.associated_node_uid);
             if(wd.size()){
                 path=writeScript(wd,it.scriptID,param->getStringValue("eudk_script_content"));
                 if(path.size()>0){
                     it.working_dir=wd;
+                    param->addStringValue("workdir",boost::filesystem::current_path().string()+"/"+wd);
+                    INFO <<"WORKDIR PARAMETER:"<<param->getStringValue("workdir");
+
                     return param;
                 }
             }

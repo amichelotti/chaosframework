@@ -160,7 +160,7 @@ int MongoDBScriptDataAccess::updateScript(ChaosUniquePtr<chaos::common::data::CD
 
     try {
         mongo::BSONObj q = BSON("seq"<< (long long)uid<<
-                                chaos::ExecutionUnitNodeDefinitionKey::CHAOS_SBD_NAME << name);
+                                chaos::ExecutionUnitNodeDefinitionKey::CHAOS_SBD_NAME << description_name);
         
         
         mongo::BSONObj u(serialization->getBSONRawData(size));
@@ -556,8 +556,14 @@ int MongoDBScriptDataAccess::deleteScript(const uint64_t unique_id,
     mongo::BSONObj element_found;
     CHAOS_ASSERT(utility_data_access)
     try {
-        mongo::BSONObj q_script = BSON("seq" << (long long)unique_id
-                                       << chaos::ExecutionUnitNodeDefinitionKey::CHAOS_SBD_NAME << name);
+        mongo::BSONObj q_script;
+        if(unique_id==0){
+         q_script= BSON( chaos::ExecutionUnitNodeDefinitionKey::CHAOS_SBD_NAME << name);
+        } else {
+         q_script= BSON("seq" << (long long)unique_id
+                                       <<chaos::ExecutionUnitNodeDefinitionKey::CHAOS_SBD_NAME << name);
+          
+        }
         mongo::BSONObj q_instance = BSON("script_seq" << (long long)unique_id
                                          << chaos::NodeDefinitionKey::NODE_GROUP_SET << name);
         DEBUG_CODE(SDA_DBG<<log_message("deleteScript",
@@ -568,17 +574,18 @@ int MongoDBScriptDataAccess::deleteScript(const uint64_t unique_id,
         if((err = connection->remove(MONGO_DB_COLLECTION_NAME(MONGODB_COLLECTION_NODES),
                                      q_instance))) {
             SDA_ERR << CHAOS_FORMAT("Error removing instance for script %1%[%2%] with error [%3%]", %unique_id%name%err);
-        } else {
-            DEBUG_CODE(SDA_DBG<<log_message("deleteScript",
-                                            "remove[script]",
-                                            DATA_ACCESS_LOG_1_ENTRY("Query",
-                                                                    q_script));)
-            //inset on database new script description
-            if((err = connection->remove(MONGO_DB_COLLECTION_NAME(MONGODB_COLLECTION_SCRIPT),
-                                         q_script))) {
-                SDA_ERR << CHAOS_FORMAT("Error removing script %1%[%2%] with error [%3%]", %unique_id%name%err);
-            }
+        } 
+        
+        DEBUG_CODE(SDA_DBG<<log_message("deleteScript",
+                                        "remove[script]",
+                                        DATA_ACCESS_LOG_1_ENTRY("Query",
+                                                                q_script));)
+        //inset on database new script description
+        if((err = connection->remove(MONGO_DB_COLLECTION_NAME(MONGODB_COLLECTION_SCRIPT),
+                                        q_script))) {
+            SDA_ERR << CHAOS_FORMAT("Error removing script %1%[%2%] with error [%3%]", %unique_id%name%err);
         }
+        
         
     } catch (const mongo::DBException &e) {
         SDA_ERR << e.what();

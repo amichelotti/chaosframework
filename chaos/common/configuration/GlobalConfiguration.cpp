@@ -66,7 +66,7 @@ void GlobalConfiguration::preParseStartupParameters()  {
         addOption(InitOption::OPT_LOG_ON_FILE, po::value< bool >()->zero_tokens(), "Specify when the log must be forwarded on file");
         addOption(InitOption::OPT_LOG_FILE, po::value< string >()->default_value("chaos_framework_log_%Y-%m-%d_%H-%M-%S.%N.log"), "Specify when the file path of the log");
         addOption(InitOption::OPT_LOG_LEVEL, po::value< string >()->default_value("info"), "Specify the level of the log using the value [debug, info, notice, warning, fatal]");
-        addOption(InitOption::OPT_LOG_MAX_SIZE_MB, po::value< uint32_t >()->default_value(10), "Specify the max size in megabytes fo the file log");
+        addOption(InitOption::OPT_LOG_MAX_SIZE_MB, po::value< uint32_t >()->default_value(100), "Specify the max size in megabytes fo the file log");
         addOption(InitOption::OPT_METADATASERVER_ADDRESS, po::value< std::vector< std::string > >(), "Metadataserver server:port address");
         addOption(InitOption::OPT_METADATASERVER_AUTO_CONF, po::value< bool >()->zero_tokens(), "Enable auto configuration for metadataserver endpoints");
         #if defined(KAFKA_RDK_ENABLE) || defined(KAFKA_ASIO_ENABLE)

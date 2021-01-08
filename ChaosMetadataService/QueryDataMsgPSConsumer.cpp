@@ -81,7 +81,9 @@ void QueryDataMsgPSConsumer::messageError(const chaos::common::message::ele_t& d
     std::replace(path.begin(), path.end(), '.', '/');
 
     std::map<std::string, uint64_t>::iterator i=alive_map.find(path);
-    ERR<<"key:"<<data.key<<" ["<<path<<"] err msg:"<<data.cd->getStringValue("msg")<<" err:"<<data.cd->getInt32Value("err");
+    if(data.cd.get()&&data.cd->hasKey("msg")&&data.cd->hasKey("err")){
+      ERR<<"key:"<<data.key<<" ["<<path<<"] err msg:"<<data.cd->getStringValue("msg")<<" err:"<<data.cd->getInt32Value("err");
+    }
     if(i!=alive_map.end()){
       DBG<<" removing from alive list:"<<i->first;
       alive_map.erase(i);

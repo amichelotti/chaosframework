@@ -36,9 +36,9 @@ DriverAccessor * const AbstractDriverPlugin::getNewAccessor() {
     DriverAccessor *newAccessor;
     if(abstractDriver->getNewAccessor(&newAccessor)) {
         return newAccessor;
-    } else {
-        return NULL;
     }
+    return NULL;
+
 }
 
 //! Proxy for dispose an accessor

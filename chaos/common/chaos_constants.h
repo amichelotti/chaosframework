@@ -184,7 +184,8 @@ namespace chaos {
             static const unsigned int ObjectStorageTimeoutinMSec                = 50000;
             static const unsigned int ChacheTimeoutinMSec                       = 5000;
             static const unsigned int MetricCollectorTimeoutinMSec              = 1000;
-            
+            static const unsigned int RefreshEndpointMSec                       = 60000;
+
             //!time to wait for queue can accept new data to push in object storage
             /*!
              Mds when receive a new dataset to store on history, it is push on hst sublayer
@@ -240,6 +241,13 @@ namespace chaos {
          that is given by the network broker where the node si attacched.
          */
         static const char * const NODE_RPC_ADDR         = "ndk_rpc_addr";
+
+         //! identify the node rest port if any
+        /*!
+         
+         */
+        static const char * const NODE_REST_PORT         = "ndk_rest_port";
+        
         
         //! identify the node rpc address[string:string]
         /*!
@@ -272,6 +280,9 @@ namespace chaos {
         
         //! brief node host name [string]
         static const char * const NODE_HOST_NAME        = "ndk_host_name";
+
+        //! brief node build information [JSOJ string]
+        static const char * const NODE_BUILD_INFO        = "ndk_build_info";
     }
     /** @} */ // end of NodeDefinitionKey
     
@@ -362,19 +373,21 @@ namespace chaos {
             //!Search cu
             node_type_cu = 2,
             //!search agent
-            node_type_agent = 3,
+            node_type_agent = 4,
             //!search cds
-            node_type_cds = 4,
+            node_type_cds = 8,
             //!search wan
-            node_type_wan = 5,
+            node_type_wan = 16,
             //!search variable for compatibility and reuse  here all the search 
-            node_type_variable = 6,
+            node_type_variable = 32,
             //!search tags
-            node_type_tag = 7,
+            node_type_tag = 64,
             //! all server_nodes
-            node_type_all_server=8,
+            node_type_all_server=128,
             //!search root processes
-            node_type_root = 9
+            node_type_root = 256,
+            node_type_ceu = 512
+
             
             
             
@@ -799,6 +812,9 @@ namespace chaos {
 
         //! param control unit description
         static const char * const CONTROL_UNIT_DESC                                = "cudk_desc";
+
+         //! used to build dedicated view, used in EU
+        static const char * const CONTROL_UNIT_VIEW                                = "cudk_view";
         
         //! param to pass to the control unit during init operation[ int64]
         static const char * const CONTROL_UNIT_RUN_ID                               = "cudk_run_id";
@@ -1042,6 +1058,9 @@ namespace chaos {
          amount of time or cu cicle
          */
         static const char * const BURST_STATE               = "cudk_burst_state";
+        
+        static const char * const BURST_CNT_DOWN            = "cudk_burst_cnt";
+        
         //! is the tag associated to the current burst oepration
         static const char * const BURST_TAG                 = "cudk_burst_tag";
         //! is the device alarm state (0=no alarm)
@@ -1556,7 +1575,7 @@ namespace chaos {
         //! stopped status
         static const char * const NODE_HEALT_STATUS_STOP        = "Stop";
         //! stopped status
-        static const char * const NODE_HEALT_STATUS_STOPING     = "Stoping";
+        static const char * const NODE_HEALT_STATUS_STOPING     = "Stopping";
         //! recoverable error status
         static const char * const NODE_HEALT_STATUS_RERROR      = "Recoverable Error";
         //! fatal error status

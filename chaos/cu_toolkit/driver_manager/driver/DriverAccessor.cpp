@@ -27,140 +27,250 @@
 #include "../../windowsCompliant.h"
 using namespace chaos::cu::driver_manager::driver;
 
-/*------------------------------------------------------
- 
- ------------------------------------------------------*/
-DriverAccessor::DriverAccessor(unsigned int _accessor_index):
-accessor_index(_accessor_index),
-messages_count(0),
-accessor_async_mq(),
-accessor_sync_mq(),
-command_queue(NULL),
-base_opcode_priority(0) {}
+#define DALAPP_ INFO_LOG(DriverAccessor)
+#define DALDBG_ DBG_LOG(DriverAccessor)<< "-owned by:"<<owner.size()<<" cu,[0]:"<<owner[0]<<"-"
+#define DALERR_ ERR_LOG(DriverAccessor)<< "-owned by:"<<owner.size()<<" cu,[0]:"<<owner[0]<<"-"
 
 /*------------------------------------------------------
  
  ------------------------------------------------------*/
-DriverAccessor::~DriverAccessor() {}
+DriverAccessor::DriverAccessor(unsigned int _accessor_index)
+    : accessor_index(_accessor_index),impl(NULL), messages_count(0), accessor_async_mq(), accessor_sync_mq(), command_queue(NULL), base_opcode_priority(0) {}
 
 /*------------------------------------------------------
  
  ------------------------------------------------------*/
-bool DriverAccessor::send(DrvMsgPtr cmd,
-                          uint32_t  inc_priority) {
-    CHAOS_ASSERT(cmd)
-    ResponseMessageType answer_message = 0;
-    //fill the cmd with the information for retrieve it
-    cmd->id            = messages_count++;
-    cmd->drvResponseMQ = &accessor_sync_mq;
-    cmd->device_param = device_param;
-    //send command
-    command_queue->push(cmd, base_opcode_priority + inc_priority);
-    //whait the answer
-    accessor_sync_mq.wait_and_pop(answer_message);
-    if((*cmd->err_msg!=0) && (*cmd->err_dom!=0)&& (cmd->ret!=0)){
-        LDBG_<<"Launch Exception msg:"<<cmd->err_msg<<" dom:"<<cmd->err_dom<<" ret:"<<cmd->ret;
-        throw chaos::CFatalException(cmd->ret,cmd->err_msg,cmd->err_dom);
-    }
-    //check result
-    return (answer_message == MsgManagmentResultType::MMR_EXECUTED);
+DriverAccessor::~DriverAccessor() {
 }
 
 /*------------------------------------------------------
  
  ------------------------------------------------------*/
-bool DriverAccessor::sendAsync(DrvMsgPtr cmd, ResponseMessageType& message_id, uint32_t inc_priority) {
-    CHAOS_ASSERT(cmd)
+uint64_t DriverAccessor::getMessageCount() {
+  return messages_count;
+}
+AbstractDriver*DriverAccessor::getImpl(){return impl;}
+
+bool DriverAccessor::send(DrvMsgPtr cmd,
+                          uint32_t  timeout_ms) {
+  //static int counter=0;
+  CHAOS_ASSERT(cmd)
+  ResponseMessageType answer_message = 0;
+
+  boost::unique_lock<boost::shared_mutex> lock(mutex_queue);
+
+  //fill the cmd with the information for retrieve it
+  cmd->id            = messages_count++;
+  cmd->drvResponseMQ = &accessor_sync_mq;
+  cmd->device_param  = device_param;
+  *cmd->err_msg      = 0;
+  *cmd->err_dom      = 0;
+  cmd->ret           = 0;
+  //send command
+  // command_queue->push(cmd, base_opcode_priority + inc_priority);
+  int retry = 3;
+  int ret;
+  // if the queue of 1 has another command there is something wird
+    if(command_queue->empty()==false){
+      DALERR_<<"["<<cmd->id<<"] WARNING send opcode:"<<cmd->opcode<<" command queue len:"<<command_queue->length()<<" timeout:"<<timeout_ms;
+        DrvMsgPtr cmdt;
+        while(command_queue->pop(cmdt)){
+                DALERR_<<"["<<cmdt->id<<"] ## popping out command:"<<cmdt->opcode;
+                if(cmdt->inputData){cmdt->inputData=0;free(cmdt->inputData);}
+                if(cmdt->resultData){cmdt->resultData=0;free(cmdt->resultData);}
+        }
+        
+    }
+    if(accessor_sync_mq.empty()==false){
+        DALERR_<<"["<<cmd->id<<"] ## Already an answer!! send opcode:"<<cmd->opcode<<" answer queue len:"<<accessor_sync_mq.length()<<" queue len:"<<command_queue->length();
+        while(accessor_sync_mq.pop(answer_message)){
+                DALERR_<<"["<<cmd->id<<"] ## popping out answer:"<<answer_message;
+
+        }
+    }
     
-    //fill the cmd with the information for retrive it
-    cmd->id = message_id = messages_count++;
-    cmd->drvResponseMQ   = &accessor_async_mq;
-    cmd->device_param = device_param;
-    //send message
-    command_queue->push(cmd, base_opcode_priority + inc_priority);
-    return true;
+     ret = command_queue->push(cmd,timeout_ms);
+     if(ret<0){
+        DALERR_<<owner[0]<<" ["<<cmd->id<<"] ## push failed send opcode:"<<cmd->opcode<<" timeout:"<<timeout_ms<<" ret:"<<ret<<" retry:"<<retry<<" command queue len:"<<command_queue->length();
+
+     } else {
+        ret = accessor_sync_mq.wait_and_pop(answer_message, timeout_ms);
+    }
+    
+     
+    //wait the answer
+     //  DALDBG_<<owner[0]<<" ["<<cmd->id<<"] send opcode:"<<cmd->opcode<<" timeout:"<<timeout_ms;
+    
+    
+         
+    
+      if (ret < 0) {
+        std::stringstream ss;
+        ss << cmd->id << ",cqueue:"<<command_queue->length()<<", rqueue:" << accessor_sync_mq.length() << "] Timeout of:" << timeout_ms << " ms expired, executing opcode:" << cmd->opcode<<" ret:"<<ret;
+
+        // throw chaos::CFatalException(ret,ss.str(),__FUNCTION__);
+        DALERR_ <<"##"<< ss.str();
+        strncpy(cmd->err_msg, ss.str().c_str(), DRVMSG_ERR_MSG_SIZE);
+        strncpy(cmd->err_dom, __FUNCTION__, DRVMSG_ERR_MSG_SIZE);
+        DrvMsgPtr cmdt;
+         while(command_queue->pop(cmdt)){
+                DALERR_<<"["<<cmdt->id<<"] ## popping out command:"<<cmdt->opcode;
+                //if(cmdt->inputData){free(cmdt->inputData);}
+                //if(cmdt->resultData);free(cmdt->resultData);}
+
+        }
+        ResponseMessageType answer_tmp = 0;
+  
+        while(accessor_sync_mq.pop(answer_tmp)){
+          if(answer_tmp == cmd->id){
+            DALDBG_<<"["<<cmd->id<<"]answer has been delayed:"<<answer_tmp;
+
+            return true;
+          }
+                DALERR_<<"["<<cmd->id<<"] ## popping out answer:"<<answer_tmp;
+                //if(cmdt->inputData){free(cmdt->inputData);}
+                //if(cmdt->resultData);free(cmdt->resultData);}
+
+        }
+
+        cmd->ret = ret;
+        return false;
+      }
+      if ((*cmd->err_msg != 0) && (*cmd->err_dom != 0) && (cmd->ret != 0)) {
+        DALERR_ << "## Launch Exception msg:" << cmd->err_msg << " dom:" << cmd->err_dom << " ret:" << cmd->ret;
+        throw chaos::CFatalException(cmd->ret, cmd->err_msg, cmd->err_dom);
+      }
+    
+  
+  //check result
+  return (answer_message == MsgManagmentResultType::MMR_EXECUTED);
+}
+int DriverAccessor::stop() {
+  DALDBG_ << " Stopping:'" << driverName << "' signaling queues";
+  accessor_sync_mq.unblock();
+  return 0;
+}
+int DriverAccessor::start() {
+  return 0;
+}
+/*------------------------------------------------------
+ 
+ ------------------------------------------------------*/
+bool DriverAccessor::sendAsync(DrvMsgPtr cmd, ResponseMessageType& message_id, uint32_t inc_priority) {
+  CHAOS_ASSERT(cmd)
+
+  //fill the cmd with the information for retrive it
+  cmd->id = message_id = messages_count++;
+  cmd->drvResponseMQ   = &accessor_async_mq;
+  cmd->device_param    = device_param;
+  //send message
+  //  command_queue->push(cmd, base_opcode_priority + inc_priority);
+  command_queue->push(cmd);
+  return true;
 }
 
 /*------------------------------------------------------
  
  ------------------------------------------------------*/
 bool DriverAccessor::getLastAsyncMsg(ResponseMessageType& message_id) {
-    return accessor_sync_mq.try_pop(message_id);
+  return accessor_sync_mq.pop(message_id);
 }
 
 /*------------------------------------------------------
  
  ------------------------------------------------------*/
 bool DriverAccessor::operator==(const DriverAccessor& a) {
-    return this->accessor_index = a.accessor_index;
+  return this->accessor_index = a.accessor_index;
 }
-namespace chaos_driver=::chaos::cu::driver_manager::driver;
+namespace chaos_driver = ::chaos::cu::driver_manager::driver;
 using namespace chaos::cu::driver_manager::driver;
 
 std::string DriverAccessor::getUID() const {
-    return driver_uuid;
+  return driver_uuid;
 }
-std::string DriverAccessor::getDriverName() const{
-    return driverName;
+std::string DriverAccessor::getDriverName() const {
+  return driverName;
 }
 
-chaos::common::data::CDWUniquePtr DriverAccessor::getDrvProperties(){
-    chaos_driver::DrvMsg message;
-    message.opcode=OpcodeType::OP_GET_PROPERTIES;
-    send(&message);
+chaos::common::data::CDWUniquePtr DriverAccessor::getDrvProperties() {
+  #ifdef DETACHED_DRIVER
 
-    if(message.resultData && message.resultDataLength){
-        chaos::common::data::CDWUniquePtr ptr(new chaos::common::data::CDataWrapper((const char*)message.resultData));
-        free(message.resultData);
-        return ptr;
+  chaos_driver::DrvMsg message;
+  message.opcode = OpcodeType::OP_GET_PROPERTIES;
+  send(&message,chaos::common::constants::CUTimersTimeoutinMSec);
+
+  if (message.resultData && message.resultDataLength) {
+    chaos::common::data::CDWUniquePtr ptr(new chaos::common::data::CDataWrapper());
+    ptr->setSerializedData((const char*)message.resultData);
+    free(message.resultData);
+    return ptr;
+  }
+  return chaos::common::data::CDWUniquePtr();
+
+  #else
+  return impl->getDrvProperties();
+  #endif
+}
+chaos::common::data::CDWUniquePtr DriverAccessor::setDrvProperties(chaos::common::data::CDWUniquePtr& data) {
+    #ifdef DETACHED_DRIVER
+
+  chaos_driver::DrvMsg message;
+  message.opcode = OpcodeType::OP_SET_PROPERTIES;
+  int                               sizeb;
+  chaos::common::data::CDWUniquePtr tmp;
+  if (data.get()) {
+    tmp                     = data->clone();
+    char* ptr               = (char*)tmp->getBSONRawData(sizeb);
+    message.inputData       = ptr;
+    message.inputDataLength = sizeb;
+    send(&message,chaos::common::constants::CUTimersTimeoutinMSec);
+
+    if (message.resultData && message.resultDataLength) {
+      chaos::common::data::CDWUniquePtr ptr(new chaos::common::data::CDataWrapper((const char*)message.resultData));
+      free(message.resultData);
+      return ptr;
     }
-    return chaos::common::data::CDWUniquePtr();
-}
-chaos::common::data::CDWUniquePtr DriverAccessor::setDrvProperties(chaos::common::data::CDWUniquePtr& data){
-    chaos_driver::DrvMsg message;
-    message.opcode=OpcodeType::OP_SET_PROPERTIES;
-    int sizeb;
-    if(data.get()){
-          char*ptr=(char*)data->getBSONRawData(sizeb);
-          message.inputData=ptr;
-          message.inputDataLength=sizeb;
-          send(&message);
-
-    if(message.resultData && message.resultDataLength){
-        chaos::common::data::CDWUniquePtr ptr(new chaos::common::data::CDataWrapper((const char*)message.resultData));
-
-        return ptr;
-    }
-    }
-    return chaos::common::data::CDWUniquePtr(); 
+  }
+  return chaos::common::data::CDWUniquePtr();
+  #else
+  return impl->setDrvProperties(data);
+  #endif
 }
 
-int DriverAccessor::setDrvProperty(const std::string& key, const std::string& value){
-    chaos_driver::DrvMsg message;
+int DriverAccessor::setDrvProperty(const std::string& key, const std::string& value) {
+     #ifdef DETACHED_DRIVER
 
-    keyval_t args;
-    args.key=(key.c_str());
-    args.value=(value.c_str());
-    message.opcode=OpcodeType::OP_SET_PROPERTY;
-    message.inputData=&args;
-    message.inputDataLength=sizeof(keyval_t);
-    send(&message);
-    return message.ret;
+  chaos_driver::DrvMsg message;
 
+  keyval_t args;
+  args.key                = (key.c_str());
+  args.value              = (value.c_str());
+  message.opcode          = OpcodeType::OP_SET_PROPERTY;
+  message.inputData       = &args;
+  message.inputDataLength = sizeof(keyval_t);
+  send(&message,chaos::common::constants::CUTimersTimeoutinMSec);
+  return message.ret;
+  #else
+    return impl->setDrvProperty(key,value);
+
+  #endif
 }
 
-std::string DriverAccessor::getLastError(){
-     chaos_driver::DrvMsg message;
+std::string DriverAccessor::getLastError() {
+#ifdef DETACHED_DRIVER
 
-    message.opcode=OpcodeType::OP_GET_LASTERROR;
-    send(&message);
-    if(message.resultData && message.resultDataLength){
-        std::string result((const char*)message.resultData,message.resultDataLength);
-        free(message.resultData);
-        return result;
-    }
-    return std::string();
- 
+  chaos_driver::DrvMsg message;
+
+  message.opcode = OpcodeType::OP_GET_LASTERROR;
+  send(&message);
+  if (message.resultData && message.resultDataLength) {
+    std::string result((const char*)message.resultData, message.resultDataLength);
+    free(message.resultData);
+    return result;
+  }
+  return std::string();
+#else
+    return impl->getLastError();
+
+#endif
 }
-
-

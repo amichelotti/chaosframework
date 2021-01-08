@@ -120,7 +120,7 @@ namespace chaos {
 				 checking the hashing of the input parameter is created (or got one) device driver instance,
 				 from this a new driver accessor is created
 				 */
-				chaos::cu::driver_manager::driver::DriverAccessor *getNewAccessorForDriverInstance(chaos::cu::driver_manager::driver::DrvRequestInfo& request_info);
+				chaos::cu::driver_manager::driver::DriverAccessor *getNewAccessorForDriverInstance(chaos::cu::driver_manager::driver::DrvRequestInfo& request_info,const std::string& owner="");
 				
 				//! release the accessor instance
 				void releaseAccessor(chaos::cu::driver_manager::driver::DriverAccessor *accessor);
