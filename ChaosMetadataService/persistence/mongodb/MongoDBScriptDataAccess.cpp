@@ -152,7 +152,7 @@ int MongoDBScriptDataAccess::updateScript(ChaosUniquePtr<chaos::common::data::CD
     int size = 0;
     mongo::BSONObjBuilder query_builder;
     CHAOS_ASSERT(utility_data_access);
-    std::string name=serialization->getStringValue(chaos::ExecutionUnitNodeDefinitionKey::CHAOS_SBD_NAME);
+    std::string description_name=serialization->getStringValue(chaos::ExecutionUnitNodeDefinitionKey::CHAOS_SBD_NAME);
     uint64_t uid=0;
     if(serialization->hasKey("seq")){
         uid =serialization->getInt64Value("seq");

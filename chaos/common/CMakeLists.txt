@@ -462,15 +462,11 @@ SET(common_lib_src ${common_lib_src}
                     message/MultiAddressMessageRequestFuture.cpp
                     message/PerformanceNodeChannel.cpp
                     message/MessageRequestDomain.cpp
-                    )
-
-IF(KAFKA_ASIO_ENABLE OR KAFKA_RDK_ENABLE)                   
-SET(common_lib_src ${common_lib_src}
                     message/MessagePublishSubscribeBase.cpp
                     message/MessagePSProducer.cpp
                     message/MessagePSConsumer.cpp
                     message/MessagePSDriver.cpp)
-ENDIF()
+
 IF(KAFKA_ASIO_ENABLE)
 SET(CMAKE_CXX_STANDARD 11)
 INCLUDE_DIRECTORIES(${CMAKE_INSTALL_PREFIX}/snappy/include message/impl/kafka/asio/ )
