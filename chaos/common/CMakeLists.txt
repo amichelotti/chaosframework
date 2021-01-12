@@ -130,24 +130,24 @@ IF (CHAOS_TARGET)
 IF(KAFKA_ASIO_ENABLE)
 MESSAGE("ENABLING DEP KAFKA")
 
-add_definitions(-DKAFKA_ASIO_ENABLE)
+add_definitions(-DKAFKA_ASIO_ENABLE -DLIBKAFKAASIO_NO_COMPRESSION)
 
 
-ExternalProject_Add(
-	 snappylib
-	 GIT_REPOSITORY https://github.com/google/snappy.git  
-   PREFIX "${CMAKE_BINARY_DIR}/ext_dep/snappylib-prefix"
-   SOURCE_DIR "${CMAKE_BINARY_DIR}/ext_dep/snappylib-src"
-   BINARY_DIR "${CMAKE_BINARY_DIR}/ext_dep/snappylib-build"
+# ExternalProject_Add(
+# 	 snappylib
+# 	 GIT_REPOSITORY https://github.com/google/snappy.git  
+#    PREFIX "${CMAKE_BINARY_DIR}/ext_dep/snappylib-prefix"
+#    SOURCE_DIR "${CMAKE_BINARY_DIR}/ext_dep/snappylib-src"
+#    BINARY_DIR "${CMAKE_BINARY_DIR}/ext_dep/snappylib-build"
 
-   CMAKE_ARGS
-	  -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}/snappy  -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_CXX_STANDARD=11 -DSNAPPY_BUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-	 LOG_DOWNLOAD 1
-    LOG_UPDATE 1
-    LOG_CONFIGURE 1
-    LOG_BUILD 1
-    LOG_INSTALL 1
-	)
+#    CMAKE_ARGS
+# 	  -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}/snappy  -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_CXX_STANDARD=11 -DSNAPPY_BUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER} -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+# 	 LOG_DOWNLOAD 1
+#     LOG_UPDATE 1
+#     LOG_CONFIGURE 1
+#     LOG_BUILD 1
+#     LOG_INSTALL 1
+# 	)
 
 ENDIF()
 MESG("Install lz4 compression library")
@@ -450,7 +450,7 @@ SET(common_lib_src ${common_lib_src}
                     io/ManagedDirectIODataDriver.cpp
                     io/QueryCursor.cpp
 					          io/QueryIndexCursor.cpp
-                    io/SharedManagedDirecIoDataDriver.cpp io/IODirectIOPSMsgDriver.cpp)
+                    io/SharedManagedDirecIoDataDriver.cpp)
 
 SET(common_lib_src ${common_lib_src}
                     message/DeviceMessageChannel.cpp
@@ -462,11 +462,15 @@ SET(common_lib_src ${common_lib_src}
                     message/MultiAddressMessageRequestFuture.cpp
                     message/PerformanceNodeChannel.cpp
                     message/MessageRequestDomain.cpp
-                    message/MessagePublishSubscribeBase.cpp
+                    )
+IF(KAFKA_ASIO_ENABLE OR KAFKA_RDK_ENABLE)
+SET(common_lib_src ${common_lib_src}
+		   io/IODirectIOPSMsgDriver.cpp
+		   message/MessagePublishSubscribeBase.cpp
                     message/MessagePSProducer.cpp
                     message/MessagePSConsumer.cpp
                     message/MessagePSDriver.cpp)
-
+ENDIF()
 IF(KAFKA_ASIO_ENABLE)
 SET(CMAKE_CXX_STANDARD 11)
 INCLUDE_DIRECTORIES(${CMAKE_INSTALL_PREFIX}/snappy/include message/impl/kafka/asio/ )
