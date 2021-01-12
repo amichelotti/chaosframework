@@ -479,7 +479,7 @@ ENDIF(KAFKA_ASIO_ENABLE)
 IF(KAFKA_RDK_ENABLE)
 SET(common_lib_src ${common_lib_src}
 message/impl/kafka/rdk/MessagePSKafkaProducer.cpp message/impl/kafka/rdk/MessagePSRDKafkaConsumer.cpp message/impl//kafka/rdk/MessagePSRDKafka.cpp)
-SET(BUILD_LIBRARY rdkafka ${BUILD_LIBRARY} )
+SET(BUILD_LIBRARY rdkafka z ${BUILD_LIBRARY} )
 ENDIF(KAFKA_RDK_ENABLE)
 
 SET(common_lib_src ${common_lib_src}
