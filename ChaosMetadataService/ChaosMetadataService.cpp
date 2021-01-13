@@ -164,11 +164,12 @@ void ChaosMetadataService::init(void *init_data)  {
         api_managment_service.init(NULL, __PRETTY_FUNCTION__);
 #if defined(KAFKA_RDK_ENABLE) || defined(KAFKA_ASIO_ENABLE)
 #warning "CDS NEEDS KAFKA"
-        data_consumer.reset(new QueryDataMsgPSConsumer("cds"), "QueryDataMsgPSConsumer");
-
-#else     
+        message_consumer.reset(new QueryDataMsgPSConsumer("cds"), "QueryDataMsgPSConsumer");        
+        if(!message_consumer.get()) throw chaos::CException(-7, "Error instantiating message data consumer", __PRETTY_FUNCTION__);
+        message_consumer.init(NULL, __PRETTY_FUNCTION__);
+#endif        
         data_consumer.reset(new QueryDataConsumer(), "QueryDataConsumer");
-#endif
+
         if(!data_consumer.get()) throw chaos::CException(-7, "Error instantiating data consumer", __PRETTY_FUNCTION__);
         data_consumer.init(NULL, __PRETTY_FUNCTION__);
         
@@ -191,7 +192,7 @@ void ChaosMetadataService::init(void *init_data)  {
 }
 
 int ChaosMetadataService::notifyNewNode(const std::string& nodeuid){
-    return data_consumer->consumeHealthDataEvent(nodeuid, 0, ChaosStringSetConstSPtr(),  ChaosMakeSharedPtr<Buffer>());
+    return message_consumer->consumeHealthDataEvent(nodeuid, 0, ChaosStringSetConstSPtr(),  ChaosMakeSharedPtr<Buffer>());
 
 }
 
@@ -203,6 +204,10 @@ void ChaosMetadataService::start()  {
     try {
         ChaosCommon<ChaosMetadataService>::start();
         StartableService::startImplementation(MDSBatchExecutor::getInstance(), "MDSBatchExecutor", __PRETTY_FUNCTION__);
+        #if defined(KAFKA_RDK_ENABLE) || defined(KAFKA_ASIO_ENABLE)
+        message_consumer.start( __PRETTY_FUNCTION__);
+
+        #endif
         //start batch system
         data_consumer.start( __PRETTY_FUNCTION__);
         LAPP_ <<"\n----------------------------------------------------------------------"<<
@@ -419,7 +424,10 @@ void ChaosMetadataService::stop() {
     CHAOS_NOT_THROW(StartableService::stopImplementation(HealtManager::getInstance(), "HealthManager", __PRETTY_FUNCTION__););
 
     chaos::common::async_central::AsyncCentralManager::getInstance()->removeTimer(this);
-    
+    #if defined(KAFKA_RDK_ENABLE) || defined(KAFKA_ASIO_ENABLE)
+    message_consumer.stop( __PRETTY_FUNCTION__);
+
+    #endif
     //stop data consumer
     data_consumer.stop( __PRETTY_FUNCTION__);
     
@@ -443,7 +451,9 @@ void ChaosMetadataService::deinit() {
                                                __PRETTY_FUNCTION__);
     //deinit api system
     CHAOS_NOT_THROW(api_managment_service.deinit(__PRETTY_FUNCTION__);)
-    
+    if(message_consumer.get()) {
+        message_consumer.deinit(__PRETTY_FUNCTION__);
+    }
     if(data_consumer.get()) {
         data_consumer.deinit(__PRETTY_FUNCTION__);
     }

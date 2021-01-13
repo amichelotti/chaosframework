@@ -103,7 +103,7 @@ void NetworkBroker::init(void *initData) {
         direct_io_client_impl = direct_io_impl + "DirectIOClient";
         MB_LAPP  << "Trying to initilize DirectIO Server: " << direct_io_server_impl;
         direct_io_server = ObjectFactoryRegister<common::direct_io::DirectIOServer>::getInstance()->getNewInstanceByName(direct_io_server_impl);
-        if(!direct_io_server) throw CException(-2, "Error creating direct io server implementation", __PRETTY_FUNCTION__);
+        if(!direct_io_server) throw CException(-2, "Error creating direct io server implementation:"+direct_io_server_impl, __PRETTY_FUNCTION__);
         
         //allocate the dispatcher
         MB_LAPP  << "Allocate DirectIODispatcher";
@@ -122,7 +122,7 @@ void NetworkBroker::init(void *initData) {
         //        common::direct_io::DirectIOClientConnection::my_i64_ip = STRIP_TO_UI64(common::direct_io::DirectIOClientConnection::my_str_ip).to_ulong();
         
         direct_io_client = ObjectFactoryRegister<common::direct_io::DirectIOClient>::getInstance()->getNewInstanceByName(direct_io_client_impl);
-        if(!direct_io_client) throw CException(-3, "Error creating direct io client implementation", __PRETTY_FUNCTION__);
+        if(!direct_io_client) throw CException(-3, "Error creating direct io client implementation:"+direct_io_client_impl, __PRETTY_FUNCTION__);
         
         //initialize direct io client
         InizializableService::initImplementation(direct_io_client, static_cast<void*>(globalConfiguration), direct_io_client->getName(), __PRETTY_FUNCTION__);
