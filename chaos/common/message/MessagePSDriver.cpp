@@ -82,7 +82,7 @@ producer_uptr_t ret;
     #endif
     #ifdef KAFKA_ASIO_ENABLE
                 if((drvname=="KAFKA-ASIO")||(drvname=="kafka-asio")){
-                    ret.reset(new kafka::rdk::MessagePSKafkaAsioConsumer(gid,k));
+                    ret.reset(new kafka::asio::MessagePSKafkaAsioConsumer(gid,k));
                     consumer_drv_m["kafka-asio"]=ret;
                 }
     #endif
