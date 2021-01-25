@@ -63,7 +63,13 @@ IODirectIOPSMsgDriver::IODirectIOPSMsgDriver(const std::string& alias)
 IODirectIOPSMsgDriver::~IODirectIOPSMsgDriver() {
   // SO that if used as shared pointer will be called once the object is destroyed
 }
-
+int IODirectIOPSMsgDriver::storeHealthData(const std::string& key,
+                                      CDWShrdPtr data_to_store,
+                                      DataServiceNodeDefinitionType::DSStorageType storage_type,
+                                      const ChaosStringSet& tag_set){
+    IODirectIODriver::storeHealthData(key,data_to_store,storage_type,tag_set);                                    
+    return storeData(key,data_to_store,storage_type,tag_set);
+  }
 void IODirectIOPSMsgDriver::init(void* _init_parameter) {
   IODirectIODriver::init(_init_parameter);
   if (GlobalConfiguration::getInstance()->getConfiguration()->hasKey(InitOption::OPT_MSG_BROKER_SERVER)) {

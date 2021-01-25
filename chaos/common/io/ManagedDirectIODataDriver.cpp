@@ -19,7 +19,7 @@
  * permissions and limitations under the Licence.
  */
 
-#include <chaos/common/io/ManagedDirectIODataDriver.h>
+#include "ManagedDirectIODataDriver.h"
 
 #include <chaos/common/network/NetworkBroker.h>
 #include <chaos/common/message/MDSMessageChannel.h>
@@ -34,7 +34,7 @@ using namespace chaos::common::network;
 #define ERR     ERR_LOG(ManagedDirectIODataDriver)
 
 ManagedDirectIODataDriver::ManagedDirectIODataDriver():
-IODirectIODriver("ManagedDirectIODataDriver"),
+IO_DIRECT("ManagedDirectIODataDriver"),
 mds_channel(NULL){}
 
 ManagedDirectIODataDriver::~ManagedDirectIODataDriver() {}
@@ -63,7 +63,7 @@ void ManagedDirectIODataDriver::deinit() {
     if(mds_channel) {
         NetworkBroker::getInstance()->disposeMessageChannel(mds_channel);
     }
-    IODirectIODriver::deinit();
+    IO_DIRECT::deinit();
 }
 
 void ManagedDirectIODataDriver::storeLogEntries(const std::string& key,
