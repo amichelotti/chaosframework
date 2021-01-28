@@ -21,7 +21,7 @@
 
 #ifndef __CHAOSFramework__A4DDDA4_0D15_4B60_9D85_E983B249A7FE_ManagedDirectIODataDriver_h
 #define __CHAOSFramework__A4DDDA4_0D15_4B60_9D85_E983B249A7FE_ManagedDirectIODataDriver_h
-#if defined(KAFKA_RDK_ENABLE) || defined(KAFKA_ASIO_ENABLE)
+#if (defined(KAFKA_RDK_ENABLE) || defined(KAFKA_ASIO_ENABLE)) && (defined(HEALTH_ON_MESSAGE))
 #include <chaos/common/io/IODirectIOPSMsgDriver.h>
 #define IO_DIRECT  IODirectIOPSMsgDriver
 #else
