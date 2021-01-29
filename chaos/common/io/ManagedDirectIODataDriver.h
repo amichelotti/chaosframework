@@ -18,7 +18,7 @@
  * See the Licence for the specific language governing
  * permissions and limitations under the Licence.
  */
-
+#define HEALTH_ON_MESSAGE
 #ifndef __CHAOSFramework__A4DDDA4_0D15_4B60_9D85_E983B249A7FE_ManagedDirectIODataDriver_h
 #define __CHAOSFramework__A4DDDA4_0D15_4B60_9D85_E983B249A7FE_ManagedDirectIODataDriver_h
 #if (defined(KAFKA_RDK_ENABLE) || defined(KAFKA_ASIO_ENABLE)) && (defined(HEALTH_ON_MESSAGE))

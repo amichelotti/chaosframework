@@ -53,8 +53,8 @@ namespace chaos{
               chaos::common::message::producer_uptr_t prod;
               chaos::common::message::consumer_uptr_t cons;
               void defaultHandler(const chaos::common::message::ele_t& data);
-              static boost::mutex hmutex;
-              static std::map<std::string,chaos::common::message::msgHandler> handler_map;
+               boost::mutex hmutex;
+               std::map<std::string,chaos::common::message::msgHandler> handler_map;
             public:
                 
                 IODirectIOPSMsgDriver(const std::string& alias);

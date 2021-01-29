@@ -38,8 +38,8 @@ namespace chaos_data        = chaos::common::data;
 namespace chaos_dio         = chaos::common::direct_io;
 namespace chaos_dio_channel = chaos::common::direct_io::channel;
 
-std::map<std::string,chaos::common::message::msgHandler> IODirectIOPSMsgDriver::handler_map;
-boost::mutex IODirectIOPSMsgDriver::hmutex;
+//std::map<std::string,chaos::common::message::msgHandler> IODirectIOPSMsgDriver::handler_map;
+//boost::mutex IODirectIOPSMsgDriver::hmutex;
 DEFINE_CLASS_FACTORY(IODirectIOPSMsgDriver, IODataDriver);
 
 //using namespace memcache;
@@ -57,7 +57,9 @@ IODirectIOPSMsgDriver::IODirectIOPSMsgDriver(const std::string& alias)
     gid = "IODirectIODriver";
   }
   cons = chaos::common::message::MessagePSDriver::getConsumerDriver(msgbrokerdrv, gid);
-  cons->addHandler(chaos::common::message::MessagePublishSubscribeBase::ONARRIVE, boost::bind(&IODirectIOPSMsgDriver::defaultHandler, this, _1));
+  if(cons->handlersEmpty()){
+    cons->addHandler(chaos::common::message::MessagePublishSubscribeBase::ONARRIVE, boost::bind(&IODirectIOPSMsgDriver::defaultHandler, this, _1));
+  }
 }
 
 IODirectIOPSMsgDriver::~IODirectIOPSMsgDriver() {
