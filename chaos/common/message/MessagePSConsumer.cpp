@@ -70,6 +70,7 @@ ele_uptr_t MessagePSConsumer::getMsg(int timeo) {
 int MessagePSConsumer::subscribe(const std::string& key) {
   std::string topic = key;
   std::replace(topic.begin(), topic.end(), '/', '.');
+  std::replace(topic.begin(), topic.end(), ':', '.');
 
   keylist.insert(topic);
   //MRDDBG_ <<keylist.size()<< "] subscribing to:"<<topic;
