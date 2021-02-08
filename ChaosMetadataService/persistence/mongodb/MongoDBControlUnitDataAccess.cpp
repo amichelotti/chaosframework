@@ -446,10 +446,8 @@ int MongoDBControlUnitDataAccess::getFullDescription(const std::string& cu_uniqu
         
          DEBUG_CODE(MDBCUDA_DBG<<log_message(__func__,
                                             "findOne",
-                                            DATA_ACCESS_LOG_2_ENTRY("query",
-                                                                    "prj",
-                                                                    query.toString(),
-                                                                    prj.toString()));)
+                                            DATA_ACCESS_LOG_1_ENTRY("query",
+                                                                    query.toString()));)
         //remove the field of the document
         if((err = connection->findOne(result,
                                       MONGO_DB_COLLECTION_NAME(MONGODB_COLLECTION_NODES),
