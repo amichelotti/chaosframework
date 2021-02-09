@@ -22,6 +22,7 @@
 #include <chaos/common/io/IODirectIODriver.h>
 #include <chaos/common/healt_system/HealtManager.h>
 #include <chaos/common/configuration/GlobalConfiguration.h>
+#include <chaos/cu_toolkit/data_manager/DataManager.h>
 
 #include <chaos/common/io/SharedManagedDirecIoDataDriver.h>
 
@@ -35,6 +36,7 @@ using namespace chaos::common::message;
 using namespace chaos::common::network;
 using namespace chaos::common::healt_system;
 using namespace chaos::common::async_central;
+using namespace chaos::cu::data_manager;
 
 #define HM_INFO INFO_LOG(HealtManager)
 #define HM_DBG DBG_LOG(HealtManager)
@@ -438,10 +440,17 @@ void HealtManager::_publish(const ChaosSharedPtr<NodeHealtSet>& heath_set,
     CDWShrdPtr data_pack = prepareNodeDataPack(*heath_set,
                                                publish_ts);
     if(data_pack.get()) {
-        //store data on cache
-        err = SharedManagedDirecIoDataDriver::getInstance()->getSharedDriver()->storeHealthData(heath_set->node_publish_key,
+      /*  err= DataManager::getInstance()->getDataLiveDriverNewInstance()->storeHealthData(heath_set->node_publish_key,
                                                                                           MOVE(data_pack),
                                                                                           DataServiceNodeDefinitionType::DSStorageTypeLive);
+                                                                                          */
+        //store data on cache
+        
+      err = SharedManagedDirecIoDataDriver::getInstance()->getSharedDriver()->storeHealthData(heath_set->node_publish_key,
+                                                                                          MOVE(data_pack),
+                                                                                         DataServiceNodeDefinitionType::DSStorageTypeLive);
+                                                                                         
+     
         if(err) {
             HM_ERR << "Error pushing health datapack for node:" << heath_set->node_uid << " with code:" << err;
         }

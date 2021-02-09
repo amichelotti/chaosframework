@@ -517,7 +517,7 @@ int MongoDBNodeDataAccess::searchNode(chaos::common::data::CDataWrapper **result
     if(criteria.size()>0){
         bson_find_and << BSON("$or" << getSearchTokenOnFiled(criteria, chaos::NodeDefinitionKey::NODE_UNIQUE_ID));
     }
-    if((impl.size()>0)&&(search_type!=chaos::NodeType::NodeSearchType::node_type_ceu)){
+    if((impl.size()>0)){
             bson_find_and << BSON("$or" << getSearchTokenOnFiled(impl, "instance_description.control_unit_implementation"));
 
     }

@@ -82,7 +82,14 @@ namespace chaos {
                     handlers[ev]=cb;
                     return 0;
                 }
-
+                /**
+                 * @brief Add an handler to the message
+                 * 
+                 * @param ev 
+                 */
+                 bool handlersEmpty(){
+                    return handlers.empty();
+                }
                 /**
                  * @brief library specific options
                  * 

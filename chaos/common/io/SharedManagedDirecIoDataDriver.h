@@ -26,7 +26,6 @@
 #include <chaos/common/utility/Singleton.h>
 #include <chaos/common/io/ManagedDirectIODataDriver.h>
 
-
 namespace chaos {
     namespace common {
         namespace io {
