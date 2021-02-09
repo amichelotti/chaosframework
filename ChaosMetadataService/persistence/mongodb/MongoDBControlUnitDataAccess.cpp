@@ -433,6 +433,8 @@ int MongoDBControlUnitDataAccess::getFullDescription(const std::string& cu_uniqu
                                                      chaos::common::data::CDataWrapper **dataset_description){
     int err = 0;
     mongo::BSONObj result;
+    mongo::BSONObjBuilder   bson_find;
+
     mongo::BSONArrayBuilder bson_find_or,bson_find_and;
 
     try {
@@ -440,8 +442,9 @@ int MongoDBControlUnitDataAccess::getFullDescription(const std::string& cu_uniqu
                 BSON( chaos::NodeDefinitionKey::NODE_TYPE << chaos::NodeType::NODE_TYPE_CONTROL_UNIT);
           bson_find_and<<BSON(NodeDefinitionKey::NODE_UNIQUE_ID << cu_unique_id);
           bson_find_and<<BSON("$or"<<bson_find_or.arr());
-               
-        mongo::BSONObj query = bson_find_and.obj();/*BSON(NodeDefinitionKey::NODE_UNIQUE_ID << cu_unique_id
+        bson_find.appendArray("$and", bson_find_and.obj());
+      
+        mongo::BSONObj query = bson_find.obj();/*BSON(NodeDefinitionKey::NODE_UNIQUE_ID << cu_unique_id
                                     << NodeDefinitionKey::NODE_TYPE << NodeType::NODE_TYPE_CONTROL_UNIT);*/
         
          DEBUG_CODE(MDBCUDA_DBG<<log_message(__func__,
