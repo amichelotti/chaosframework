@@ -465,7 +465,7 @@ SET(common_lib_src ${common_lib_src}
                     )
 IF(KAFKA_ASIO_ENABLE OR KAFKA_RDK_ENABLE)
 SET(common_lib_src ${common_lib_src}
-		   io/IODirectIOPSMsgDriver.cpp
+       io/IODirectIOPSMsgDriver.cpp
 		   message/MessagePublishSubscribeBase.cpp
                     message/MessagePSProducer.cpp
                     message/MessagePSConsumer.cpp

@@ -125,6 +125,8 @@ int MessagePSKafkaProducer::pushMsgAsync(const chaos::common::data::CDataWrapper
   int                 size  = data.getBSONRawSize();
   std::string         topic = key;
   std::replace(topic.begin(), topic.end(), '/', '.');
+  std::replace(topic.begin(), topic.end(), ':', '.');
+
   if(rk==NULL){
       MRDERR_ << "Not applied configuration" << errstr;
       errstr="Not applied configuration";
