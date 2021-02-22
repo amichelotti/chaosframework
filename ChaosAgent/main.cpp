@@ -48,7 +48,7 @@ int main(int argc, const char * argv[]) {
                                                                                               &ChaosAgent::getInstance()->settings.restport);
         ChaosAgent::getInstance()->getGlobalConfigurationInstance()->addOption< std::string >(OPT_SCRIPT_DIR,
                                                                                               "Script directory",
-                                                                                              "script_dir",
+                                                                                              "/tmp/script_dir",
                                                                                               &ChaosAgent::getInstance()->settings.script_dir);
         //data worker
         ChaosAgent::getInstance()->getGlobalConfigurationInstance()->addOption< std::string >(OPT_NODE_UID,
