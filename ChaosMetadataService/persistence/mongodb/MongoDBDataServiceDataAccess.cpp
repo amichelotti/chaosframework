@@ -62,7 +62,7 @@ int MongoDBDataServiceDataAccess::getDescription(const std::string& ds_unique_id
         //we can update the node node
         mongo::BSONObj query = BSON(NodeDefinitionKey::NODE_UNIQUE_ID << ds_unique_id
                                     << NodeDefinitionKey::NODE_TYPE << NodeType::NODE_TYPE_DATA_SERVICE);
-        mongo::BSONObj prj = BSON(DataServiceNodeDefinitionKey::DS_DIRECT_IO_ENDPOINT << 1);
+        mongo::BSONObj prj = BSON(DataServiceNodeDefinitionKey::DS_DIRECT_IO_ENDPOINT << 1<<NodeDefinitionKey::NODE_DESC<<1) ;
         
         DEBUG_CODE(MDBDSDA_DBG<<log_message("getDescription",
                                             "findOne",
