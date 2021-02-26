@@ -49,10 +49,13 @@ CDWUniquePtr GetSetFullUnitServer::execute(CDWUniquePtr api_data) {
     //get the parameter
     const std::string us_uid = api_data->getStringValue(NodeDefinitionKey::NODE_UNIQUE_ID);
     std::string node_type=NodeType::NODE_TYPE_UNIT_SERVER;
+    ChaosUniquePtr<chaos::common::data::CDataWrapper> udesc;
     if(api_data->hasKey(NodeDefinitionKey::NODE_TYPE)){
         node_type=api_data->getStringValue(NodeDefinitionKey::NODE_TYPE);
     }
-    
+    if(api_data->hasKey("us_desc")&& api_data->isCDataWrapperValue("us_desc")){
+            udesc=api_data->getCSDataValue("us_desc");
+    }
     bool setop=api_data->hasKey("reset");
     
     if((err =n_da->checkNodePresence(presence,us_uid,node_type))){
@@ -83,6 +86,9 @@ CDWUniquePtr GetSetFullUnitServer::execute(CDWUniquePtr api_data) {
         	ChaosUniquePtr<chaos::common::data::CDataWrapper> data_pack(new CDataWrapper());
         	data_pack->addStringValue(NodeDefinitionKey::NODE_UNIQUE_ID, us_uid);
         	data_pack->addStringValue(NodeDefinitionKey::NODE_TYPE, node_type);
+            if(udesc.get()&&udesc->hasKey(NodeDefinitionKey::NODE_DESC)){
+                data_pack->addStringValue(NodeDefinitionKey::NODE_DESC, udesc->getStringValue(NodeDefinitionKey::NODE_DESC));
+            }
         	//data_pack->addStringValue(NodeDefinitionKey::NODE_DESC, desc);
         	  /*  if(custom.get()){
         	        data_pack->addCSDataValue(chaos::NodeDefinitionKey::NODE_CUSTOM_PARAM,*custom);
@@ -96,14 +102,15 @@ CDWUniquePtr GetSetFullUnitServer::execute(CDWUniquePtr api_data) {
         if(presence){
              // update the common part
             US_ACT_DBG<<"Updating unit server '"<<us_uid<<"'";
-
+            if(udesc.get()&&udesc->hasKey(NodeDefinitionKey::NODE_DESC)){
+                api_data->addStringValue(NodeDefinitionKey::NODE_DESC, udesc->getStringValue(NodeDefinitionKey::NODE_DESC));
+            }
             if((err = n_da->updateNode(*api_data.get()))) {
                 LOG_AND_TROW(US_ACT_ERR, err, CHAOS_FORMAT("Error updating US node properties:%1%",%us_uid));
             }
         }
         // look for UnitServer full description
-        if(api_data->hasKey("us_desc")&& api_data->isCDataWrapperValue("us_desc")){
-            ChaosUniquePtr<chaos::common::data::CDataWrapper> udesc(api_data->getCSDataValue("us_desc"));
+        if(udesc.get()){
             if(udesc->hasKey("cu_desc")&& udesc->isVector("cu_desc")){
                 CMultiTypeDataArrayWrapperSPtr cu_l(udesc->getVectorValue("cu_desc"));
                 for(int cui=0;
