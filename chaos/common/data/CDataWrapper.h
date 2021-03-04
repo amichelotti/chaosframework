@@ -153,6 +153,7 @@ namespace chaos {
                 void appendCDataWrapperToArray(const CDataWrapper& value);
                 //finalize the array into a key for the current dataobject
                 void finalizeArrayForKey(const std::string&);
+                void appendArray(const std::string&key,DataType::DataType typ,const char*buf,int len);
                 //get a string value
                 string  getStringValue(const std::string&) const;
                 const char *  getCStringValue(const std::string& key) const;

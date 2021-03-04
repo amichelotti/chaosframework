@@ -488,6 +488,39 @@ void CDataWrapper::append(const std::string& key,const std::vector<CDataWrapper>
     ADD_VECTOR(val,CDataWrapper,CDataWrapper);
     finalizeArrayForKey(key);
 }
+void CDataWrapper::appendArray(const std::string&key,DataType::DataType typ,const char*buf,int len){
+    int i;
+    if(len<=0 ||(typ!=DataType::TYPE_BOOLEAN) ||(typ!=DataType::TYPE_INT32)||(typ!=DataType::TYPE_INT64)||(typ!=DataType::TYPE_DOUBLE) ){
+        return;
+    }
+   switch (typ) {
+        case DataType::TYPE_BOOLEAN:
+            for(i=0;i<len/sizeof(bool);i++){
+                appendBooleanToArray(((bool*)buf)[i]);
+            }
+            break;
+        case DataType::TYPE_INT32:
+          for( i=0;i<len/sizeof(int32_t);i++){
+                appendInt32ToArray(((int32_t*)buf)[i]);
+            }
+            break;
+        case DataType::TYPE_INT64:
+            for( i=0;i<len/sizeof(int64_t);i++){
+                appendInt64ToArray(((int64_t*)buf)[i]);
+            }
+            break;
+        case DataType::TYPE_DOUBLE:
+             for( i=0;i<len/sizeof(double);i++){
+                appendDoubleToArray(((double*)buf)[i]);
+            }
+            break;
+       
+        default:{
+            break;
+        }
+    } 
+    finalizeArrayForKey(key); 
+}
 
 void CDataWrapper::addVariantValue(const std::string& key,
                                    const CDataVariant& variant_value) {
