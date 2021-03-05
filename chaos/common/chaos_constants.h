@@ -1119,18 +1119,25 @@ namespace chaos {
             //!bool variable length
             TYPE_BOOLEAN = 0,
             //!Integer 32 bit length
-            TYPE_INT32,
+            TYPE_INT32=1,
             //!Integer 64 bit length
-            TYPE_INT64,
+            TYPE_INT64=2,
             //!Double 64 bit length
-            TYPE_DOUBLE,
+            TYPE_DOUBLE=3,
             //!C string variable length
-            TYPE_STRING,
+            TYPE_STRING=4,
             //!byte array variable length
             TYPE_BYTEARRAY,
             
             TYPE_CLUSTER,
             //!modifier to be ored to normal data types
+            TYPE_VECTOR_BOOL=0x100,
+
+            TYPE_VECTOR_INT32=0x101,
+            TYPE_VECTOR_INT64=0x102,
+            TYPE_VECTOR_DOUBLE=0x103,
+            TYPE_VECTOR_STRING=0x104,
+
             TYPE_ACCESS_ARRAY=0x100,
             TYPE_UNDEFINED
         } DataType;

@@ -490,8 +490,9 @@ void CDataWrapper::append(const std::string& key,const std::vector<CDataWrapper>
 }
 void CDataWrapper::appendArray(const std::string&key,DataType::DataType typ,const char*buf,int len){
     int i;
-    if(len<=0 ||(typ!=DataType::TYPE_BOOLEAN) ||(typ!=DataType::TYPE_INT32)||(typ!=DataType::TYPE_INT64)||(typ!=DataType::TYPE_DOUBLE) ){
-        return;
+    if(len<=0 ||(typ!=DataType::TYPE_BOOLEAN) &&(typ!=DataType::TYPE_INT32)&&(typ!=DataType::TYPE_INT64)&&(typ!=DataType::TYPE_DOUBLE) ){
+        throw CException(-51, "Invalid ARRAY TYPE/SIZE", __PRETTY_FUNCTION__);
+
     }
    switch (typ) {
         case DataType::TYPE_BOOLEAN:
