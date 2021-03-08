@@ -87,7 +87,7 @@ using namespace chaos::cu::driver_manager::driver;
 
 #pragma mark StorageBurst
 StorageBurst::StorageBurst(DatasetBurstShrdPtr _dataset_burst)
-    : dataset_burst(_dataset_burst),_remaining(0) {}
+    : dataset_burst(_dataset_burst), _remaining(0) {}
 
 StorageBurst::~StorageBurst() {}
 
@@ -101,7 +101,7 @@ bool PushStorageBurst::active(int64_t data __attribute__((unused))) {
 #else
 bool PushStorageBurst::active(int64_t data) {
 #endif
-  _remaining=StorageBurst::dataset_burst->value.asUInt32()-current_pushes-1;
+  _remaining = StorageBurst::dataset_burst->value.asUInt32() - current_pushes - 1;
   return ++current_pushes < StorageBurst::dataset_burst->value.asUInt32();
 }
 
@@ -112,7 +112,7 @@ MSecStorageBurst::MSecStorageBurst(DatasetBurstShrdPtr _dataset_burst)
 MSecStorageBurst::~MSecStorageBurst() {}
 
 bool MSecStorageBurst::active(int64_t now) {
-  _remaining=timeout_msec-now;
+  _remaining = timeout_msec - now;
   return timeout_msec > now;
 }
 
@@ -213,7 +213,7 @@ void AbstractControlUnit::_initDrivers() {
   for (int idx = 0;
        idx != unit_needed_drivers.size();
        idx++) {
-    driver_manager::driver::DriverAccessor* accessor_instance = driver_manager::DriverManager::getInstance()->getNewAccessorForDriverInstance(unit_needed_drivers[idx],control_unit_id);
+    driver_manager::driver::DriverAccessor* accessor_instance = driver_manager::DriverManager::getInstance()->getNewAccessorForDriverInstance(unit_needed_drivers[idx], control_unit_id);
     accessor_instances.push_back(accessor_instance);
   }
 }
@@ -320,16 +320,15 @@ const std::string& AbstractControlUnit::getCUType() {
   return control_unit_type;
 }
 
-  void AbstractControlUnit::setAlarm(const std::string& name,int level){
-     common::alarm::MultiSeverityAlarmLevel lvl=MultiSeverityAlarmLevelClear;
-     if(level==1){
-       lvl=MultiSeverityAlarmLevelWarning;
-     } else if(level>=2){
-       lvl=MultiSeverityAlarmLevelHigh;
-     }
-        setStateVariableSeverity(StateVariableTypeAlarmCU, name, lvl);
-
+void AbstractControlUnit::setAlarm(const std::string& name, int level) {
+  common::alarm::MultiSeverityAlarmLevel lvl = MultiSeverityAlarmLevelClear;
+  if (level == 1) {
+    lvl = MultiSeverityAlarmLevelWarning;
+  } else if (level >= 2) {
+    lvl = MultiSeverityAlarmLevelHigh;
   }
+  setStateVariableSeverity(StateVariableTypeAlarmCU, name, lvl);
+}
 
 /*
      fill the CDataWrapper with AbstractCU system configuration, this method
@@ -497,21 +496,21 @@ chaos::common::data::CDWUniquePtr AbstractControlUnit::_getDriverProperties(chao
     if (data.get() && data->hasKey("_id_")) {
       if ((*it)->getDriverName() == data->getStringValue("_id_")) {
         ret = (*it)->getDrvProperties();
-        if(ret.get()){
-            ACULDBG_ << "get driver " << (*it)->getDriverName() << " property:" << ret->getJSONString();
+        if (ret.get()) {
+          ACULDBG_ << "get driver " << (*it)->getDriverName() << " property:" << ret->getJSONString();
 
         } else {
-            ACULDBG_ << "get driver " << (*it)->getDriverName() << " ha NO property published";
+          ACULDBG_ << "get driver " << (*it)->getDriverName() << " ha NO property published";
         }
       }
     } else {
       ret = (*it)->getDrvProperties();
-       if(ret.get()){
-            ACULDBG_ << "get driver " << (*it)->getDriverName() << " property:" << ret->getJSONString();
+      if (ret.get()) {
+        ACULDBG_ << "get driver " << (*it)->getDriverName() << " property:" << ret->getJSONString();
 
-        } else {
-            ACULDBG_ << "get driver " << (*it)->getDriverName() << " ha NO property published";
-        }
+      } else {
+        ACULDBG_ << "get driver " << (*it)->getDriverName() << " ha NO property published";
+      }
 
       return ret;
     }
@@ -572,7 +571,7 @@ void AbstractControlUnit::_getDeclareActionInstance(std::vector<const chaos::Dec
   declareActionInstance.push_back(this);
 }
 
-  //----------------------------------------- checklist method ------------------------------------------------
+//----------------------------------------- checklist method ------------------------------------------------
 #pragma mark checklist method
 void         AbstractControlUnit::doInitRpCheckList() {
   std::vector<std::string> attribute_names;
@@ -951,12 +950,13 @@ void AbstractControlUnit::redoInitSMCheckList(bool throw_exception) {
     }
     CHAOS_CHECK_LIST_REDO(check_list_sub_service, "init", INIT_SM_PHASE_CREATE_DATA_STORAGE) {
       //remove key data storage
-      CHEK_IF_NEED_TO_THROW(throw_exception,
-                            if (key_data_storage.get()) {
-                              ACULDBG_ << "Delete data storage driver for device:" << DatasetDB::getDeviceID();
-                              key_data_storage->deinit();
-                              key_data_storage.reset();
-                            })
+      CHEK_IF_NEED_TO_THROW(
+          throw_exception,
+          if (key_data_storage.get()) {
+            ACULDBG_ << "Delete data storage driver for device:" << DatasetDB::getDeviceID();
+            key_data_storage->deinit();
+            key_data_storage.reset();
+          })
       break;
     }
   }
@@ -987,7 +987,7 @@ void AbstractControlUnit::redoStartSMCheckList(bool throw_exception) {
   CHAOS_CHECK_LIST_END_SCAN_DONE(check_list_sub_service, "start")
 }
 
-  //----------------------------------------- protected initi/deinit method ------------------------------------------------
+//----------------------------------------- protected initi/deinit method ------------------------------------------------
 #pragma mark RPC State Machine method
 CDWUniquePtr AbstractControlUnit::_init(CDWUniquePtr init_configuration) {
   if (getServiceState() == CUStateKey::INIT) {
@@ -1054,7 +1054,7 @@ CDWUniquePtr AbstractControlUnit::_init(CDWUniquePtr init_configuration) {
 }
 
 CDWUniquePtr AbstractControlUnit::_start(CDWUniquePtr startParam) {
-  hasstopped=false;
+  hasstopped = false;
 
   if (getServiceState() == CUStateKey::START) {
     return CDWUniquePtr();
@@ -1109,9 +1109,9 @@ CDWUniquePtr AbstractControlUnit::_start(CDWUniquePtr startParam) {
 }
 
 CDWUniquePtr AbstractControlUnit::_stop(CDWUniquePtr stopParam) {
-  hasstopped=true;
+  hasstopped = true;
   if (getServiceState() == CUStateKey::STOP) {
-    ERR<<" ALREADY IN STOP";
+    ERR << " ALREADY IN STOP";
     return CDWUniquePtr();
   }
   try {
@@ -1144,7 +1144,7 @@ CDWUniquePtr AbstractControlUnit::_stop(CDWUniquePtr stopParam) {
                                                     NodeHealtDefinitionKey::NODE_HEALT_STATUS,
                                                     NodeHealtDefinitionValue::NODE_HEALT_STATUS_STOPING,
                                                     true);
-   /* {
+    /* {
   for (VInstantitedDriverIterator it  = accessor_instances.begin(),
                                   end = accessor_instances.end();
        it != end;
@@ -1756,8 +1756,7 @@ void AbstractControlUnit::initSystemAttributeOnSharedAttributeCache() {
   //add burst operation state
   domain_attribute_setting.addAttribute(ControlUnitDatapackSystemKey::BURST_STATE, 0, DataType::TYPE_BOOLEAN);
 
-
-//add burst operation state
+  //add burst operation state
   domain_attribute_setting.addAttribute(ControlUnitDatapackSystemKey::BURST_CNT_DOWN, 0, DataType::TYPE_INT32);
 
   //add burst operation tag
@@ -1846,7 +1845,7 @@ void AbstractControlUnit::removeTag(const std::string& tname) {
   key_data_storage->removeTag(tname);
   *attribute_value_shared_cache->getAttributeValue(DOMAIN_SYSTEM, ControlUnitDatapackSystemKey::BURST_STATE)->getValuePtr<bool>() = false;
   attribute_value_shared_cache->getAttributeValue(DOMAIN_SYSTEM, ControlUnitDatapackSystemKey::BURST_TAG)->setStringValue("");
-  *attribute_value_shared_cache->getAttributeValue(DOMAIN_SYSTEM, ControlUnitDatapackSystemKey::BURST_CNT_DOWN)->getValuePtr<int32_t>()=0;
+  *attribute_value_shared_cache->getAttributeValue(DOMAIN_SYSTEM, ControlUnitDatapackSystemKey::BURST_CNT_DOWN)->getValuePtr<int32_t>() = 0;
 
   attribute_value_shared_cache->getSharedDomain(DOMAIN_SYSTEM).markAllAsChanged();
 }
@@ -2015,10 +2014,11 @@ void AbstractControlUnit::_setBypassState(bool bypass_stage,
        it++) {
     (*it)->send(&cmd, chaos::common::constants::CUTimersTimeoutinMSec);
   }
-  //update dateset
-  *attribute_value_shared_cache->getAttributeValue(DOMAIN_SYSTEM, ControlUnitDatapackSystemKey::BYPASS_STATE)->getValuePtr<bool>() = bypass_stage;
-}
 
+    setBypassFlag(bypass_stage);
+
+  //update dateset
+}
 //!handler calledfor restor a control unit to a determinate point
 bool AbstractControlUnit::unitRestoreToSnapshot(AbstractSharedDomainCache* const snapshot_cache) {
   return true;
@@ -2048,9 +2048,8 @@ chaos::common::data::CDWUniquePtr AbstractControlUnit::unitPerformCalibration(ch
 }
 
 //! this andler is called befor the input attribute will be updated
-bool AbstractControlUnit::unitInputAttributePreChangeHandler(chaos::common::data::CDWUniquePtr&pp) {
+bool AbstractControlUnit::unitInputAttributePreChangeHandler(chaos::common::data::CDWUniquePtr& pp) {
   return true;
-
 }
 
 //! attribute change handler
@@ -2122,13 +2121,11 @@ CDWUniquePtr AbstractControlUnit::setDatasetAttribute(CDWUniquePtr dataset_attri
 
   try {
     //call pre handler
-    if(unitInputAttributePreChangeHandler(dataset_attribute_values)){
-    //first call attribute handler
+    if (unitInputAttributePreChangeHandler(dataset_attribute_values)) {
+      //first call attribute handler
       dataset_attribute_manager.executeHandlers(dataset_attribute_values.get());
-
     }
 
- 
     //get all input attribute name for input and bidirectional directions
     getDatasetAttributesName(DataType::Input, in_attribute_name);
     getDatasetAttributesName(DataType::Bidirectional, in_attribute_name);
@@ -2454,7 +2451,7 @@ int AbstractControlUnit::pushCustomDataset() {
 int AbstractControlUnit::pushSystemDataset() {
   int             err                    = 0;
   AttributeCache& system_attribute_cache = attribute_value_shared_cache->getSharedDomain(DOMAIN_SYSTEM);
-  uint64_t tscor = TimingUtil::getTimeCorStamp();
+  uint64_t        tscor                  = TimingUtil::getTimeCorStamp();
   if ((tscor - last_push) < ds_update_anyway) {
     //check if something as changed
     if (!system_attribute_cache.hasChanged()) {
@@ -2470,7 +2467,6 @@ int AbstractControlUnit::pushSystemDataset() {
   }
   CDWShrdPtr system_attribute_dataset = key_data_storage->getNewDataPackForDomain(KeyDataStorageDomainSystem);
   if (system_attribute_dataset.get()) {
-
     system_attribute_dataset->addInt64Value(ControlUnitDatapackCommonKey::RUN_ID, run_id);
     //input dataset timestamp is added only when pushed on cache
     system_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_TIMESTAMP, tscor);
@@ -2537,7 +2533,7 @@ int AbstractControlUnit::pushCUAlarmDataset() {
 }
 
 void AbstractControlUnit::manageBurstQueue() {
-  static int64_t old_ts=0;
+  static int64_t old_ts = 0;
   if (!current_burst.get()) {
     DatasetBurstShrdPtr next_burst;
     LQueueBurstReadLock wl = burst_queue.getReadLockObject();
@@ -2558,7 +2554,7 @@ void AbstractControlUnit::manageBurstQueue() {
         default:
           break;
       }
-      old_ts=0;
+      old_ts = 0;
       //set the tag for burst
       ACULDBG_ << "======= Start Burst tag:'" << current_burst->dataset_burst->tag << "' =======";
       key_data_storage->addTag(current_burst->dataset_burst->tag);
@@ -2572,7 +2568,7 @@ void AbstractControlUnit::manageBurstQueue() {
       pushSystemDataset();
     }
   } else {
-    int64_t tim=*timestamp_acq_cached_value->getValuePtr<int64_t>();
+    int64_t tim = *timestamp_acq_cached_value->getValuePtr<int64_t>();
     if (!current_burst->active(tim)) {
       //remove the tag for the burst
       ACULDBG_ << "======= End Burst tag:'" << current_burst->dataset_burst->tag << "' =======";
@@ -2588,16 +2584,15 @@ void AbstractControlUnit::manageBurstQueue() {
       current_burst.reset();
       pushSystemDataset();
     } else {
-      int32_t rem=current_burst->remaining();
+      int32_t rem                                                                                                                           = current_burst->remaining();
       *attribute_value_shared_cache->getAttributeValue(DOMAIN_SYSTEM, ControlUnitDatapackSystemKey::BURST_CNT_DOWN)->getValuePtr<int32_t>() = rem;
-      if((tim-old_ts>chaos::common::constants::CUTimersTimeoutinMSec)==0){
-          ACULDBG_ << "======= Active Burst tag:'" << current_burst->dataset_burst->tag << "' remaining:"<<rem<<" =======";
+      if ((tim - old_ts > chaos::common::constants::CUTimersTimeoutinMSec) == 0) {
+        ACULDBG_ << "======= Active Burst tag:'" << current_burst->dataset_burst->tag << "' remaining:" << rem << " =======";
 
         attribute_value_shared_cache->getSharedDomain(DOMAIN_SYSTEM).markAllAsChanged();
         pushSystemDataset();
-
       }
-      old_ts=tim;
+      old_ts = tim;
     }
   }
 }
@@ -2761,7 +2756,12 @@ void AbstractControlUnit::setBusyFlag(bool state) {
     system_cache.getValueSettingByName("busy")->setValue(CDataVariant(state));
   }
 }
-
+void AbstractControlUnit::setBypassFlag(bool state) {
+  AttributeCache& system_cache = attribute_value_shared_cache->getSharedDomain(DOMAIN_SYSTEM);
+  if (system_cache.hasName("busy")) {
+    system_cache.getValueSettingByName("busy")->setValue(CDataVariant(state));
+  }
+}
 const bool AbstractControlUnit::getBusyFlag() const {
   AttributeCache& system_cache = attribute_value_shared_cache->getSharedDomain(DOMAIN_SYSTEM);
   if (system_cache.hasName("busy")) {
@@ -2814,16 +2814,68 @@ void AbstractControlUnit::metadataLogging(const StandardLoggingChannel::LogLevel
 void AbstractControlUnit::consumerHandler(const chaos::common::message::ele_t& data) {
   incomingMessage(data.key, data.cd);
 }
+void AbstractControlUnit::updateDataSet(chaos::common::data::CDataWrapper& cd, chaos::DataType::DataSetAttributeIOAttribute io) {
+  std::vector<std::string> props;
+  cd.getAllKey(props);
+  for (std::vector<std::string>::iterator i = props.begin(); i != props.end(); i++) {
+    if (cd.isInt32Value(*i)) {
+      getAttributeCache()->setOutputAttributeValue(*i, cd.getInt32Value(*i));
+    } else if (cd.isDoubleValue(*i)) {
+      getAttributeCache()->setOutputAttributeValue(*i, cd.getDoubleValue(*i));
+    } else if (cd.isInt64Value(*i)) {
+      getAttributeCache()->setOutputAttributeValue(*i, cd.getInt64Value(*i));
+    } else if (cd.isBoolValue(*i)) {
+      getAttributeCache()->setOutputAttributeValue(*i, cd.getBoolValue(*i));
+    } else if (cd.isStringValue(*i)) {
+      getAttributeCache()->setOutputAttributeValue(*i, cd.getStringValue(*i));
+    } else if (cd.isVectorValue(*i)) {
+      ///
+      chaos::common::data::CMultiTypeDataArrayWrapperSPtr v   = cd.getVectorValue(*i);
+      int                                                 siz = v->size();
+      if (siz > 0) {
+        if (v->isInt32ElementAtIndex(0)) {
+          int32_t arr[siz];
+          for (int cnt = 0; cnt < siz; cnt++) {
+            arr[cnt] = v->getInt32ElementAtIndex(cnt);
+          }
+          getAttributeCache()->setOutputAttributeValue(*i, (void*)arr, siz * sizeof(int32_t));
+        } else if (v->isBoolElementAtIndex(0)) {
+          bool arr[siz];
+          for (int cnt = 0; cnt < siz; cnt++) {
+            arr[cnt] = v->getBoolElementAtIndex(cnt);
+          }
+          getAttributeCache()->setOutputAttributeValue(*i, (void*)arr, siz * sizeof(bool));
+        } else if (v->isInt64ElementAtIndex(0)) {
+        int64_t arr[siz];
+        for (int cnt = 0; cnt < siz; cnt++) {
+          arr[cnt] = v->getInt64ElementAtIndex(cnt);
+        }
+        getAttributeCache()->setOutputAttributeValue(*i, (void*)arr, siz * sizeof(int64_t));
+      } else if (v->isDoubleElementAtIndex(0)) {
+        double arr[siz];
+        for (int cnt = 0; cnt < siz; cnt++) {
+          arr[cnt] = v->getDoubleElementAtIndex(cnt);
+        }
+        getAttributeCache()->setOutputAttributeValue(*i, (void*)arr, siz * sizeof(double));
+      }
+    } 
+    } else if (cd.isBinaryValue(*i)) {
+      uint32_t    size;
+      const char* ptr = cd.getBinaryValue(*i, size);
+      getAttributeCache()->setOutputAttributeValue(*i, (void*)ptr, size);
+    }
+  }
+}
+
 void AbstractControlUnit::updateDatasetFromDriverProperty() {
   for (int idx = 0;
        idx != accessor_instances.size();
        idx++) {
     chaos::common::data::CDWUniquePtr ret = accessor_instances[idx]->getDrvProperties();
     std::vector<std::string>          props;
-    if(ret.get()==NULL){
-        ACULDBG_ << "No driver properties";
-        return;
-
+    if (ret.get() == NULL) {
+      ACULDBG_ << "No driver properties";
+      return;
     }
 
     ret->getAllKey(props);
@@ -2863,32 +2915,76 @@ void AbstractControlUnit::updateDatasetFromDriverProperty() {
   }
   getAttributeCache()->setInputDomainAsChanged();
   getAttributeCache()->setOutputDomainAsChanged();
-
 }
 
 bool AbstractControlUnit::setDrvProp(const std::string& name, const bool value, uint32_t size) {
-  bool bidir=getAttributeCache()->exist(DOMAIN_OUTPUT,name);
-  return _setDrvProp(name, value, size,bidir);
+  bool bidir = getAttributeCache()->exist(DOMAIN_OUTPUT, name);
+  return _setDrvProp(name, value, size, bidir);
 }
 bool AbstractControlUnit::setDrvProp(const std::string& name, const int32_t value, uint32_t size) {
-    bool bidir=getAttributeCache()->exist(DOMAIN_OUTPUT,name);
+  bool bidir = getAttributeCache()->exist(DOMAIN_OUTPUT, name);
 
-  return _setDrvProp(name, value, size,bidir);
+  return _setDrvProp(name, value, size, bidir);
 }
 bool AbstractControlUnit::setDrvProp(const std::string& name, const int64_t value, uint32_t size) {
-    bool bidir=getAttributeCache()->exist(DOMAIN_OUTPUT,name);
+  bool bidir = getAttributeCache()->exist(DOMAIN_OUTPUT, name);
 
-  return _setDrvProp(name, value, size,bidir);
+  return _setDrvProp(name, value, size, bidir);
 }
 bool AbstractControlUnit::setDrvProp(const std::string& name, const double value, uint32_t size) {
-    bool bidir=getAttributeCache()->exist(DOMAIN_OUTPUT,name);
+  bool bidir = getAttributeCache()->exist(DOMAIN_OUTPUT, name);
 
-  return _setDrvProp(name, value, size,bidir);
+  return _setDrvProp(name, value, size, bidir);
 }
 bool AbstractControlUnit::setDrvProp(const std::string& name, std::string value, uint32_t size) {
-    bool bidir=getAttributeCache()->exist(DOMAIN_OUTPUT,name);
+  bool bidir = getAttributeCache()->exist(DOMAIN_OUTPUT, name);
 
-  return _setDrvProp(name, value, size,bidir);
+  return _setDrvProp(name, value, size, bidir);
+}
+
+void AbstractControlUnit::addAttributesToDataSet(chaos::common::data::CDataWrapper& cd, chaos::DataType::DataSetAttributeIOAttribute io) {
+  std::vector<std::string> props;
+  cd.getAllKey(props);
+  for (std::vector<std::string>::iterator i = props.begin(); i != props.end(); i++) {
+    if (cd.isVector(*i)) {
+      chaos::common::data::CMultiTypeDataArrayWrapperSPtr v   = cd.getVectorValue(*i);
+      int                                                 siz = v->size();
+      if (siz > 0) {
+        std::stringstream ss;
+        ss << siz;
+        if (v->isInt32ElementAtIndex(0)) {
+          addBinaryAttributeAsSubtypeToDataSet(*i, "int32 vect:" + ss.str(), chaos::DataType::BinarySubtype::SUB_TYPE_INT32, siz * sizeof(int32_t), io);
+        } else if (v->isBoolElementAtIndex(0)) {
+          addBinaryAttributeAsSubtypeToDataSet(*i, "bool vect:" + ss.str(), chaos::DataType::BinarySubtype::SUB_TYPE_BOOLEAN, siz, io);
+        } else if (v->isInt64ElementAtIndex(0)) {
+          addBinaryAttributeAsSubtypeToDataSet(*i, "int64 vect:" + ss.str(), chaos::DataType::BinarySubtype::SUB_TYPE_INT64, siz * sizeof(int64_t), io);
+        } else if (v->isDoubleElementAtIndex(0)) {
+          addBinaryAttributeAsSubtypeToDataSet(*i, "double vect:" + ss.str(), chaos::DataType::BinarySubtype::SUB_TYPE_DOUBLE, siz * sizeof(double), io);
+        }
+      }
+    } else if (cd.isInt32Value(*i)) {
+      addAttributeToDataSet(*i, "int32", chaos::DataType::TYPE_INT32, io);
+
+    } else if (cd.isInt64Value(*i)) {
+      addAttributeToDataSet(*i, "int64", chaos::DataType::TYPE_INT64, io);
+
+    } else if (cd.isDoubleValue(*i)) {
+      addAttributeToDataSet(*i, "double", chaos::DataType::TYPE_DOUBLE, io);
+
+    } else if (cd.isStringValue(*i)) {
+      addAttributeToDataSet(*i, "string", chaos::DataType::TYPE_STRING, io, cd.getStringValue(*i).size() + 1);
+
+    } else if (cd.isBoolValue(*i)) {
+      addAttributeToDataSet(*i, "bool", chaos::DataType::TYPE_BOOLEAN, io);
+
+    } else if (cd.isBinaryValue(*i)) {
+      uint32_t size;
+      cd.getBinaryValue(*i, size);
+      std::stringstream ss;
+      ss << size;
+      addBinaryAttributeAsSubtypeToDataSet(*i, "binary:" + ss.str(), chaos::DataType::BinarySubtype::SUB_TYPE_CHAR, size, io);
+    }
+  }
 }
 
 void AbstractControlUnit::addPublicDriverPropertyToDataset(bool addDriverHandlers) {

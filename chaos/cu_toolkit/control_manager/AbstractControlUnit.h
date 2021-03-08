@@ -784,6 +784,10 @@ class AbstractControlUnit : public DeclareAction,
   //! set the value on the busy flag
   void setBusyFlag(bool state);
 
+
+  //! set the value on the bypass flag
+  void setBypassFlag(bool state);
+
   //!return the current value of the busi flag
   const bool getBusyFlag() const;
 
@@ -886,6 +890,9 @@ class AbstractControlUnit : public DeclareAction,
     }
     return true;
   }
+  void addAttributesToDataSet(chaos::common::data::CDataWrapper&cd,chaos::DataType::DataSetAttributeIOAttribute io=chaos::DataType::DataSetAttributeIOAttribute::Output);
+  void updateDataSet(chaos::common::data::CDataWrapper&cd,chaos::DataType::DataSetAttributeIOAttribute io=chaos::DataType::DataSetAttributeIOAttribute::Output);
+
   CUStateKey::ControlUnitState getState();
   bool                         removeHandlerOnAttributeName(const std::string& attribute_name) {
     return dataset_attribute_manager.removeHandlerOnAttributeName(attribute_name);
