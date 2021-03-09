@@ -2953,13 +2953,13 @@ void AbstractControlUnit::addAttributesToDataSet(chaos::common::data::CDataWrapp
         std::stringstream ss;
         ss << siz;
         if (v->isInt32ElementAtIndex(0)) {
-          addBinaryAttributeAsSubtypeToDataSet(*i, "int32 vect:" + ss.str(), chaos::DataType::BinarySubtype::SUB_TYPE_INT32, siz * sizeof(int32_t), io);
+          addBinaryAttributeAsSubtypeToDataSet(*i, "int32 vect:" + ss.str(), chaos::DataType::SUB_TYPE_INT32, siz * sizeof(int32_t), io);
         } else if (v->isBoolElementAtIndex(0)) {
-          addBinaryAttributeAsSubtypeToDataSet(*i, "bool vect:" + ss.str(), chaos::DataType::BinarySubtype::SUB_TYPE_BOOLEAN, siz, io);
+          addBinaryAttributeAsSubtypeToDataSet(*i, "bool vect:" + ss.str(), chaos::DataType::SUB_TYPE_BOOLEAN, siz, io);
         } else if (v->isInt64ElementAtIndex(0)) {
-          addBinaryAttributeAsSubtypeToDataSet(*i, "int64 vect:" + ss.str(), chaos::DataType::BinarySubtype::SUB_TYPE_INT64, siz * sizeof(int64_t), io);
+          addBinaryAttributeAsSubtypeToDataSet(*i, "int64 vect:" + ss.str(), chaos::DataType::SUB_TYPE_INT64, siz * sizeof(int64_t), io);
         } else if (v->isDoubleElementAtIndex(0)) {
-          addBinaryAttributeAsSubtypeToDataSet(*i, "double vect:" + ss.str(), chaos::DataType::BinarySubtype::SUB_TYPE_DOUBLE, siz * sizeof(double), io);
+          addBinaryAttributeAsSubtypeToDataSet(*i, "double vect:" + ss.str(), chaos::DataType::SUB_TYPE_DOUBLE, siz * sizeof(double), io);
         }
       }
     } else if (cd.isInt32Value(*i)) {
@@ -2982,7 +2982,7 @@ void AbstractControlUnit::addAttributesToDataSet(chaos::common::data::CDataWrapp
       cd.getBinaryValue(*i, size);
       std::stringstream ss;
       ss << size;
-      addBinaryAttributeAsSubtypeToDataSet(*i, "binary:" + ss.str(), chaos::DataType::BinarySubtype::SUB_TYPE_CHAR, size, io);
+      addBinaryAttributeAsSubtypeToDataSet(*i, "binary:" + ss.str(), chaos::DataType::SUB_TYPE_CHAR, size, io);
     }
   }
 }
