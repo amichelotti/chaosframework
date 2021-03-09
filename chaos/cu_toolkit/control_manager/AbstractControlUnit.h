@@ -890,8 +890,8 @@ class AbstractControlUnit : public DeclareAction,
     }
     return true;
   }
-  void addAttributesToDataSet(chaos::common::data::CDataWrapper&cd,chaos::DataType::DataSetAttributeIOAttribute io=chaos::DataType::DataSetAttributeIOAttribute::Output);
-  void updateDataSet(chaos::common::data::CDataWrapper&cd,chaos::DataType::DataSetAttributeIOAttribute io=chaos::DataType::DataSetAttributeIOAttribute::Output);
+  void addAttributesToDataSet(chaos::common::data::CDataWrapper&cd,chaos::DataType::DataSetAttributeIOAttribute io=chaos::DataType::Output);
+  void updateDataSet(chaos::common::data::CDataWrapper&cd,chaos::DataType::DataSetAttributeIOAttribute io=chaos::DataType::Output);
 
   CUStateKey::ControlUnitState getState();
   bool                         removeHandlerOnAttributeName(const std::string& attribute_name) {
