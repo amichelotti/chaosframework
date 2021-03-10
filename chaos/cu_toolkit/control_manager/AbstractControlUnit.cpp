@@ -1634,6 +1634,64 @@ void AbstractControlUnit::fillCachedValueVector(AttributeCache&               at
     cached_value.push_back(attribute_cache.getValueSettingForIndex(idx));
   }
 }
+template <typename s,typename r>
+inline int checkFn(s sval,r rval,double w,double e){
+  int level=0;
+  double res= fabs(1 - ((double)rval/(double)sval))*100;
+  if(res>w){
+    level++;
+  }
+  if(res>e){
+    level++;
+  }
+
+  return level;
+}
+int AbstractControlUnit::checkOutOfSet(){
+  std::vector<checkAttribute_t>::iterator i;
+  
+  for(i=ioTocheck.begin();i!=ioTocheck.end();i++){
+    int level=0;
+     switch (i->input->type) {
+          case DataType::TYPE_BOOLEAN: {
+              if(*(i->input->getValuePtr<bool>())!=*(i->output->getValuePtr<bool>())){
+                level=2;
+              }
+              
+              break;
+            }
+            case DataType::TYPE_INT32: {
+              int32_t sval=*(i->input->getValuePtr<int32_t>());
+              int32_t rval=*(i->output->getValuePtr<int32_t>());
+              level=checkFn(sval,rval,i->warningTh,i->errorTh);
+              break;
+            }
+            case DataType::TYPE_INT64: {
+             int64_t sval=*(i->input->getValuePtr<int64_t>());
+             int64_t rval=*(i->output->getValuePtr<int64_t>());
+              level=checkFn(sval,rval,i->warningTh,i->errorTh);
+
+              break;
+            }
+            case DataType::TYPE_DOUBLE: {
+               double sval=*(i->input->getValuePtr<double>());
+             double rval=*(i->output->getValuePtr<double>());
+            level=checkFn(sval,rval,i->warningTh,i->errorTh);
+          ACULDBG_ << i->input->name<<" check set " << sval <<" agains "<<rval<<" warn at:"<<i->warningTh<<" error at:"<<i->errorTh;
+
+              break;
+            }
+            default:
+              break;
+          }
+          setStateVariableSeverity(StateVariableTypeAlarmCU,i->input->name+"_out_of_set",(common::alarm::MultiSeverityAlarmLevel)level);
+
+        }
+
+      }
+
+  
+
 
 void AbstractControlUnit::initAttributeOnSharedAttributeCache(SharedCacheDomain         domain,
                                                               std::vector<std::string>& attribute_names) {
@@ -1649,7 +1707,29 @@ void AbstractControlUnit::initAttributeOnSharedAttributeCache(SharedCacheDomain 
 
     // retrive the attribute description from the device database
     DatasetDB::getAttributeRangeValueInfo(attribute_names[idx], attributeInfo);
+    if(attributeInfo.dir==chaos::DataType::Bidirectional){
+      //if(attributeInfo.)
+      if(atof(attributeInfo.warningThreshold.c_str()) || atof(attributeInfo.errorThreshold.c_str())){
+        std::stringstream ss;
+        ss<<"Notify when '"<<attribute_names[idx]<<"'";
+        if(atof(attributeInfo.warningThreshold.c_str())>0){
+          ss<<" warning if set/readout > "<<atof(attributeInfo.warningThreshold.c_str());
+        }
+      if(atof(attributeInfo.errorThreshold.c_str())>0){
+          ss<<" error if set/readout > "<<atof(attributeInfo.errorThreshold.c_str());
+        }
+      ACULDBG_ << attribute_names[idx] << "WILL BE CHECKED "<<ss.str();
+      addStateVariable(StateVariableTypeAlarmCU,attribute_names[idx]+"_out_of_set",
+			ss.str());
+      checkAttribute_t a;
+      a.input=attribute_value_shared_cache->getSharedDomain(DOMAIN_INPUT).getValueSettingByName(attribute_names[idx]);
+      a.output=attribute_value_shared_cache->getSharedDomain(DOMAIN_OUTPUT).getValueSettingByName(attribute_names[idx]);
+      a.errorTh=atof(attributeInfo.errorThreshold.c_str());
+      a.warningTh=atof(attributeInfo.warningThreshold.c_str());
 
+      ioTocheck.push_back(a);
+      }
+    }
     // add the attribute to the shared setting object
     attribute_setting.addAttribute(attribute_names[idx], attributeInfo.maxSize, attributeInfo.valueType, attributeInfo.binType);
 
@@ -2307,6 +2387,7 @@ int AbstractControlUnit::pushOutputDataset() {
     ACULERR_ << " Cannot allocate packet.. err:" << err;
     return err;
   }
+  checkOutOfSet();
   output_attribute_dataset->addInt64Value(ControlUnitDatapackCommonKey::RUN_ID, run_id);
   output_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_TIMESTAMP, tscor /* *timestamp_acq_cached_value->getValuePtr<uint64_t>()*/);
   output_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_HIGH_RESOLUTION_TIMESTAMP, *timestamp_hw_acq_cached_value->getValuePtr<uint64_t>());

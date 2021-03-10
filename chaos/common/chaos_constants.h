@@ -883,6 +883,13 @@ namespace chaos {
         static const char * const CONTROL_UNIT_DATASET_ATTRIBUTE_CONVFACT          = "cudk_ds_attr_convfact";
          //!key representing the offset the attribute
         static const char * const CONTROL_UNIT_DATASET_ATTRIBUTE_OFFSET             = "cudk_ds_attr_offset";
+
+          //!key representing the offset the attribute
+        static const char * const CONTROL_UNIT_DATASET_ATTRIBUTE_WARN_THR           = "cudk_ds_attr_wrn_thr";
+       
+         //!key representing the offset the attribute
+        static const char * const CONTROL_UNIT_DATASET_ATTRIBUTE_ERROR_THR           = "cudk_ds_attr_err_thr";
+       
         /// TO ADD
         //!key representing the minimum working value    
         static const char * const CONTROL_UNIT_DATASET_ATTRIBUTE_MIN_WORK_VALUE     = "cudk_ds_attr_min_work";

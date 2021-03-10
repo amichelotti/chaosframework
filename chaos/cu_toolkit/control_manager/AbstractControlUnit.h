@@ -274,6 +274,8 @@ class AbstractControlUnit : public DeclareAction,
   //specify the counter updated by the mds on every initilization that will represent the run of work
   int64_t run_id;
 
+
+  
   //!burst queue
   LQueueBurst burst_queue;
 
@@ -576,6 +578,14 @@ class AbstractControlUnit : public DeclareAction,
   }
 
  protected:
+  typedef struct {
+    AttributeValue*input;
+    AttributeValue*output;
+    double warningTh;
+    double errorTh;
+  } checkAttribute_t;
+ // bidir (set/readout) to check
+  std::vector<checkAttribute_t > ioTocheck;
   void addPublicDriverPropertyToDataset(bool addDriverHandlers = true);
   void updateDatasetFromDriverProperty();
 
@@ -795,6 +805,8 @@ class AbstractControlUnit : public DeclareAction,
   void alarmChanged(const std::string& state_variable_tag,
                     const std::string& state_variable_name,
                     const int8_t       state_variable_severity);
+  
+  virtual int checkOutOfSet();
 
   //!logging api
   void metadataLogging(const chaos::common::metadata_logging::StandardLoggingChannel::LogLevel log_level,

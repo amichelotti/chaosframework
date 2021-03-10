@@ -318,6 +318,15 @@ int MongoDBControlUnitDataAccess::setDataset(const std::string& cu_unique_id,
                     dataset_element_builder << ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_OFFSET <<
                     dataset_element->getStringValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_OFFSET);
                 }
+
+                if(dataset_element->hasKey(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_WARN_THR)) {
+                    dataset_element_builder << ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_WARN_THR <<
+                    dataset_element->getStringValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_WARN_THR);
+                }
+                if(dataset_element->hasKey(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_ERROR_THR)) {
+                    dataset_element_builder << ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_ERROR_THR <<
+                    dataset_element->getStringValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_ERROR_THR);
+                }
                 dataset_bson_array << dataset_element_builder.obj();
             }
         }
@@ -673,6 +682,9 @@ int MongoDBControlUnitDataAccess::setInstanceDescription(const std::string& cu_u
                     if(attr_desc->hasKey(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_CONVFACT)) a.addStringValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_CONVFACT, attr_desc->getStringValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_CONVFACT));
                     if(attr_desc->hasKey(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_OFFSET)) a.addStringValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_OFFSET, attr_desc->getStringValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_OFFSET));
 
+                    if(attr_desc->hasKey(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_WARN_THR)) a.addStringValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_WARN_THR, attr_desc->getStringValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_WARN_THR));
+                    if(attr_desc->hasKey(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_ERROR_THR)) a.addStringValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_ERROR_THR, attr_desc->getStringValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_ERROR_THR));
+
                     //add object to array
                     bab << mongo::BSONObj(a.getBSONRawData(size));
                 }
@@ -821,7 +833,8 @@ int MongoDBControlUnitDataAccess::getInstanceDescription(const std::string& unit
             if(instance_description.hasField("auto_load"))(*result)->addBoolValue("auto_load", instance_description.getBoolField("auto_load"));
             if(instance_description.hasField("auto_init"))(*result)->addBoolValue("auto_init", instance_description.getBoolField("auto_init"));
             if(instance_description.hasField("auto_start"))(*result)->addBoolValue("auto_start", instance_description.getBoolField("auto_start"));
-            
+            if(instance_description.hasField(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DESC))(*result)->addStringValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DESC, instance_description.getStringField(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DESC));
+
             if(instance_description.hasField(ControlUnitNodeDefinitionKey::CONTROL_UNIT_LOAD_PARAM))(*result)->addStringValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_LOAD_PARAM, instance_description.getStringField(ControlUnitNodeDefinitionKey::CONTROL_UNIT_LOAD_PARAM));
             if(instance_description.hasField(ControlUnitNodeDefinitionKey::CONTROL_UNIT_PROP))(*result)->addStringValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_PROP, instance_description.getStringField(ControlUnitNodeDefinitionKey::CONTROL_UNIT_PROP));
 
@@ -1007,6 +1020,15 @@ int MongoDBControlUnitDataAccess::getInstanceDatasetAttributeConfiguration(const
                 if(attribute_config.hasField(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_OFFSET)) {
                     result->addStringValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_OFFSET,
                                            attribute_config.getStringField(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_OFFSET));
+                }
+
+                if(attribute_config.hasField(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_WARN_THR)) {
+                    result->addStringValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_WARN_THR,
+                                           attribute_config.getStringField(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_WARN_THR));
+                }
+                if(attribute_config.hasField(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_ERROR_THR)) {
+                    result->addStringValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_ERROR_THR,
+                                           attribute_config.getStringField(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_ERROR_THR));
                 }
             }
         }

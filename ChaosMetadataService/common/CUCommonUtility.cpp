@@ -522,6 +522,8 @@ ChaosUniquePtr<chaos::common::data::CDataWrapper> CUCommonUtility::mergeDatasetA
     MERGE_STRING_VALUE(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_UNIT, element_in_dataset, element_in_setup, result)
     MERGE_STRING_VALUE(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_CONVFACT, element_in_dataset, element_in_setup, result)
     MERGE_STRING_VALUE(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_OFFSET, element_in_dataset, element_in_setup, result)
+    MERGE_STRING_VALUE(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_WARN_THR, element_in_dataset, element_in_setup, result)
+    MERGE_STRING_VALUE(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_ERROR_THR, element_in_dataset, element_in_setup, result)
 
 
 
