@@ -30,7 +30,7 @@
 
 #include <string>
 #include <vector>
-
+#define MAX_PAGE_FOR_LOAD_CU 1000
 namespace chaos {
     namespace metadata_service {
         namespace persistence {

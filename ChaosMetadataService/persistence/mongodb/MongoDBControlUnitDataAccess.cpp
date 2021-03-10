@@ -140,7 +140,7 @@ int MongoDBControlUnitDataAccess::getControlUnitWithAutoFlag(const std::string& 
                                     query.sort("seq"),
                                     NULL,
                                     NULL,
-                                    30))) {
+                                    MAX_PAGE_FOR_LOAD_CU))) {
             MDBCUDA_ERR << "Error performing auto flag search";
         } else {
             for(SearchResultIterator it = paged_result.begin();
@@ -149,6 +149,7 @@ int MongoDBControlUnitDataAccess::getControlUnitWithAutoFlag(const std::string& 
                 control_unit_found.push_back(NodeSearchIndex(it->getField("seq").numberLong(),
                                                              it->getField(NodeDefinitionKey::NODE_UNIQUE_ID).String()));
             }
+           MDBCUDA_DBG<<unit_server_host<<" must AUTOLOAD "<<control_unit_found.size()<<" CUs";
         }
     } catch (const mongo::DBException &e) {
         MDBCUDA_ERR << e.what();
