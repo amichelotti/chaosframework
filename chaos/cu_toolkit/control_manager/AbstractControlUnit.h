@@ -451,7 +451,7 @@ class AbstractControlUnit : public DeclareAction,
 
   //! Momentary driver for push data into the central memory
   ChaosUniquePtr<data_manager::KeyDataStorage> key_data_storage;
-
+  bool busy;
   //! fast cached attribute vector accessor
   std::vector<AttributeValue*> cache_output_attribute_vector;
   std::vector<AttributeValue*> cache_input_attribute_vector;
@@ -579,13 +579,15 @@ class AbstractControlUnit : public DeclareAction,
 
  protected:
   typedef struct {
-    AttributeValue*input;
-    AttributeValue*output;
-    double warningTh;
-    double errorTh;
+    int i_idx;
+    int o_idx;
+    chaos::common::data::RangeValueInfo range;
   } checkAttribute_t;
  // bidir (set/readout) to check
   std::vector<checkAttribute_t > ioTocheck;
+  std::vector<checkAttribute_t > oTocheck;
+  int checkFn(double sval, double rval, const chaos::common::data::RangeValueInfo& i);
+
   void addPublicDriverPropertyToDataset(bool addDriverHandlers = true);
   void updateDatasetFromDriverProperty();
 
@@ -806,7 +808,7 @@ class AbstractControlUnit : public DeclareAction,
                     const std::string& state_variable_name,
                     const int8_t       state_variable_severity);
   
-  virtual int checkOutOfSet();
+  int checkStdAlarms();
 
   //!logging api
   void metadataLogging(const chaos::common::metadata_logging::StandardLoggingChannel::LogLevel log_level,
