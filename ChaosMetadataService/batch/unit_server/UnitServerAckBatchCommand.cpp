@@ -50,7 +50,7 @@ UnitServerAckCommand::~UnitServerAckCommand() {}
 void UnitServerAckCommand::setHandler(CDataWrapper *data) {
     MDSBatchCommand::setHandler(data);
     // 5 min timeout
-    setFeatures(chaos::common::batch_command::features::FeaturesFlagTypes::FF_SET_COMMAND_TIMEOUT,(uint64_t)1000000*60*5);
+    setFeatures(chaos::common::batch_command::features::FeaturesFlagTypes::FF_SET_COMMAND_TIMEOUT,(uint64_t)1000000*60*2);
     //override default schedule time for this command
     //setFeatures(chaos::common::batch_command::features::FeaturesFlagTypes::FF_SET_SCHEDULER_DELAY, (uint64_t)1000);
     if(data->hasKey(MetadataServerNodeDefinitionKeyRPC::PARAM_REGISTER_NODE_RESULT)) {

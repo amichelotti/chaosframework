@@ -164,7 +164,7 @@ namespace chaos {
                 friend class StateFlagSDWrapper;
                 friend class StateFlagCatalogSDWrapper;
                 //! kep track of the current level
-                int8_t current_level;
+                int8_t current_level,mask;
                 boost::shared_mutex mutex_current_level;
                 
                 //! mantains the mapping from level and the state description of that level
@@ -199,6 +199,10 @@ namespace chaos {
                 
                 //return the current level of the flag
                 int8_t getCurrentLevel() const;
+                // set mask for levels
+                void setMask(uint8_t mask);
+                // get mask for levels
+                uint8_t getMask();
                 
                 const StateLevel& getCurrentStateLevel() const;
                 

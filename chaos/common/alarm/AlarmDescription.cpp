@@ -59,6 +59,13 @@ const std::string& AlarmDescription::getAlarmName() const {
 const std::string& AlarmDescription::getAlarmDescription() const {
     return StateFlag::getDescription();
 }
+void AlarmDescription::setMask(uint8_t v){
+    StateFlag::setMask(v);
+}
+uint8_t AlarmDescription::getMask(){
+    return  StateFlag::getMask();
+
+}
 
 void AlarmDescription::setCurrentSeverity(const uint8_t new_severity_code) {
     StateFlag::setCurrentLevel(new_severity_code);

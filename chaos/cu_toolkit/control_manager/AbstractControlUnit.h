@@ -489,6 +489,7 @@ class AbstractControlUnit : public DeclareAction,
                  */
   chaos::common::data::CDWUniquePtr _setDriverProperties(chaos::common::data::CDWUniquePtr data);
 
+
   //! Get the driver properties values,if "_id_" specified, the control unit search for the specified driver, otherwise is called the first driver
   /*!
                  */
@@ -743,6 +744,9 @@ class AbstractControlUnit : public DeclareAction,
 
   //!timer for update push metric
   void timeout();
+
+
+  chaos::common::data::CDWUniquePtr setAlarm(chaos::common::data::CDWUniquePtr data);
 
   //!check if attribute hase been autorized by handler
   bool isInputAttributeChangeAuthorizedByHandler(const std::string& attr_name);

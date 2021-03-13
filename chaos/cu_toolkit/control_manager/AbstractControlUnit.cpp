@@ -434,6 +434,8 @@ void AbstractControlUnit::_defineActionAndDataset(CDataWrapper& setup_configurat
   addActionDescritionInstance<AbstractControlUnit>(this, &AbstractControlUnit::_setDriverProperties, ControlUnitNodeDomainAndActionRPC::CONTROL_UNIT_DRV_SET_PROPERTIES, "method for set properties of a driver");
   addActionDescritionInstance<AbstractControlUnit>(this, &AbstractControlUnit::_getDriverProperties, ControlUnitNodeDomainAndActionRPC::CONTROL_UNIT_DRV_GET_PROPERTIES, "method for get properties of a driver");
 
+  addActionDescritionInstance<AbstractControlUnit>(this, &AbstractControlUnit::setAlarm, ControlUnitNodeDomainAndActionRPC::CONTROL_UNIT_SET_ALARM_MASK, "method for set alarm mask");
+
   action_description->addParam(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_HISTORY_BURST_TAG, DataType::TYPE_STRING, "Tag associated to the stored data during burst");
   action_description->addParam(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_HISTORY_BURST_TYPE, DataType::TYPE_INT32, "The type of burst");
   action_description->addParam(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_HISTORY_BURST_VALUE, DataType::TYPE_UNDEFINED, "The value of the burst is defined by the type");
@@ -464,6 +466,43 @@ chaos::common::data::CDWUniquePtr AbstractControlUnit::setProperty(chaos::common
     setProperties(*data.get(), true);
   }
   return getProperties();
+}
+chaos::common::data::CDWUniquePtr AbstractControlUnit::setAlarm(chaos::common::data::CDWUniquePtr data){
+  if(data.get()){
+    if(data->hasKey("name")){
+      AlarmCatalog& catalogcu = map_variable_catalog[StateVariableTypeAlarmCU];
+      AlarmCatalog& catalogdev = map_variable_catalog[StateVariableTypeAlarmDEV];
+      AlarmCatalog& catalog=catalogcu;
+      AlarmDescription* alarm = catalogcu.getAlarmByName(data->getStringValue("name"));
+      bool mod=false;
+      StateVariableType  variable_type=StateVariableTypeAlarmCU;
+      if(alarm==NULL){
+        alarm = catalogdev.getAlarmByName(data->getStringValue("name"));
+        variable_type=StateVariableTypeAlarmDEV;
+        catalog=catalogdev;
+      }
+      if(alarm==NULL){
+          ACULERR_ << "Alarm \""<<data->getStringValue("name")<<" NOT FOUND";
+          return chaos::common::data::CDWUniquePtr();
+      }
+      if(data->hasKey("mask")){
+        alarm->setMask(data->getInt32Value("mask"));
+        mod=true;
+      }
+      if(data->hasKey("value")){
+        alarm->setCurrentSeverity(data->getInt32Value("value"));
+        mod=true;
+
+      }
+      if(mod){
+        AttributeCache& output_cache = attribute_value_shared_cache->getSharedDomain(DOMAIN_SYSTEM);
+        output_cache.getValueSettingByName(stateVariableEnumToName(variable_type))->setValue(CDataVariant(catalog.maxLevel()));
+      }
+
+    }
+  }
+  return chaos::common::data::CDWUniquePtr();
+
 }
 
 chaos::common::data::CDWUniquePtr AbstractControlUnit::_setDriverProperties(chaos::common::data::CDWUniquePtr data) {
@@ -761,10 +800,20 @@ void         AbstractControlUnit::doInitRpCheckList() {
             std::stringstream ss;
             ss << "Notify when '" << *i << "'";
             if (attributeInfo.warningThreshold.size() > 0) {
+              if(attributeInfo.warningThreshold=="0"){
+              ss << " warning if set!=readout ,";
+
+              } else{
               ss << " warning if set/readout > " << atof(attributeInfo.warningThreshold.c_str()) << ",";
+              }
             }
             if (attributeInfo.errorThreshold.size() > 0) {
-              ss << " error if set/readout > " << atof(attributeInfo.errorThreshold.c_str());
+              if(attributeInfo.errorThreshold=="0"){
+              ss << " error if set!=readout ,";
+
+              } else {
+                ss << " error if set/readout > " << atof(attributeInfo.errorThreshold.c_str());
+              }
             }
             addStateVariable(StateVariableTypeAlarmCU, *i + "_out_min_range", ss.str());
             addStateVariable(StateVariableTypeAlarmCU, *i + "_out_max_range", ss.str());
@@ -776,7 +825,7 @@ void         AbstractControlUnit::doInitRpCheckList() {
             a.range = attributeInfo;
 
             ioTocheck.push_back(a);
-            ACULDBG_ << "CHECK " << ioTocheck.size() << " " << *i << " :" << ss.str();
+            ACULDBG_ << "CHECK " << ioTocheck.size() << " " << *i << " set ("<<a.i_idx<<") read ("<<a.o_idx<<") :" << ss.str();
           }
         }
       }
@@ -1679,29 +1728,53 @@ int AbstractControlUnit::checkFn(double sval, double rval, const chaos::common::
 
   if (rval > max) {
     setStateVariableSeverity(StateVariableTypeAlarmCU, alrmmax, chaos::common::alarm::MultiSeverityAlarmLevelHigh);
+    ACULDBG_ << i.name << " MAX CHECK failed " << rval << " > " << max ;
+
     err++;
   } else {
     setStateVariableSeverity(StateVariableTypeAlarmCU, alrmmax, chaos::common::alarm::MultiSeverityAlarmLevelClear);
   }
   if (rval < min) {
-    std::string alrm = i.name + "_out_min_range";
+    ACULDBG_ << i.name << " MIN CHECK failed " << rval << " < " << min ;
+
     setStateVariableSeverity(StateVariableTypeAlarmCU, alrmin, chaos::common::alarm::MultiSeverityAlarmLevelHigh);
     err++;
 
   } else {
     setStateVariableSeverity(StateVariableTypeAlarmCU, alrmin, chaos::common::alarm::MultiSeverityAlarmLevelClear);
   }
-  if ((max - min) != 0) {
-    double res;
+  if(i.errorThreshold.c_str()=="0"){
+    if(sval!=rval){
+        ACULDBG_ << i.name << " SEPOINT/READOUT ERROR CHECK failed " << rval << " != " << sval ;
 
-    res = fabs((sval - rval) / (max - min)) * 100;
-
-    if (res > atof(i.errorThreshold.c_str())) {
       setStateVariableSeverity(StateVariableTypeAlarmCU, alrm, chaos::common::alarm::MultiSeverityAlarmLevelHigh);
       err++;
+    }
+  } else   if(i.warningThreshold.c_str()=="0"){
+    if(sval!=rval){
+              ACULDBG_ << i.name << " SEPOINT/READOUT WARNING CHECK failed " << rval << " != " << sval ;
 
-    } else if (res > atof(i.warningThreshold.c_str())) {
       setStateVariableSeverity(StateVariableTypeAlarmCU, alrm, chaos::common::alarm::MultiSeverityAlarmLevelWarning);
+      err++;
+    }
+  } else {
+
+    if ((max - min) != 0) {
+      double res;
+
+      res = fabs((sval - rval) / (max - min)) * 100;
+
+      if (res > atof(i.errorThreshold.c_str())) {
+          ACULDBG_ << i.name << " SEPOINT/READOUT ERROR CHECK failed readout:" << rval << " setpoint :" << sval<< " threshold:"<<atof(i.errorThreshold.c_str())<<" res:"<<res ;
+
+        setStateVariableSeverity(StateVariableTypeAlarmCU, alrm, chaos::common::alarm::MultiSeverityAlarmLevelHigh);
+        err++;
+
+      } else if (res > atof(i.warningThreshold.c_str())) {
+        ACULDBG_ << i.name << " SEPOINT/READOUT WARNING CHECK failed readout:" << rval << " setpoint:" << sval<< " threshold:"<<atof(i.errorThreshold.c_str())<<" res:"<<res ;
+
+        setStateVariableSeverity(StateVariableTypeAlarmCU, alrm, chaos::common::alarm::MultiSeverityAlarmLevelWarning);
+      }
     }
   }
   return err;
@@ -1719,7 +1792,10 @@ int AbstractControlUnit::checkStdAlarms() {
     double          res;
     AttributeValue* inp = cache_input_attribute_vector[i->i_idx];
     AttributeValue* out = cache_output_attribute_vector[i->o_idx];
-
+   /* {
+      CDataWrapper t;
+      fillCDatawrapperWithCachedValue(cache_input_attribute_vector,t);
+    }*/
     switch (inp->type) {
       case DataType::TYPE_BOOLEAN: {
         if (*(inp->getValuePtr<bool>()) != *(out->getValuePtr<bool>())) {
@@ -1738,13 +1814,14 @@ int AbstractControlUnit::checkStdAlarms() {
         int64_t sval = *(inp->getValuePtr<int64_t>());
         int64_t rval = *(out->getValuePtr<int64_t>());
         level        = checkFn(sval, rval, i->range);
-        ACULDBG_ << inp->name << " int64 check set " << sval << " / readout " << rval << "=" << res << ", warn at:" << i->range.warningThreshold << " error at:" << i->range.errorThreshold;
 
         break;
       }
       case DataType::TYPE_DOUBLE: {
         double sval = *(inp->getValuePtr<double>());
         double rval = *(out->getValuePtr<double>());
+  //      ACULDBG_ << "INPUT:"<<inp->name<<" val:"<<sval;
+
         level       = checkFn(sval, rval, i->range);
 
         break;
@@ -2627,6 +2704,10 @@ CDWShrdPtr AbstractControlUnit::writeCatalogOnCDataWrapper(AlarmCatalog& catalog
       AlarmDescription* alarm = catalog.getAlarmByOrderedID(idx);
       attribute_dataset->addInt32Value(alarm->getAlarmName(),
                                        (uint32_t)alarm->getCurrentSeverityCode());
+      if(alarm->getMask()!=0xFF){
+        attribute_dataset->addInt32Value(alarm->getAlarmName()+"_MASK",
+                                       (uint32_t)alarm->getMask());
+      }
     }
   }
   return attribute_dataset;

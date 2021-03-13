@@ -988,6 +988,7 @@ namespace chaos {
         static const char * const CONTROL_UNIT_APPLY_INPUT_DATASET_ATTRIBUTE_CHANGE_SET  = "cunrpc_ida_cs";
 
         static const char * const CONTROL_UNIT_DRV_SET_PROPERTIES  = "cu_prop_drv_set";
+        static const char * const CONTROL_UNIT_SET_ALARM_MASK  = "cu_set_alarm_ask";
 
         static const char * const CONTROL_UNIT_DRV_GET_PROPERTIES  = "cu_prop_drv_get";
 
