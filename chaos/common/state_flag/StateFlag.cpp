@@ -148,7 +148,10 @@ const std::string& StateFlag::getName() const {
     return flag_description.name;
 }
 void StateFlag::setMask(uint8_t _mask){
+    SL_DBG << getName()<<" MASK:"<<std::hex<<(uint32_t)_mask;
+
     mask=_mask;
+    setCurrentLevel(current_level);
 }
 uint8_t StateFlag::getMask(){
     return mask;
@@ -191,7 +194,7 @@ void StateFlag::setCurrentLevel(int8_t _current_level) {
     StatusLevelContainerOrderedIndex& local_ordered_index = set_levels.get<ordered_index_tag>();
     StatusLevelContainerOrderedIndexIterator it = local_ordered_index.find(_current_level);
     if(it == local_ordered_index.end()) return;
-    if((current_level&mask) != (_current_level&mask)){
+    if((current_level) != (_current_level&mask)){
         current_level = _current_level&mask;
         fire(0);
     } else {
@@ -200,6 +203,9 @@ void StateFlag::setCurrentLevel(int8_t _current_level) {
 }
 
 int8_t StateFlag::getCurrentLevel() const {
+  /*  if(mask!=0xFF){
+       SL_DBG<<" state "<<getName()<<" masked:0x"<<std::hex<<(uint32_t)mask<< " result:"<<(current_level&mask); 
+    }*/
     return current_level&mask;
 }
 
