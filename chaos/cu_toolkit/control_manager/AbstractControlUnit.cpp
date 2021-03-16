@@ -1777,9 +1777,7 @@ int AbstractControlUnit::checkFn(double sval, double rval, const chaos::common::
     double res;
 
     res = fabs((sval - rval) / (max - min)) * 100;
-    if (i.warningThreshold.size() || i.errorThreshold.size()) {
-      setStateVariableSeverity(StateVariableTypeAlarmCU, alrm, chaos::common::alarm::MultiSeverityAlarmLevelClear);
-    }
+    
     if (i.warningThreshold.size()) {
       if (i.warningThreshold.c_str() == "0") {
         if (sval != rval) {
@@ -1787,11 +1785,17 @@ int AbstractControlUnit::checkFn(double sval, double rval, const chaos::common::
 
           setStateVariableSeverity(StateVariableTypeAlarmCU, alrm, chaos::common::alarm::MultiSeverityAlarmLevelWarning);
           err++;
+        } else {
+          setStateVariableSeverity(StateVariableTypeAlarmCU, alrm, chaos::common::alarm::MultiSeverityAlarmLevelClear);
+
         }
       } else if (res > atof(i.warningThreshold.c_str())) {
         ACULDBG_ << i.name << " SEPOINT/READOUT WARNING CHECK failed readout:" << rval << " setpoint:" << sval << " threshold:" << atof(i.errorThreshold.c_str()) << " res:" << res;
 
         setStateVariableSeverity(StateVariableTypeAlarmCU, alrm, chaos::common::alarm::MultiSeverityAlarmLevelWarning);
+      } else {
+        setStateVariableSeverity(StateVariableTypeAlarmCU, alrm, chaos::common::alarm::MultiSeverityAlarmLevelClear);
+
       }
     }
     if (i.errorThreshold.size()) {
@@ -1801,13 +1805,19 @@ int AbstractControlUnit::checkFn(double sval, double rval, const chaos::common::
 
           setStateVariableSeverity(StateVariableTypeAlarmCU, alrm, chaos::common::alarm::MultiSeverityAlarmLevelHigh);
           err++;
+        } else {
+          setStateVariableSeverity(StateVariableTypeAlarmCU, alrm, chaos::common::alarm::MultiSeverityAlarmLevelClear);
+
         }
       } else if (res > atof(i.errorThreshold.c_str())) {
         ACULDBG_ << i.name << " SEPOINT/READOUT ERROR CHECK failed readout:" << rval << " setpoint :" << sval << " threshold:" << atof(i.errorThreshold.c_str()) << " res:" << res;
 
         setStateVariableSeverity(StateVariableTypeAlarmCU, alrm, chaos::common::alarm::MultiSeverityAlarmLevelHigh);
         err++;
-      }
+      }else {
+          setStateVariableSeverity(StateVariableTypeAlarmCU, alrm, chaos::common::alarm::MultiSeverityAlarmLevelClear);
+
+        }
     }
   }
   return err;
@@ -2530,6 +2540,8 @@ int AbstractControlUnit::pushOutputDataset() {
   if ((tscor - last_push) < ds_update_anyway) {
     //check if something as changed
     if (!output_attribute_cache.hasChanged()) {
+      //ACULDBG_ << " Nothing changed in "<<(tscor - last_push)<<" ms";
+
       return err;
     }
   }

@@ -81,6 +81,16 @@ array_index(0){
     }
     CHAOS_ASSERT(bson);
 }
+bool CDataWrapper::operator==(const CDataWrapper&d) const {
+    int32_t siz1,siz2;
+    const char*buf1=getBSONRawData(siz1);
+    const char*buf2=d.getBSONRawData(siz2);
+    if(siz1!=siz2){
+        return false;
+    }
+    return (memcmp(buf1,buf1,siz1)==0);
+
+}
 
 CDataWrapper::CDataWrapper(const char* mem_ser,
                            uint32_t mem_size):

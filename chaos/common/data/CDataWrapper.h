@@ -359,6 +359,7 @@ throw chaos::CException(-2, ss.str(), __PRETTY_FUNCTION__);
                 bool isJsonValue(const std::string& key) const;
                 chaos::DataType::DataType getValueType(const std::string& key) const;
                 bool isEmpty() const;
+                bool operator==(const CDataWrapper&d) const;
             };
             CHAOS_DEFINE_VECTOR_FOR_TYPE(bson_value_t*, VectorBsonValues);
             /*!
