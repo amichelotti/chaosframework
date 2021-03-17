@@ -88,7 +88,7 @@ bool CDataWrapper::operator==(const CDataWrapper&d) const {
     if(siz1!=siz2){
         return false;
     }
-    return (memcmp(buf1,buf1,siz1)==0);
+    return (memcmp(buf1,buf2,siz1)==0);
 
 }
 

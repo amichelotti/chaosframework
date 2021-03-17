@@ -839,6 +839,8 @@ int MongoDBControlUnitDataAccess::getInstanceDescription(const std::string& unit
             if(instance_description.hasField(ControlUnitNodeDefinitionKey::CONTROL_UNIT_PROP))(*result)->addStringValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_PROP, instance_description.getStringField(ControlUnitNodeDefinitionKey::CONTROL_UNIT_PROP));
 
             if(instance_description.hasField(ControlUnitDatapackSystemKey::THREAD_SCHEDULE_DELAY))(*result)->addInt64Value(ControlUnitDatapackSystemKey::THREAD_SCHEDULE_DELAY, (int64_t)instance_description.getField(ControlUnitDatapackSystemKey::THREAD_SCHEDULE_DELAY).Long());
+            if(instance_description.hasField(DataServiceNodeDefinitionKey::DS_UPDATE_ANYWAY))(*result)->addInt32Value(DataServiceNodeDefinitionKey::DS_UPDATE_ANYWAY, (int32_t)instance_description.getField(DataServiceNodeDefinitionKey::DS_UPDATE_ANYWAY).numberInt());
+
             if(instance_description.hasField(DataServiceNodeDefinitionKey::DS_STORAGE_TYPE))(*result)->addInt32Value(DataServiceNodeDefinitionKey::DS_STORAGE_TYPE, (int32_t)instance_description.getField(DataServiceNodeDefinitionKey::DS_STORAGE_TYPE).numberInt());
             if(instance_description.hasField(DataServiceNodeDefinitionKey::DS_STORAGE_HISTORY_AGEING))(*result)->addInt32Value(DataServiceNodeDefinitionKey::DS_STORAGE_HISTORY_AGEING, (int32_t)instance_description.getField(DataServiceNodeDefinitionKey::DS_STORAGE_HISTORY_AGEING).numberInt());
             if(instance_description.hasField(DataServiceNodeDefinitionKey::DS_STORAGE_HISTORY_TIME))(*result)->addInt64Value(DataServiceNodeDefinitionKey::DS_STORAGE_HISTORY_TIME, (int64_t)instance_description.getField(DataServiceNodeDefinitionKey::DS_STORAGE_HISTORY_TIME).numberInt());

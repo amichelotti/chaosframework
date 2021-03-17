@@ -360,6 +360,8 @@ throw chaos::CException(-2, ss.str(), __PRETTY_FUNCTION__);
                 chaos::DataType::DataType getValueType(const std::string& key) const;
                 bool isEmpty() const;
                 bool operator==(const CDataWrapper&d) const;
+                bool operator!=(const CDataWrapper&d) const {return !(*this==d);};
+
             };
             CHAOS_DEFINE_VECTOR_FOR_TYPE(bson_value_t*, VectorBsonValues);
             /*!
