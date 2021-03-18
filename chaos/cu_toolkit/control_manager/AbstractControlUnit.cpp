@@ -1822,6 +1822,10 @@ int AbstractControlUnit::checkFn(double sval, double rval, const chaos::common::
   }
   return err;
 }
+int AbstractControlUnit::checkAlarms(){
+  return checkStdAlarms();
+}
+
 int AbstractControlUnit::checkStdAlarms() {
   std::vector<checkAttribute_t>::iterator i;
   int                                     alarms = 0;
@@ -2551,7 +2555,7 @@ int AbstractControlUnit::pushOutputDataset() {
     ACULERR_ << " Cannot allocate packet.. err:" << err;
     return err;
   }
-  if (busy == false) checkStdAlarms();
+  if (busy == false) checkAlarms();
 
   output_attribute_dataset->addInt64Value(ControlUnitDatapackCommonKey::RUN_ID, run_id);
   output_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_TIMESTAMP, tscor /* *timestamp_acq_cached_value->getValuePtr<uint64_t>()*/);

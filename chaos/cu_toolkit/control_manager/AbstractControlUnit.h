@@ -813,7 +813,7 @@ class AbstractControlUnit : public DeclareAction,
                     const int8_t       state_variable_severity);
   
   int checkStdAlarms();
-
+  virtual int checkAlarms();
   //!logging api
   void metadataLogging(const chaos::common::metadata_logging::StandardLoggingChannel::LogLevel log_level,
                        const std::string&                                                      message);
