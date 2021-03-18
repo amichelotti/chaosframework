@@ -2180,6 +2180,10 @@ void AbstractControlUnit::_updatePushRateMetric() {
                                                   output_ds_rate);
 
   HealtManager::getInstance()->addNodeMetricValue(control_unit_id,
+                                                  ControlUnitHealtDefinitionValue::CU_HEALT_OUTPUT_ALARM_LEVEL,
+                                                  std::max(map_variable_catalog[StateVariableTypeAlarmCU].maxLevel(),map_variable_catalog[StateVariableTypeAlarmDEV].maxLevel()));
+
+  HealtManager::getInstance()->addNodeMetricValue(control_unit_id,
                                                   ControlUnitHealtDefinitionValue::CU_HEALT_OUTPUT_DATASET_TSOFF,
                                                   chaos::common::utility::TimingUtil::mds_calibration_offset);
 
@@ -2924,6 +2928,8 @@ bool AbstractControlUnit::setStateVariableSeverity(StateVariableType            
          output_cache.getValueSettingByName(stateVariableEnumToName(variable_type))->setValue(CDataVariant(catalog.max()));
          */
   AttributeCache& output_cache = attribute_value_shared_cache->getSharedDomain(DOMAIN_SYSTEM);
+
+  
   output_cache.getValueSettingByName(stateVariableEnumToName(variable_type))->setValue(CDataVariant(catalog.maxLevel()));
 
   return true;
