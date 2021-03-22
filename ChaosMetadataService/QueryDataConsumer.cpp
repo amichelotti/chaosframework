@@ -318,11 +318,13 @@ int QueryDataConsumer::consumeGetEvent(opcode_headers::DirectIODeviceChannelHead
             if(!cached_element ||
                cached_element->size() == 0) {
                 //element has not been found so we need to create and empty cdata wrapper
-                CDataWrapper tmp;
-                int size = 0;
-                const char * d_ptr = tmp.getBSONRawData(size);
-                data_buffer.writeByte(d_ptr,
-                                      size);
+                //CDataWrapper tmp;
+                //int size = 0;
+                //const char * d_ptr = tmp.getBSONRawData(size);
+                uint32_t d=0xdeaddead;
+           //     DBG<<" KEY:"<<*it<<" NOT FOUND, EMPTY nkeys:"<<keys.size()<<" results:"<< (uint32_t)multi_cached_data.size();
+                data_buffer.writeByte((char*)&d,
+                                      sizeof(d));
             } else {
                 data_buffer.writeByte(cached_element->data(),
                                       (int32_t)cached_element->size());

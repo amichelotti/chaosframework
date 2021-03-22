@@ -149,6 +149,9 @@ void CDataWrapper::addCSDataValue(const std::string& key,
                          (int)key.size(),
                          ACCESS_BSON(sub_object.bson));
 }
+int CDataWrapper::countKeys() const{
+    return bson_count_keys(ACCESS_BSON(bson));
+}
 
 //add a string value
 void CDataWrapper::addStringValue(const std::string& key, const string& value,const int max_size) {

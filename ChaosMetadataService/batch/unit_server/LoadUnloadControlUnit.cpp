@@ -91,15 +91,16 @@ void LoadUnloadControlUnit::setHandler(CDataWrapper *data) {
         load = data->getBoolValue("load");
     }
     
-    if(load) {
+  /*  if(load) {
         if(!data->hasKey(UnitServerNodeDomainAndActionRPC::PARAM_CONTROL_UNIT_TYPE)){
             BATHC_CU_LUL_ERR << LoadUnloadControlUnit_NO_CU_TYPE;
-            throw chaos::CException(-3, LoadUnloadControlUnit_NO_CU_TYPE, __PRETTY_FUNCTION__);
+            throw chaos::CException(-3, LoadUnloadControlUnit_NO_CU_TYPE+std::string(": ")+data->getJSONString(), __PRETTY_FUNCTION__);
+       
         } else {
             cu_type = data->getStringValue(UnitServerNodeDomainAndActionRPC::PARAM_CONTROL_UNIT_TYPE);
         }
     }
-    
+   */
     if(!data->hasKey(chaos::NodeDefinitionKey::NODE_RPC_ADDR)) {
         BATHC_CU_LUL_ERR << LoadUnloadControlUnit_NO_RPC_ADDRESS;
         throw chaos::CException(-4, LoadUnloadControlUnit_NO_RPC_ADDRESS, __PRETTY_FUNCTION__);

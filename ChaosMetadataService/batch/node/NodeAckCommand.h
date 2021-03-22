@@ -35,7 +35,7 @@ namespace chaos {
                 class NodeAckCommand:
                 public metadata_service::batch::MDSBatchCommand {
                     DECLARE_MDS_COMMAND_ALIAS
-                    std::string node_uid;
+                    std::string node_uid,rpc_addr;
                     ChaosUniquePtr<RequestInfo> request;
                     chaos::common::data::CDWUniquePtr message_data;
                 public:

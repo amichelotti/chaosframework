@@ -324,6 +324,7 @@ throw chaos::CException(-2, ss.str(), __PRETTY_FUNCTION__);
                 void getAllKey(ChaosStringVector& contained_key) const;
                 //return all key contained into the object
                 void getAllKey(ChaosStringSet& contained_key) const;
+                int countKeys() const;
                 ChaosStringVector getAllKey() const;
 
                 //return all key contained into the object
