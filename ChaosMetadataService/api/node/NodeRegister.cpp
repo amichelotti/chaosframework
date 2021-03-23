@@ -153,6 +153,12 @@ CDWUniquePtr NodeRegister::simpleRegistration(CDWUniquePtr api_data) {
                                         ErrorCode::EC_MDS_NODE_REGISTRATION_FAILURE_INVALID_ALIAS);
                 LOG_AND_TROW(USRA_ERR, -4, "error updating the NIDE information")
             }
+            GET_DATA_ACCESS(ControlUnitDataAccess, cu_da, -3)
+
+            if((err = cu_da->setDataset(node_uid,
+                                        *api_data))){
+                LOG_AND_TROW(USRA_ERR, err, "error setting the dataset of the node:"+api_data->getJSONString());
+            }
         }else {
             USRA_DBG<<"ADDING NEW NODE:"<<node_uid;
 

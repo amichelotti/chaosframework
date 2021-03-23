@@ -201,17 +201,37 @@ int MongoDBControlUnitDataAccess::setDataset(const std::string& cu_unique_id,
     try {
         //check for principal mandatory keys
         if(cu_unique_id.size() == 0) return -1;
-        if(!dataset_description.hasKey(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_DESCRIPTION))return -2;
-        if(!dataset_description.isCDataWrapperValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_DESCRIPTION))return -3;
+        if(!dataset_description.hasKey(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_DESCRIPTION)){
+            MDBCUDA_ERR<<cu_unique_id<<" Missing key:"<<ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_DESCRIPTION;
+            return -2;
+        }
+        if(!dataset_description.isCDataWrapperValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_DESCRIPTION)){
+            MDBCUDA_ERR<<cu_unique_id<<" Not a dataset :"<<ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_DESCRIPTION;
+
+            return -3;
+        }
         //checkout the dataset
         ChaosUniquePtr<chaos::common::data::CDataWrapper> dataset(dataset_description.getCSDataValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_DESCRIPTION));
-        if(!dataset->hasKey(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_DESCRIPTION))return -5;
-        if(!dataset->isVectorValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_DESCRIPTION))return -6;
-        if(!dataset->hasKey(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_TIMESTAMP))return -4;
+        if(!dataset->hasKey(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_DESCRIPTION)){
+            MDBCUDA_ERR<<cu_unique_id<<" Missing nested key :"<<ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_DESCRIPTION;
+
+            return -5;
+        }
+        if(!dataset->isVectorValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_DESCRIPTION)){
+            MDBCUDA_ERR<<cu_unique_id<<" Expected to be a vectorkey :"<<ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_DESCRIPTION;
+
+            return -6;
+        }
+        if(!dataset->hasKey(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_TIMESTAMP)){
+            MDBCUDA_ERR<<cu_unique_id<<" doesnt have  a timestamp :"<<ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_TIMESTAMP;
+
+            return -4;
+
+        }
         
         //serach criteria
-        bson_find   << NodeDefinitionKey::NODE_UNIQUE_ID << cu_unique_id
-        << NodeDefinitionKey::NODE_TYPE << NodeType::NODE_TYPE_CONTROL_UNIT;
+        bson_find   << NodeDefinitionKey::NODE_UNIQUE_ID << cu_unique_id;
+        //<< NodeDefinitionKey::NODE_TYPE << NodeType::NODE_TYPE_CONTROL_UNIT;
         
         //add dataset timestamp
         updated_field << ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_TIMESTAMP << (long long)dataset->getInt64Value(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_TIMESTAMP);
@@ -229,6 +249,7 @@ int MongoDBControlUnitDataAccess::setDataset(const std::string& cu_unique_id,
             mongo::BSONObjBuilder dataset_element_builder;
             
             ChaosUniquePtr<chaos::common::data::CDataWrapper> dataset_element(ds_vec->getCDataWrapperElementAtIndex(idx));
+            MDBCUDA_DBG<<cu_unique_id<<" DS ELEM:"<<dataset_element->getJSONString();
             if(dataset_element->hasKey(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_NAME) &&
                /*dataset_element->hasKey(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_DESCRIPTION)&&*/
                dataset_element->hasKey(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_TYPE)&&
@@ -528,7 +549,7 @@ int MongoDBControlUnitDataAccess::getDataset(const std::string& cu_unique_id,
     mongo::BSONObj result;
     try {
         mongo::BSONObj query = BSON(NodeDefinitionKey::NODE_UNIQUE_ID << cu_unique_id
-                                    << NodeDefinitionKey::NODE_TYPE << NodeType::NODE_TYPE_CONTROL_UNIT
+                        //            << NodeDefinitionKey::NODE_TYPE << NodeType::NODE_TYPE_CONTROL_UNIT
                                     << ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_DESCRIPTION  << BSON("$exists" << true ));
         mongo::BSONObj prj = BSON(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_DESCRIPTION  << 1 <<
                                   ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_COMMAND_DESCRIPTION << 1);
@@ -924,7 +945,7 @@ int MongoDBControlUnitDataAccess::getInstanceDatasetAttributeDescription(const s
     const std::string dotted_dataset_path_proj =  boost::str(boost::format("%1%.%1%.$")%ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_DESCRIPTION);
     try{
         mongo::BSONObj query = BSON(NodeDefinitionKey::NODE_UNIQUE_ID << control_unit_uid <<
-                                    NodeDefinitionKey::NODE_TYPE << NodeType::NODE_TYPE_CONTROL_UNIT <<
+                            //        NodeDefinitionKey::NODE_TYPE << NodeType::NODE_TYPE_CONTROL_UNIT <<
                                     dotted_dataset_path << BSON("$elemMatch"<<BSON(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_NAME << attribute_name)));
         mongo::BSONObj prj = BSON(dotted_dataset_path_proj << 1);
         
@@ -968,7 +989,7 @@ int MongoDBControlUnitDataAccess::getInstanceDatasetAttributeConfiguration(const
     mongo::BSONObj  result_bson;
     try{
         mongo::BSONObj query = BSON(NodeDefinitionKey::NODE_UNIQUE_ID << control_unit_uid <<
-                                    NodeDefinitionKey::NODE_TYPE << NodeType::NODE_TYPE_CONTROL_UNIT <<
+                                   // NodeDefinitionKey::NODE_TYPE << NodeType::NODE_TYPE_CONTROL_UNIT <<
                                     "instance_description.attribute_value_descriptions" << BSON("$elemMatch"<<BSON(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_NAME << attribute_name)));
         mongo::BSONObj prj = BSON("instance_description.attribute_value_descriptions.$" << 1);
         

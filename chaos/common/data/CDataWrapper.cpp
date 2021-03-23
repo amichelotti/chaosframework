@@ -1227,13 +1227,20 @@ int CDataWrapper::setBson(const bson_iter_t *v ,const bool& val){
 
 int CDataWrapper::setBson(const bson_iter_t *v ,const std::string& val){
     if(ITER_TYPE(v)== BSON_TYPE_UTF8){
-        const bson_value_t *vv = bson_iter_value((bson_iter_t *)v);
-        int siz=(vv->value.v_utf8.len<(val.size()+1))?vv->value.v_utf8.len:(val.size());
-        char * ptr=(char*)(vv->value.v_utf8.str);
-        memset(ptr,0,vv->value.v_utf8.len);
-        memcpy(ptr, val.c_str(),siz);
+         bson_value_t *vv = ( bson_value_t *)bson_iter_value((bson_iter_t *)v);
+        if(val.size()+1<vv->value.v_utf8.len){
+            void* ptr=vv->value.v_utf8.str;
+            memcpy(ptr, val.c_str(),(val.size()+1));
 
-        return vv->value.v_utf8.len;
+        } else {
+            char key[256];
+            strncpy(key,bson_iter_key_unsafe(v),sizeof(key));
+            removeKey(key);
+            addStringValue(key,val);
+        }
+        
+        return (val.size()+1);
+
     }
     return -1;
 }
@@ -1259,14 +1266,17 @@ int CDataWrapper::setBson(const bson_iter_t *v ,const void* val,size_t size){
     if(ITER_TYPE(v)== BSON_TYPE_BINARY){
          bson_value_t *vv = (bson_value_t *)bson_iter_value((bson_iter_t *)v);
         // without check is more useful, the programmer must be aware of the preallocated data size
-       /* if(size>=vv->value.v_binary.data_len){
-            std::stringstream ss;
-            ss<<"size bigger than prellocated:"<<vv->value.v_binary.data_len;
-            throw CException(1, ss.str(), __PRETTY_FUNCTION__);
-        }*/
-        memcpy((void*)(v->raw + v->d3), (void*)val,size);
-        vv->value.v_binary.data_len=size;
-        return vv->value.v_binary.data_len;
+        if(size>=vv->value.v_binary.data_len){
+            char key[256];
+            strncpy(key,bson_iter_key_unsafe(v),sizeof(key));
+            removeKey(key);
+            addBinaryValue(key,(const char*)val,size);
+            return size;
+        }  else {
+            memcpy((void*)(v->raw + v->d3), (void*)val,size);
+            vv->value.v_binary.data_len=size;
+            return vv->value.v_binary.data_len;
+        }
     }
     return -1;
 }
