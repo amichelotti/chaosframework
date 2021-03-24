@@ -160,7 +160,7 @@ void CDataWrapper::addStringValue(const std::string& key, const string& value,co
                         key.c_str(),
                         (int)key.size(),
                         value.c_str(),
-                        (int)((value.size()>max_size)?value.size():max_size));
+                        (int)((value.size()>max_size)?(value.size()):max_size));
     
 }
 
@@ -1228,7 +1228,7 @@ int CDataWrapper::setBson(const bson_iter_t *v ,const bool& val){
 int CDataWrapper::setBson(const bson_iter_t *v ,const std::string& val){
     if(ITER_TYPE(v)== BSON_TYPE_UTF8){
          bson_value_t *vv = ( bson_value_t *)bson_iter_value((bson_iter_t *)v);
-        if(val.size()+1<vv->value.v_utf8.len){
+        if((val.size()+1)<vv->value.v_utf8.len){
             void* ptr=vv->value.v_utf8.str;
             memcpy(ptr, val.c_str(),(val.size()+1));
 
