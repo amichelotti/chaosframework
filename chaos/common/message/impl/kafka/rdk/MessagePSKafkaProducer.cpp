@@ -136,7 +136,10 @@ int MessagePSKafkaProducer::pushMsgAsync(const chaos::common::data::CDataWrapper
 
 //MRDDBG_ << "pushing: " << size<<" d:"<<data.getJSONString();
 retry:
-
+//int32_t siz;
+//  int32_t *bslen=(int32_t *)data.getBSONRawData(siz);
+  //MRDDBG_ <<"NOTIFY:("<<data.getBSONRawSize()<<","<<*bslen<<","<<siz<<"):"<<data.getJSONString();
+  
   err = rd_kafka_producev(
       /* Producer handle */
       rk,
