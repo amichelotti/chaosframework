@@ -170,6 +170,8 @@ namespace chaos {
 
                 //!set the state for all alarm
                 void setAllFlagMask(uint8_t new_state);
+
+                int countMask() const;
                 
                 //!append an intere status flag map into owned one
                 void appendCatalog(const StateFlagCatalog& src);

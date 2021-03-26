@@ -87,6 +87,10 @@ ChaosUniquePtr<chaos::common::data::CDataBuffer> AlarmCatalog::getRawFlagsLevel(
 void AlarmCatalog::setApplyRawFlagsValue(ChaosUniquePtr<chaos::common::data::CDataBuffer>& raw_level) {
     StateFlagCatalog::setApplyRawFlagsValue(raw_level);
 }
+int AlarmCatalog::countMask() const{
+    return     StateFlagCatalog::countMask();
+
+}
 
 ChaosUniquePtr<chaos::common::data::CDataWrapper> AlarmCatalog::serialize() {
     StateFlagCatalogSDWrapper sd_wrap(CHAOS_DATA_WRAPPER_REFERENCE_AUTO_PTR(StateFlagCatalog, *this));

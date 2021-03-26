@@ -156,6 +156,20 @@ void StateFlagCatalog::setAllFlagState(int8_t new_state) {
         (*nit)->status_flag->setCurrentLevel(new_state);
     }
 }
+int StateFlagCatalog::countMask() const {
+int ret=0;
+    StateFlagElementContainerOrderedIndex& ordered_index = catalog_container().get<mitag_ordered>();
+
+   for(StateFlagElementContainerOrderedIndexIterator nit = ordered_index.begin(),
+        nit_end = ordered_index.end();
+        nit != nit_end;
+        nit++) {
+        if((*nit)->status_flag->getMask()!=0xFF){
+            ret++;
+        }
+    } 
+    return ret;
+}
 
 void StateFlagCatalog::appendCatalog(const StateFlagCatalog& src) {
     //write loc on loca catalog

@@ -70,6 +70,9 @@ namespace chaos {
                 //!set the mask on all alarm
                 void setAllAlarmMask(int8_t new_severity);
                 
+                //!count all masked alarms of a catalog
+                int countMask() const;
+                
                 
                 //!Return the raw alarm current state
                 /*!

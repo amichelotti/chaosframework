@@ -471,6 +471,8 @@ namespace chaos {
         static const char * const CU_HEALT_OUTPUT_TOT_PUSH_KSIZE   = "cuh_dso_tksize";
         static const char * const CU_HEALT_OUTPUT_DATASET_TSOFF  = "cuh_dso_tsoff";
         static const char * const CU_HEALT_OUTPUT_ALARM_LEVEL   = "cuh_alarm_lvl";
+        static const char * const CU_HEALT_OUTPUT_ALARM_MASKED   = "cuh_alarm_msk";
+
 
         
     }
