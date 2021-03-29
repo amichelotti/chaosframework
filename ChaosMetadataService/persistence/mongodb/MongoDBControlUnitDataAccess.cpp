@@ -202,8 +202,8 @@ int MongoDBControlUnitDataAccess::setDataset(const std::string& cu_unique_id,
         //check for principal mandatory keys
         if(cu_unique_id.size() == 0) return -1;
         if(!dataset_description.hasKey(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_DESCRIPTION)){
-            MDBCUDA_ERR<<cu_unique_id<<" Missing key:"<<ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_DESCRIPTION;
-            return -2;
+	  MDBCUDA_DBG<<cu_unique_id<<" Missing key:"<<ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_DESCRIPTION<<" skipping dataset initialization";;
+            return 0;
         }
         if(!dataset_description.isCDataWrapperValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_DESCRIPTION)){
             MDBCUDA_ERR<<cu_unique_id<<" Not a dataset :"<<ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_DESCRIPTION;
