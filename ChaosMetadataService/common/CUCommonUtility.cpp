@@ -487,23 +487,6 @@ ChaosUniquePtr<chaos::common::data::CDataWrapper> CUCommonUtility::deinitDataPac
     return result;
 }
 
-#define MOVE_STRING_VALUE(k, src, dst)\
-if(src->hasKey(k)) {\
-dst->addStringValue(k, src->getVariantValue(k).asString());\
-}
-
-#define MERGE_STRING_VALUE(k, src, src2, dst)\
-if(src2->hasKey(k)) {\
-dst->addStringValue(k, src2->getVariantValue(k).asString());\
-} else {\
-MOVE_STRING_VALUE(k, src, dst)\
-}
-
-#define MOVE_INT32_VALUE(k, src, dst)\
-if(src->hasKey(k)) {\
-dst->addInt32Value(k, src->getVariantValue(k).asInt32());\
-}
-
 ChaosUniquePtr<chaos::common::data::CDataWrapper> CUCommonUtility::mergeDatasetAttributeWithSetup(CDataWrapper *element_in_dataset,
                                                                                                   CDataWrapper *element_in_setup) {
     ChaosUniquePtr<chaos::common::data::CDataWrapper> result(new CDataWrapper());
