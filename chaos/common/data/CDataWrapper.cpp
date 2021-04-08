@@ -216,6 +216,12 @@ void CDataWrapper::appendCDataWrapperToArray(const CDataWrapper& value) {
                          -1,
                          value.bson.get());
 }
+void CDataWrapper::append(const std::string&key,CMultiTypeDataArrayWrapperSPtr&val) {
+bson_append_array(ACCESS_BSON(bson),
+                      key.c_str(),
+                      (int)key.size(),
+                      val->array_doc);
+}
 
 //finalize the array into a key for the current dataobject
 void CDataWrapper::finalizeArrayForKey(const std::string& key) {

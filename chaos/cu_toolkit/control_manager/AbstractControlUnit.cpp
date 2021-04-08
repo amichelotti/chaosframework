@@ -1274,6 +1274,15 @@ CDWUniquePtr AbstractControlUnit::_stop(CDWUniquePtr stopParam) {
                                                     NodeHealtDefinitionKey::NODE_HEALT_STATUS,
                                                     NodeHealtDefinitionValue::NODE_HEALT_STATUS_STOP,
                                                     true);
+    HealtManager::getInstance()->addNodeMetricValue(control_unit_id,
+                                                    ControlUnitHealtDefinitionValue::CU_HEALT_OUTPUT_DATASET_PUSH_RATE,
+                                                    0.0,
+                                                    true);
+    HealtManager::getInstance()->addNodeMetricValue(control_unit_id,
+                                                    ControlUnitHealtDefinitionValue::CU_HEALT_OUTPUT_DATASET_PUSH_SIZE,
+                                                    0,
+                                                    true);
+
   } catch (MetadataLoggingCException& ex) {
     SWEService::goInFatalError(this,
                                ex,
@@ -1332,6 +1341,14 @@ CDWUniquePtr AbstractControlUnit::_deinit(CDWUniquePtr deinitParam) {
     HealtManager::getInstance()->addNodeMetricValue(control_unit_id,
                                                     NodeHealtDefinitionKey::NODE_HEALT_STATUS,
                                                     NodeHealtDefinitionValue::NODE_HEALT_STATUS_DEINIT,
+                                                    true);
+    HealtManager::getInstance()->addNodeMetricValue(control_unit_id,
+                                                    ControlUnitHealtDefinitionValue::CU_HEALT_OUTPUT_DATASET_PUSH_RATE,
+                                                    0.0,
+                                                    true);
+    HealtManager::getInstance()->addNodeMetricValue(control_unit_id,
+                                                    ControlUnitHealtDefinitionValue::CU_HEALT_OUTPUT_DATASET_PUSH_SIZE,
+                                                    0,
                                                     true);
   } catch (MetadataLoggingCException& ex) {
     SWEService::goInFatalError(this,
@@ -2174,7 +2191,6 @@ void AbstractControlUnit::_updatePushRateMetric() {
   double   time_offset      = (double(rate_acq_ts - last_push_rate_grap_ts)) / 1000.0;                    //time in seconds
   double   output_ds_rate   = (time_offset > 0) ? push_dataset_counter / time_offset : 0;                 //rate in seconds
   int32_t  output_size_rate = (push_dataset_counter > 0) ? push_dataset_size / push_dataset_counter : 0;  //rate in seconds
-
   HealtManager::getInstance()->addNodeMetricValue(control_unit_id,
                                                   ControlUnitHealtDefinitionValue::CU_HEALT_OUTPUT_DATASET_PUSH_RATE,
                                                   output_ds_rate);

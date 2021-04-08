@@ -357,6 +357,17 @@ ChaosUniquePtr<chaos::common::data::CDataWrapper> CUCommonUtility::initDataPack(
         LOG_AND_TROW(CUCU_ERR, err, CHAOS_FORMAT("Error incrementig run id for control unit %1%", %cu_uid));
     }
     */
+   if(instance_description.get()){
+       if(instance_description->hasKey("cudk_alrm_msk")&&instance_description->isVectorValue("cudk_alrm_msk")){
+           
+            init_datapack->append("cudk_alrm_msk",instance_description->getVectorValue("cudk_alrm_msk"));
+
+       }
+       if(instance_description->hasKey("cudk_prop")&&instance_description->isVectorValue("cudk_prop")){
+            init_datapack->append("cudk_prop",instance_description->getVectorValue("cudk_prop"));
+
+       }
+   }
    run_id=chaos::common::utility::TimingUtil::getTimeStamp();
     //get the dataset of the control unit
     if((err = cu_da->getDataset(cu_uid,
@@ -444,6 +455,7 @@ ChaosUniquePtr<chaos::common::data::CDataWrapper> CUCommonUtility::initDataPack(
     }
     
     pgu_default.serialization_key="property";
+
     pgu_default.serialize()->copyAllTo(*init_datapack);
     
     init_datapack->addInt64Value(ControlUnitNodeDefinitionKey::CONTROL_UNIT_RUN_ID, run_id);
