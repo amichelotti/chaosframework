@@ -84,18 +84,20 @@ CDWUniquePtr LoadUnloadControlUnit::execute(CDWUniquePtr api_data) {
             LOG_AND_TROW(CU_LOUNLO_ERR, -8, "The node doesn't has an instance configured");
         } else {
             ChaosUniquePtr<chaos::common::data::CDataWrapper> cu_instance(cu_instance_description);
+            std::string parent=cu_uid;
             
-            if(!cu_instance->hasKey(chaos::NodeDefinitionKey::NODE_PARENT)) {
-                LOG_AND_TROW(CU_LOUNLO_ERR, -9, "Control unit instance laks of parent key(unit server)");
-            }
             if(node_type == chaos::NodeType::NODE_TYPE_CONTROL_UNIT){
+                if(!cu_instance->hasKey(chaos::NodeDefinitionKey::NODE_PARENT)) {
+                    LOG_AND_TROW(CU_LOUNLO_ERR, -9, "CU/EU instance no parent key");
+                }
+                parent=cu_instance->getStringValue(chaos::NodeDefinitionKey::NODE_PARENT);
                 if(!cu_instance->hasKey("control_unit_implementation")) {
                     LOG_AND_TROW(CU_LOUNLO_ERR, -10, "No implementation found into control unit instances");
                 }
             }
             std::string rpc_addr;
 
-            if((err = n_da->getNodeDescription(cu_instance->getStringValue(chaos::NodeDefinitionKey::NODE_PARENT), &us_base_description)) ||
+            if((err = n_da->getNodeDescription(parent, &us_base_description)) ||
                us_base_description == NULL){
                // LOG_AND_TROW(CU_LOUNLO_ERR, err, "Error fetching unit server information of:"+cu_instance->getStringValue(chaos::NodeDefinitionKey::NODE_PARENT));
                 // a CU without parent.
