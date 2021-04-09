@@ -208,7 +208,7 @@ void AbstractControlUnit::_initDrivers() {
   std::vector<DrvRequestInfo> unit_needed_drivers;
 
   //got the needded driver definition
-   (unit_needed_drivers);
+   unitDefineDriver(unit_needed_drivers);
 
   accessor_instances.clear();
   for (int idx = 0;
@@ -2588,7 +2588,11 @@ void AbstractControlUnit::propertyUpdatedHandler(const std::string&  group_name,
      added by the unit implementation into the function AbstractControlUnit::unitDefineDriver.
      */
 DriverAccessor* AbstractControlUnit::getAccessoInstanceByIndex(int idx) {
-  if (idx >= accessor_instances.size()) return NULL;
+  if (idx >= accessor_instances.size()) {
+      ACULERR_ << idx <<"  driver instances not present,# available drivers:"<<accessor_instances.size();
+
+    return NULL;
+  }
   return accessor_instances[idx];
 }
 

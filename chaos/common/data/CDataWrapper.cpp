@@ -1331,7 +1331,10 @@ std::map<std::string,std::string> ret;
         if(isCDataWrapperElementAtIndex(cnt)){
            CDWUniquePtr ele= getCDataWrapperElementAtIndex(cnt);
            if(ele->hasKey(kname)&& ele->hasKey(kvalue)){
-               ret[ele->getStringValue(kname)]=ele->getStringValue(kvalue);
+               std::string k=ele->getStringValue(kname);
+               if(k.size()){
+                 ret[k]=ele->getStringValue(kvalue);
+               }
            }
         }
     }
