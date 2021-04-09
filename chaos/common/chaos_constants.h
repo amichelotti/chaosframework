@@ -845,6 +845,9 @@ namespace chaos {
         //! The load time properties
         static const char * const CONTROL_UNIT_PROP	                               = "cudk_props";
         
+        //! The load alarm mask properties
+        static const char * const CONTROL_UNIT_ALRM_MSK	                            = "cudk_alrm_msk";
+
         
         //!key for dataset description (array of per-attribute document)
         static const char * const CONTROL_UNIT_DATASET_DESCRIPTION                  = "cudk_ds_desc";

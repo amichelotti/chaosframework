@@ -182,11 +182,17 @@ DriverAccessor *DriverManager::getNewAccessorForDriverInstance(DrvRequestInfo &r
     
      if(request_info.props.size()>0){
         try{
-            chaos::common::data::CDataWrapper cd;
+            for(std::map<std::string,std::string>::iterator i=request_info.props.begin();i!=request_info.props.end();i++){
+                DMLDBG_ << "Setting driver property " << i->first << " = "<<i->second;
+
+                driverInstance->setProperty(i->first,i->second);
+            }
+           /* chaos::common::data::CDataWrapper cd;
             cd.setSerializedJsonData(request_info.props.c_str());
             DMLAPP_ << "Setting properties of " << driverInstance->identification_string<<" :"<<cd.getJSONString();
 
             driverInstance->importKeysAsProperties(cd);
+            */
         }catch(...){
 
         }

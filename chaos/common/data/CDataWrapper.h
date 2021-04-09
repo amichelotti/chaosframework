@@ -383,7 +383,12 @@ throw chaos::CException(-2, ss.str(), __PRETTY_FUNCTION__);
                 int32_t getInt32ElementAtIndex(const int) const;
                 int64_t getInt64ElementAtIndex(const int) const;
                 bool getBoolElementAtIndex(const int) const;
-              
+                /**
+                 * @brief convert an array of cdwappers with k,v into a map 
+                 * 
+                 * @return std::map<std::string,std::string> 
+                 */
+                std::map<std::string,std::string> toKVmap(const std::string kname="name",const std::string kvalue="value") const;
                
                 ChaosUniquePtr<CDataWrapper> getCDataWrapperElementAtIndex(const int) const;
                 std::string getJSONString();

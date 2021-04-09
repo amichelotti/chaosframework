@@ -290,6 +290,27 @@ chaos::common::data::CDWUniquePtr createProperty(
     }
     return chaos::common::data::CDWUniquePtr();
   }
+  /**
+   * @brief Set an existing  Property object from key value string
+   * 
+   * @param propname property name
+   * @param val property value
+   * @param sync synchronize 
+   * @return chaos::common::data::CDWUniquePtr 
+   */
+  chaos::common::data::CDWUniquePtr
+  setProperty(const std::string &propname,
+              const std::string &val, bool sync = false) {
+            std::string realpropname = propname;
+
+            chaos::common::data::CDWUniquePtr prop = retriveProp(realpropname);
+            if (prop.get()) {
+              prop->setAsString(PROPERTY_VALUE_KEY,val);
+              return setProperty(realpropname,*prop.get(),sync);
+            }
+            return chaos::common::data::CDWUniquePtr();
+  }
+
   chaos::common::data::CDWUniquePtr
   setProperty(const std::string &propname,
               const chaos::common::data::CDataWrapper &val, bool sync = false) {

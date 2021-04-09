@@ -223,6 +223,7 @@ bson_append_array(ACCESS_BSON(bson),
                       val->array_doc);
 }
 
+
 //finalize the array into a key for the current dataobject
 void CDataWrapper::finalizeArrayForKey(const std::string& key) {
     ENSURE_ARRAY(bson_tmp_array);
@@ -1323,6 +1324,18 @@ array_doc(new bson_t()) {
             }
         }
     }
+}
+std::map<std::string,std::string> CMultiTypeDataArrayWrapper::toKVmap(const std::string kname,const std::string kvalue) const {
+std::map<std::string,std::string> ret;
+    for(int cnt=0;cnt<size();cnt++){
+        if(isCDataWrapperElementAtIndex(cnt)){
+           CDWUniquePtr ele= getCDataWrapperElementAtIndex(cnt);
+           if(ele->hasKey(kname)&& ele->hasKey(kvalue)){
+               ret[ele->getStringValue(kname)]=ele->getStringValue(kvalue);
+           }
+        }
+    }
+    return ret;
 }
 
 CMultiTypeDataArrayWrapper::~CMultiTypeDataArrayWrapper() {

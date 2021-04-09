@@ -591,7 +591,7 @@ class AbstractControlUnit : public DeclareAction,
 
   void addPublicDriverPropertyToDataset(bool addDriverHandlers = true);
   void updateDatasetFromDriverProperty();
-
+  void setAlarmMask(const std::string & name,uint32_t mask);
   virtual bool setDrvProp(const std::string& name, const bool value, uint32_t size);
   virtual bool setDrvProp(const std::string& name, const int32_t value, uint32_t size);
   virtual bool setDrvProp(const std::string& name, const int64_t value, uint32_t size);

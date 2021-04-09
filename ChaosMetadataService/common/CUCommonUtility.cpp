@@ -358,14 +358,14 @@ ChaosUniquePtr<chaos::common::data::CDataWrapper> CUCommonUtility::initDataPack(
     }
     */
    if(instance_description.get()){
-       if(instance_description->hasKey("cudk_alrm_msk")&&instance_description->isVectorValue("cudk_alrm_msk")){
-           CMultiTypeDataArrayWrapperSPtr v=instance_description->getVectorValue("cudk_alrm_msk");
-            init_datapack->append("cudk_alrm_msk",v);
+       if(instance_description->hasKey(ControlUnitNodeDefinitionKey::CONTROL_UNIT_ALRM_MSK)&&instance_description->isVectorValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_ALRM_MSK)){
+           CMultiTypeDataArrayWrapperSPtr v=instance_description->getVectorValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_ALRM_MSK);
+            init_datapack->append(ControlUnitNodeDefinitionKey::CONTROL_UNIT_ALRM_MSK,v);
 
        }
-       if(instance_description->hasKey("cudk_prop")&&instance_description->isVectorValue("cudk_prop")){
-           CMultiTypeDataArrayWrapperSPtr v=instance_description->getVectorValue("cudk_prop");
-            init_datapack->append("cudk_prop",v);
+       if(instance_description->hasKey(ControlUnitNodeDefinitionKey::CONTROL_UNIT_PROP)&&instance_description->isVectorValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_PROP)){
+           CMultiTypeDataArrayWrapperSPtr v=instance_description->getVectorValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_PROP);
+            init_datapack->append(ControlUnitNodeDefinitionKey::CONTROL_UNIT_PROP,v);
 
        }
    }
