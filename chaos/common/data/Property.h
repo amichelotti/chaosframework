@@ -306,7 +306,13 @@ chaos::common::data::CDWUniquePtr createProperty(
             chaos::common::data::CDWUniquePtr prop = retriveProp(realpropname);
             if (prop.get()) {
               prop->setAsString(PROPERTY_VALUE_KEY,val);
-              return setProperty(realpropname,*prop.get(),sync);
+              LDBG_ << __FUNCTION__ << "- Set property:"<<realpropname<<" string value:"<<val<<" full prop:"<<prop->getJSONString();
+              props.replaceKey(realpropname,*prop.get());
+              if(sync){              
+                syncWrite(realpropname, prop);
+                }
+
+              return prop;
             }
             return chaos::common::data::CDWUniquePtr();
   }

@@ -761,8 +761,8 @@ void         AbstractControlUnit::doInitRpCheckList() {
           setAlarmMask(i->first,atoi(i->second.c_str()));
         }
       }
-      if(init_configuration->hasKey(ControlUnitNodeDefinitionKey::CONTROL_UNIT_PROP)){
-        chaos::common::data::CMultiTypeDataArrayWrapperSPtr ptr=init_configuration->getVectorValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_ALRM_MSK);
+      if(init_configuration->hasKey(ControlUnitNodeDefinitionKey::CONTROL_UNIT_PROP)&&init_configuration->isVectorValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_PROP)){
+        chaos::common::data::CMultiTypeDataArrayWrapperSPtr ptr=init_configuration->getVectorValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_PROP);
         std::map<std::string,std::string> props=ptr->toKVmap("name","value");
         for(std::map<std::string,std::string>::iterator i =props.begin();i!=props.end();i++){
             ACULDBG_ << "Set CU property \""<<i->first<<"\" to:"<<i->second;

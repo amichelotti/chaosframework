@@ -150,7 +150,7 @@ DriverAccessor *DriverManager::getNewAccessorForDriverInstance(DrvRequestInfo &r
           for (std::map<std::string, std::string>::iterator i = request_info.props.begin(); i != request_info.props.end(); i++) {
             DMLDBG_ << "Setting driver property " << i->first << " = " << i->second;
 
-            accessor->impl->setProperty(i->first, i->second);
+            accessor->impl->setProperty(i->first, i->second,true);
           }
 
         } catch (...) {
@@ -208,7 +208,7 @@ DriverAccessor *DriverManager::getNewAccessorForDriverInstance(DrvRequestInfo &r
       for (std::map<std::string, std::string>::iterator i = request_info.props.begin(); i != request_info.props.end(); i++) {
         DMLDBG_ << "Setting driver property " << i->first << " = " << i->second;
 
-        driverInstance->setProperty(i->first, i->second);
+        driverInstance->setProperty(i->first, i->second,true);
       }
 
     } catch (...) {

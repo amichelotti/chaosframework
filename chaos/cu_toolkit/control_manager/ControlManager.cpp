@@ -528,7 +528,6 @@ CDWUniquePtr ControlManager::loadControlUnit(CDWUniquePtr message_data) {
         CHECK_KEY_THROW_AND_LOG(driver_desc, ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_DESCRIPTION_NAME, LCMERR_, -4, "No driver name found");
         CHECK_KEY_THROW_AND_LOG(driver_desc, ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_DESCRIPTION_VERSION, LCMERR_, -5, "No driver version found");
         CHECK_KEY_THROW_AND_LOG(driver_desc, ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_DESCRIPTION_INIT_PARAMETER, LCMERR_, -6, "No driver init param name found");
-        LCMDBG_ << "scan " << idx << " driver params:" << driver_desc->getJSONString();
         std::map<std::string, std::string> props;
         if (driver_desc->hasKey(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_PROP) && driver_desc->isVectorValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_PROP)) {
           chaos::common::data::CMultiTypeDataArrayWrapperSPtr ptr = driver_desc->getVectorValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_PROP);
@@ -536,6 +535,7 @@ CDWUniquePtr ControlManager::loadControlUnit(CDWUniquePtr message_data) {
             props = ptr->toKVmap("name", "value");
           }
         }
+        LCMDBG_ << "scan " << idx << " driver params:" << driver_desc->getJSONString()<<" properties:"<<props.size();
 
         cu_driver_manager::driver::DrvRequestInfo drv = {driver_desc->getStringValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_DESCRIPTION_NAME),
                                                          driver_desc->getStringValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_DESCRIPTION_VERSION),
