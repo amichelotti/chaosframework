@@ -843,7 +843,7 @@ namespace chaos {
         static const char * const CONTROL_UNIT_CU_INFO	                            = "cudk_cu_info";
         
         //! The load time properties
-        static const char * const CONTROL_UNIT_PROP	                               = "cudk_props";
+        static const char * const CONTROL_UNIT_PROP	                               = "cudk_prop";
         
         //! The load alarm mask properties
         static const char * const CONTROL_UNIT_ALRM_MSK	                            = "cudk_alrm_msk";
