@@ -665,6 +665,8 @@ int MongoDBControlUnitDataAccess::getInstanceDescription(const std::string& unit
         } else {
             mongo::BSONObj instance_description = q_result.getObjectField("instance_description");
             *result = new CDataWrapper(instance_description.objdata());
+            (*result)->addStringValue(NodeDefinitionKey::NODE_UNIQUE_ID, q_result.getStringField(NodeDefinitionKey::NODE_UNIQUE_ID));
+
             
         }
     } catch (const mongo::DBException &e) {
