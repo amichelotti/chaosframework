@@ -753,14 +753,7 @@ void         AbstractControlUnit::doInitRpCheckList() {
           check_list_sub_service.getSharedCheckList("_start")->addElement(START_RPC_PHASE_RESTORE_ON_FIRST_START);
         }
       }
-      //* initialize alarm mask if any */
-      if(init_configuration->hasKey(ControlUnitNodeDefinitionKey::CONTROL_UNIT_ALRM_MSK)&&init_configuration->isVectorValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_ALRM_MSK)){
-        chaos::common::data::CMultiTypeDataArrayWrapperSPtr ptr=init_configuration->getVectorValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_ALRM_MSK);
-        std::map<std::string,std::string> msks=ptr->toKVmap("alarm","mask");
-        for(std::map<std::string,std::string>::iterator i =msks.begin();i!=msks.end();i++){
-          setAlarmMask(i->first,atoi(i->second.c_str()));
-        }
-      }
+     
       if(init_configuration->hasKey(ControlUnitNodeDefinitionKey::CONTROL_UNIT_PROP)&&init_configuration->isVectorValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_PROP)){
         chaos::common::data::CMultiTypeDataArrayWrapperSPtr ptr=init_configuration->getVectorValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_PROP);
         std::map<std::string,std::string> props=ptr->toKVmap("name","value");
@@ -893,7 +886,19 @@ void         AbstractControlUnit::doInitRpCheckList() {
           }
         }
       }
+      
+
+      // set masks if any
+       //* initialize alarm mask if any */
+      if(init_configuration->hasKey(ControlUnitNodeDefinitionKey::CONTROL_UNIT_ALRM_MSK)&&init_configuration->isVectorValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_ALRM_MSK)){
+        chaos::common::data::CMultiTypeDataArrayWrapperSPtr ptr=init_configuration->getVectorValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_ALRM_MSK);
+        std::map<std::string,std::string> msks=ptr->toKVmap("alarm","mask");
+        for(std::map<std::string,std::string>::iterator i =msks.begin();i!=msks.end();i++){
+          setAlarmMask(i->first,atoi(i->second.c_str()));
+        }
+      }
       break;
+
     }
     CHAOS_CHECK_LIST_DONE(check_list_sub_service, "_init", INIT_RPC_PHASE_PUSH_DATASET) {
       //init on shared cache the all the dataaset with the default value
