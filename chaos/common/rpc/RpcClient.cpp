@@ -134,7 +134,7 @@ void RpcClient::forwadSubmissionResultError(NFISharedPtr message_info,
     
     answer->addCSDataValue(RpcActionDefinitionKey::CS_CMDM_ACTION_MESSAGE, *submission_result.get());
     //forward answer to channel
-    CDWUniquePtr to_delete(server_handler->dispatchCommand(MOVE(answer)));
+    CDWUniquePtr to_delete=server_handler->dispatchCommand(MOVE(answer));
 }
 
 

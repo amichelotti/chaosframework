@@ -274,6 +274,8 @@ class AbstractControlUnit : public DeclareAction,
   //specify the counter updated by the mds on every initilization that will represent the run of work
   int64_t run_id;
 
+
+  
   //!burst queue
   LQueueBurst burst_queue;
 
@@ -449,7 +451,7 @@ class AbstractControlUnit : public DeclareAction,
 
   //! Momentary driver for push data into the central memory
   ChaosUniquePtr<data_manager::KeyDataStorage> key_data_storage;
-
+  bool busy;
   //! fast cached attribute vector accessor
   std::vector<AttributeValue*> cache_output_attribute_vector;
   std::vector<AttributeValue*> cache_input_attribute_vector;
@@ -486,6 +488,7 @@ class AbstractControlUnit : public DeclareAction,
   /*!
                  */
   chaos::common::data::CDWUniquePtr _setDriverProperties(chaos::common::data::CDWUniquePtr data);
+
 
   //! Get the driver properties values,if "_id_" specified, the control unit search for the specified driver, otherwise is called the first driver
   /*!
@@ -576,9 +579,19 @@ class AbstractControlUnit : public DeclareAction,
   }
 
  protected:
+  typedef struct {
+    int i_idx;
+    int o_idx;
+    chaos::common::data::RangeValueInfo range;
+  } checkAttribute_t;
+ // bidir (set/readout) to check
+  std::vector<checkAttribute_t > ioTocheck;
+  std::vector<checkAttribute_t > oTocheck;
+  int checkFn(double sval, double rval, const chaos::common::data::RangeValueInfo& i);
+
   void addPublicDriverPropertyToDataset(bool addDriverHandlers = true);
   void updateDatasetFromDriverProperty();
-
+  void setAlarmMask(const std::string & name,uint32_t mask);
   virtual bool setDrvProp(const std::string& name, const bool value, uint32_t size);
   virtual bool setDrvProp(const std::string& name, const int32_t value, uint32_t size);
   virtual bool setDrvProp(const std::string& name, const int64_t value, uint32_t size);
@@ -732,6 +745,9 @@ class AbstractControlUnit : public DeclareAction,
   //!timer for update push metric
   void timeout();
 
+
+  chaos::common::data::CDWUniquePtr setAlarm(chaos::common::data::CDWUniquePtr data);
+
   //!check if attribute hase been autorized by handler
   bool isInputAttributeChangeAuthorizedByHandler(const std::string& attr_name);
 
@@ -784,6 +800,10 @@ class AbstractControlUnit : public DeclareAction,
   //! set the value on the busy flag
   void setBusyFlag(bool state);
 
+
+  //! set the value on the bypass flag
+  void setBypassFlag(bool state);
+
   //!return the current value of the busi flag
   const bool getBusyFlag() const;
 
@@ -791,7 +811,9 @@ class AbstractControlUnit : public DeclareAction,
   void alarmChanged(const std::string& state_variable_tag,
                     const std::string& state_variable_name,
                     const int8_t       state_variable_severity);
-
+  
+  int checkStdAlarms();
+  virtual int checkAlarms();
   //!logging api
   void metadataLogging(const chaos::common::metadata_logging::StandardLoggingChannel::LogLevel log_level,
                        const std::string&                                                      message);
@@ -886,6 +908,9 @@ class AbstractControlUnit : public DeclareAction,
     }
     return true;
   }
+  void addAttributesToDataSet(chaos::common::data::CDataWrapper&cd,chaos::DataType::DataSetAttributeIOAttribute io=chaos::DataType::Output);
+  void updateDataSet(chaos::common::data::CDataWrapper&cd,chaos::DataType::DataSetAttributeIOAttribute io=chaos::DataType::Output);
+
   CUStateKey::ControlUnitState getState();
   bool                         removeHandlerOnAttributeName(const std::string& attribute_name) {
     return dataset_attribute_manager.removeHandlerOnAttributeName(attribute_name);

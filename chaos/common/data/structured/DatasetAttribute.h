@@ -44,6 +44,9 @@ namespace chaos {
                     std::string                                     convf; //conversion factor
                     std::string                                     offset;//offset
 
+                    std::string                                     warningThreshold;//offset
+                    std::string                                     errorThreshold;//offset
+
                     uint32_t                                        max_size;
                     chaos::DataType::DataSetAttributeIOAttribute    direction;
                     chaos::DataType::DataType                       type;
@@ -84,6 +87,8 @@ namespace chaos {
                         Subclass::dataWrapped().unit = CDW_GET_SRT_WITH_DEFAULT(serialized_data, chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_UNIT, "NA");
                         Subclass::dataWrapped().convf = CDW_GET_SRT_WITH_DEFAULT(serialized_data, chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_CONVFACT, "1");
                         Subclass::dataWrapped().offset = CDW_GET_SRT_WITH_DEFAULT(serialized_data, chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_OFFSET, "0");
+                        Subclass::dataWrapped().warningThreshold = CDW_GET_SRT_WITH_DEFAULT(serialized_data, chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_WARN_THR, "0");
+                        Subclass::dataWrapped().errorThreshold = CDW_GET_SRT_WITH_DEFAULT(serialized_data, chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_ERROR_THR, "0");
 
                         Subclass::dataWrapped().default_value = CDW_GET_SRT_WITH_DEFAULT(serialized_data, chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_DEFAULT_VALUE, "");
                         Subclass::dataWrapped().max_size = (uint32_t)CDW_GET_INT32_WITH_DEFAULT(serialized_data, chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_VALUE_MAX_SIZE, 0);

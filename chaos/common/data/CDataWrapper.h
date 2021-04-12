@@ -153,6 +153,7 @@ namespace chaos {
                 void appendCDataWrapperToArray(const CDataWrapper& value);
                 //finalize the array into a key for the current dataobject
                 void finalizeArrayForKey(const std::string&);
+                void appendArray(const std::string&key,DataType::DataType typ,const char*buf,int len);
                 //get a string value
                 string  getStringValue(const std::string&) const;
                 const char *  getCStringValue(const std::string& key) const;
@@ -166,6 +167,7 @@ namespace chaos {
                 void append(const std::string& key,double val);
                 void append(const std::string& key,bool val);
                 void append(const std::string& key,const char* val);
+                void append(const std::string&key,CMultiTypeDataArrayWrapperSPtr&) ;
 
                 void append(const std::string& key,const std::string& val);
                 void append(const std::string& key,const CDataWrapper& val);
@@ -323,6 +325,7 @@ throw chaos::CException(-2, ss.str(), __PRETTY_FUNCTION__);
                 void getAllKey(ChaosStringVector& contained_key) const;
                 //return all key contained into the object
                 void getAllKey(ChaosStringSet& contained_key) const;
+                int countKeys() const;
                 ChaosStringVector getAllKey() const;
 
                 //return all key contained into the object
@@ -358,6 +361,9 @@ throw chaos::CException(-2, ss.str(), __PRETTY_FUNCTION__);
                 bool isJsonValue(const std::string& key) const;
                 chaos::DataType::DataType getValueType(const std::string& key) const;
                 bool isEmpty() const;
+                bool operator==(const CDataWrapper&d) const;
+                bool operator!=(const CDataWrapper&d) const {return !(*this==d);};
+
             };
             CHAOS_DEFINE_VECTOR_FOR_TYPE(bson_value_t*, VectorBsonValues);
             /*!
@@ -377,7 +383,12 @@ throw chaos::CException(-2, ss.str(), __PRETTY_FUNCTION__);
                 int32_t getInt32ElementAtIndex(const int) const;
                 int64_t getInt64ElementAtIndex(const int) const;
                 bool getBoolElementAtIndex(const int) const;
-              
+                /**
+                 * @brief convert an array of cdwappers with k,v into a map 
+                 * 
+                 * @return std::map<std::string,std::string> 
+                 */
+                std::map<std::string,std::string> toKVmap(const std::string kname="name",const std::string kvalue="value") const;
                
                 ChaosUniquePtr<CDataWrapper> getCDataWrapperElementAtIndex(const int) const;
                 std::string getJSONString();

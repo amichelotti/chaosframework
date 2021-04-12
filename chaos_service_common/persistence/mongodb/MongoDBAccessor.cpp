@@ -78,7 +78,11 @@ mongo::BSONArray MongoDBAccessor::getSearchTokenOnFiled(const std::string& searc
     for (std::vector<std::string>::iterator it = criteria_token.begin();
          it != criteria_token.end();
          it++) {
-        bson_find_or <<  MONGODB_REGEX_ON_FILED(field_target_for_search, std::string(".*"+*it+".*"));
+             std::string rsearch=*it;
+             if(*it==""){
+                rsearch=".*";
+             }
+        bson_find_or <<  MONGODB_REGEX_ON_FILED(field_target_for_search, rsearch);
     }
     //compose the or
     return bson_find_or.arr();

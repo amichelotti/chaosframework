@@ -470,6 +470,9 @@ namespace chaos {
         static const char * const CU_HEALT_OUTPUT_DATASET_PUSH_LOST   = "cuh_dso_plost";
         static const char * const CU_HEALT_OUTPUT_TOT_PUSH_KSIZE   = "cuh_dso_tksize";
         static const char * const CU_HEALT_OUTPUT_DATASET_TSOFF  = "cuh_dso_tsoff";
+        static const char * const CU_HEALT_OUTPUT_ALARM_LEVEL   = "cuh_alarm_lvl";
+        static const char * const CU_HEALT_OUTPUT_ALARM_MASKED   = "cuh_alarm_msk";
+
 
         
     }
@@ -840,8 +843,11 @@ namespace chaos {
         static const char * const CONTROL_UNIT_CU_INFO	                            = "cudk_cu_info";
         
         //! The load time properties
-        static const char * const CONTROL_UNIT_PROP	                               = "cudk_props";
+        static const char * const CONTROL_UNIT_PROP	                               = "cudk_prop";
         
+        //! The load alarm mask properties
+        static const char * const CONTROL_UNIT_ALRM_MSK	                            = "cudk_alrm_msk";
+
         
         //!key for dataset description (array of per-attribute document)
         static const char * const CONTROL_UNIT_DATASET_DESCRIPTION                  = "cudk_ds_desc";
@@ -883,6 +889,13 @@ namespace chaos {
         static const char * const CONTROL_UNIT_DATASET_ATTRIBUTE_CONVFACT          = "cudk_ds_attr_convfact";
          //!key representing the offset the attribute
         static const char * const CONTROL_UNIT_DATASET_ATTRIBUTE_OFFSET             = "cudk_ds_attr_offset";
+
+          //!key representing the offset the attribute
+        static const char * const CONTROL_UNIT_DATASET_ATTRIBUTE_WARN_THR           = "cudk_ds_attr_wrn_thr";
+       
+         //!key representing the offset the attribute
+        static const char * const CONTROL_UNIT_DATASET_ATTRIBUTE_ERROR_THR           = "cudk_ds_attr_err_thr";
+       
         /// TO ADD
         //!key representing the minimum working value    
         static const char * const CONTROL_UNIT_DATASET_ATTRIBUTE_MIN_WORK_VALUE     = "cudk_ds_attr_min_work";
@@ -981,6 +994,7 @@ namespace chaos {
         static const char * const CONTROL_UNIT_APPLY_INPUT_DATASET_ATTRIBUTE_CHANGE_SET  = "cunrpc_ida_cs";
 
         static const char * const CONTROL_UNIT_DRV_SET_PROPERTIES  = "cu_prop_drv_set";
+        static const char * const CONTROL_UNIT_SET_ALARM  = "cu_set_alarm";
 
         static const char * const CONTROL_UNIT_DRV_GET_PROPERTIES  = "cu_prop_drv_get";
 
@@ -1119,18 +1133,25 @@ namespace chaos {
             //!bool variable length
             TYPE_BOOLEAN = 0,
             //!Integer 32 bit length
-            TYPE_INT32,
+            TYPE_INT32=1,
             //!Integer 64 bit length
-            TYPE_INT64,
+            TYPE_INT64=2,
             //!Double 64 bit length
-            TYPE_DOUBLE,
+            TYPE_DOUBLE=3,
             //!C string variable length
-            TYPE_STRING,
+            TYPE_STRING=4,
             //!byte array variable length
             TYPE_BYTEARRAY,
             
             TYPE_CLUSTER,
             //!modifier to be ored to normal data types
+            TYPE_VECTOR_BOOL=0x100,
+
+            TYPE_VECTOR_INT32=0x101,
+            TYPE_VECTOR_INT64=0x102,
+            TYPE_VECTOR_DOUBLE=0x103,
+            TYPE_VECTOR_STRING=0x104,
+
             TYPE_ACCESS_ARRAY=0x100,
             TYPE_UNDEFINED
         } DataType;

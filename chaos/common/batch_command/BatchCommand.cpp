@@ -120,7 +120,7 @@ void BatchCommand::commandPost() {
 			//call the timeout handler
 			try {
 				if(timeoutHandler()) {
-					SET_FAULT(-1, "Command timeout", __FUNCTION__)
+					SET_FAULT(-1, "COMMAND TIMEOUT", __FUNCTION__)
 				}
 			} catch(chaos::CException& ex) {
 				SET_FAULT(ex.errorCode, ex.errorMessage, ex.errorDomain)

@@ -357,6 +357,18 @@ ChaosUniquePtr<chaos::common::data::CDataWrapper> CUCommonUtility::initDataPack(
         LOG_AND_TROW(CUCU_ERR, err, CHAOS_FORMAT("Error incrementig run id for control unit %1%", %cu_uid));
     }
     */
+   if(instance_description.get()){
+       if(instance_description->hasKey(ControlUnitNodeDefinitionKey::CONTROL_UNIT_ALRM_MSK)&&instance_description->isVectorValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_ALRM_MSK)){
+           CMultiTypeDataArrayWrapperSPtr v=instance_description->getVectorValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_ALRM_MSK);
+            init_datapack->append(ControlUnitNodeDefinitionKey::CONTROL_UNIT_ALRM_MSK,v);
+
+       }
+       if(instance_description->hasKey(ControlUnitNodeDefinitionKey::CONTROL_UNIT_PROP)&&instance_description->isVectorValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_PROP)){
+           CMultiTypeDataArrayWrapperSPtr v=instance_description->getVectorValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_PROP);
+            init_datapack->append(ControlUnitNodeDefinitionKey::CONTROL_UNIT_PROP,v);
+
+       }
+   }
    run_id=chaos::common::utility::TimingUtil::getTimeStamp();
     //get the dataset of the control unit
     if((err = cu_da->getDataset(cu_uid,
@@ -444,6 +456,7 @@ ChaosUniquePtr<chaos::common::data::CDataWrapper> CUCommonUtility::initDataPack(
     }
     
     pgu_default.serialization_key="property";
+
     pgu_default.serialize()->copyAllTo(*init_datapack);
     
     init_datapack->addInt64Value(ControlUnitNodeDefinitionKey::CONTROL_UNIT_RUN_ID, run_id);
@@ -487,23 +500,6 @@ ChaosUniquePtr<chaos::common::data::CDataWrapper> CUCommonUtility::deinitDataPac
     return result;
 }
 
-#define MOVE_STRING_VALUE(k, src, dst)\
-if(src->hasKey(k)) {\
-dst->addStringValue(k, src->getVariantValue(k).asString());\
-}
-
-#define MERGE_STRING_VALUE(k, src, src2, dst)\
-if(src2->hasKey(k)) {\
-dst->addStringValue(k, src2->getVariantValue(k).asString());\
-} else {\
-MOVE_STRING_VALUE(k, src, dst)\
-}
-
-#define MOVE_INT32_VALUE(k, src, dst)\
-if(src->hasKey(k)) {\
-dst->addInt32Value(k, src->getVariantValue(k).asInt32());\
-}
-
 ChaosUniquePtr<chaos::common::data::CDataWrapper> CUCommonUtility::mergeDatasetAttributeWithSetup(CDataWrapper *element_in_dataset,
                                                                                                   CDataWrapper *element_in_setup) {
     ChaosUniquePtr<chaos::common::data::CDataWrapper> result(new CDataWrapper());
@@ -522,6 +518,8 @@ ChaosUniquePtr<chaos::common::data::CDataWrapper> CUCommonUtility::mergeDatasetA
     MERGE_STRING_VALUE(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_UNIT, element_in_dataset, element_in_setup, result)
     MERGE_STRING_VALUE(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_CONVFACT, element_in_dataset, element_in_setup, result)
     MERGE_STRING_VALUE(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_OFFSET, element_in_dataset, element_in_setup, result)
+    MERGE_STRING_VALUE(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_WARN_THR, element_in_dataset, element_in_setup, result)
+    MERGE_STRING_VALUE(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_ERROR_THR, element_in_dataset, element_in_setup, result)
 
 
 

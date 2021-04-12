@@ -241,8 +241,7 @@ void ZMQServer::worker() {
                     if(message_data->hasKey(RPC_SEQ_KEY)){
                         seq_id=message_data->getInt64Value(RPC_SEQ_KEY);
                     }
-                    const std::string msg_desc = message_data->getJSONString();
-                     DEBUG_CODE(ZMQS_LDBG << "Message Received seq_id:"<<seq_id << " desc:"<<msg_desc;);
+                   //  DEBUG_CODE(ZMQS_LDBG << "Message Received seq_id:"<<seq_id << " desc:"<<msg_desc;);
 
                     if(message_data->hasKey(RPC_SYNC_KEY) &&
                        message_data->getBoolValue(RPC_SYNC_KEY)) {
@@ -255,7 +254,9 @@ void ZMQServer::worker() {
                     err = sendMessage(receiver, (void*)identity.c_str(), identity.size(), true);
                     //create zmq message
                     if(result_data_pack.get()==NULL){
-                        ZMQS_LERR << "ERROR:"<<msg_desc;
+                         const std::string msg_desc = message_data->getJSONString();
+
+                        ZMQS_LERR << "ERROR, message desc:"<<msg_desc;
                         
                     }
                     result_data_pack->addInt64Value(RPC_SEQ_KEY,seq_id);

@@ -70,6 +70,10 @@ namespace chaos {
                 //! conversion offset
                 string offset;
                
+               //! warning threshold in %, respect the setpoint (must bidir)
+                string warningThreshold;
+               //! error threshold in %, respect the setpoint (must bidir)
+                string errorThreshold;
                 //!Type of the value
                 DataType::DataType valueType;
                 //!Type of binary

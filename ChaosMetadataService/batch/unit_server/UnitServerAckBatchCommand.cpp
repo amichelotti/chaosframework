@@ -49,7 +49,8 @@ UnitServerAckCommand::~UnitServerAckCommand() {}
 // inherited method
 void UnitServerAckCommand::setHandler(CDataWrapper *data) {
     MDSBatchCommand::setHandler(data);
-    
+    // 5 min timeout
+    setFeatures(chaos::common::batch_command::features::FeaturesFlagTypes::FF_SET_COMMAND_TIMEOUT,(uint64_t)1000000*60*2);
     //override default schedule time for this command
     //setFeatures(chaos::common::batch_command::features::FeaturesFlagTypes::FF_SET_SCHEDULER_DELAY, (uint64_t)1000);
     if(data->hasKey(MetadataServerNodeDefinitionKeyRPC::PARAM_REGISTER_NODE_RESULT)) {
@@ -92,18 +93,27 @@ void UnitServerAckCommand::ccHandler() {
         case USAP_ACK_US: {
             switch(request->phase) {
                 case MESSAGE_PHASE_UNSENT:
+                  // USAC_DBG<<"USAP_ACK_US> MESSAGE_PHASE_UNSENT:";
+
                     sendMessage(*request,
                                 MOVE(message_data));
                     break;
                 case MESSAGE_PHASE_SENT:
+                    // USAC_DBG<<"USAP_ACK_US> MESSAGE_PHASE_SENT:";
+
                     manageRequestPhase(*request);
                     break;
                     
                 case MESSAGE_PHASE_COMPLETED:{
+
                     //after terminate the us ack try to fetch cu autoload
                     if(us_can_start) {
                         phase = USAP_CU_FECTH_NEXT;
+                        // USAC_DBG<<"USAP_ACK_US> MESSAGE_PHASE_COMPLETED=>USAP_CU_FECTH_NEXT :";
+
                     } else {
+                        // USAC_DBG<<"USAP_ACK_US> MESSAGE_PHASE_COMPLETED=>EXIT :";
+
                         BC_END_RUNNING_PROPERTY;
                     }
                     break;
@@ -111,12 +121,16 @@ void UnitServerAckCommand::ccHandler() {
                     
                 case MESSAGE_PHASE_TIMEOUT:
                     //terminate job
+                    // USAC_DBG<<"USAP_ACK_US> MESSAGE_PHASE_TIMEOUT ->EXIT";
+
                     BC_END_RUNNING_PROPERTY
                     break;
             }
             break;
         }
         case USAP_CU_FECTH_NEXT: {
+            // USAC_DBG<<"USAP_CU_FECTH_NEXT:"<<list_autoload_cu.size();
+
             if(list_autoload_cu_current == list_autoload_cu.end()) {
                 list_autoload_cu.clear();
                 //get next autoload cu for unit server
@@ -125,12 +139,18 @@ void UnitServerAckCommand::ccHandler() {
                                                                                                                last_worked_cu.seq,
                                                                                                                list_autoload_cu))) {
                     if(list_autoload_cu.size() == 0) {
+                        // USAC_DBG<<"0 TO AUTOLOAD EXIT.";
+
                         //terminate job
                         BC_END_RUNNING_PROPERTY
                     } else {
                         //we need to check if
+                            // USAC_DBG<<" TO AUTOLOAD:"<<list_autoload_cu.size();
+
                         list_autoload_cu_current = list_autoload_cu.begin();
                         if((err = prepareInstance())) {
+                                // USAC_DBG<<"USAP_CU_FECTH_NEXT-> EXIT:"<<list_autoload_cu_current->node_uid;
+
                             BC_END_RUNNING_PROPERTY
                         } else {
                             phase = USAP_CU_AUTOLOAD;
@@ -144,10 +164,14 @@ void UnitServerAckCommand::ccHandler() {
                 }
             } else {
                 if(++list_autoload_cu_current == list_autoload_cu.end()) {
+                        // USAC_DBG<<"USAP_CU_FECTH_NEXT-> ENDLIST";
+
                     //whe have reached the end of fetched cu so we need to fetch new one page
                     break;
                 }else {
                     if((err = prepareInstance())) {
+                        // USAC_DBG<<"USAP_CU_FECTH_NEXT-> BC_END_RUNNING_PROPERTY2:"<<list_autoload_cu_current->node_uid;
+
                         BC_END_RUNNING_PROPERTY
                     } else {
                         phase = USAP_CU_AUTOLOAD;
@@ -158,18 +182,26 @@ void UnitServerAckCommand::ccHandler() {
         }
             
         case USAP_CU_AUTOLOAD: {
+            // USAC_DBG<<" USAP_CU_AUTOLOAD:"<<list_autoload_cu_current->node_uid;
+
             switch(request->phase) {
                 case MESSAGE_PHASE_UNSENT: {
+                    // USAC_DBG<<" MESSAGE_PHASE_UNSENT :"<<list_autoload_cu_current->node_uid;
+
                     sendMessage(*request,
                                 MOVE(autoload_pack));
                     break;
                 }
                     
                 case MESSAGE_PHASE_SENT:
+                    // USAC_DBG<<" MESSAGE_PHASE_SENT2 :"<<list_autoload_cu_current->node_uid;
+
                     manageRequestPhase(*request);
                     break;
                     
                 case MESSAGE_PHASE_COMPLETED:{
+                    // USAC_DBG<<" MESSAGE_PHASE_COMPLETED2 :"<<list_autoload_cu_current->node_uid;
+
                     //after terminate the control unit ack try to fetch cu autoload
                     phase = USAP_CU_FECTH_NEXT;
                     break;
@@ -177,8 +209,10 @@ void UnitServerAckCommand::ccHandler() {
                     
                 case MESSAGE_PHASE_TIMEOUT:
                     //terminate job
+                    // USAC_DBG<<" MESSAGE_PHASE_TIMEOUT2 :"<<list_autoload_cu_current->node_uid;
+
                     BC_END_RUNNING_PROPERTY
-                    USAC_ERR << "Whe have had tomeout error on load a control unit, the job will terminate becaus ethe unit serve ca be down";
+                    USAC_ERR << "We have had timeout error on load a control unit, the job will terminate becaus ethe unit serve ca be down";
                     break;
             }
             
@@ -186,6 +220,8 @@ void UnitServerAckCommand::ccHandler() {
         }
             
         case USAP_END: {
+            // USAC_DBG<<" USAP_END ";
+
             break;
         }
     }

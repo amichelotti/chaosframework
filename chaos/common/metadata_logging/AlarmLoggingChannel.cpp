@@ -37,6 +37,7 @@ AlarmLoggingChannel::~AlarmLoggingChannel() {}
 int AlarmLoggingChannel::logAlarm(const std::string& node_uid,
                                   const std::string& log_subject,
                                   const chaos::common::alarm::AlarmDescription& alarm_description) {
+    
     CDataWrapper *log_entry = getNewLogEntry(node_uid,
                                              log_subject,
                                              "alarm");
@@ -48,4 +49,5 @@ int AlarmLoggingChannel::logAlarm(const std::string& node_uid,
     log_entry->addStringValue(MetadataServerLoggingDefinitionKeyRPC::AlarmLogging::PARAM_NODE_LOGGING_ALARM_LEVEL_DESCRIPTION, alarm_description.getCurrentSeverityDescription());
     return sendLog(log_entry,
                    0);
+    
 }

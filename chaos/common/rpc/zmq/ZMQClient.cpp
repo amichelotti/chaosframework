@@ -375,6 +375,9 @@ void ZMQClient::processBufferElement(NFISharedPtr messageInfo) {
                 int32_t sent_error = zmq_errno();
                 std::string error_message = zmq_strerror(sent_error);
                 ZMQC_LERR << "Error sending message seq_id:"<<loc_seq_id<<" with code:" << sent_error << " message:" <<error_message<<" @"<<messageInfo->destinationAddr;
+                 if(message_data.get()){
+                    ZMQC_LERR <<" message:"<<loc_seq_id<<" was:"<<message_data->getJSONString(); 
+                 }
                  (*counter_zmqerror_uptr)++;
                 if(messageInfo->is_request) {
                     forwadSubmissionResultError(MOVE(messageInfo),
@@ -396,6 +399,9 @@ void ZMQClient::processBufferElement(NFISharedPtr messageInfo) {
                     int32_t sent_error = zmq_errno();
                     std::string error_message = zmq_strerror(sent_error);
                     ZMQC_LERR << "Error receiving ack for message seq_id:"<<loc_seq_id<<" with code:" << sent_error << " message:" <<error_message<<" @"<<messageInfo->destinationAddr;
+                    if(message_data.get()){
+                        ZMQC_LERR <<" message:"<<loc_seq_id<<" was:"<<message_data->getJSONString(); 
+                    }
                      (*counter_zmqerror_uptr)++;
                     if(messageInfo->is_request) {
                         forwadSubmissionResultError(MOVE(messageInfo),
