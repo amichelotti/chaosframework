@@ -1178,7 +1178,8 @@ for (uint64_t start = start_ts; start < end_ts; ) {
       continue;
     }
     } catch (boost::filesystem::filesystem_error& e) {
-            ERR << " Exception creating directory:" << e.what();
+            ERR << " Exception removing directory:" << e.what();
+            return 0;
     } catch(...){
       ERR<<" error accessing:"<<p;
 

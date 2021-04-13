@@ -249,7 +249,7 @@ while(push_end==false){
 if (nmeas >0) {
   boost::mutex::scoped_lock ll(iolock);
 
-  DBG<<" sending "<<nmeas<< " measurements";
+  //DBG<<" sending "<<nmeas<< " measurements";
     nmeas = 0;
     std::string ret;
     int res=influxdb_cpp::push_db( ret, measurements.str(), si);

@@ -202,7 +202,7 @@ AbstractControlUnit::AbstractControlUnit(const std::string&           _control_u
 }
 
 void AbstractControlUnit::_initDrivers() {
-  ACULAPP_ << "Initializating Driver Accessors";
+  ACULDBG_ << "Initializating Driver Accessors";
   //at this point and before the unit implementation init i need to get
   //the infromation about the needed drivers
   std::vector<DrvRequestInfo> unit_needed_drivers;
@@ -669,15 +669,15 @@ void         AbstractControlUnit::doInitRpCheckList() {
       break;
     }
     CHAOS_CHECK_LIST_DONE(check_list_sub_service, "_init", INIT_RPC_PHASE_INIT_SHARED_CACHE) {
-      ACULAPP_ << "Allocate the user cache wrapper for:" + DatasetDB::getDeviceID();
+      ACULDBG_ << "Allocate the user cache wrapper for:" + DatasetDB::getDeviceID();
       attribute_shared_cache_wrapper = new AttributeSharedCacheWrapper(attribute_value_shared_cache);
 
-      ACULAPP_ << "Populating shared attribute cache for input attribute";
+      ACULDBG_ << "Populating shared attribute cache for input attribute";
       DatasetDB::getDatasetAttributesName(DataType::Input, attribute_names);
       DatasetDB::getDatasetAttributesName(DataType::Bidirectional, attribute_names);
       initAttributeOnSharedAttributeCache(DOMAIN_INPUT, attribute_names);
 
-      ACULAPP_ << "Populating shared attribute cache for output attribute";
+      ACULDBG_ << "Populating shared attribute cache for output attribute";
       attribute_names.clear();
       DatasetDB::getDatasetAttributesName(DataType::Output, attribute_names);
       DatasetDB::getDatasetAttributesName(DataType::Bidirectional, attribute_names);
@@ -686,18 +686,18 @@ void         AbstractControlUnit::doInitRpCheckList() {
     }
 
     CHAOS_CHECK_LIST_DONE(check_list_sub_service, "_init", INIT_RPC_PHASE_COMPLETE_OUTPUT_ATTRIBUTE) {
-      ACULAPP_ << "Complete shared attribute cache for output attribute";
+      ACULDBG_ << "Complete shared attribute cache for output attribute";
       completeOutputAttribute();
       break;
     }
     CHAOS_CHECK_LIST_DONE(check_list_sub_service, "_init", INIT_RPC_PHASE_COMPLETE_INPUT_ATTRIBUTE) {
-      ACULAPP_ << "Complete shared attribute cache for input attribute";
+      ACULDBG_ << "Complete shared attribute cache for input attribute";
       completeInputAttribute();
       break;
     }
 
     CHAOS_CHECK_LIST_DONE(check_list_sub_service, "_init", INIT_RPC_PHASE_INIT_SYSTEM_CACHE) {
-      ACULAPP_ << "Populating shared attribute cache for system attribute";
+      ACULDBG_ << "Populating shared attribute cache for system attribute";
       initSystemAttributeOnSharedAttributeCache();
       break;
     }
@@ -2656,7 +2656,7 @@ int AbstractControlUnit::pushOutputDataset() {
         break;
       }
       case DataType::TYPE_STRING:
-        //DEBUG_CODE(ACULAPP_ << value_set->name<<"-"<<value_set->getValuePtr<const char>();)
+        //DEBUG_CODE(ACULDBG_ << value_set->name<<"-"<<value_set->getValuePtr<const char>();)
         output_attribute_dataset->addStringValue(value_set->name, value_set->getValuePtr<const char>());
         break;
       case DataType::TYPE_BYTEARRAY:
@@ -3108,7 +3108,7 @@ void AbstractControlUnit::metadataLogging(const std::string&                    
                                        message);
   switch (log_level) {
     case StandardLoggingChannel::LogLevelInfo:
-      ACULAPP_ << "LOGINFO"
+      ACULDBG_ << "LOGINFO"
                << " subj:" << subject << " msg:" << message;
       break;
     case StandardLoggingChannel::LogLevelDebug:
