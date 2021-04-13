@@ -158,10 +158,9 @@ void WorkUnitManagement::scheduleSM()  {
                                                             true);
             //reset the delay for the forwarding of the registration datapack
             publishing_counter_delay = 0;
-            WUMAPP_ << "Control unit is unpublished, need to be setup";
             //associate the event channel to the control unit
             
-            WUMAPP_ << "Setup Control Unit Sanbox for cu with instance";
+            WUMDBG_ << "Setup Control Unit Sanbox for cu with instance";
             try{
                 //initialize drivers
                 work_unit_instance->_initDrivers();
@@ -203,7 +202,7 @@ void WorkUnitManagement::scheduleSM()  {
         case UnitStatePublishing: {
             // don't pollute, ask every 20s
             if((publishing_counter_delay%10) == 0){
-                WUMAPP_  << "send registration to mds with delay counter to:" << publishing_counter_delay;
+                WUMDBG_  << "send registration to mds with delay counter to:" << publishing_counter_delay;
                 if(sendConfPackToMDS(mds_registration_message)) {
                     WUMERR_ << "Error forwarding registration message to mds";
                 }
@@ -216,7 +215,6 @@ void WorkUnitManagement::scheduleSM()  {
             active = false;
             MessageKeyArray all_cmd_key;
             WUMAPP_ << "work unit has been successfully published";
-            WUMAPP_ << "Register RPC action for cu whith instance";
             std::vector<const chaos::DeclareAction * > cuDeclareActionsInstance;
             work_unit_instance->_getDeclareActionInstance(cuDeclareActionsInstance);
             for(int idx = 0; idx < cuDeclareActionsInstance.size(); idx++) {
@@ -269,7 +267,6 @@ void WorkUnitManagement::scheduleSM()  {
                                                             NodeHealtDefinitionKey::NODE_HEALT_STATUS,
                                                             NodeHealtDefinitionValue::NODE_HEALT_STATUS_UNLOADING);
             WUMAPP_ << "work unit is starting the unpublishing process";
-            WUMAPP_ << "Register RPC action for cu whith instance";
             std::vector<const chaos::DeclareAction * > cuDeclareActionsInstance;
             work_unit_instance->_getDeclareActionInstance(cuDeclareActionsInstance);
             for(int idx = 0; idx < cuDeclareActionsInstance.size(); idx++) {
@@ -280,7 +277,7 @@ void WorkUnitManagement::scheduleSM()  {
         }
             
         case UnitStatePublishingFailure: {
-            WUMAPP_  << "there was been error during control unit registration we end here";
+            WUMERR_  << "there was been error during control unit registration we end here";
             HealtManager::getInstance()->addNodeMetricValue(work_unit_instance->getCUID(),
                                                             NodeHealtDefinitionKey::NODE_HEALT_STATUS,
                                                             NodeHealtDefinitionValue::NODE_HEALT_STATUS_FERROR);
@@ -377,7 +374,7 @@ int WorkUnitManagement::sendLoadCompletionToMDS(const std::string& control_unit_
 
 bool WorkUnitManagement::manageACKPack(CDataWrapper& ack_pack) {
     bool result = false;
-    WUMAPP_ << "Work unit registration ack message received";
+    WUMDBG_ << "Work unit registration ack message received";
     
     if(!ack_pack.hasKey(NodeDefinitionKey::NODE_UNIQUE_ID))
         throw MetadataLoggingCException(work_unit_instance->getCUID(),
