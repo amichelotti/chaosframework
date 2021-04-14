@@ -52,7 +52,7 @@ void UnitServerAckCommand::setHandler(CDataWrapper *data) {
     // 5 min timeout
     setFeatures(chaos::common::batch_command::features::FeaturesFlagTypes::FF_SET_COMMAND_TIMEOUT,(uint64_t)1000000*60*2);
     //override default schedule time for this command
-    //setFeatures(chaos::common::batch_command::features::FeaturesFlagTypes::FF_SET_SCHEDULER_DELAY, (uint64_t)1000);
+    setFeatures(chaos::common::batch_command::features::FeaturesFlagTypes::FF_SET_SCHEDULER_DELAY, (uint64_t)100000);
     if(data->hasKey(MetadataServerNodeDefinitionKeyRPC::PARAM_REGISTER_NODE_RESULT)) {
         us_can_start = data->getInt32Value(MetadataServerNodeDefinitionKeyRPC::PARAM_REGISTER_NODE_RESULT) == ErrorCode::EC_MDS_NODE_REGISTRATION_OK;
     }
