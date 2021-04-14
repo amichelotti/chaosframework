@@ -61,20 +61,20 @@ void MetadataLoggingManager::init(void *init_data)  {
 }
 
 void MetadataLoggingManager::deinit()  {
-    MLM_INFO << "Wait for queue will empty";
+    MLM_DBG << "Wait for queue will empty";
     CObjectProcessingPriorityQueue<CDataWrapper>::deinit(true);
-    MLM_INFO << "Queue is empty";
+    MLM_DBG << "Queue is empty";
     
     boost::unique_lock<boost::mutex> wl(mutext_maps);
     for(MetadataLoggingInstancesMapIterator it = map_instance.begin();
         it != map_instance.end();
         it++) {
-        MLM_INFO << "Remove channel instance:"<< it->first;
+        MLM_DBG << "Remove channel instance:"<< it->first;
         if(it->second != NULL) {
             delete(it->second);
         }
     }
-    MLM_INFO << "All channel has been removed";
+    MLM_DBG << "All channel has been removed";
     map_instance.clear();
     map_instancer.clear();
     
@@ -97,7 +97,7 @@ AbstractMetadataLogChannel *MetadataLoggingManager::getChannel(const std::string
     result->setLoggingManager(this);
     map_instance.insert(std::pair<std::string, AbstractMetadataLogChannel*> (result->getInstanceUUID(), result));
     
-    MLM_INFO << "Creted new channel instance " << result->getInstanceUUID() << " for " << channel_alias;
+    MLM_DBG << "Creted new channel instance " << result->getInstanceUUID() << " for " << channel_alias;
     return result;
 }
 
@@ -109,7 +109,7 @@ void MetadataLoggingManager::releaseChannel(AbstractMetadataLogChannel *channel_
     //we can delete the instance
     
     map_instance.erase(channel_instance->getInstanceUUID());
-    MLM_INFO << "Release channel instance " << channel_instance->getInstanceUUID();
+    MLM_DBG << "Release channel instance " << channel_instance->getInstanceUUID();
     delete(channel_instance);
 }
 

@@ -64,7 +64,7 @@ void ZMQDirectIOClient::init(void *init_data)  {
     default_configuration["ZMQ_IO_THREADS"] = "1";
     
     DirectIOClient::init(init_data);
-    ZMQDIOLAPP_ << "Allocating zmq context";
+    ZMQDIOLDBG_ << "Allocating zmq context";
     thread_run= true;
     zmq_context = zmq_ctx_new();
     if(zmq_context == NULL) throw chaos::CException(0, "Error creating zmq context", __FUNCTION__);
@@ -76,11 +76,11 @@ void ZMQDirectIOClient::init(void *init_data)  {
     }
     
     
-    ZMQDIOLAPP_ << "Inizilizing zmq implementation with zmq lib version = " << ZMQ_VERSION;
-    ZMQDIOLAPP_ << "Set number of thread for the contex";
+    ZMQDIOLDBG_ << "Inizilizing zmq implementation with zmq lib version = " << ZMQ_VERSION;
+    ZMQDIOLDBG_ << "Set number of thread for the contex";
     zmq_ctx_set(zmq_context, ZMQ_IO_THREADS, 2);
     
-    ZMQDIOLAPP_ << "Initialized";
+    ZMQDIOLDBG_ << "Initialized";
 }
 
 //! Deinit the implementation
@@ -89,14 +89,14 @@ void ZMQDirectIOClient::deinit()  {
     //remove all active connection (never need to be exists at this step)
     map_connections.clearElement();
     //destroy the zmq context
-    ZMQDIOLAPP_ << "Destroing zmq context";
+    ZMQDIOLDBG_ << "Destroing zmq context";
     thread_run = false;
     err = zmq_ctx_destroy(zmq_context);
     if(err) ZMQDIOLERR_ << "Error closing context";
     //monitor_thread_group.join_all();
     
     zmq_context = NULL;
-    ZMQDIOLAPP_ << "ZMQ context destroyed";
+    ZMQDIOLDBG_ << "ZMQ context destroyed";
     DirectIOClient::deinit();
 }
 
