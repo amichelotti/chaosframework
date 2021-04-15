@@ -68,7 +68,7 @@ if((data.key=="CHAOS_LOG")&&(data.cd->hasKey(MetadataServerLoggingDefinitionKeyR
 
       QueryDataConsumer::consumePutEvent(key, (uint8_t)DataServiceNodeDefinitionType::DSStorageTypeLive, meta_tag_set, *(data.cd.get()));
       //PriorityQueuedElement<CDataWrapper>::PriorityQueuedElementType element(data.cd.get());
-     // DBG<<"Queue:"<<CObjectProcessingPriorityQueue<CDataWrapper>::queueSize()<<" LOG:"<<data.cd->getJSONString();
+      DBG<<"Queue:"<<CObjectProcessingPriorityQueue<CDataWrapper>::queueSize()<<" LOG:"<<data.cd->getJSONString();
       if(CObjectProcessingPriorityQueue<CDataWrapper>::queueSize()<MAX_LOG_QUEUE){
         CObjectProcessingPriorityQueue<CDataWrapper>::push(data.cd,0);
       } else {
@@ -112,7 +112,7 @@ if((data.key=="CHAOS_LOG")&&(data.cd->hasKey(MetadataServerLoggingDefinitionKeyR
 }
   void QueryDataMsgPSConsumer::processBufferElement(chaos::common::data::CDWShrdPtr log_entry){
       chaos::metadata_service::api::logging::SubmitEntry se;
-     //   DBG<<"Queue:"<<CObjectProcessingPriorityQueue<CDataWrapper>::queueSize()<<" WRITE ";
+        DBG<<"Queue:"<<CObjectProcessingPriorityQueue<CDataWrapper>::queueSize()<<" WRITE ";
 
       se.execute(log_entry->clone());        
       

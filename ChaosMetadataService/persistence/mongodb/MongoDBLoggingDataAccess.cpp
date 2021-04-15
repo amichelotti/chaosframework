@@ -21,6 +21,7 @@
 
 #include "mongo_db_constants.h"
 #include "MongoDBLoggingDataAccess.h"
+#include <chaos/common/utility/TimingUtil.h>
 
 #include <chaos/common/global.h>
 #include <mongo/client/dbclient.h>
@@ -63,13 +64,14 @@ int MongoDBLoggingDataAccess::insertNewEntry(LogEntry& log_entry) {
     try {
         if(!log_entry.source_identifier.size()) return -1;
         
-        if(utility_data_access->getNextSequenceValue("logging", log_entry.sequence)) {
+       /* if(utility_data_access->getNextSequenceValue("logging", log_entry.sequence)) {
             MDBLDA_ERR << "Error getting new sequence for log";
             return err;
-        }
+        }*/
         
         //add default log entry attribute
-        builder << "seq" << (long long)log_entry.sequence;
+        //builder << "seq" << (long long)log_entry.sequence;
+        builder << "seq" << (long long)chaos::common::utility::TimingUtil::getTimeStamp();
         builder << MetadataServerLoggingDefinitionKeyRPC::PARAM_NODE_LOGGING_LOG_SOURCE_IDENTIFIER << log_entry.source_identifier;
         builder << MetadataServerLoggingDefinitionKeyRPC::PARAM_NODE_LOGGING_LOG_TIMESTAMP << mongo::Date_t(log_entry.ts);
         builder << MetadataServerLoggingDefinitionKeyRPC::PARAM_NODE_LOGGING_LOG_DOMAIN << log_entry.domain;

@@ -151,12 +151,14 @@ int MongoDBNodeDataAccess::insertNewNode(CDataWrapper& node_description) {
         if(!node_description.hasKey(chaos::NodeDefinitionKey::NODE_TYPE)) return -2;
         if(!node_description.hasKey("seq")) {
             CHAOS_ASSERT(utility_data_access)
-            if(utility_data_access->getNextSequenceValue("nodes", sequence_id)) {
+           if(utility_data_access->getNextSequenceValue("nodes", sequence_id)) {
                 MDBNDA_ERR << "Error getting new sequence for node";
                 return err;
             } else {
                 node_description.addInt64Value("seq", sequence_id);
             }
+          //  node_description.addInt64Value("seq", chaos::common::utility::TimingUtil::getTimeStamp());
+
         }
         
         ChaosUniquePtr<SerializationBuffer> ser(node_description.getBSONData());
