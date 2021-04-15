@@ -130,7 +130,7 @@ IF (CHAOS_TARGET)
 IF(KAFKA_ASIO_ENABLE)
 MESSAGE("ENABLING DEP KAFKA")
 
-add_definitions(-DKAFKA_ASIO_ENABLE -DLIBKAFKAASIO_NO_COMPRESSION)
+add_definitions(-DKAFKA_ASIO_ENABLE -DLIBKAFKAASIO_NO_COMPRESSION -DUSE_MESSAGE_PUBLISH_SUBCRIBE)
 
 
 # ExternalProject_Add(
@@ -176,7 +176,6 @@ MESG("Install lz4 compression library")
   
 IF(KAFKA_RDK_ENABLE)
 MESSAGE("ENABLING RDK KAFKA")
-
 ExternalProject_Add(
 	 librdkafa
 	 GIT_REPOSITORY https://github.com/edenhill/librdkafka.git
@@ -195,7 +194,7 @@ ExternalProject_Add(
     LOG_BUILD 1
     LOG_INSTALL 1
 	)
-add_definitions(-DKAFKA_RDK_ENABLE)
+add_definitions(-DKAFKA_RDK_ENABLE -DUSE_MESSAGE_PUBLISH_SUBCRIBE)
 
 ENDIF(KAFKA_RDK_ENABLE)
 

@@ -168,7 +168,7 @@ CDWUniquePtr NodeRegister::simpleRegistration(CDWUniquePtr api_data) {
             }else{
                 //add new fetched sequecne
                 api_data->addInt64Value("seq", nodes_seq);
-                
+              //  api_data->addInt64Value("seq",TimingUtil::getTimeStamp());
                 //insert th enew node
                 if((err = n_da->insertNewNode(*api_data.get()))) {
                     api_data->addInt32Value(MetadataServerNodeDefinitionKeyRPC::PARAM_REGISTER_NODE_RESULT,

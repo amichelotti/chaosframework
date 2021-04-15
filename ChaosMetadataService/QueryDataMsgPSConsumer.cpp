@@ -19,7 +19,7 @@
  * permissions and limitations under the Licence.
  */
 #include "QueryDataMsgPSConsumer.h"
-
+#include "api/logging/SubmitEntry.h"
 using namespace chaos::metadata_service::worker;
 using namespace chaos::metadata_service::cache_system;
 
@@ -36,6 +36,7 @@ using namespace chaos::common::direct_io::channel;
 #define DBG DBG_LOG(QueryDataMsgPSConsumer)
 #define ERR ERR_LOG(QueryDataMsgPSConsumer)
 
+#define MAX_LOG_QUEUE 100
 //constructor
 namespace chaos {
 namespace metadata_service {
@@ -59,7 +60,37 @@ QueryDataMsgPSConsumer::QueryDataMsgPSConsumer(const std::string& id)
   cons = chaos::common::message::MessagePSDriver::getConsumerDriver(msgbrokerdrv, groupid);
 }
 void QueryDataMsgPSConsumer::messageHandler(const chaos::common::message::ele_t& data) {
+  try {
   ChaosStringSetConstSPtr meta_tag_set;
+
+if((data.key=="CHAOS_LOG")&&(data.cd->hasKey(MetadataServerLoggingDefinitionKeyRPC::PARAM_NODE_LOGGING_LOG_SOURCE_IDENTIFIER))){
+      std::string key=data.cd->getStringValue(MetadataServerLoggingDefinitionKeyRPC::PARAM_NODE_LOGGING_LOG_SOURCE_IDENTIFIER)+"_log";
+
+      QueryDataConsumer::consumePutEvent(key, (uint8_t)DataServiceNodeDefinitionType::DSStorageTypeLive, meta_tag_set, *(data.cd.get()));
+      //PriorityQueuedElement<CDataWrapper>::PriorityQueuedElementType element(data.cd.get());
+      DBG<<"Queue:"<<CObjectProcessingPriorityQueue<CDataWrapper>::queueSize()<<" LOG:"<<data.cd->getJSONString();
+      if(CObjectProcessingPriorityQueue<CDataWrapper>::queueSize()<MAX_LOG_QUEUE){
+        CObjectProcessingPriorityQueue<CDataWrapper>::push(data.cd,0);
+      } else {
+        ERR<<"too many logs on queue for DB:"<<CObjectProcessingPriorityQueue<CDataWrapper>::queueSize();
+
+      }
+    return;
+  }
+ /* if((data.key.size()>4)&&(data.key.compare(data.key.size()-4,4,DataPackPrefixID::LOG_DATASET_POSTFIX)==0)){
+      std::string kp = data.key;
+      std::replace(kp.begin(), kp.end(), '.', '/');
+      QueryDataConsumer::consumePutEvent(kp, (uint8_t)DataServiceNodeDefinitionType::DSStorageTypeLive, meta_tag_set, *(data.cd.get()));
+      //PriorityQueuedElement<CDataWrapper>::PriorityQueuedElementType element(data.cd.get());
+      DBG<<"Queue:"<<CObjectProcessingPriorityQueue<CDataWrapper>::queueSize()<<" LOG:"<<data.cd->getJSONString();
+      if(CObjectProcessingPriorityQueue<CDataWrapper>::queueSize()<MAX_LOG_QUEUE){
+        CObjectProcessingPriorityQueue<CDataWrapper>::push(data.cd,0);
+      } else {
+        ERR<<"too many logs on queue for DB:"<<CObjectProcessingPriorityQueue<CDataWrapper>::queueSize();
+
+      }
+    return;
+  }*/
   uint32_t                st = data.cd->getInt32Value(DataServiceNodeDefinitionKey::DS_STORAGE_TYPE);
   if (data.cd->hasKey(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_TAG)) {
     ChaosStringSet* tag = new ChaosStringSet();
@@ -72,7 +103,20 @@ void QueryDataMsgPSConsumer::messageHandler(const chaos::common::message::ele_t&
   //DBG<<"data from:"<<kp<<" size:"<<data.cd->getBSONRawSize();
 
   QueryDataConsumer::consumePutEvent(kp, (uint8_t)st, meta_tag_set, *(data.cd.get()));
+  } catch(const chaos::CException& e ){
+    ERR<<"Chaos Exception caught processing key:"<<data.key<<" ("<<data.off<<","<<data.par<<") error:"<<e.what();
+  } catch(...){
+    ERR<<"Unknown Exception caught processing key:"<<data.key<<" ("<<data.off<<","<<data.par<<")";
+
+  }
 }
+  void QueryDataMsgPSConsumer::processBufferElement(chaos::common::data::CDWShrdPtr log_entry){
+      chaos::metadata_service::api::logging::SubmitEntry se;
+        DBG<<"Queue:"<<CObjectProcessingPriorityQueue<CDataWrapper>::queueSize()<<" WRITE ";
+
+      se.execute(log_entry->clone());        
+      
+  }
 
 void QueryDataMsgPSConsumer::messageError(const chaos::common::message::ele_t& data) {
   ChaosStringSetConstSPtr meta_tag_set;
@@ -95,8 +139,12 @@ void QueryDataMsgPSConsumer::messageError(const chaos::common::message::ele_t& d
 }
 
 void QueryDataMsgPSConsumer::init(void* init_data) {
+
   QueryDataConsumer::init(init_data);
   msgbroker = GlobalConfiguration::getInstance()->getOption<std::string>(InitOption::OPT_MSG_BROKER_SERVER);
+  DBG<<"Initialize, my broker is:"<<msgbroker;
+
+  CObjectProcessingPriorityQueue<CDataWrapper>::init(1);
 
   cons->addServer(msgbroker);
 
@@ -119,6 +167,11 @@ void QueryDataMsgPSConsumer::init(void* init_data) {
 void QueryDataMsgPSConsumer::start() {
   DBG << "Starting Msg consumer";
   cons->start();
+  std::string keysub="CHAOS_LOG";
+  if (cons->subscribe(keysub) != 0) {
+      ERR <<" cannot subscribe to :" << keysub<<" err:"<<cons->getLastError();
+              
+  } 
 }
 
 void QueryDataMsgPSConsumer::stop() {
@@ -128,6 +181,9 @@ void QueryDataMsgPSConsumer::stop() {
 
 void QueryDataMsgPSConsumer::deinit() {
   QueryDataConsumer::deinit();
+  DBG << "Wait for queue will empty";
+  CObjectProcessingPriorityQueue<CDataWrapper>::deinit(true);
+  DBG << "Queue is empty";
 }
 
 int QueryDataMsgPSConsumer::consumeHealthDataEvent(const std::string&            key,

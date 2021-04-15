@@ -49,13 +49,13 @@ CDWUniquePtr SubmitEntry::execute(CDWUniquePtr api_data) {
     
     //check for mandatory attributes
     CHECK_CDW_THROW_AND_LOG(api_data, L_SE_ERR, -1, "No parameter found");
-    CHECK_KEY_THROW_AND_LOG(api_data, MetadataServerLoggingDefinitionKeyRPC::PARAM_NODE_LOGGING_LOG_SOURCE_IDENTIFIER, L_SE_ERR, -2, "The log timestamp key is mandatory");
+    CHECK_KEY_THROW_AND_LOG(api_data, MetadataServerLoggingDefinitionKeyRPC::PARAM_NODE_LOGGING_LOG_SOURCE_IDENTIFIER, L_SE_ERR, -2, "The log timestamp key is mandatory:"+api_data->getJSONString());
     CHAOS_LASSERT_EXCEPTION(api_data->isStringValue(MetadataServerLoggingDefinitionKeyRPC::PARAM_NODE_LOGGING_LOG_SOURCE_IDENTIFIER), L_SE_ERR, -3, "The log timestamp key needs to be a string value");
-    CHECK_KEY_THROW_AND_LOG(api_data, MetadataServerLoggingDefinitionKeyRPC::PARAM_NODE_LOGGING_LOG_TIMESTAMP, L_SE_ERR, -4, "The log timestamp key is mandatory");
+    CHECK_KEY_THROW_AND_LOG(api_data, MetadataServerLoggingDefinitionKeyRPC::PARAM_NODE_LOGGING_LOG_TIMESTAMP, L_SE_ERR, -4, "The log timestamp key is mandatory:"+api_data->getJSONString());
     CHAOS_LASSERT_EXCEPTION(api_data->isInt64Value(MetadataServerLoggingDefinitionKeyRPC::PARAM_NODE_LOGGING_LOG_TIMESTAMP), L_SE_ERR, -5, "The log timestamp key needs to be an int64 value");
-    CHECK_KEY_THROW_AND_LOG(api_data, MetadataServerLoggingDefinitionKeyRPC::PARAM_NODE_LOGGING_LOG_DOMAIN, L_SE_ERR, -6, "The log domain key is mandatory");
+    CHECK_KEY_THROW_AND_LOG(api_data, MetadataServerLoggingDefinitionKeyRPC::PARAM_NODE_LOGGING_LOG_DOMAIN, L_SE_ERR, -6, "The log domain key is mandatory:"+api_data->getJSONString());
     CHAOS_LASSERT_EXCEPTION(api_data->isStringValue(MetadataServerLoggingDefinitionKeyRPC::PARAM_NODE_LOGGING_LOG_DOMAIN), L_SE_ERR, -7, "The log domain needs to be a string");
-    CHECK_KEY_THROW_AND_LOG(api_data, MetadataServerLoggingDefinitionKeyRPC::PARAM_NODE_LOGGING_LOG_SUBJECT, L_SE_ERR, -7, "The log subject key is mandatory");
+    CHECK_KEY_THROW_AND_LOG(api_data, MetadataServerLoggingDefinitionKeyRPC::PARAM_NODE_LOGGING_LOG_SUBJECT, L_SE_ERR, -7, "The log subject key is mandatory:"+api_data->getJSONString());
     CHAOS_LASSERT_EXCEPTION(api_data->isStringValue(MetadataServerLoggingDefinitionKeyRPC::PARAM_NODE_LOGGING_LOG_SUBJECT), L_SE_ERR, -7, "The log subject needs to be a string");
     GET_DATA_ACCESS(LoggingDataAccess, l_da, -8);
     
@@ -71,7 +71,7 @@ CDWUniquePtr SubmitEntry::execute(CDWUniquePtr api_data) {
     
     //insert the log entry
     if((err = l_da->insertNewEntry(new_log_entry))){
-        LOG_AND_TROW(L_SE_ERR, -9, "Error creaating new log entry");
+        LOG_AND_TROW(L_SE_ERR, -9, "Error creating new log entry");
     }
     
     //we can send the event
