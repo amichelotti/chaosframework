@@ -38,6 +38,96 @@ using namespace chaos::common::metadata_logging;
 #define MLM_DBG     DBG_LOG(MetadataLoggingManager)
 #define MLM_ERR     ERR_LOG(MetadataLoggingManager)
 
+#ifdef USE_MESSAGE_PUBLISH_SUBCRIBE
+MetadataLoggingManager::MetadataLoggingManager() {
+    //add default channels
+    registerChannel("StandardLoggingChannel",
+                    METADATA_LOGGING_STANDARD_LOGGING_CHANNEL_INSTANCER);
+    registerChannel("AlarmLoggingChannel",
+                    METADATA_LOGGING_ALARM_LOGGING_CHANNEL_INSTANCER);
+    registerChannel("ErrorLoggingChannel",
+                    METADATA_LOGGING_ERROR_LOGGING_CHANNEL_INSTANCER);
+    registerChannel("BatchCommandLoggingChannel",
+                    METADATA_LOGGING_COMMAND_LOGGING_CHANNEL_INSTANCER);
+}
+
+MetadataLoggingManager::~MetadataLoggingManager() {}
+
+void MetadataLoggingManager::init(void *init_data)  {
+    std::string msgbrokerdrv = "kafka-rdk";
+    msgbrokerdrv = GlobalConfiguration::getInstance()->getOption<std::string>(InitOption::OPT_MSG_BROKER_DRIVER);
+
+    prod            = chaos::common::message::MessagePSDriver::getProducerDriver(msgbrokerdrv);
+  
+    CHAOS_LASSERT_EXCEPTION(prod, MLM_ERR, -1 , "Error getting producer message");
+    
+    
+}
+
+void MetadataLoggingManager::deinit()  {
+    
+    boost::unique_lock<boost::mutex> wl(mutext_maps);
+    for(MetadataLoggingInstancesMapIterator it = map_instance.begin();
+        it != map_instance.end();
+        it++) {
+        MLM_DBG << "Remove channel instance:"<< it->first;
+        if(it->second != NULL) {
+            delete(it->second);
+        }
+    }
+    MLM_DBG << "All channel has been removed";
+    map_instance.clear();
+    map_instancer.clear();
+    
+}
+
+void MetadataLoggingManager::registerChannel(const std::string& channel_alias,
+                                             chaos::common::utility::ObjectInstancer<AbstractMetadataLogChannel> *instancer) {
+    map_instancer.insert(std::pair<std::string, ChaosSharedPtr< chaos::common::utility::ObjectInstancer<AbstractMetadataLogChannel > > >(channel_alias, ChaosSharedPtr< chaos::common::utility::ObjectInstancer<AbstractMetadataLogChannel > > (instancer)));
+}
+
+AbstractMetadataLogChannel *MetadataLoggingManager::getChannel(const std::string channel_alias) {
+    //chec if we are initilized
+    if(getServiceState() != 1) return NULL;
+    boost::unique_lock<boost::mutex> wl(mutext_maps);
+    //check if we have the channel
+    if(map_instancer.count(channel_alias) == 0) return NULL;
+    
+    AbstractMetadataLogChannel *result = map_instancer[channel_alias]->getInstance();
+    result->setLoggingManager(this);
+    map_instance.insert(std::pair<std::string, AbstractMetadataLogChannel*> (result->getInstanceUUID(), result));
+    
+    MLM_DBG << "Creted new channel instance " << result->getInstanceUUID() << " for " << channel_alias;
+    return result;
+}
+
+void MetadataLoggingManager::releaseChannel(AbstractMetadataLogChannel *channel_instance) {
+    //chec if we are initilized
+    boost::unique_lock<boost::mutex> wl(mutext_maps);
+    if(channel_instance == NULL) return;
+    if(map_instance.count(channel_instance->getInstanceUUID()) == 0) return;
+    //we can delete the instance
+    
+    map_instance.erase(channel_instance->getInstanceUUID());
+    MLM_DBG << "Release channel instance " << channel_instance->getInstanceUUID();
+    delete(channel_instance);
+}
+ int  MetadataLoggingManager::pushLogEntry(chaos::common::data::CDataWrapper *log_entry,
+                                 int32_t priority ){
+                                     int err=0;
+if(log_entry&& log_entry->hasKey(MetadataServerLoggingDefinitionKeyRPC::PARAM_NODE_LOGGING_LOG_SOURCE_IDENTIFIER)){
+//std::string key=log_entry->getStringValue(MetadataServerLoggingDefinitionKeyRPC::PARAM_NODE_LOGGING_LOG_SOURCE_IDENTIFIER)+"_log";
+std::string key="CHAOS_LOG";
+if ((err = prod->pushMsgAsync(*log_entry, key)) != 0) {
+    MLM_ERR << "Error pushing log entry" << prod->getLastError();
+  }
+}
+    
+return 0;
+}
+
+
+#else
 MetadataLoggingManager::MetadataLoggingManager():
 message_channel(NULL) {
     //add default channels
@@ -162,3 +252,4 @@ int MetadataLoggingManager::pushLogEntry(chaos::common::data::CDataWrapper *log_
     return CObjectProcessingPriorityQueue<CDataWrapper>::push(element,
                                                               priority);
 }
+#endif

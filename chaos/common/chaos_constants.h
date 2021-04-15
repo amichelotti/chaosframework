@@ -1520,9 +1520,12 @@ namespace chaos {
         static const unsigned int DPCK_DATASET_TYPE_DEV_ALARM          = 5;
         //! the constant that represent the alarm dataset type
         static const unsigned int DPCK_DATASET_TYPE_CU_ALARM           = 6;
+        //! the last log dataset
+        static const unsigned int DPCK_DATASET_TYPE_LOG           = 7;
+       
         //! the command dataset
-        static const unsigned int DPCK_DATASET_TYPE_COMMAND            = 7;
-
+        static const unsigned int DPCK_DATASET_TYPE_COMMAND            = 8;
+       
         //!define tags associated to the dataset[array of string]
         static const char * const DPCK_DATASET_TAG                    = "dpck_ds_tag";
 
@@ -1683,6 +1686,7 @@ namespace chaos {
     //! Namespace for the domain for the unique identification key
     namespace DataPackPrefixID {
         static const char * const COMMAND_DATASET_POSTFIX    = "_cmd";
+        static const char * const LOG_DATASET_POSTFIX    = "_log";
 
         static const char * const OUTPUT_DATASET_POSTFIX    = "_o";
         static const char * const INPUT_DATASET_POSTFIX     = "_i";
@@ -1701,6 +1705,9 @@ namespace chaos {
         static const char * const DEV_ALARM_DATASET_ID = "device_alarms";
         static const char * const CU_ALARM_DATASET_ID  = "cu_alarms";
         static const char * const HEALTH_DATASET_ID    = "health";
+        static const char * const COMMAND_DATASET_ID    = "command";
+        static const char * const LOG_DATASET_ID    = "log";
+
     }
     /** @} */ // end of DataPackPrefixID
 #define DPCK_LAST_DATASET_INDEX	 6
@@ -1732,6 +1739,8 @@ namespace chaos {
                  //!Integer 64 bit length
             case DataPackCommonKey::DPCK_DATASET_TYPE_COMMAND:
                 return DataPackPrefixID::COMMAND_DATASET_POSTFIX;
+           case DataPackCommonKey::DPCK_DATASET_TYPE_LOG:
+                return DataPackPrefixID::LOG_DATASET_POSTFIX;
            
             default:
                 return "";
@@ -1748,6 +1757,7 @@ namespace chaos {
         if(ds_postfix.compare(DataPackPrefixID::CU_ALARM_DATASET_POSTFIX) == 0){return DataPackCommonKey::DPCK_DATASET_TYPE_CU_ALARM;}
         if(ds_postfix.compare(DataPackPrefixID::HEALTH_DATASET_POSTFIX) == 0){return DataPackCommonKey::DPCK_DATASET_TYPE_HEALTH;}
         if(ds_postfix.compare(DataPackPrefixID::COMMAND_DATASET_POSTFIX) == 0){return DataPackCommonKey::DPCK_DATASET_TYPE_COMMAND;}
+        if(ds_postfix.compare(DataPackPrefixID::LOG_DATASET_POSTFIX) == 0){return DataPackCommonKey::DPCK_DATASET_TYPE_LOG;}
 
         return -1;
     }
@@ -1768,6 +1778,10 @@ namespace chaos {
                 return DataPackID::DEV_ALARM_DATASET_ID;
             case DataPackCommonKey::DPCK_DATASET_TYPE_CU_ALARM:
                 return DataPackID::CU_ALARM_DATASET_ID;
+            case DataPackCommonKey::DPCK_DATASET_TYPE_COMMAND:
+                return DataPackID::COMMAND_DATASET_ID;
+            case DataPackCommonKey::DPCK_DATASET_TYPE_LOG:
+                return DataPackID::LOG_DATASET_ID;
             default:
                 return "unknown";
         }

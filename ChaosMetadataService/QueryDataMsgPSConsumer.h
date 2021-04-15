@@ -29,7 +29,7 @@
 namespace chaos {
 namespace metadata_service {
 
-class QueryDataMsgPSConsumer : public QueryDataConsumer {
+class QueryDataMsgPSConsumer : public QueryDataConsumer,protected chaos::common::pqueue::CObjectProcessingPriorityQueue<chaos::common::data::CDataWrapper>  {
   std::string                             msgbrokerdrv;
   std::string                             msgbroker;
   std::string                             groupid;
@@ -40,7 +40,8 @@ class QueryDataMsgPSConsumer : public QueryDataConsumer {
   void                                  messageError(const chaos::common::message::ele_t& data);
 
   //---------------- DirectIODeviceServerChannelHandler -----------------------
-  
+  void processBufferElement(chaos::common::data::CDWShrdPtr log_entry);
+
  public:
   QueryDataMsgPSConsumer(const std::string& id);
   ~QueryDataMsgPSConsumer(){}

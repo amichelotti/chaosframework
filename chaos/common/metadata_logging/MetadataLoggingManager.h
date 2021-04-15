@@ -1,6 +1,7 @@
 /*
- * Copyright 2012, 2017 INFN
- *
+ * Copyright 2012, 2021 INFN
+ * Claudio Bisegni, Andrea Michelotti
+ * 
  * Licensed under the EUPL, Version 1.2 or – as soon they
  * will be approved by the European Commission - subsequent
  * versions of the EUPL (the "Licence");
@@ -21,27 +22,73 @@
 
 #ifndef __CHAOSFramework__MetadataLoggingManager_h
 #define __CHAOSFramework__MetadataLoggingManager_h
-
 #include <chaos/common/chaos_types.h>
 #include <chaos/common/utility/Singleton.h>
 #include <chaos/common/data/CDataWrapper.h>
 #include <chaos/common/utility/ObjectInstancer.h>
 #include <chaos/common/utility/InizializableService.h>
-#include <chaos/common/message/MDSMessageChannel.h>
-#include <chaos/common/pqueue/CObjectProcessingPriorityQueue.h>
 #include <chaos/common/metadata_logging/AbstractMetadataLogChannel.h>
 
 #include <boost/thread.hpp>
 
 #include <map>
 #include <string>
+#ifdef USE_MESSAGE_PUBLISH_SUBCRIBE
+#include <chaos/common/message/MessagePSDriver.h>
+#else
+#include <chaos/common/message/MDSMessageChannel.h>
 
+#include <chaos/common/pqueue/CObjectProcessingPriorityQueue.h>
+
+#endif
 namespace chaos {
     //! forward decalration
     namespace common {
         namespace metadata_logging {
             
             CHAOS_DEFINE_MAP_FOR_TYPE(std::string, AbstractMetadataLogChannel*, MetadataLoggingInstancesMap);
+#ifdef USE_MESSAGE_PUBLISH_SUBCRIBE
+
+            //! Metadata Logging Service
+            /*!
+             The metadata logging service, permit to store into !CHAOS MDS, metadata information.
+             They can be, error, command or other thing that nodes need to be store on MDS.
+             */
+            class MetadataLoggingManager:
+            public chaos::common::utility::InizializableService,
+            public chaos::common::utility::Singleton<MetadataLoggingManager> {
+                friend class AbstractMetadataLogChannel;
+                friend class chaos::common::utility::Singleton<MetadataLoggingManager>;
+                
+                const std::string metadata_logging_domain;
+                const std::string metadata_logging_action;
+                
+                boost::mutex mutext_maps;
+            
+                std::map<std::string, ChaosSharedPtr< chaos::common::utility::ObjectInstancer<AbstractMetadataLogChannel> > > map_instancer;
+                
+                MetadataLoggingInstancesMap map_instance;
+                
+                chaos::common::message::producer_uptr_t prod;
+                MetadataLoggingManager();
+                ~MetadataLoggingManager();
+                
+                 int pushLogEntry(chaos::common::data::CDataWrapper *log_entry,
+                                 int32_t priority = 0);
+            protected:
+               
+            public:
+                void init(void *init_data);
+                void deinit();
+                
+                void registerChannel(const std::string& channel_alias,
+                                     chaos::common::utility::ObjectInstancer<AbstractMetadataLogChannel> *instancer);
+                
+                AbstractMetadataLogChannel *getChannel(const std::string channel_alias);
+                void releaseChannel(AbstractMetadataLogChannel *channel_instance);
+            };
+
+#else
             //! Metadata Logging Service
             /*!
              The metadata logging service, permit to store into !CHAOS MDS, metadata information.
@@ -87,6 +134,7 @@ namespace chaos {
                 AbstractMetadataLogChannel *getChannel(const std::string channel_alias);
                 void releaseChannel(AbstractMetadataLogChannel *channel_instance);
             };
+#endif
             
         }
     }

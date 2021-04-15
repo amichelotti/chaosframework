@@ -49,7 +49,10 @@ namespace chaos{
                 KeyDataStorageDomainSystem =  DataPackCommonKey::DPCK_DATASET_TYPE_SYSTEM,
                 KeyDataStorageDomainHealth = DataPackCommonKey::DPCK_DATASET_TYPE_HEALTH,
                 KeyDataStorageDomainDevAlarm =DataPackCommonKey::DPCK_DATASET_TYPE_DEV_ALARM,
-                KeyDataStorageDomainCUAlarm =DataPackCommonKey::DPCK_DATASET_TYPE_CU_ALARM
+                KeyDataStorageDomainCUAlarm =DataPackCommonKey::DPCK_DATASET_TYPE_CU_ALARM,
+                KeyDataStorageDomainLOG =DataPackCommonKey::DPCK_DATASET_TYPE_LOG,
+                KeyDataStorageDomainCMD =DataPackCommonKey::DPCK_DATASET_TYPE_COMMAND
+
             } KeyDataStorageDomain;
             
             //!define tags set
