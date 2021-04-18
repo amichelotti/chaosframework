@@ -8,31 +8,27 @@
 
 #ifndef CHAOSFramework_mds_constants_h
 #define CHAOSFramework_mds_constants_h
-
 namespace chaos {
     namespace metadata_service {
-#define OPT_BATCH_SANDBOX_SIZE          "batch-sandbox-size"
-#define OPT_PERSITENCE_IMPL				"persistence-impl"
-#define OPT_PERSITENCE_SERVER_ADDR_LIST	"persistence-servers"
-#define OPT_PERSITENCE_KV_PARAMTER		"persistence-kv-param"
-#define OPT_SYNCTIME_ERROR		        "timesync-max-error"
+static const char* OPT_BATCH_SANDBOX_SIZE          ="batch-sandbox-size";
+static const char* OPT_PERSITENCE_IMPL			  ="persistence-impl";
+static const char* OPT_PERSITENCE_SERVER_ADDR_LIST ="persistence-servers";
+static const char* OPT_PERSITENCE_KV_PARAMTER	  ="persistence-kv-param";
+static const char* OPT_SYNCTIME_ERROR		      = "timesync-max-error";
        
-#define OPT_CRON_JOB_CHECK              "cron-job-check-repeat-time"
-#define OPT_CRON_JOB_AGEING_MANAGEMENT	"cron-job-ageing-management-repeat-time"
+static const char* OPT_CRON_JOB_CHECK              ="cron-job-check-repeat-time";
+static const char* OPT_CRON_JOB_AGEING_MANAGEMENT  ="cron-job-ageing-management-repeat-time";
         
         //cache configuration
-#define OPT_CACHE_LOG_METRIC                    "cache-log-metric"
-#define OPT_CACHE_LOG_METRIC_UPDATE_INTERVAL    "cache-log-metric-update-interval"
-#define OPT_CACHE_SERVER_LIST                   "cache-servers"
-#define OPT_CACHE_DRIVER                        "cache-driver"
-#define OPT_CACHE_DRIVER_KVP                    "cache-driver-kvp"
-#define OPT_CACHE_DRIVER_POOL_MIN_INSTANCE      "cache-driver-pool-min-instance"
-
-#define OPT_KAFKA_
-        
-#define OPT_ARCHIVER_NUM                         "archiver-instances"
-#define OPT_ARCHIVER_THREAD                      "archiver-thread"
-#define OPT_ARCHIVER_QUEUE_PUSH_TIMEOUT          "archiver-queue-push-timeout"
+static const char* OPT_CACHE_LOG_METRIC                    = "cache-log-metric";
+static const char* OPT_CACHE_LOG_METRIC_UPDATE_INTERVAL    = "cache-log-metric-update-interval";
+static const char* OPT_CACHE_SERVER_LIST                   = "cache-servers";
+static const char* OPT_CACHE_DRIVER                        = "cache-driver";
+static const char* OPT_CACHE_DRIVER_KVP                    = "cache-driver-kvp";
+static const char* OPT_CACHE_DRIVER_POOL_MIN_INSTANCE      = "cache-driver-pool-min-instance";        
+static const char* OPT_ARCHIVER_NUM                        ="archiver-instances";
+static const char* OPT_ARCHIVER_THREAD                     ="archiver-thread";
+static const char* OPT_ARCHIVER_QUEUE_PUSH_TIMEOUT         ="archiver-queue-push-timeout";
     }
 }
 #endif
