@@ -37,14 +37,15 @@
 #include <boost/thread.hpp>
 
 using namespace chaos::metadata_service;
+using namespace chaos::common::cache_system;
 
 using namespace chaos::metadata_service;
 using namespace chaos::metadata_service::worker;
-using namespace chaos::metadata_service::cache_system;
 using namespace chaos::metadata_service::object_storage::abstraction;
 
 using namespace chaos::metadata_service::persistence;
 using namespace chaos::metadata_service::persistence::data_access;
+using namespace chaos::common::cache_system;
 
 using namespace chaos::common::data::structured;
 using namespace chaos::common::utility;

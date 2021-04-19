@@ -26,7 +26,7 @@
 #include "ChaosMetadataService.h"
 
 using namespace chaos::metadata_service;
-
+using namespace chaos::common::cache_system;
 int main(int argc, const char * argv[]) {
     try {
         ChaosMetadataService::getInstance()->getGlobalConfigurationInstance()->addOption<uint32_t>(OPT_SYNCTIME_ERROR,"max error in ms expressed as power of 2 (0,1,2,4,8,16,32,64,128,256ms..)",64,&ChaosMetadataService::getInstance()->timeError_opt);

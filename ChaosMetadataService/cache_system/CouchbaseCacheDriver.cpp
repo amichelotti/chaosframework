@@ -39,6 +39,7 @@
 using namespace chaos::common::data;
 using namespace chaos::common::utility;
 using namespace chaos::common::constants;
+using namespace chaos::common::cache_system;
 using namespace chaos::metadata_service::cache_system;
 
 DEFINE_CLASS_FACTORY(CouchbaseCacheDriver, CacheDriver);
@@ -255,6 +256,7 @@ int CouchbaseCacheDriver::removeServer(const std::string& server_desc) {
 static void couchbaseInstanceDeallocator(lcb_t *cb_ist) {
     if(cb_ist){}
 }
+#if 0
 
 CouchbaseDriverPool::CouchbaseDriverPool():
 instance_created(0),
@@ -278,6 +280,30 @@ minimum_instance_in_pool(ChaosMetadataService::getInstance()->setting.cache_driv
                                  this,
                                  minimum_instance_in_pool));
 }
+#else
+CouchbaseDriverPool::CouchbaseDriverPool():
+instance_created(0),
+minimum_instance_in_pool(CacheDriver::cache_settings.caching_pool_min_instances_number) {
+    
+    all_server_to_use = CacheDriver::cache_settings.startup_chache_servers;
+    
+    if(CacheDriver::cache_settings.key_value_custom_param.count("bucket")) {
+        bucket_name = CacheDriver::cache_settings.key_value_custom_param["bucket"];
+    }
+    
+    if(CacheDriver::cache_settings.key_value_custom_param.count("user")) {
+        bucket_user = CacheDriver::cache_settings.key_value_custom_param["user"];
+    }
+    
+    if(CacheDriver::cache_settings.key_value_custom_param.count("pwd")) {
+        bucket_pwd = CacheDriver::cache_settings.key_value_custom_param["pwd"];
+    }
+    
+    pool.reset(new CouchbasePool("couchbase_cache_driver",
+                                 this,
+                                 minimum_instance_in_pool));
+}
+#endif
 
 CouchbaseDriverPool::~CouchbaseDriverPool() {}
 

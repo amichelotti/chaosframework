@@ -1,5 +1,5 @@
 /*
- * Copyright 2012, 2017 INFN
+ * Copyright 2012, 2021 INFN
  *
  * Licensed under the EUPL, Version 1.2 or – as soon they
  * will be approved by the European Commission - subsequent
@@ -31,11 +31,10 @@
 #include <chaos/common/data/Buffer.hpp>
 #include <chaos/common/utility/NamedService.h>
 #include <chaos/common/utility/InizializableService.h>
-
 #include "cache_system_types.h"
 
 namespace chaos {
-    namespace metadata_service {
+    namespace common {
         namespace cache_system {
             
             typedef chaos::common::data::BufferSPtr CacheData;
@@ -52,9 +51,10 @@ namespace chaos {
             public chaos::common::utility::NamedService,
 			public chaos::common::utility::InizializableService {
 			protected:
-				CacheDriverSetting *cache_settings;
 				CacheDriver(std::string alias);
             public:
+                static CacheDriverSetting cache_settings;
+
 				virtual ~CacheDriver();
 				
                 virtual int putData(const std::string& key,
@@ -81,6 +81,9 @@ namespace chaos {
 				
 				//!deinit
 				void deinit();
+                chaos::common::data::CDWShrdPtr getData(const std::string& key);
+                std::vector<chaos::common::data::CDWShrdPtr> getData(const ChaosStringVector&    keys);
+                                    
             };
         }
     }

@@ -21,7 +21,7 @@
 #ifndef __CHAOSFramework__MemcachedCacheDriver__
 #define __CHAOSFramework__MemcachedCacheDriver__
 
-#include "CacheDriver.h"
+#include <chaos/common/caching_system/CacheDriver.h>
 
 #include <string>
 #include <libmemcached/memcached.hpp>
@@ -37,7 +37,7 @@ namespace chaos {
              work to do on cache. Cache system is to be intended as global
              to all CacheDriver instance.
              */
-			DECLARE_CLASS_FACTORY(MemcachedCacheDriver, CacheDriver) {
+			DECLARE_CLASS_FACTORY(MemcachedCacheDriver, chaos::common::cache_system::CacheDriver) {
 				REGISTER_AND_DEFINE_DERIVED_CLASS_FACTORY_HELPER(MemcachedCacheDriver)
 
 				memcached_st *memcache_client;

@@ -51,7 +51,7 @@ using namespace chaos::metadata_service;
 using namespace chaos::metadata_service::api;
 using namespace chaos::metadata_service::batch;
 using namespace chaos::common::healt_system;
-
+using namespace chaos::common::cache_system;
 using namespace chaos::service_common::persistence::data_access;
 
 WaitSemaphore ChaosMetadataService::waitCloseSemaphore;

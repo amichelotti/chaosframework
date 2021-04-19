@@ -552,6 +552,11 @@ SET(common_lib_src ${common_lib_src}
 SET(common_lib_src ${common_lib_src}
                     thread/WaitSemaphore.cpp)
 
+SET(common_lib_src ${common_lib_src}
+                    caching_system/CacheDriver.cpp
+                    caching_system/cache_system_types.cpp
+                    )
+
 IF(CHAOS_PROMETHEUS)
 MESG("Add source code for metrics: ${CHAOS_PROMETHEUS}")  
 ADD_DEFINITIONS(-DCHAOS_PROMETHEUS)

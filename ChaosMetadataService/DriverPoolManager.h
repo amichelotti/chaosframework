@@ -32,7 +32,7 @@
 
 namespace chaos{
     namespace metadata_service {
-        typedef chaos::common::pool::ResourcePool<chaos::metadata_service::cache_system::CacheDriver> CachePool;
+        typedef chaos::common::pool::ResourcePool<chaos::common::cache_system::CacheDriver> CachePool;
         typedef CachePool::ResourcePoolHelper CachePoolHelper;
         typedef CachePool::ResourceSlot CachePoolSlot;
         
@@ -46,7 +46,7 @@ namespace chaos{
             chaos::common::utility::InizializableServiceContainer<chaos::service_common::persistence::data_access::AbstractPersistenceDriver> storage_driver;
             chaos::common::utility::InizializableServiceContainer<chaos::service_common::persistence::data_access::AbstractPersistenceDriver> log_driver;
 
-            chaos::common::utility::InizializableServiceContainer<chaos::metadata_service::cache_system::CacheDriver> cache_driver;
+            chaos::common::utility::InizializableServiceContainer<chaos::common::cache_system::CacheDriver> cache_driver;
 
             DriverPoolManager();
             ~DriverPoolManager();
@@ -56,7 +56,7 @@ namespace chaos{
             void deinit();
             
         public:
-            chaos::metadata_service::cache_system::CacheDriver& getCacheDrv();
+            chaos::common::cache_system::CacheDriver& getCacheDrv();
             
             chaos::service_common::persistence::data_access::AbstractPersistenceDriver& getPersistenceDrv();
             template<typename T>

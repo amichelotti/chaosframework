@@ -21,7 +21,7 @@
 #ifndef __CHAOSFramework__CouchbaseCacheDriver__
 #define __CHAOSFramework__CouchbaseCacheDriver__
 
-#include "CacheDriver.h"
+#include <chaos/common/caching_system/CacheDriver.h>
 
 #include <vector>
 #include <string>
@@ -94,14 +94,14 @@ namespace chaos {
             
             struct GetResult:
             public Result {
-                CacheData& cached_data;
-                GetResult(CacheData& _cached_data);
+                chaos::common::cache_system::CacheData& cached_data;
+                GetResult(chaos::common::cache_system::CacheData& _cached_data);
             };
             
             struct MultiGetResult:
             public Result {
-                MultiCacheData& multi_cached_data;
-                MultiGetResult(MultiCacheData& _multi_cached_data);
+                chaos::common::cache_system::MultiCacheData& multi_cached_data;
+                MultiGetResult(chaos::common::cache_system::MultiCacheData& _multi_cached_data);
             };
             
             struct StoreResult:
@@ -113,7 +113,7 @@ namespace chaos {
             /*!
              This driver uses couchbase for implementa cache driver.
              */
-            DECLARE_CLASS_FACTORY(CouchbaseCacheDriver, CacheDriver) {
+            DECLARE_CLASS_FACTORY(CouchbaseCacheDriver, chaos::common::cache_system::CacheDriver) {
                 REGISTER_AND_DEFINE_DERIVED_CLASS_FACTORY_HELPER(CouchbaseCacheDriver)
                 friend class CouchbaseDriverPool;
 
@@ -138,13 +138,13 @@ namespace chaos {
                 int deleteData(const std::string& key);
 
                 int putData(const std::string& key,
-                            CacheData data);
+                            chaos::common::cache_system::CacheData data);
                 
                 int getData(const std::string& key,
-                            CacheData& data);
+                            chaos::common::cache_system::CacheData& data);
                 
                 int getData(const ChaosStringVector& keys,
-                            MultiCacheData& multi_data);
+                            chaos::common::cache_system::MultiCacheData& multi_data);
                 
                 int addServer(const std::string& server_desc);
                 

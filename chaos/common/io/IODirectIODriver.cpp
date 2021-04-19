@@ -303,6 +303,7 @@ chaos::common::data::CDataWrapper* IODirectIODriver::updateConfiguration(chaos::
         IODirectIODriver_DLDBG_ <<"Appling TIMING ERROR MASK:"<<std::hex<<chaos::common::utility::TimingUtil::timestamp_uncertenty_mask;
 
     }
+    
     //checkif someone has passed us the device indetification
     if(newConfigration->hasKey(DataServiceNodeDefinitionKey::DS_DIRECT_IO_FULL_ADDRESS_LIST)){
         chaos_data::CMultiTypeDataArrayWrapperSPtr liveMemAddrConfig = newConfigration->getVectorValue(DataServiceNodeDefinitionKey::DS_DIRECT_IO_FULL_ADDRESS_LIST);

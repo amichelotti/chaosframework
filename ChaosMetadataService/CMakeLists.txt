@@ -198,7 +198,7 @@ ExternalProject_Add(
 include_directories(chaos/common ../)
 link_directories(${CMAKE_INSTALL_PREFIX}/lib64)
 
-SET(cnd_src	main.cpp
+SET(cnd_src	
             ChaosMetadataService.cpp
             DriverPoolManager.cpp
             QueryDataConsumer.cpp
@@ -369,8 +369,7 @@ SET(cnd_src  ${cnd_src}	persistence/mongodb/MongoDBPersistenceDriver.cpp
 						            persistence/mongodb/MongoDBScriptDataAccess.cpp
                         persistence/mongodb/MongoDBAgentDataAccess.cpp)
 #Caching
-SET(cnd_src  ${cnd_src}	cache_system/CacheDriver.cpp
-                        cache_system/CouchbaseCacheDriver.cpp)
+SET(cnd_src  ${cnd_src}	cache_system/CouchbaseCacheDriver.cpp)
 
 
 #Object Storage
@@ -440,7 +439,8 @@ SET(cnd_src  ${cnd_src}	worker/DeviceSharedDataWorkerMetricCollector.cpp
                         cache_system/CacheDriverMetricCollector.cpp)
 ENDIF(CHAOS_PROMETHEUS)
 
-ADD_EXECUTABLE(${PROJECT_NAME} ${cnd_src})
+
+ADD_EXECUTABLE(${PROJECT_NAME} main.cpp ${cnd_src})
 
 #add dependency
 add_dependencies(${PROJECT_NAME} mongo-cxx-driver)
@@ -477,7 +477,20 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE USE_MONGODB3_DRIVER=1)
 # target_compile_definitions(${PROJECT_NAME} PRIVATE USE_CASSANDRA_DRIVER=1)
 
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE ${BUILD_LIBRARY})
+
+IF (BUILD_FORCE_STATIC  )
+  ADD_LIBRARY(chaos_cds STATIC ${cnd_src})
+  TARGET_LINK_LIBRARIES(chaos_cds ${BUILD_LIBRARY})
+ELSE (BUILD_FORCE_STATIC)
+  ADD_LIBRARY(chaos_cds SHARED ${cnd_src})
+  set_target_properties(chaos_cds PROPERTIES VERSION 1.0.0 SOVERSION 1)
+  TARGET_LINK_LIBRARIES(chaos_cds PRIVATE ${BUILD_LIBRARY})
+ENDIF (BUILD_FORCE_STATIC)
+
 #INSTALL_TARGETS(/bin ${PROJECT_NAME})
 INSTALL(TARGETS ${PROJECT_NAME}
         DESTINATION "bin"
+        PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+INSTALL(TARGETS chaos_cds
+        DESTINATION "lib"
         PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)

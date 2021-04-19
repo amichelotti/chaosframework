@@ -50,10 +50,11 @@ void DriverPoolManager::init(void *init_data)  {
     //init cache pool
     //InizializableService::initImplementation(cache_pool, NULL, "CacheDriverPool", __PRETTY_FUNCTION__);
     const std::string cache_impl_name = ChaosMetadataService::getInstance()->setting.cache_driver_setting.cache_driver_impl+"CacheDriver";
+    chaos::common::cache_system::CacheDriver::cache_settings=ChaosMetadataService::getInstance()->setting.cache_driver_setting;
 #if CHAOS_PROMETHEUS
-    cache_driver.reset(new CacheDriverMetricCollector(ObjectFactoryRegister<chaos::metadata_service::cache_system::CacheDriver>::getInstance()->getNewInstanceByName(cache_impl_name)), cache_impl_name);
+    cache_driver.reset(new CacheDriverMetricCollector(ObjectFactoryRegister<chaos::common::cache_system::CacheDriver>::getInstance()->getNewInstanceByName(cache_impl_name)), cache_impl_name);
 #else
-    cache_driver.reset(ObjectFactoryRegister<chaos::metadata_service::cache_system::CacheDriver>::getInstance()->getNewInstanceByName(cache_impl_name),
+    cache_driver.reset(ObjectFactoryRegister<chaos::common::cache_system::CacheDriver>::getInstance()->getNewInstanceByName(cache_impl_name),
                        cache_impl_name);
 #endif
     
@@ -94,7 +95,7 @@ void DriverPoolManager::deinit()  {
 }
 
 //--------------cach driver pool method--------------
-chaos::metadata_service::cache_system::CacheDriver& DriverPoolManager::getCacheDrv() {
+chaos::common::cache_system::CacheDriver& DriverPoolManager::getCacheDrv() {
     return *cache_driver;
 }
 

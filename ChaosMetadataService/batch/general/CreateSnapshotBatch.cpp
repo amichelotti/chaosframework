@@ -29,7 +29,7 @@ using namespace chaos::common::utility;
 using namespace chaos::common::network;
 
 using namespace chaos::metadata_service;
-using namespace chaos::metadata_service::cache_system;
+using namespace chaos::common::cache_system;
 using namespace chaos::metadata_service::batch::general;
 
 #define G_RS_INFO INFO_LOG(CreateSnapshotBatch)

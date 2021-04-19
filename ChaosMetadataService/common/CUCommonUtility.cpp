@@ -30,6 +30,7 @@
 
 using namespace chaos::common::data;
 using namespace chaos::common::property;
+using namespace chaos::common::cache_system;
 using namespace chaos::metadata_service::common;
 using namespace chaos::metadata_service::object_storage::abstraction;
 using namespace chaos::metadata_service::persistence::data_access;
@@ -225,7 +226,7 @@ void                                              CUCommonUtility::addDataServic
     persistence.finalizeArrayForKey(OPT_PERSITENCE_KV_PARAMTER);
     result->append("persistence", persistence);
   }
-  std::vector<std::string> cache_server = GlobalConfiguration::getInstance()->getOption<std::vector<std::string> >(chaos::metadata_service::OPT_CACHE_SERVER_LIST);
+  std::vector<std::string> cache_server = GlobalConfiguration::getInstance()->getOption<std::vector<std::string> >(OPT_CACHE_SERVER_LIST);
   if (cache_server.size()) {
     CDataWrapper cache;
     cache.addStringValue(OPT_CACHE_DRIVER, GlobalConfiguration::getInstance()->getOption<std::string>(OPT_CACHE_DRIVER));
