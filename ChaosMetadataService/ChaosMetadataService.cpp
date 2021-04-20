@@ -110,9 +110,9 @@ void ChaosMetadataService::init(void *init_data)  {
             throw chaos::CException(-4, "No persistence's server list provided", __PRETTY_FUNCTION__);
         }
         
-        if(getGlobalConfigurationInstance()->hasOption(OPT_PERSITENCE_KV_PARAMTER)) {
+        if(getGlobalConfigurationInstance()->hasOption(chaos::service_common::persistence::OPT_PERSITENCE_KV_PARAMTER)) {
             fillKVParameter(setting.persistence_kv_param_map,
-                            getGlobalConfigurationInstance()->getOption< std::vector< std::string> >(OPT_PERSITENCE_KV_PARAMTER));
+                            getGlobalConfigurationInstance()->getOption< std::vector< std::string> >(chaos::service_common::persistence::OPT_PERSITENCE_KV_PARAMTER));
         }
         
         //check for mandatory configuration

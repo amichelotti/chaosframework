@@ -60,13 +60,13 @@ namespace chaos {
                 ~CacheDriverMetricCollector();
                 //!inherited method
                 int putData(const std::string& key,
-                            CacheData data);
+                            chaos::common::cache_system::CacheData data);
                 //!inherited method
                 int getData(const std::string& key,
-                            CacheData& data);
+                            chaos::common::cache_system::CacheData& data);
                 //!inherited method
                 int getData(const ChaosStringVector&    keys,
-                            MultiCacheData&             multi_data);
+                            chaos::common::cache_system::MultiCacheData&             multi_data);
                 //!inherited method
                 int addServer(const std::string& server_desc);
                 //!inherited method

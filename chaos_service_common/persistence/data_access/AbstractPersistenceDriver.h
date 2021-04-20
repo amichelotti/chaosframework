@@ -25,14 +25,17 @@
 
 #include <map>
 #include <string>
+#include <chaos/common/data/CDataWrapper.h>
 
 #include <chaos/common/utility/NamedService.h>
 #include <chaos/common/utility/ObjectInstancer.h>
 #include <chaos/common/utility/InizializableService.h>
-
 namespace chaos {
     namespace service_common {
         namespace persistence {
+            static const char* OPT_PERSITENCE_IMPL			  ="persistence-impl";
+            static const char* OPT_PERSITENCE_SERVER_ADDR_LIST ="persistence-servers";
+            static const char* OPT_PERSITENCE_KV_PARAMTER	  ="persistence-kv-param";
             namespace data_access {
                 
                 
@@ -53,7 +56,12 @@ namespace chaos {
                         return static_cast<void*>(instance);
                     }
                 };
-                
+                typedef struct PersistenceDriverSetting {
+                    std::string							persistence_implementation;
+                    std::vector<std::string>			persistence_server_list;
+                    std::map<std::string, std::string>	persistence_kv_param_map;
+                    int init(const chaos::common::data::CDataWrapper&);
+                } PersistenceDriverSetting;
                 typedef std::map<std::string, InstanceContainer*>              MapDA;
                 typedef std::map<std::string, InstanceContainer*>::iterator    MapDAIterator;
                 
@@ -79,6 +87,7 @@ namespace chaos {
                     }
                     virtual void deleteDataAccess(void *instance) = 0;
                 public:
+                    static PersistenceDriverSetting settings;
                     AbstractPersistenceDriver(const std::string& name);
                     virtual ~AbstractPersistenceDriver();
                     

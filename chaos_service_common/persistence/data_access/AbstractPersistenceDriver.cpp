@@ -19,14 +19,48 @@
  * permissions and limitations under the Licence.
  */
 #include <chaos/common/global.h>
+#include <chaos/common/configuration/GlobalConfiguration.h>
 #include <chaos_service_common/persistence/data_access/AbstractPersistenceDriver.h>
 
 using namespace chaos::service_common::persistence::data_access;
 
 #define APD_INFO INFO_LOG(AbstractPersistenceDriver)
-#define APD_DBG  INFO_DBG(AbstractPersistenceDriver)
-#define APD_ERR  INFO_ERR(AbstractPersistenceDriver)
+#define APD_DBG  DBG_LOG(AbstractPersistenceDriver)
+#define APD_ERR  ERR_LOG(AbstractPersistenceDriver)
 
+PersistenceDriverSetting AbstractPersistenceDriver::settings;
+int PersistenceDriverSetting::init(const chaos::common::data::CDataWrapper&cs){
+
+  	if(cs.hasKey(OPT_PERSITENCE_IMPL)){
+                    persistence_implementation=cs.getStringValue(OPT_PERSITENCE_IMPL);
+                     APD_DBG<<"persistent implementation:"<<persistence_implementation;
+
+                }
+                if(cs.hasKey(OPT_PERSITENCE_SERVER_ADDR_LIST)&&cs.isVectorValue(OPT_PERSITENCE_SERVER_ADDR_LIST)){
+                    chaos::common::data::CMultiTypeDataArrayWrapperSPtr  v=cs.getVectorValue(OPT_PERSITENCE_SERVER_ADDR_LIST);
+                    if(v.get()){
+                        persistence_server_list=*v;
+                        APD_DBG<<" startup servers:"<<persistence_server_list.size()<<" "<<persistence_server_list[0];
+                    }
+                }
+               
+                if(cs.hasKey(OPT_PERSITENCE_KV_PARAMTER)&&cs.isVectorValue(OPT_PERSITENCE_KV_PARAMTER)){
+                    chaos::common::data::CMultiTypeDataArrayWrapperSPtr  v=cs.getVectorValue(OPT_PERSITENCE_KV_PARAMTER);
+                    if(v.get()){
+                        std::vector<std::string> a=*v;
+                        chaos::GlobalConfiguration::getInstance()->fillKVParameter(persistence_kv_param_map,a,"[a-zA-Z0-9/_-]+:[a-zA-Z0-9/_-]+");
+                        for(std::map<std::string, std::string>::iterator i=persistence_kv_param_map.begin();i!=persistence_kv_param_map.end();i++){
+                            APD_DBG<<i->first<<"="<<i->second;
+
+                        }
+                    } 
+                }
+                return 0;
+                
+			
+		
+            return -1;  
+}
 AbstractPersistenceDriver::AbstractPersistenceDriver(const std::string& name):
 NamedService(name){
 	

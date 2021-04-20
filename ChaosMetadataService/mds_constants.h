@@ -11,9 +11,7 @@
 namespace chaos {
     namespace metadata_service {
 static const char* OPT_BATCH_SANDBOX_SIZE          ="batch-sandbox-size";
-static const char* OPT_PERSITENCE_IMPL			  ="persistence-impl";
-static const char* OPT_PERSITENCE_SERVER_ADDR_LIST ="persistence-servers";
-static const char* OPT_PERSITENCE_KV_PARAMTER	  ="persistence-kv-param";
+
 static const char* OPT_SYNCTIME_ERROR		      = "timesync-max-error";
        
 static const char* OPT_CRON_JOB_CHECK              ="cron-job-check-repeat-time";

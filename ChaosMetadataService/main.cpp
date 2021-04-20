@@ -103,13 +103,13 @@ int main(int argc, const char * argv[]) {
                                                                                                          "Specify number of the sanbox to use into the batch subsytem",
                                                                                                          &ChaosMetadataService::getInstance()->setting.batch_sandbox_size);
         
-        ChaosMetadataService::getInstance()->getGlobalConfigurationInstance()->addOption< std::string >(OPT_PERSITENCE_IMPL,
+        ChaosMetadataService::getInstance()->getGlobalConfigurationInstance()->addOption< std::string >(chaos::service_common::persistence::OPT_PERSITENCE_IMPL,
                                                                                                         "Specify the implementation of the persistence layer",
                                                                                                         &ChaosMetadataService::getInstance()->setting.persistence_implementation);
-        ChaosMetadataService::getInstance()->getGlobalConfigurationInstance()->addOption< std::vector<std::string> >(OPT_PERSITENCE_SERVER_ADDR_LIST,
+        ChaosMetadataService::getInstance()->getGlobalConfigurationInstance()->addOption< std::vector<std::string> >(chaos::service_common::persistence::OPT_PERSITENCE_SERVER_ADDR_LIST,
                                                                                                                      "Specify servers where the persistence layer needs to use",
                                                                                                                      &ChaosMetadataService::getInstance()->setting.persistence_server_list);
-        ChaosMetadataService::getInstance()->getGlobalConfigurationInstance()->addOption< std::vector<std::string> >(OPT_PERSITENCE_KV_PARAMTER,
+        ChaosMetadataService::getInstance()->getGlobalConfigurationInstance()->addOption< std::vector<std::string> >(chaos::service_common::persistence::OPT_PERSITENCE_KV_PARAMTER,
                                                                                                                      "The key value parameter for storage implementation driver (ex k:v-k1:v1)");
         ChaosMetadataService::getInstance()->getGlobalConfigurationInstance()->addOption< unsigned int >(OPT_CRON_JOB_CHECK,
                                                                                                          "Specify the check time (in seconds ) for the cron job scheduler",

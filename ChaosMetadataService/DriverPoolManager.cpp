@@ -63,6 +63,10 @@ void DriverPoolManager::init(void *init_data)  {
     
     //init dirver instace
     const std::string persistence_impl_name = ChaosMetadataService::getInstance()->setting.persistence_implementation+"PersistenceDriver";
+    service_common::persistence::data_access::AbstractPersistenceDriver::settings.persistence_implementation=persistence_impl_name;
+    service_common::persistence::data_access::AbstractPersistenceDriver::settings.persistence_kv_param_map=ChaosMetadataService::getInstance()->setting.persistence_kv_param_map;
+    service_common::persistence::data_access::AbstractPersistenceDriver::settings.persistence_server_list=ChaosMetadataService::getInstance()->setting.persistence_server_list;
+
     persistence_driver.reset(ObjectFactoryRegister<service_common::persistence::data_access::AbstractPersistenceDriver>::getInstance()->getNewInstanceByName(persistence_impl_name),
                              persistence_impl_name);
     if(persistence_driver.get() == NULL) throw chaos::CException(-1, CHAOS_FORMAT("No %1% Persistence Driver found", %persistence_impl_name), __PRETTY_FUNCTION__);
