@@ -24,6 +24,7 @@
 
 using namespace chaos::common::metric;
 using namespace chaos::metadata_service::cache_system;
+using namespace chaos::common::cache_system;
 
 static CHistogramBoudaries size_buondaries = {1024, 2*1024, 4*1024, 8*1024, 16*1024, 32*1024, 64*1024, 128*1024, 256*1024, 512*1024, 1024*1024};
 
