@@ -32,6 +32,7 @@ using namespace chaos::metadata_service::object_storage;
 using namespace boost::filesystem;
 #define MAX_PATH_LEN 512
 #include "lz4_stream.h"
+#undef CERN_ROOT
 #ifdef CERN_ROOT
 #include <driver/misc/models/cernRoot/rootUtil.h>
 #include "TFile.h"

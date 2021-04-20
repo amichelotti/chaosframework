@@ -38,7 +38,7 @@ namespace chaos {
                  */
                 DECLARE_CLASS_FACTORY(NewMongoDBObjectStorageDriver,
                                       chaos::service_common::persistence::data_access::AbstractPersistenceDriver),
-                public chaos::service_common::persistence::mongodb::mongodb_cxx::BaseMongoDBDiver {
+                public chaos::service_common::persistence::mongodb::mongodb_cxx::BaseMongoDBDriver {
                     REGISTER_AND_DEFINE_DERIVED_CLASS_FACTORY_HELPER(NewMongoDBObjectStorageDriver)
                     
                     //! Construct the driver

@@ -397,9 +397,9 @@ object_storage/influxDB/InfluxDBLogStorageDriver.cpp
 )
 
 #hybrid base driver
-SET(cnd_src  ${cnd_src} ${api_src} object_storage/hybdriver/ShardKeyManagement.cpp
-                        object_storage/hybdriver/HybBaseDriver.cpp
-                        object_storage/hybdriver/HybBaseDataAccess.cpp)
+#SET(cnd_src  ${cnd_src} ${api_src} object_storage/hybdriver/ShardKeyManagement.cpp
+#                        object_storage/hybdriver/HybBaseDriver.cpp
+#                        object_storage/hybdriver/HybBaseDataAccess.cpp)
 
 #hybrid cassasndra storage driver
 # SET(cnd_src  ${cnd_src} object_storage/hybdriver/cassandra/CassHybObjectStorageDriver.cpp
@@ -442,7 +442,7 @@ SET(cnd_src  ${cnd_src}	worker/DeviceSharedDataWorkerMetricCollector.cpp
 ENDIF(CHAOS_PROMETHEUS)
 
 
-ADD_EXECUTABLE(${PROJECT_NAME} main.cpp ${cnd_src} ${posix_src} ${service_src})
+ADD_EXECUTABLE(${PROJECT_NAME} main.cpp ${cnd_src} ${posix_src} ${api_src} ${service_src})
 
 #add dependency
 add_dependencies(${PROJECT_NAME} mongo-cxx-driver)
@@ -464,9 +464,9 @@ SET(BUILD_LIBRARY ${BUILD_LIBRARY} chaos_common)
 SET(BUILD_LIBRARY ${BUILD_LIBRARY} boost_random)
 SET(BUILD_LIBRARY ${BUILD_LIBRARY} couchbaseS)
 SET(BUILD_LIBRARY ${BUILD_LIBRARY} mongoclient)
-IF(CERN_ROOT)
-SET(BUILD_LIBRARY ${BUILD_LIBRARY} chaos_driver_misc_cernroot Tree tbb)
-ENDIF()
+#IF(CERN_ROOT)
+#SET(BUILD_LIBRARY ${BUILD_LIBRARY} chaos_driver_misc_cernroot Tree tbb)
+#ENDIF()
 MESG("Enable link to mongocxx and bsoncxx library")
 SET(BUILD_LIBRARY ${BUILD_LIBRARY} mongocxx)
 SET(BUILD_LIBRARY ${BUILD_LIBRARY} bsoncxx)
@@ -481,12 +481,12 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE USE_MONGODB3_DRIVER=1)
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE ${BUILD_LIBRARY})
 
 IF (BUILD_FORCE_STATIC  )
-  ADD_LIBRARY(chaos_cds STATIC ${cdn_src} ${service_src})
+  ADD_LIBRARY(chaos_cds STATIC ${cnd_src} ${api_src} ${service_src})
   TARGET_LINK_LIBRARIES(chaos_cds chaos_common couchbaseS mongoclient mongocxx bsoncxx)
 ELSE (BUILD_FORCE_STATIC)
-  ADD_LIBRARY(chaos_cds SHARED ${cdn_src} ${service_src})
+  ADD_LIBRARY(chaos_cds SHARED ${cnd_src} ${api_src} ${service_src})
   set_target_properties(chaos_cds PROPERTIES VERSION 1.0.0 SOVERSION 1)
-  TARGET_LINK_LIBRARIES(chaos_cds chaos_common couchbaseS mongoclient mongocxx bsoncxx)
+  TARGET_LINK_LIBRARIES(chaos_cds PRIVATE chaos_common couchbaseS mongoclient mongocxx bsoncxx)
 ENDIF (BUILD_FORCE_STATIC)
 
 #INSTALL_TARGETS(/bin ${PROJECT_NAME})

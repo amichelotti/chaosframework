@@ -40,7 +40,7 @@ namespace chaos {
                  */
                 class HybBaseDriver :
                     public chaos::service_common::persistence::data_access::AbstractPersistenceDriver,
-                    public chaos::service_common::persistence::mongodb::mongodb_cxx::BaseMongoDBDiver {
+                    public chaos::service_common::persistence::mongodb::mongodb_cxx::BaseMongoDBDriver {
                     
                     //!inherited by AbstractPersistenceDriver
                     void deleteDataAccess(void *instance);
