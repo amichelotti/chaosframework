@@ -49,6 +49,7 @@ option(CHAOS_AGENT "Chaos Agent Service" ON)
 option(CHAOS_DATA_EXPORT "Chaos Data Export" ON)
 option(CHAOS_EXAMPLES "Chaos Examples" ON)
 endif(WIN32)
+
 option(CHAOS_CCS "Chaos CCS Compile needs qt5.6-static-x86_64 installed" OFF)
 if(NOT QMAKE_PATH)
   set(QMAKE_PATH /usr/local/chaos/qt-56/bin)
@@ -70,6 +71,8 @@ ENDIF()
 if (NOT WIN32)
 # CheckConfigureBuild(jsoncpp jsoncpp "-DJSONCPP_WITH_TESTS=OFF;-DJSONCPP_WITH_POST_BUILD_UNITTEST=OFF" https://github.com/bisegni )
 if(CHAOS_MDS)
+  SET(CDSLIB ON)
+
 # ExternalProject_Add(
 # 	 mongo-client
 # 	 GIT_REPOSITORY https://github.com/mongodb/mongo-cxx-driver
@@ -94,6 +97,7 @@ if(CHAOS_MDS)
  CheckConfigureBuild(mongoclient mongo-cxx-driver:legacy-1.0.0-rc0 "--extralib=boost_system;--disable-warnings-as-errors;install-mongoclient" https://github.com/mongodb)
 ENDIF()
 endif()
+
 #########
 
 #IF(CHAOS_ARCHITECTURE_TEST)

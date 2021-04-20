@@ -51,6 +51,7 @@ option(CHAOS_BUILD_UNITSERVER "Automatically build an Unit Server that includes 
 option(CHAOS_SANITIZER "sanitize the specified project" "")
 option(CHAOS_ADDRESS_SANITIZER "sanitize address" "OFF")
 option(CHAOS_THREAD_SANITIZER "sanitize threads" "OFF")
+option(CDSLIB "Chaos CDS LIBRARY" ON)
 
 option(GPUFIT "Fast Fitting libraries (needs CUDA toolkit)" OFF)
 
