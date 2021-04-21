@@ -73,7 +73,11 @@ chaos::common::data::CDWUniquePtr cuGetFullDescription(const std::string& uid);
 chaos::common::data::CDWUniquePtr getVariable(const std::string& uid);
 chaos::common::data::CDWUniquePtr setVariable(const std::string& uid,const chaos::common::data::CDataWrapper& value);
 chaos::common::data::CDWUniquePtr removeVariable(const std::string& uid);
-
+chaos::common::data::CDWUniquePtr nodeDelete(const std::string& uid,const std::string parent="");
+chaos::common::data::CDWUniquePtr nodeNew(const std::string& uid,const chaos::common::data::CDataWrapper& value,const std::string parent="");
+chaos::common::data::CDWUniquePtr getFullUnitServer(const std::string& uid);
+chaos::common::data::CDWUniquePtr setFullUnitServer(const std::string& uid,const chaos::common::data::CDataWrapper& value);
+chaos::common::data::CDWUniquePtr getAgentForNode(const std::string& uid);
 
 };
 }  // namespace service_common
