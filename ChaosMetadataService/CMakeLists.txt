@@ -454,6 +454,8 @@ ENDIF (BUILD_FORCE_STATIC)
 ADD_EXECUTABLE(${PROJECT_NAME} main.cpp  ${posix_src} )
 
 #add dependency
+add_dependencies(chaos_cds mongo-cxx-driver)
+
 add_dependencies(${PROJECT_NAME} mongo-cxx-driver)
 # add_dependencies(${PROJECT_NAME} cassandra-driver)
 
@@ -481,6 +483,7 @@ SET(BUILD_LIBRARY ${BUILD_LIBRARY} mongocxx)
 SET(BUILD_LIBRARY ${BUILD_LIBRARY} bsoncxx)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE USE_MONGODB3_DRIVER=1)
+target_compile_definitions(chaos_cds PRIVATE USE_MONGODB3_DRIVER=1)
 
 # MESG("Enable link to cassandra and bsoncxx library")
 # SET(BUILD_LIBRARY ${BUILD_LIBRARY} uv)
