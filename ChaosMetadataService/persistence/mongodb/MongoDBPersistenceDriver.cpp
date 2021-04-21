@@ -57,8 +57,8 @@ void MongoDBPersistenceDriver::init(void *init_data)  {
    // struct setting& _setting = ChaosMetadataService::getInstance()->setting;
 	
 	//we can configura the connection
-	connection.reset(new MongoDBHAConnectionManager(AbstractPersistenceDriver::settings.persistence_server_list,
-													AbstractPersistenceDriver::settings.persistence_kv_param_map));
+	connection.reset(new MongoDBHAConnectionManager(settings.persistence_server_list,
+													settings.persistence_kv_param_map));
     
     //register the data access implementations
     registerDataAccess<data_access::NodeDataAccess>(new MongoDBNodeDataAccess(connection));

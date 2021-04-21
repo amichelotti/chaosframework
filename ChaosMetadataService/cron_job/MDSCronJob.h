@@ -22,8 +22,7 @@
 #ifndef __CHAOSFramework_C21113B7_23E7_40DF_8C69_818E440F920C_MDSCronJob_h
 #define __CHAOSFramework_C21113B7_23E7_40DF_8C69_818E440F920C_MDSCronJob_h
 
-#include "../persistence/persistence.h"
-#include "../DriverPoolManager.h"
+#include <chaos_service_common/DriverPoolManager.h>
 
 #include <chaos/common/global.h>
 #include <chaos/common/cronus_manager/CronJob.h>
@@ -41,7 +40,7 @@ namespace chaos {
             protected:
                 template<typename T>
                 T* getDataAccess() {
-                    return DriverPoolManager::getInstance()->getPersistenceDataAccess<T>();
+                    return chaos::service_common::DriverPoolManager::getInstance()->getPersistenceDataAccess<T>();
                 }
             public:
                 MDSCronJob(chaos::common::data::CDataWrapper *param);

@@ -50,25 +50,12 @@ InfluxDBLogStorageDriver::~InfluxDBLogStorageDriver() {}
 void InfluxDBLogStorageDriver::init(void *init_data) throw (chaos::CException) {
     AbstractPersistenceDriver::init(init_data);
 
-    const ChaosStringVector url_list = ChaosMetadataService::getInstance()->setting.log_storage_setting.url_list;
-    const std::string user = ChaosMetadataService::getInstance()->setting.log_storage_setting.key_value_custom_param["user"];
-    const std::string password = ChaosMetadataService::getInstance()->setting.log_storage_setting.key_value_custom_param["pwd"];
-    const std::string database = ChaosMetadataService::getInstance()->setting.log_storage_setting.key_value_custom_param["db"];
-    const std::string retention = ChaosMetadataService::getInstance()->setting.log_storage_setting.key_value_custom_param["retention"];
+    const ChaosStringVector url_list = settings.persistence_server_list;
+    const std::string user = settings.persistence_kv_param_map["user"];
+    const std::string password = settings.persistence_kv_param_map["pwd"];
+    const std::string database = settings.persistence_kv_param_map["db"];
+    const std::string retention = settings.persistence_kv_param_map["retention"];
 
-    std::string dir;
-   
-    MapKVP& obj_storage_kvp = metadata_service::ChaosMetadataService::getInstance()->setting.object_storage_setting.key_value_custom_param;
-   
-    std::string basedatapath;
-    if(dir.size()){
-        basedatapath=dir;
-    } else if(metadata_service::ChaosMetadataService::getInstance()->getGlobalConfigurationInstance()->hasOption(InitOption::OPT_DATA_DIR)){
-        basedatapath=metadata_service::ChaosMetadataService::getInstance()->getGlobalConfigurationInstance()->getOption< std::string>(InitOption::OPT_DATA_DIR);
-        
-    } else {
-        basedatapath=boost::filesystem::current_path().string();
-    }
     std::string servername="localhost";
     std::string funcpath="";
     std::string exptime="365d";

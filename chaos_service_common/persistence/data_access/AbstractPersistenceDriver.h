@@ -87,7 +87,7 @@ namespace chaos {
                     }
                     virtual void deleteDataAccess(void *instance) = 0;
                 public:
-                    static PersistenceDriverSetting settings;
+                    PersistenceDriverSetting settings;
                     AbstractPersistenceDriver(const std::string& name);
                     virtual ~AbstractPersistenceDriver();
                     

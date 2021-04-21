@@ -20,7 +20,7 @@
  */
 #include "ChaosMetadataService.h"
 #include "QueryDataConsumer.h"
-#include "DriverPoolManager.h"
+#include <chaos_service_common/DriverPoolManager.h>
 #include "worker/DeviceSharedDataWorker.h"
 #include "persistence/persistence.h"
 
@@ -38,6 +38,7 @@
 
 using namespace chaos::metadata_service;
 using namespace chaos::common::cache_system;
+using namespace chaos::service_common;
 
 using namespace chaos::metadata_service;
 using namespace chaos::metadata_service::worker;

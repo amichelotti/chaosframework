@@ -21,7 +21,6 @@
 #include "CacheDriver.h"
 #include <chaos/common/data/CDataWrapper.h>
 using namespace chaos::common::cache_system;
-CacheDriverSetting CacheDriver::cache_settings;
 
 CacheDriver::CacheDriver(std::string alias):
 NamedService(alias){}

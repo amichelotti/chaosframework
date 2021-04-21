@@ -19,61 +19,52 @@
  * permissions and limitations under the Licence.
  */
 
-#ifndef Singleton_H
-#define Singleton_H
+#ifndef SingletonCW_H
+#define SingletonCW_H
 
 #include <boost/thread/once.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/make_shared.hpp>
+#include <chaos/common/data/CDataWrapper.h>
 //#include <chaos/common/global.h>
 
 namespace chaos {
     namespace common {
         namespace utility {
             
-#define SUBCLASS_AS_SINGLETON(ClassName) \
-public Singleton<ClassName>{\
-friend class Singleton<ClassName>;
-            
-#define DEFINE_CLASS_AS_SINGLETON(ClassName) \
-class ClassName : public Singleton<ClassName>{\
-friend class Singleton<ClassName>;
-            
-#define DEFINE_CLASS_AS_SINGLETON_WITH_OTHER_SUBCLASS(ClassName, Subclass) \
-class ClassName : public Subclass, public Singleton<ClassName>{\
-friend class Singleton<ClassName>;
-            
             /*
              * Utility class for singleton find here: http://www.boostcookbook.com/Recipe:/1235044
              */
             template<class T>
-            class Singleton:
+            class SingletonCW:
             private boost::noncopyable {
             public:
-                static T *getInstance() {
+               
+                static T *getInstance(const chaos::common::data::CDataWrapper&conf) {
                     //static T singletonInstance;
-                    call_once(_singletonInit, flag);
+                    call_once(boost::bind(&_singletonInit, conf), flag);
                     return t;
-                }    
-                static void _singletonInit() {
+                }
+                
+                static void _singletonInit(const chaos::common::data::CDataWrapper&conf) {
                     if(t==0){
-                        t= new T();
+                        t= new T(conf);
                     }
-                }            
-                virtual ~Singleton(){if(t) delete t;t=0L;}
+                }
+                virtual ~SingletonCW(){if(t) delete t;t=0L;}
             protected:
                 static T*  t;
-                Singleton(){}
+                SingletonCW(){}
             private:
                 static boost::once_flag flag;
                 // Stop the compiler generating methods of copy the object
-                Singleton(Singleton const& copy);            // Not Implemented
-                Singleton& operator=(Singleton const& copy); // Not Implemented
+                SingletonCW(SingletonCW const& copy);            // Not Implemented
+                SingletonCW& operator=(SingletonCW const& copy); // Not Implemented
             };
             
-            template<class T> T* Singleton<T>::t=0L;
-            template<class T> boost::once_flag Singleton<T>::flag = BOOST_ONCE_INIT;
+            template<class T> T* SingletonCW<T>::t=0L;
+            template<class T> boost::once_flag SingletonCW<T>::flag = BOOST_ONCE_INIT;
         }
     }
 }

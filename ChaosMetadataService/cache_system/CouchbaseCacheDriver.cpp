@@ -135,7 +135,7 @@ CouchbaseCacheDriver::~CouchbaseCacheDriver() {}
 void CouchbaseCacheDriver::init(void *init_data)  {
     //call superclass init
     CacheDriver::init(init_data);
-    InizializableService::initImplementation(driver_pool, NULL, "CouchbaseDriverPool", __PRETTY_FUNCTION__);
+    InizializableService::initImplementation(driver_pool, init_data, "CouchbaseDriverPool", __PRETTY_FUNCTION__);
 }
 
 //!deinit
@@ -282,26 +282,8 @@ minimum_instance_in_pool(ChaosMetadataService::getInstance()->setting.cache_driv
 }
 #else
 CouchbaseDriverPool::CouchbaseDriverPool():
-instance_created(0),
-minimum_instance_in_pool(CacheDriver::cache_settings.caching_pool_min_instances_number) {
-    
-    all_server_to_use = CacheDriver::cache_settings.startup_chache_servers;
-    
-    if(CacheDriver::cache_settings.key_value_custom_param.count("bucket")) {
-        bucket_name = CacheDriver::cache_settings.key_value_custom_param["bucket"];
-    }
-    
-    if(CacheDriver::cache_settings.key_value_custom_param.count("user")) {
-        bucket_user = CacheDriver::cache_settings.key_value_custom_param["user"];
-    }
-    
-    if(CacheDriver::cache_settings.key_value_custom_param.count("pwd")) {
-        bucket_pwd = CacheDriver::cache_settings.key_value_custom_param["pwd"];
-    }
-    
-    pool.reset(new CouchbasePool("couchbase_cache_driver",
-                                 this,
-                                 minimum_instance_in_pool));
+instance_created(0){
+  
 }
 #endif
 
@@ -419,7 +401,29 @@ void CouchbaseDriverPool::deallocateResource(const std::string& pool_identificat
     delete(pooled_driver);
 }
 
-void CouchbaseDriverPool::init(void *init_data)  {}
+void CouchbaseDriverPool::init(void *init_data)  {
+    if(init_data){
+        CacheDriverSetting* cache_settings=(CacheDriverSetting*)init_data;
+          
+    all_server_to_use = cache_settings->startup_chache_servers;
+    
+    if(cache_settings->key_value_custom_param.count("bucket")) {
+        bucket_name = cache_settings->key_value_custom_param["bucket"];
+    }
+    minimum_instance_in_pool=cache_settings->caching_pool_min_instances_number;
+    if(cache_settings->key_value_custom_param.count("user")) {
+        bucket_user = cache_settings->key_value_custom_param["user"];
+    }
+    
+    if(cache_settings->key_value_custom_param.count("pwd")) {
+        bucket_pwd = cache_settings->key_value_custom_param["pwd"];
+    }
+    
+    pool.reset(new CouchbasePool("couchbase_cache_driver",
+                                 this,
+                                 minimum_instance_in_pool));
+    }
+}
 
 void CouchbaseDriverPool::deinit()  {}
 

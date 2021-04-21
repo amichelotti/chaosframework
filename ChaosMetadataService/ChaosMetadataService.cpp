@@ -21,7 +21,7 @@
 
 #include "mds_constants.h"
 #include "ChaosMetadataService.h"
-#include "DriverPoolManager.h"
+#include <chaos_service_common/DriverPoolManager.h>
 #include "QueryDataConsumer.h"
 #include "QueryDataMsgPSConsumer.h"
 
@@ -45,7 +45,7 @@ using namespace chaos::common::async_central;
 using namespace chaos::common::data::structured;
 using namespace chaos::metadata_service::cache_system;
 
-using namespace chaos::metadata_service;
+using namespace chaos::service_common;
 
 using namespace chaos::metadata_service;
 using namespace chaos::metadata_service::api;
@@ -154,6 +154,24 @@ void ChaosMetadataService::init(void *init_data)  {
 //                            getGlobalConfigurationInstance()->getOption< std::vector<std::string> >(OPT_OBJ_STORAGE_DRIVER_KVP));
         }
         //initilize driver pool manager
+        DriverPoolManager::persistentSetting.persistence_implementation=setting.persistence_implementation;
+        DriverPoolManager::persistentSetting.persistence_kv_param_map=setting.persistence_kv_param_map;
+        DriverPoolManager::persistentSetting.persistence_server_list=setting.persistence_server_list;
+
+        DriverPoolManager::cacheSetting.cache_driver_impl=setting.cache_driver_setting.cache_driver_impl;
+        DriverPoolManager::cacheSetting.startup_chache_servers=setting.cache_driver_setting.startup_chache_servers;
+        DriverPoolManager::cacheSetting.caching_pool_min_instances_number=setting.cache_driver_setting.caching_pool_min_instances_number;
+        DriverPoolManager::cacheSetting.log_metric=setting.cache_driver_setting.log_metric;
+        DriverPoolManager::cacheSetting.key_value_custom_param=setting.cache_driver_setting.key_value_custom_param;
+
+        DriverPoolManager::logSetting.persistence_kv_param_map=setting.log_storage_setting.key_value_custom_param;
+        DriverPoolManager::logSetting.persistence_implementation=setting.log_storage_setting.driver_impl;
+        DriverPoolManager::logSetting.persistence_server_list=setting.log_storage_setting.url_list;
+
+        DriverPoolManager::objectSetting.persistence_kv_param_map=setting.object_storage_setting.key_value_custom_param;
+        DriverPoolManager::objectSetting.persistence_implementation=setting.object_storage_setting.driver_impl;
+        DriverPoolManager::objectSetting.persistence_server_list=setting.object_storage_setting.url_list;
+        
         InizializableService::initImplementation(DriverPoolManager::getInstance(), NULL, "DriverPoolManager", __PRETTY_FUNCTION__);
         
         //! batch system

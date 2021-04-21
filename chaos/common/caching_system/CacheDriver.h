@@ -53,7 +53,7 @@ namespace chaos {
 			protected:
 				CacheDriver(std::string alias);
             public:
-                static CacheDriverSetting cache_settings;
+                CacheDriverSetting cache_settings;
 
 				virtual ~CacheDriver();
 				

@@ -21,9 +21,9 @@
 
 #ifndef __CHAOSFramework__DriverPoolManager__
 #define __CHAOSFramework__DriverPoolManager__
-
-#include "cache_system/cache_system.h"
-#include "persistence/persistence.h"
+#include <chaos/common/pool/ResourcePool.h>
+#include <chaos/common/caching_system/CacheDriver.h>
+#include <chaos_service_common/persistence/data_access/AbstractPersistenceDriver.h>
 
 #include <chaos/common/utility/Singleton.h>
 #include <chaos/common/utility/InizializableService.h>
@@ -31,7 +31,7 @@
 #include <chaos_service_common/persistence/data_access/AbstractPersistenceDriver.h>
 
 namespace chaos{
-    namespace metadata_service {
+    namespace service_common {
         typedef chaos::common::pool::ResourcePool<chaos::common::cache_system::CacheDriver> CachePool;
         typedef CachePool::ResourcePoolHelper CachePoolHelper;
         typedef CachePool::ResourceSlot CachePoolSlot;
@@ -56,9 +56,18 @@ namespace chaos{
             void deinit();
             
         public:
+            static chaos::service_common::persistence::data_access::PersistenceDriverSetting persistentSetting;
+            static chaos::service_common::persistence::data_access::PersistenceDriverSetting objectSetting;
+            static chaos::service_common::persistence::data_access::PersistenceDriverSetting logSetting;
+            static chaos::common::cache_system::CacheDriverSetting cacheSetting;
+
             chaos::common::cache_system::CacheDriver& getCacheDrv();
+            chaos::common::cache_system::CacheDriver* getCacheDrvPtr();
+
             
             chaos::service_common::persistence::data_access::AbstractPersistenceDriver& getPersistenceDrv();
+            chaos::service_common::persistence::data_access::AbstractPersistenceDriver* getPersistenceDrvPtr();
+
             template<typename T>
             T* getPersistenceDataAccess() {
                 if(persistence_driver.get() == NULL) throw CException(-1, "No Persistence Driver Found", __PRETTY_FUNCTION__);

@@ -21,7 +21,7 @@
 
 #include "../ChaosMetadataService.h"
 #include "DeviceSharedDataWorker.h"
-#include "../DriverPoolManager.h"
+#include <chaos_service_common/DriverPoolManager.h>
 #include <chaos/common/utility/UUIDUtil.h>
 #include <chaos/common/utility/TimingUtil.h>
 #include <chaos/common/data/cache/FastHash.h>
@@ -30,6 +30,8 @@
 #include <boost/lexical_cast.hpp>
 using namespace chaos::common::utility;
 using namespace chaos::metadata_service;
+using namespace chaos::service_common;
+
 using namespace chaos::metadata_service::worker;
 using namespace chaos::service_common::persistence::data_access;
 using namespace chaos::metadata_service::object_storage::abstraction;
