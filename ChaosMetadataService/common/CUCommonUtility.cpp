@@ -208,11 +208,12 @@ void                                              CUCommonUtility::addDataServic
     result->addInt64Value(chaos::DataServiceNodeDefinitionKey::DS_TIMESTAMP_UNCERTENTY, (uint64_t)ChaosMetadataService::timePrecisionMask);
   }
    
-  std::vector<std::string> pers_servers=ChaosMetadataService::getInstance()->getGlobalConfigurationInstance()->getOption< std::vector< std::string> >(chaos::service_common::persistence::OPT_PERSITENCE_SERVER_ADDR_LIST);
+  std::vector<std::string> pers_servers=DriverPoolManager::persistentSetting.persistence_server_list;//ChaosMetadataService::getInstance()->getGlobalConfigurationInstance()->getOption< std::vector< std::string> >(chaos::service_common::persistence::OPT_PERSITENCE_SERVER_ADDR_LIST);
   if ( pers_servers.size()){
     CDataWrapper persistence;
 
-    persistence.addStringValue(chaos::service_common::persistence::OPT_PERSITENCE_IMPL, GlobalConfiguration::getInstance()->getOption<std::string>(chaos::service_common::persistence::OPT_PERSITENCE_IMPL));
+  //  persistence.addStringValue(chaos::service_common::persistence::OPT_PERSITENCE_IMPL, GlobalConfiguration::getInstance()->getOption<std::string>(chaos::service_common::persistence::OPT_PERSITENCE_IMPL));
+  persistence.addStringValue(chaos::service_common::persistence::OPT_PERSITENCE_IMPL, DriverPoolManager::persistentSetting.persistence_implementation);
     for (std::vector<std::string>::iterator i = pers_servers.begin(); i != pers_servers.end(); i++) {
       if (*i == "localhost" || (*i == "127.0.0.1")) {
         persistence.appendStringToArray(GlobalConfiguration::getInstance()->getLocalServerAddress());
@@ -221,18 +222,20 @@ void                                              CUCommonUtility::addDataServic
       }
     }
     persistence.finalizeArrayForKey(chaos::service_common::persistence::OPT_PERSITENCE_SERVER_ADDR_LIST);
-    std::vector<std::string> parameter = GlobalConfiguration::getInstance()->getOption<std::vector<std::string> >(chaos::service_common::persistence::OPT_PERSITENCE_KV_PARAMTER);
-    for (std::vector<std::string>::iterator i = parameter.begin(); i != parameter.end(); i++) {
-      persistence.appendStringToArray(*i);
+   // std::vector<std::string> parameter = GlobalConfiguration::getInstance()->getOption<std::vector<std::string> >(chaos::service_common::persistence::OPT_PERSITENCE_KV_PARAMTER);
+    std::map<std::string,std::string> parameter = DriverPoolManager::persistentSetting.persistence_kv_param_map;
+    for (std::map<std::string,std::string>::iterator i = parameter.begin(); i != parameter.end(); i++) {
+      persistence.appendStringToArray(i->first+":"+i->second);
     }
     persistence.finalizeArrayForKey(chaos::service_common::persistence::OPT_PERSITENCE_KV_PARAMTER);
     result->append("persistence", persistence);
   }
-  std::vector<std::string> cache_server = GlobalConfiguration::getInstance()->getOption<std::vector<std::string> >(OPT_CACHE_SERVER_LIST);
+ // std::vector<std::string> cache_server = GlobalConfiguration::getInstance()->getOption<std::vector<std::string> >(OPT_CACHE_SERVER_LIST);
+  std::vector<std::string> cache_server = DriverPoolManager::cacheSetting.startup_chache_servers;
   if (cache_server.size()) {
     CDataWrapper cache;
-    cache.addStringValue(OPT_CACHE_DRIVER, GlobalConfiguration::getInstance()->getOption<std::string>(OPT_CACHE_DRIVER));
-
+    //cache.addStringValue(OPT_CACHE_DRIVER, GlobalConfiguration::getInstance()->getOption<std::string>(OPT_CACHE_DRIVER));
+    cache.addStringValue(OPT_CACHE_DRIVER, DriverPoolManager::cacheSetting.cache_driver_impl);
     for (std::vector<std::string>::iterator i = cache_server.begin(); i != cache_server.end(); i++) {
       if (*i == "localhost" || (*i == "127.0.0.1")) {
         cache.appendStringToArray(GlobalConfiguration::getInstance()->getLocalServerAddress());
@@ -241,9 +244,10 @@ void                                              CUCommonUtility::addDataServic
       }
     }
     cache.finalizeArrayForKey(OPT_CACHE_SERVER_LIST);
-    std::vector<std::string> parameter = GlobalConfiguration::getInstance()->getOption<std::vector<std::string> >(OPT_CACHE_DRIVER_KVP);
-    for (std::vector<std::string>::iterator i = parameter.begin(); i != parameter.end(); i++) {
-      cache.appendStringToArray(*i);
+   // std::vector<std::string> parameter = GlobalConfiguration::getInstance()->getOption<std::vector<std::string> >(OPT_CACHE_DRIVER_KVP);
+    std::map<std::string,std::string> parameter = DriverPoolManager::cacheSetting.key_value_custom_param;
+    for (std::map<std::string,std::string>::iterator i = parameter.begin(); i != parameter.end(); i++) {
+      cache.appendStringToArray(i->first+":"+i->second);
     }
     cache.finalizeArrayForKey(OPT_CACHE_DRIVER_KVP);
     result->append("cache", cache);

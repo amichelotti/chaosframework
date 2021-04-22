@@ -9,12 +9,14 @@
 #include <ChaosMetadataService/api/node/NodeSearch.h>
 #include <ChaosMetadataService/api/node/NodeNewDelete.h>
 #include <ChaosMetadataService/api/node/UpdateProperty.h>
+#include <ChaosMetadataService/api/node/NodeSetDescription.h>
 
 #include <ChaosMetadataService/api/unit_server/GetSetFullUnitServer.h>
 #include <ChaosMetadataService/api/unit_server/ManageCUType.h>
 #include <ChaosMetadataService/api/unit_server/LoadUnloadControlUnit.h>
 
 #include <ChaosMetadataService/api/agent/GetAgentForNode.h>
+#include <ChaosMetadataService/api/script/SearchScript.h>
 
 #include <ChaosMetadataService/api/service/GetVariable.h>
 #include <ChaosMetadataService/api/service/SetVariable.h>
@@ -33,6 +35,9 @@ using namespace chaos::common::cache_system;
 using namespace chaos::common::data;
 using namespace chaos::service_common;
 using namespace chaos::common::utility;
+using namespace chaos::metadata_service::api::script;
+using namespace chaos::metadata_service::batch;
+
 using namespace chaos::metadata_service::api::node;
 using namespace chaos::metadata_service::api::control_unit;
 using namespace chaos::metadata_service::api::unit_server;
@@ -72,6 +77,11 @@ ChaosManager::ChaosManager(const chaos::common::data::CDataWrapper& conf)
   init(conf);
 }
 ChaosManager::~ChaosManager() {
+  InizializableService::deinitImplementation(DriverPoolManager::getInstance(), "DriverPoolManager", __PRETTY_FUNCTION__);
+    StartableService::stopImplementation(MDSBatchExecutor::getInstance(), "MDSBatchExecutor", __PRETTY_FUNCTION__);
+    StartableService::deinitImplementation(MDSBatchExecutor::getInstance(), "MDSBatchExecutor", __PRETTY_FUNCTION__);
+
+    
 }
 void ChaosManager::init(void* initd) {
   if (initd) {
@@ -107,6 +117,8 @@ int ChaosManager::init(const chaos::common::data::CDataWrapper& best_available_d
 
   if (cache_driver == NULL || persistence_driver == NULL) {
     InizializableService::initImplementation(DriverPoolManager::getInstance(), NULL, "DriverPoolManager", __PRETTY_FUNCTION__);
+    StartableService::initImplementation(MDSBatchExecutor::getInstance(), NULL, "MDSBatchExecutor", __PRETTY_FUNCTION__);
+    StartableService::startImplementation(MDSBatchExecutor::getInstance(), "MDSBatchExecutor", __PRETTY_FUNCTION__);
 
     cache_driver = DriverPoolManager::getInstance()->getCacheDrvPtr();
     if (cache_driver == NULL) {
@@ -230,6 +242,22 @@ chaos::common::data::CDWUniquePtr ChaosManager::initDeinit(const std::string& ui
   }
   return res;
 }
+chaos::common::data::CDWUniquePtr ChaosManager::searchScript(const std::string& search_string,uint64_t start_sequence_id,uint32_t page_lenght){
+  CDWUniquePtr res;
+  if (persistence_driver) {
+    SearchScript node;
+    CALC_EXEC_START;
+    ChaosUniquePtr<chaos::common::data::CDataWrapper> message(new CDataWrapper());
+    CDWUniquePtr api_data(new CDataWrapper());
+    api_data->addStringValue("search_string", search_string);
+    api_data->addInt64Value("last_sequence_id", start_sequence_id);
+    api_data->addInt32Value("page_lenght", page_lenght);
+    res = node.execute(MOVE(api_data));
+    CALC_EXEC_END
+  }
+  return res;
+}
+
 
 chaos::common::data::CDWUniquePtr ChaosManager::startStop(const std::string& uid,bool start){
 CDWUniquePtr res;
@@ -246,7 +274,7 @@ CDWUniquePtr res;
   return res;
 }
 
-chaos::common::data::CDWUniquePtr ChaosManager::getInstance(const std::string& uid){
+chaos::common::data::CDWUniquePtr ChaosManager::getCUInstance(const std::string& uid){
 CDWUniquePtr res;
   if (persistence_driver) {
     GetInstance node;
@@ -278,6 +306,17 @@ CDWUniquePtr res;
     CALC_EXEC_END
   }
   return res;
+}
+chaos::common::data::CDWUniquePtr ChaosManager::setNodeDescription(const chaos::common::data::CDataWrapper& value){
+  CDWUniquePtr res;
+  if (persistence_driver) {
+    NodeSetDescription node;
+    CALC_EXEC_START;
+    res = node.execute(MOVE(value.clone()));
+    CALC_EXEC_END
+  }
+  return res;
+
 }
 
 chaos::common::data::CDWUniquePtr ChaosManager::setInstanceDescription(const std::string& uid,const chaos::common::data::CDataWrapper& instance_description){
