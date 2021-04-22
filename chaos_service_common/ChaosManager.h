@@ -82,6 +82,11 @@ chaos::common::data::CDWUniquePtr updateProperty(const std::string& uid,const ch
 chaos::common::data::CDWUniquePtr manageCUType(const std::string& uid,const std::string& implname);
 chaos::common::data::CDWUniquePtr setInstanceDescription(const std::string& uid,const chaos::common::data::CDataWrapper& value);
 chaos::common::data::CDWUniquePtr deleteInstance(const std::string& uid,const std::string&parent);
+chaos::common::data::CDWUniquePtr getInstance(const std::string& uid);
+chaos::common::data::CDWUniquePtr startStop(const std::string& uid,bool start);
+chaos::common::data::CDWUniquePtr initDeinit(const std::string& uid,bool ini);
+chaos::common::data::CDWUniquePtr loadUnloadControlUnit(const std::string& uid,bool ini);
+chaos::common::data::CDWUniquePtr searchLogEntry(const std::string& uid,const std::vector<std::string>& domains,uint64_t start,uint64_t end,uint64_t seq,uint32_t page);
 
 };
 }  // namespace service_common
