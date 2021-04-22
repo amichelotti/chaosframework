@@ -53,6 +53,7 @@ option(CHAOS_ADDRESS_SANITIZER "sanitize address" "OFF")
 option(CHAOS_THREAD_SANITIZER "sanitize threads" "OFF")
 option(CDSLIB "Chaos CDS LIBRARY" ON)
 option(CHAOS_DRIVER_MISC "Driver Misc" "ON")
+option(CHAOS_DRIVER_CCALT "Driver CCALT" "ON")
 
 option(GPUFIT "Fast Fitting libraries (needs CUDA toolkit)" OFF)
 

@@ -8,7 +8,10 @@
 #include <ChaosMetadataService/api/node/NodeGetDescription.h>
 #include <ChaosMetadataService/api/node/NodeSearch.h>
 #include <ChaosMetadataService/api/node/NodeNewDelete.h>
+#include <ChaosMetadataService/api/node/UpdateProperty.h>
+
 #include <ChaosMetadataService/api/unit_server/GetSetFullUnitServer.h>
+#include <ChaosMetadataService/api/unit_server/ManageCUType.h>
 
 #include <ChaosMetadataService/api/agent/GetAgentForNode.h>
 
@@ -17,6 +20,9 @@
 #include <ChaosMetadataService/api/service/RemoveVariable.h>
 
 #include <ChaosMetadataService/api/control_unit/GetFullDescription.h>
+#include <ChaosMetadataService/api/control_unit/SetInstanceDescription.h>
+#include <ChaosMetadataService/api/control_unit/DeleteInstance.h>
+#include <ChaosMetadataService/api/control_unit/Delete.h>
 
 #include <chaos_service_common/DriverPoolManager.h>
 
@@ -127,6 +133,89 @@ chaos::common::data::VectorCDWShrdPtr ChaosManager::getLiveChannel(const std::ve
   return results;
 }
 /**** NODES *////
+chaos::common::data::CDWUniquePtr ChaosManager::updateProperty(const std::string& uid,const chaos::common::data::CDataWrapper& value){
+  CDWUniquePtr res;
+  if(!value.hasKey("properties")|| !!value.isVectorValue("properties")){
+      DBGETERR << "Missing properties vector key";
+
+    return res;
+  }
+  
+  if (persistence_driver) {
+    UpdateProperty node;
+    CALC_EXEC_START;
+    ChaosUniquePtr<chaos::common::data::CDataWrapper> message(new CDataWrapper());
+    message->addStringValue(NodeDefinitionKey::NODE_UNIQUE_ID, uid);
+   ChaosSharedPtr<CMultiTypeDataArrayWrapper> dw = value.getVectorValue("properties");
+    for (int idx = 0; idx < dw->size(); idx++) {
+        if (dw->isCDataWrapperElementAtIndex(idx)) {
+          
+        }
+    }
+    message->addCSDataValue("property", value);
+
+    res = node.execute(MOVE(message));
+    CALC_EXEC_END
+  }
+  return res;
+}
+chaos::common::data::CDWUniquePtr ChaosManager::manageCUType(const std::string& uid,const std::string& control_unit_type){
+CDWUniquePtr res;
+  if (persistence_driver) {
+    ManageCUType node;
+    CALC_EXEC_START;
+    ChaosUniquePtr<chaos::common::data::CDataWrapper> message(new CDataWrapper());
+    message->addStringValue(NodeDefinitionKey::NODE_UNIQUE_ID, uid);
+    message->addStringValue(UnitServerNodeDefinitionKey::UNIT_SERVER_HOSTED_CONTROL_UNIT_CLASS, control_unit_type);
+
+    res = node.execute(MOVE(message));
+    CALC_EXEC_END
+  }
+  return res;
+
+}
+chaos::common::data::CDWUniquePtr ChaosManager::deleteInstance(const std::string& uid,const std::string&parent){
+CDWUniquePtr res;
+  if (persistence_driver) {
+    DeleteInstance node;
+    Delete node2;
+
+    CALC_EXEC_START;
+    ChaosUniquePtr<chaos::common::data::CDataWrapper> message(new CDataWrapper());
+    message->addStringValue(NodeDefinitionKey::NODE_UNIQUE_ID, uid);
+    if(parent.size()){
+      message->addStringValue(NodeDefinitionKey::NODE_PARENT, parent);
+      res = node.execute(MOVE(message));
+    }
+    res = node2.execute(MOVE(message));
+
+    CALC_EXEC_END
+  }
+  return res;
+}
+
+chaos::common::data::CDWUniquePtr ChaosManager::setInstanceDescription(const std::string& uid,const chaos::common::data::CDataWrapper& instance_description){
+CDWUniquePtr res;
+  if (persistence_driver) {
+    SetInstanceDescription node;
+    CALC_EXEC_START;
+    ChaosUniquePtr<chaos::common::data::CDataWrapper> message(new CDataWrapper());
+    message->addStringValue(NodeDefinitionKey::NODE_UNIQUE_ID, uid);
+    if(instance_description.hasKey(chaos::NodeDefinitionKey::NODE_TYPE)){
+     message->addStringValue(chaos::NodeDefinitionKey::NODE_TYPE, instance_description.getStringValue(chaos::NodeDefinitionKey::NODE_TYPE));
+
+    } else {
+     message->addStringValue(chaos::NodeDefinitionKey::NODE_TYPE, chaos::NodeType::NODE_TYPE_CONTROL_UNIT);
+    }
+    
+    message->addCSDataValue("instance_description", instance_description);
+    res = node.execute(MOVE(message));
+    CALC_EXEC_END
+  }
+  return res;
+
+}
+
 CDWUniquePtr ChaosManager::nodeGetDescription(const std::string& uid) {
   CDWUniquePtr res;
   if (persistence_driver) {

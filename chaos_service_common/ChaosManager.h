@@ -78,6 +78,10 @@ chaos::common::data::CDWUniquePtr nodeNew(const std::string& uid,const chaos::co
 chaos::common::data::CDWUniquePtr getFullUnitServer(const std::string& uid);
 chaos::common::data::CDWUniquePtr setFullUnitServer(const std::string& uid,const chaos::common::data::CDataWrapper& value);
 chaos::common::data::CDWUniquePtr getAgentForNode(const std::string& uid);
+chaos::common::data::CDWUniquePtr updateProperty(const std::string& uid,const chaos::common::data::CDataWrapper& value);
+chaos::common::data::CDWUniquePtr manageCUType(const std::string& uid,const std::string& implname);
+chaos::common::data::CDWUniquePtr setInstanceDescription(const std::string& uid,const chaos::common::data::CDataWrapper& value);
+chaos::common::data::CDWUniquePtr deleteInstance(const std::string& uid,const std::string&parent);
 
 };
 }  // namespace service_common
