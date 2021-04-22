@@ -17,6 +17,11 @@
 
 #include <ChaosMetadataService/api/agent/GetAgentForNode.h>
 #include <ChaosMetadataService/api/script/SearchScript.h>
+#include <ChaosMetadataService/api/script/SaveScript.h>
+#include <ChaosMetadataService/api/script/RemoveScript.h>
+#include <ChaosMetadataService/api/script/ManageScriptInstance.h>
+#include <ChaosMetadataService/api/script/LoadFullScript.h>
+
 
 #include <ChaosMetadataService/api/service/GetVariable.h>
 #include <ChaosMetadataService/api/service/SetVariable.h>
@@ -28,6 +33,8 @@
 #include <ChaosMetadataService/api/control_unit/Delete.h>
 #include <ChaosMetadataService/api/control_unit/StartStop.h>
 #include <ChaosMetadataService/api/control_unit/InitDeinit.h>
+#include <ChaosMetadataService/api/control_unit/SetInputDatasetAttributeValues.h>
+
 #include <ChaosMetadataService/api/logging/SearchLogEntry.h>
 #include <chaos_service_common/DriverPoolManager.h>
 
@@ -242,6 +249,135 @@ chaos::common::data::CDWUniquePtr ChaosManager::initDeinit(const std::string& ui
   }
   return res;
 }
+chaos::common::data::CDWUniquePtr ChaosManager::saveScript(const chaos::common::data::CDataWrapper& value){
+   CDWUniquePtr res;
+  if (persistence_driver) {
+    SaveScript node;
+    CALC_EXEC_START;
+    res = node.execute(MOVE(value.clone()));
+    CALC_EXEC_END
+  }
+  return res;
+}
+chaos::common::data::CDWUniquePtr ChaosManager::removeScript(const chaos::common::data::CDataWrapper& value){
+   CDWUniquePtr res;
+  if (persistence_driver) {
+    RemoveScript node;
+    CALC_EXEC_START;
+    res = node.execute(MOVE(value.clone()));
+    CALC_EXEC_END
+  }
+  return res;
+}
+chaos::common::data::CDWUniquePtr ChaosManager::setInputDatasetAttributeValues(const std::string&uid,  std::map<const std::string,const std::string>& keyvalue){
+  CDWUniquePtr res;
+  if (persistence_driver) {
+    CDWUniquePtr message(new chaos::common::data::CDataWrapper());
+
+    SetInputDatasetAttributeValues node;
+    CDWUniquePtr cu_changes(new CDataWrapper());
+    cu_changes->addStringValue(chaos::NodeDefinitionKey::NODE_UNIQUE_ID, uid);
+    for(std::map<const std::string,const std::string>::iterator i=keyvalue.begin();i!=keyvalue.end();i++){
+      CDataWrapper change;
+
+      change.addStringValue(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_NAME,i->first);
+      change.addStringValue("change_value",i->second);
+      cu_changes->appendCDataWrapperToArray(change);
+    }
+    cu_changes->finalizeArrayForKey("change_set");
+    message->appendCDataWrapperToArray(*cu_changes);
+    
+    message->finalizeArrayForKey("attribute_set_values");
+  
+    CALC_EXEC_START;
+    res = node.execute(MOVE(message));
+    CALC_EXEC_END
+  }
+  return res;
+}
+
+chaos::common::data::CDWUniquePtr ChaosManager::setInputDatasetAttributeValues(const std::string&uid,const std::string&key,const std::string&value){
+ CDWUniquePtr res;
+  if (persistence_driver) {
+    CDWUniquePtr message(new chaos::common::data::CDataWrapper());
+
+    SetInputDatasetAttributeValues node;
+    CDWUniquePtr cu_changes(new CDataWrapper());
+    cu_changes->addStringValue(chaos::NodeDefinitionKey::NODE_UNIQUE_ID, uid);
+    CDataWrapper change;
+    change.addStringValue(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_NAME,key);
+    change.addStringValue("change_value",value);
+    cu_changes->appendCDataWrapperToArray(change);
+    cu_changes->finalizeArrayForKey("change_set");
+    message->appendCDataWrapperToArray(*cu_changes);
+
+    message->finalizeArrayForKey("attribute_set_values");
+
+    CALC_EXEC_START;
+    res = node.execute(MOVE(message));
+    CALC_EXEC_END
+  }
+  return res;
+}
+
+
+
+chaos::common::data::CDWUniquePtr ChaosManager::loadFullDescription(const std::string&scriptID){
+chaos::common::data::CDWUniquePtr ret;
+chaos::common::data::CDWUniquePtr data(new CDataWrapper());
+  chaos::common::data::CDWUniquePtr list=searchScript(scriptID,0,10000);
+
+    
+        if(list.get() &&
+            list->hasKey(chaos::MetadataServerApiKey::script::search_script::FOUND_SCRIPT_LIST) &&
+            list->isVectorValue(chaos::MetadataServerApiKey::script::search_script::FOUND_SCRIPT_LIST)) {
+            CMultiTypeDataArrayWrapperSPtr  scripts=list->getVectorValue(chaos::MetadataServerApiKey::script::search_script::FOUND_SCRIPT_LIST);
+            int64_t lastid=-1;
+            chaos::common::data::CDWUniquePtr last;
+            for(int cnt=0;cnt<scripts->size();cnt++){
+                chaos::common::data::CDWUniquePtr curr=scripts->getCDataWrapperElementAtIndex(cnt);
+                if(curr->getInt64Value("seq")>=lastid){
+                    lastid=curr->getInt64Value("seq");
+                    last.reset(curr.release());
+                }
+            }
+            if(lastid>0){
+                //
+                chaos::common::data::CDWUniquePtr data(new CDataWrapper());
+                data->addStringValue(ExecutionUnitNodeDefinitionKey::CHAOS_SBD_NAME, scriptID);
+                data->addInt64Value("seq", lastid);
+                ret=loadFullScript(*data);
+                
+                            
+            }
+            }
+      return ret;
+
+
+}
+
+chaos::common::data::CDWUniquePtr ChaosManager::loadFullScript(const chaos::common::data::CDataWrapper& value){
+  CDWUniquePtr res;
+  if (persistence_driver) {
+    LoadFullScript node;
+    CALC_EXEC_START;
+    res = node.execute(MOVE(value.clone()));
+    CALC_EXEC_END
+  }
+  return res;
+}
+
+chaos::common::data::CDWUniquePtr ChaosManager::manageScriptInstance(const chaos::common::data::CDataWrapper& value){
+   CDWUniquePtr res;
+  if (persistence_driver) {
+    ManageScriptInstance node;
+    CALC_EXEC_START;
+    res = node.execute(MOVE(value.clone()));
+    CALC_EXEC_END
+  }
+  return res;
+}
+
 chaos::common::data::CDWUniquePtr ChaosManager::searchScript(const std::string& search_string,uint64_t start_sequence_id,uint32_t page_lenght){
   CDWUniquePtr res;
   if (persistence_driver) {

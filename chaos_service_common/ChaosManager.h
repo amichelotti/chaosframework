@@ -88,9 +88,16 @@ chaos::common::data::CDWUniquePtr initDeinit(const std::string& uid,bool ini);
 chaos::common::data::CDWUniquePtr loadUnloadControlUnit(const std::string& uid,bool ini);
 chaos::common::data::CDWUniquePtr searchLogEntry(const std::string& uid,const std::vector<std::string>& domains,uint64_t start,uint64_t end,uint64_t seq,uint32_t page);
 chaos::common::data::CDWUniquePtr searchScript(const std::string& uid,uint64_t start,uint32_t page);
-//chaos::common::data::CDWUniquePtr saveScript(const std::string& uid,uint32_t start,uint32_t page);
+
+chaos::common::data::CDWUniquePtr saveScript(const chaos::common::data::CDataWrapper& value);
+chaos::common::data::CDWUniquePtr removeScript(const chaos::common::data::CDataWrapper& value);
+chaos::common::data::CDWUniquePtr manageScriptInstance(const chaos::common::data::CDataWrapper& value);
+chaos::common::data::CDWUniquePtr loadFullScript(const chaos::common::data::CDataWrapper& value);
+chaos::common::data::CDWUniquePtr loadFullDescription(const std::string&);
 
 chaos::common::data::CDWUniquePtr setNodeDescription(const chaos::common::data::CDataWrapper& value);
+chaos::common::data::CDWUniquePtr setInputDatasetAttributeValues(const std::string&uid, const std::string&key,const std::string&value);
+chaos::common::data::CDWUniquePtr setInputDatasetAttributeValues(const std::string&uid,  std::map<const std::string,const std::string>& keyvalue);
 
 };
 }  // namespace service_common

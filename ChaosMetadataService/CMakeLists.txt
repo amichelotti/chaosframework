@@ -448,7 +448,6 @@ IF (BUILD_FORCE_STATIC  )
 ELSE (BUILD_FORCE_STATIC)
   ADD_LIBRARY(chaos_cds SHARED ${cnd_src} ${api_src} ${service_src})
   set_target_properties(chaos_cds PROPERTIES VERSION 1.0.0 SOVERSION 1)
-  TARGET_LINK_LIBRARIES(chaos_cds PRIVATE chaos_common couchbaseS mongoclient mongocxx bsoncxx)
 ENDIF (BUILD_FORCE_STATIC)
 
 ADD_EXECUTABLE(${PROJECT_NAME} main.cpp  ${posix_src} )
@@ -475,6 +474,8 @@ SET(BUILD_LIBRARY ${BUILD_LIBRARY} chaos_common)
 SET(BUILD_LIBRARY ${BUILD_LIBRARY} boost_random)
 SET(BUILD_LIBRARY ${BUILD_LIBRARY} couchbaseS)
 SET(BUILD_LIBRARY ${BUILD_LIBRARY} mongoclient)
+
+
 #IF(CERN_ROOT)
 #SET(BUILD_LIBRARY ${BUILD_LIBRARY} chaos_driver_misc_cernroot Tree tbb)
 #ENDIF()
@@ -489,6 +490,7 @@ target_compile_definitions(chaos_cds PRIVATE USE_MONGODB3_DRIVER=1)
 # SET(BUILD_LIBRARY ${BUILD_LIBRARY} uv)
 # SET(BUILD_LIBRARY ${BUILD_LIBRARY} cassandra)
 # target_compile_definitions(${PROJECT_NAME} PRIVATE USE_CASSANDRA_DRIVER=1)
+TARGET_LINK_LIBRARIES(chaos_cds ${BUILD_LIBRARY})
 
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} chaos_cds ${BUILD_LIBRARY})
 
