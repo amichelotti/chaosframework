@@ -460,6 +460,8 @@ add_dependencies(${PROJECT_NAME} mongo-cxx-driver)
 
 FILE(GLOB files "../chaos_service_common/data/node/*.h")
 INSTALL(FILES ${files} DESTINATION include/chaos_service_common/data/node/)
+FILE(GLOB files "../chaos_service_common/*.h")
+INSTALL(FILES ${files} DESTINATION include/chaos_service_common/)
 
 CheckConfigureBuild(couchbaseS libcouchbase:chaos-0.1 "-DLCB_NO_SSL=true;-DLCB_NO_TESTS=true;-DLCB_NO_TOOLS=true;-DLCB_NO_PLUGINS=true" https://github.com/amichelotti)
 
