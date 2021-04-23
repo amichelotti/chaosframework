@@ -181,7 +181,7 @@ chaos::common::data::CDWUniquePtr ChaosManager::updateProperty(const std::string
   }
   return res;
 }
-chaos::common::data::CDWUniquePtr ChaosManager::manageCUType(const std::string& uid,const std::string& control_unit_type){
+chaos::common::data::CDWUniquePtr ChaosManager::manageCUType(const std::string& uid,const std::string& control_unit_type,int op){
 CDWUniquePtr res;
   if (persistence_driver) {
     ManageCUType node;
@@ -189,6 +189,7 @@ CDWUniquePtr res;
     ChaosUniquePtr<chaos::common::data::CDataWrapper> message(new CDataWrapper());
     message->addStringValue(NodeDefinitionKey::NODE_UNIQUE_ID, uid);
     message->addStringValue(UnitServerNodeDefinitionKey::UNIT_SERVER_HOSTED_CONTROL_UNIT_CLASS, control_unit_type);
+    message->addInt32Value("operation", op);
 
     res = node.execute(MOVE(message));
     CALC_EXEC_END
