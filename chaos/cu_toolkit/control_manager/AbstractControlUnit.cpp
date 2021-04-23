@@ -943,6 +943,7 @@ void         AbstractControlUnit::doInitRpCheckList() {
                  throw CException(err, "cannot initialize output dataset", __PRETTY_FUNCTION__);
                  }
                  }*/
+
       if ((err = pushOutputDataset()) != 0) {
         throw CException(err, "cannot initialize output dataset (check live services)", __PRETTY_FUNCTION__);
       }

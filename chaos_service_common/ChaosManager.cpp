@@ -73,6 +73,13 @@ using namespace chaos::metadata_service::api::service;
   }                                                                                         \
   DBGET << " Duration: " << (chaos::common::utility::TimingUtil::getTimeStampInMicroseconds()-reqtime ) << " us";
 
+CDWShrdPtr ChaosManager::getLiveChannel(const std::string& key) {
+  ChaosSharedPtr<chaos::common::data::CDataWrapper> ret;
+  if (cache_driver) {
+    return cache_driver->getData(key);
+  }
+  return ret;
+}
 CDWShrdPtr ChaosManager::getLiveChannel(const std::string& key, int domain) {
   size_t                                            value_len = 0;
   ChaosSharedPtr<chaos::common::data::CDataWrapper> ret;
@@ -185,7 +192,7 @@ chaos::common::data::CDWUniquePtr ChaosManager::updateProperty(const std::string
   }
   return res;
 }
-ChaosStringVector& ChaosManager::getSnapshotForNode(const std::string&uid){
+ChaosStringVector ChaosManager::getSnapshotForNode(const std::string&uid){
   ChaosStringVector snapshot_found;
   if (persistence_driver) {
     GetSnapshotForNode node;
