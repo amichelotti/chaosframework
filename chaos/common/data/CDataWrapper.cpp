@@ -71,6 +71,18 @@ bson(ALLOCATE_BSONT(bson_new())),
 array_index(0){
     CHAOS_ASSERT(bson);
 }
+bool CDataWrapper::isJSON(const::std::string&str){
+    if(str.size()){
+        try{
+            CDataWrapper cd;
+            cd.setSerializedJsonData(str.c_str());
+            return true;
+        } catch(...){
+
+        }
+    }
+    return false;
+}
 
 CDataWrapper::CDataWrapper(const bson_t *copy_bson):
 array_index(0){

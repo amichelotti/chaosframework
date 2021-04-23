@@ -151,7 +151,7 @@ AbstractControlUnit::AbstractControlUnit(const std::string& _control_unit_type,
     , busy(true) {
   _initPropertyGroup();
   //!try to decode parameter string has json document
-  is_control_unit_json_param = json_reader.parse(control_unit_param, json_parameter_document);
+  is_control_unit_json_param = CDataWrapper::isJSON(control_unit_param);
   //initialize check list
 
   _initChecklist();
@@ -191,7 +191,8 @@ AbstractControlUnit::AbstractControlUnit(const std::string&           _control_u
     , key_data_storage() {
   _initPropertyGroup();
   //!try to decode parameter string has json document
-  is_control_unit_json_param = json_reader.parse(control_unit_param, json_parameter_document);
+  is_control_unit_json_param = CDataWrapper::isJSON(control_unit_param);
+  
   //copy array
   for (int idx = 0; idx < _control_unit_drivers.size(); idx++) {
     control_unit_drivers.push_back(_control_unit_drivers[idx]);
@@ -311,10 +312,6 @@ int AbstractControlUnit::getCUParam(chaos::common::data::CDataWrapper& p) {
 
 const bool AbstractControlUnit::isCUParamInJson() {
   return is_control_unit_json_param;
-}
-
-const Json::Value& AbstractControlUnit::getCUParamJsonRootElement() {
-  return json_parameter_document;
 }
 
 const std::string& AbstractControlUnit::getCUType() {

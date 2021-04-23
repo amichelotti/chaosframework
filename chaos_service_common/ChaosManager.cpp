@@ -10,6 +10,7 @@
 #include <ChaosMetadataService/api/node/NodeNewDelete.h>
 #include <ChaosMetadataService/api/node/UpdateProperty.h>
 #include <ChaosMetadataService/api/node/NodeSetDescription.h>
+#include <ChaosMetadataService/api/node/CommandTemplateSubmit.h>
 
 #include <ChaosMetadataService/api/unit_server/GetSetFullUnitServer.h>
 #include <ChaosMetadataService/api/unit_server/ManageCUType.h>
@@ -21,7 +22,9 @@
 #include <ChaosMetadataService/api/script/RemoveScript.h>
 #include <ChaosMetadataService/api/script/ManageScriptInstance.h>
 #include <ChaosMetadataService/api/script/LoadFullScript.h>
-
+#include <ChaosMetadataService/api/service/GetSnapshotForNode.h>
+#include <ChaosMetadataService/api/service/CreateNewSnapshot.h>
+#include <ChaosMetadataService/api/service/RestoreSnapshot.h>
 
 #include <ChaosMetadataService/api/service/GetVariable.h>
 #include <ChaosMetadataService/api/service/SetVariable.h>
@@ -44,6 +47,7 @@ using namespace chaos::service_common;
 using namespace chaos::common::utility;
 using namespace chaos::metadata_service::api::script;
 using namespace chaos::metadata_service::batch;
+using namespace chaos::common::batch_command;
 
 using namespace chaos::metadata_service::api::node;
 using namespace chaos::metadata_service::api::control_unit;
@@ -181,6 +185,98 @@ chaos::common::data::CDWUniquePtr ChaosManager::updateProperty(const std::string
   }
   return res;
 }
+ChaosStringVector& ChaosManager::getSnapshotForNode(const std::string&uid){
+  ChaosStringVector snapshot_found;
+  if (persistence_driver) {
+    GetSnapshotForNode node;
+    CALC_EXEC_START;
+    ChaosUniquePtr<chaos::common::data::CDataWrapper> message(new CDataWrapper());
+    message->addStringValue(NodeDefinitionKey::NODE_UNIQUE_ID, uid);
+
+    CDWUniquePtr res = node.execute(MOVE(message));
+    if(res.get() &&
+               res->hasKey("snapshot_for_node") &&
+               res->isVectorValue("snapshot_for_node")) {
+                //we have result
+                CMultiTypeDataArrayWrapperSPtr snapshot_desc_list = res->getVectorValue("snapshot_for_node");
+                for(int idx = 0;
+                    idx < snapshot_desc_list->size();
+                    idx++) {
+                    const std::string node_uid = snapshot_desc_list->getStringElementAtIndex(idx);
+                    snapshot_found.push_back(node_uid);
+                }
+            }
+    CALC_EXEC_END
+  }
+  return snapshot_found;
+
+}                                  
+chaos::common::data::CDWUniquePtr ChaosManager::createNewSnapshot(const std::string& snapshot_name,const ChaosStringVector& node_list){
+CDWUniquePtr res;
+
+  
+    if (persistence_driver) {
+          CALC_EXEC_START;
+    ChaosUniquePtr<chaos::common::data::CDataWrapper> message(new CDataWrapper());
+    message->addStringValue("snapshot_name", snapshot_name);
+    
+    for(ChaosStringVectorConstIterator it = node_list.begin(),
+        end = node_list.end();
+        it != end;
+        it++) {
+        message->appendStringToArray(*it);
+    }
+    message->finalizeArrayForKey("node_list");
+      CreateNewSnapshot node;
+       res = node.execute(MOVE(message));
+      CALC_EXEC_END
+    }
+    return res;
+}                                   
+chaos::common::data::CDWUniquePtr ChaosManager::restoreSnapshot(const std::string& snapshot_name){
+CDWUniquePtr res;
+
+  
+    if (persistence_driver) {
+          CALC_EXEC_START;
+    ChaosUniquePtr<chaos::common::data::CDataWrapper> message(new CDataWrapper());
+    message->addStringValue("snapshot_name", snapshot_name);
+    
+      RestoreSnapshot node;
+       res = node.execute(MOVE(message));
+      CALC_EXEC_END
+    }
+    return res;
+}
+
+chaos::common::data::CDWUniquePtr ChaosManager::commandTemplateSubmit(const std::string&uid,const std::string& command_alias,const chaos::common::data::CDWUniquePtr& slow_command_data,const SubmissionRuleType::SubmissionRule submission_rule,const uint32_t priority,const uint64_t scheduler_steps_delay,const uint32_t submission_checker_steps_delay){
+  CDWUniquePtr res;
+
+  CDWUniquePtr message(new CDataWrapper());
+    //this key need only to inform mds to redirect to node the slowcomand without porcess it
+    message->addNullValue("direct_mode");
+    // set the default slow command information
+    message->addStringValue(NodeDefinitionKey::NODE_UNIQUE_ID, uid);
+    message->addStringValue(BatchCommandAndParameterDescriptionkey::BC_ALIAS, command_alias);
+    message->addInt32Value(BatchCommandSubmissionKey::SUBMISSION_RULE_UI32, (uint32_t) submission_rule);
+    message->addInt32Value(BatchCommandSubmissionKey::SUBMISSION_PRIORITY_UI32, (uint32_t) priority);
+    
+    if(scheduler_steps_delay) message->addInt64Value(BatchCommandSubmissionKey::SCHEDULER_STEP_TIME_INTERVALL_UI64, scheduler_steps_delay);
+    if(submission_checker_steps_delay) message->addInt32Value(BatchCommandSubmissionKey::SUBMISSION_RETRY_DELAY_UI32, submission_checker_steps_delay);
+    if(slow_command_data.get()) {
+        message->appendAllElement(*slow_command_data);
+    }
+    if (persistence_driver) {
+          CALC_EXEC_START;
+
+      CommandTemplateSubmit node;
+       res = node.execute(MOVE(message));
+      CALC_EXEC_END
+    }
+    return res;
+
+}
+
 chaos::common::data::CDWUniquePtr ChaosManager::manageCUType(const std::string& uid,const std::string& control_unit_type,int op){
 CDWUniquePtr res;
   if (persistence_driver) {

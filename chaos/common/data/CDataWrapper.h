@@ -106,6 +106,7 @@ namespace chaos {
                 int setBson(const bson_iter_t *v ,const CDataWrapper* val);
 
             public:
+            static bool isJSON(const::std::string&str);
                 CDataWrapper();
                 CDataWrapper(const bson_t *copy_bson);
 

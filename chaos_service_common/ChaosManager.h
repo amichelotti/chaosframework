@@ -14,7 +14,7 @@
 #include <chaos/common/data/CDataWrapper.h>
 #include <chaos/common/utility/InizializableService.h>
 #include <chaos/common/io/IODataDriver.h>
-
+#include <chaos/common/batch_command/BatchCommandTypes.h>
 #define DEFAULT_TIMEOUT_FOR_CONTROLLER 10000000
 namespace chaos {
 namespace common {
@@ -98,6 +98,10 @@ chaos::common::data::CDWUniquePtr loadFullDescription(const std::string&);
 chaos::common::data::CDWUniquePtr setNodeDescription(const chaos::common::data::CDataWrapper& value);
 chaos::common::data::CDWUniquePtr setInputDatasetAttributeValues(const std::string&uid, const std::string&key,const std::string&value);
 chaos::common::data::CDWUniquePtr setInputDatasetAttributeValues(const std::string&uid,  std::map<const std::string,const std::string>& keyvalue);
+chaos::common::data::CDWUniquePtr commandTemplateSubmit(const std::string&uid,const std::string& command_alias,const chaos::common::data::CDWUniquePtr& slow_command_data,const chaos::common::batch_command::SubmissionRuleType::SubmissionRule submission_rule,const uint32_t priority,const uint64_t scheduler_steps_delay,const uint32_t submission_checker_steps_delay);
+ChaosStringVector& getSnapshotForNode(const std::string&uid);
+chaos::common::data::CDWUniquePtr createNewSnapshot(const std::string& snapshot_name,const ChaosStringVector& node_list); 
+chaos::common::data::CDWUniquePtr restoreSnapshot(const std::string& snapshot_name);
 
 };
 }  // namespace service_common
