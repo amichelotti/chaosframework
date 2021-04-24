@@ -53,6 +53,7 @@ typedef struct CacheDriverSetting {
 
   uint32_t caching_pool_min_instances_number;
   int init(chaos::common::data::CDataWrapper&);
+  CacheDriverSetting():caching_pool_min_instances_number(3),log_metric_update_interval(0),log_metric(false){}
 } CacheDriverSetting;
 }  // namespace cache_system
 }  // namespace common
