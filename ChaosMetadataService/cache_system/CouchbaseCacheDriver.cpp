@@ -282,7 +282,7 @@ minimum_instance_in_pool(ChaosMetadataService::getInstance()->setting.cache_driv
 }
 #else
 CouchbaseDriverPool::CouchbaseDriverPool():
-instance_created(0){
+instance_created(0),minimum_instance_in_pool(3){
   
 }
 #endif
