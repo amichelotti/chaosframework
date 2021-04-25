@@ -402,7 +402,11 @@ void IODirectIODriver::handleEvent(chaos_direct_io::DirectIOClientConnection *cl
         return;
     }
     try {
-        uint32_t service_index = boost::lexical_cast<uint32_t>(client_connection->getCustomStringIdentification());
+        uint32_t service_index=0;
+        if(client_connection){
+            service_index = atoi((client_connection->getCustomStringIdentification().c_str()));
+        }
+        
         switch(event) {
             case chaos_direct_io::DirectIOClientConnectionStateType::DirectIOClientConnectionEventConnected:
                 DEBUG_CODE(IODirectIODriver_DLDBG_ << "Manage Connected event to service with index " << service_index << " and url" << client_connection->getURL();)
