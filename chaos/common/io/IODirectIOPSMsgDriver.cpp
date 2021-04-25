@@ -159,8 +159,10 @@ int IODirectIOPSMsgDriver::storeData(const std::string&                         
     }
   }
   }
-  if ((err = prod->pushMsgAsync(*data_to_store.get(), key)) != 0) {
-    DEBUG_CODE(IODirectIOPSMsgDriver_LERR_ << "Error pushing " << prod->getLastError());
+  if (data_to_store->hasKey(NodeDefinitionKey::NODE_UNIQUE_ID)) {
+    if ((err = prod->pushMsgAsync(*data_to_store.get(), data_to_store->getStringValue(NodeDefinitionKey::NODE_UNIQUE_ID))) != 0) {
+      DEBUG_CODE(IODirectIOPSMsgDriver_LERR_ << "Error pushing " << prod->getLastError());
+    }
   }
 
   return err;

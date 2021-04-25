@@ -116,13 +116,14 @@ void MetadataLoggingManager::releaseChannel(AbstractMetadataLogChannel *channel_
                                  int32_t priority ){
                                      int err=0;
 if(log_entry&& log_entry->hasKey(MetadataServerLoggingDefinitionKeyRPC::PARAM_NODE_LOGGING_LOG_SOURCE_IDENTIFIER)){
-//std::string key=log_entry->getStringValue(MetadataServerLoggingDefinitionKeyRPC::PARAM_NODE_LOGGING_LOG_SOURCE_IDENTIFIER)+"_log";
-std::string key="CHAOS_LOG";
+std::string key=log_entry->getStringValue(MetadataServerLoggingDefinitionKeyRPC::PARAM_NODE_LOGGING_LOG_SOURCE_IDENTIFIER);
+//std::string key="CHAOS_LOG";
+log_entry->addInt32Value(DataPackCommonKey::DPCK_DATASET_TYPE,DataPackCommonKey::DPCK_DATASET_TYPE_LOG);
 if ((err = prod->pushMsgAsync(*log_entry, key)) != 0) {
     MLM_ERR << "Error pushing log entry" << prod->getLastError();
   }
 }
-    
+  
 return 0;
 }
 

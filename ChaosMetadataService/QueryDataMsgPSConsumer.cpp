@@ -101,8 +101,11 @@ if((data.key=="CHAOS_LOG")&&(data.cd->hasKey(MetadataServerLoggingDefinitionKeyR
 
   std::replace(kp.begin(), kp.end(), '.', '/');
   //DBG<<"data from:"<<kp<<" size:"<<data.cd->getBSONRawSize();
+  if(data.cd->hasKey(DataPackCommonKey::DPCK_DATASET_TYPE)){
+    kp=kp+datasetTypeToPostfix(data.cd->getInt32Value(DataPackCommonKey::DPCK_DATASET_TYPE));
+    QueryDataConsumer::consumePutEvent(kp, (uint8_t)st, meta_tag_set, *(data.cd.get()));
 
-  QueryDataConsumer::consumePutEvent(kp, (uint8_t)st, meta_tag_set, *(data.cd.get()));
+  }
   } catch(const chaos::CException& e ){
     ERR<<"Chaos Exception caught processing key:"<<data.key<<" ("<<data.off<<","<<data.par<<") error:"<<e.what();
   } catch(...){
@@ -205,6 +208,18 @@ int QueryDataMsgPSConsumer::consumeHealthDataEvent(const std::string&           
       if (pos != std::string::npos) {
         rootname.erase(pos, strlen(NodeHealtDefinitionKey::HEALT_KEY_POSTFIX));
       }
+      if(alive_map.find(rootname)==alive_map.end()){
+        if (cons->subscribe(rootname) != 0) {
+              ERR <<"] cannot subscribe to :" << rootname<<" err:"<<cons->getLastError();
+              
+            } else {
+              alive_map[rootname]= TimingUtil::getTimeStamp();
+
+              DBG <<"] Subscribed to:" << rootname<<" at:"<<alive_map[rootname];
+            }
+      }
+
+      /*
       std::vector<std::string> tosub = {
             DataPackPrefixID::OUTPUT_DATASET_POSTFIX,
             DataPackPrefixID::INPUT_DATASET_POSTFIX,
@@ -232,7 +247,7 @@ int QueryDataMsgPSConsumer::consumeHealthDataEvent(const std::string&           
            //   DBG << seq<<"] Already subscribed:" << keysub;
 
           }
-      }
+      }*/
     }
   }
   if(channel_data.get()==NULL){
