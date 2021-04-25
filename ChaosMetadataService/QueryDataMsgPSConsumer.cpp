@@ -167,11 +167,11 @@ void QueryDataMsgPSConsumer::init(void* init_data) {
 void QueryDataMsgPSConsumer::start() {
   DBG << "Starting Msg consumer";
   cons->start();
-  std::string keysub="CHAOS_LOG";
+ /* std::string keysub="CHAOS_LOG";
   if (cons->subscribe(keysub) != 0) {
       ERR <<" cannot subscribe to :" << keysub<<" err:"<<cons->getLastError();
               
-  } 
+  }*/ 
 }
 
 void QueryDataMsgPSConsumer::stop() {
