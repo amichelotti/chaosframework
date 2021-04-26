@@ -106,6 +106,20 @@ chaos::common::data::CDWUniquePtr createNewSnapshot(const std::string& snapshot_
 chaos::common::data::CDWUniquePtr restoreSnapshot(const std::string& snapshot_name);
 std::map<uint64_t,std::string> getAllSnapshot(const std::string& query_filter);
 ChaosStringVector getNodesForSnapshot(const std::string& query_filter);
+std::map<uint64_t, std::string> getAllSnapshotOfCU(const std::string& cu);
+chaos::common::data::CDWUniquePtr deleteSnapshot(const std::string& cu);
+chaos::common::data::CDWUniquePtr getSnapshotDatasetForNode(const std::string& snapname, const std::string& node_uid);
+
+chaos::common::data::CDWUniquePtr agentNodeOperation(const std::string& node,int32_t op);
+chaos::common::data::CDWUniquePtr saveNodeAssociation(const std::string&name,const chaos::common::data::CDataWrapper& value);
+chaos::common::data::CDWUniquePtr loadNodeAssociation(const std::string&name,const std::string&parent);
+chaos::common::data::CDWUniquePtr listNodeForAgent(const std::string&name);
+chaos::common::data::CDWUniquePtr loadAgentDescription(const std::string&name,bool loaddata=true);
+chaos::common::data::CDWUniquePtr checkAgentHostedProcess(const std::string&name);
+
+chaos::common::data::CDWUniquePtr clearCommandQueue(const std::string&name);
+chaos::common::data::CDWUniquePtr killCurrentCommand(const std::string&name);
+
 };
 }  // namespace service_common
 }  // namespace chaos
