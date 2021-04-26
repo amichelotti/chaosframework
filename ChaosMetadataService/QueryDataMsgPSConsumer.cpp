@@ -63,7 +63,7 @@ void QueryDataMsgPSConsumer::messageHandler(const chaos::common::message::ele_t&
   try {
   ChaosStringSetConstSPtr meta_tag_set;
 
-if((data.key=="CHAOS_LOG")&&(data.cd->hasKey(MetadataServerLoggingDefinitionKeyRPC::PARAM_NODE_LOGGING_LOG_SOURCE_IDENTIFIER))){
+/*if((data.key=="CHAOS_LOG")&&(data.cd->hasKey(MetadataServerLoggingDefinitionKeyRPC::PARAM_NODE_LOGGING_LOG_SOURCE_IDENTIFIER))){
       std::string key=data.cd->getStringValue(MetadataServerLoggingDefinitionKeyRPC::PARAM_NODE_LOGGING_LOG_SOURCE_IDENTIFIER)+"_log";
 
       QueryDataConsumer::consumePutEvent(key, (uint8_t)DataServiceNodeDefinitionType::DSStorageTypeLive, meta_tag_set, *(data.cd.get()));
@@ -77,7 +77,7 @@ if((data.key=="CHAOS_LOG")&&(data.cd->hasKey(MetadataServerLoggingDefinitionKeyR
       }
     return;
   }
- /* if((data.key.size()>4)&&(data.key.compare(data.key.size()-4,4,DataPackPrefixID::LOG_DATASET_POSTFIX)==0)){
+  if((data.key.size()>4)&&(data.key.compare(data.key.size()-4,4,DataPackPrefixID::LOG_DATASET_POSTFIX)==0)){
       std::string kp = data.key;
       std::replace(kp.begin(), kp.end(), '.', '/');
       QueryDataConsumer::consumePutEvent(kp, (uint8_t)DataServiceNodeDefinitionType::DSStorageTypeLive, meta_tag_set, *(data.cd.get()));
@@ -91,7 +91,6 @@ if((data.key=="CHAOS_LOG")&&(data.cd->hasKey(MetadataServerLoggingDefinitionKeyR
       }
     return;
   }*/
-  uint32_t                st = data.cd->getInt32Value(DataServiceNodeDefinitionKey::DS_STORAGE_TYPE);
   if (data.cd->hasKey(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_TAG)) {
     ChaosStringSet* tag = new ChaosStringSet();
     tag->insert(data.cd->getStringValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_TAG));
@@ -102,9 +101,25 @@ if((data.key=="CHAOS_LOG")&&(data.cd->hasKey(MetadataServerLoggingDefinitionKeyR
   std::replace(kp.begin(), kp.end(), '.', '/');
   //DBG<<"data from:"<<kp<<" size:"<<data.cd->getBSONRawSize();
   if(data.cd->hasKey(DataPackCommonKey::DPCK_DATASET_TYPE)){
-    kp=kp+datasetTypeToPostfix(data.cd->getInt32Value(DataPackCommonKey::DPCK_DATASET_TYPE));
-    QueryDataConsumer::consumePutEvent(kp, (uint8_t)st, meta_tag_set, *(data.cd.get()));
+    int pktype=data.cd->getInt32Value(DataPackCommonKey::DPCK_DATASET_TYPE);
+    kp=kp+datasetTypeToPostfix(pktype);
+     uint32_t                st=(uint32_t)DataServiceNodeDefinitionType::DSStorageTypeLive;
+    if(pktype==DataPackCommonKey::DPCK_DATASET_TYPE_LOG){
+    //  DBG<<"Queue:"<<CObjectProcessingPriorityQueue<CDataWrapper>::queueSize()<<" LOG:"<<data.cd->getJSONString();
+      if(CObjectProcessingPriorityQueue<CDataWrapper>::queueSize()<MAX_LOG_QUEUE){
+        CObjectProcessingPriorityQueue<CDataWrapper>::push(data.cd,0);
+      } else {
+        ERR<<"too many logs on queue for DB:"<<CObjectProcessingPriorityQueue<CDataWrapper>::queueSize();
 
+      }
+
+    } else {
+    st = data.cd->getInt32Value(DataServiceNodeDefinitionKey::DS_STORAGE_TYPE);
+
+    }
+
+    QueryDataConsumer::consumePutEvent(kp, (uint8_t)st, meta_tag_set, *(data.cd.get()));
+    
   }
   } catch(const chaos::CException& e ){
     ERR<<"Chaos Exception caught processing key:"<<data.key<<" ("<<data.off<<","<<data.par<<") error:"<<e.what();

@@ -1529,7 +1529,7 @@ CDWUniquePtr AbstractControlUnit::_unitRestoreToSnapshot(CDWUniquePtr restorePar
       dataset_at_tag = key_data_storage->getDatasetFromRestorePoint(restore_snapshot_tag,
                                                                     (KeyDataStorageDomain)idx);
       if (dataset_at_tag.get()) {
-        ACULDBG_ << CHAOS_FORMAT("Dataset restored from tag %1% -> %2%", % restore_snapshot_tag % dataset_at_tag->getJSONString());
+        ACULDBG_ << CHAOS_FORMAT("Dataset restored from tag %1% -> %2%: %3%", % restore_snapshot_tag %datasetTypeToHuman(idx) % dataset_at_tag->getJSONString());
         //fill cache with dataset key/value
         fillRestoreCacheWithDatasetFromTag((KeyDataStorageDomain)idx,
                                            *dataset_at_tag.get(),
@@ -2592,7 +2592,7 @@ void AbstractControlUnit::propertyUpdatedHandler(const std::string&  group_name,
      */
 DriverAccessor* AbstractControlUnit::getAccessoInstanceByIndex(int idx) {
   if (idx >= accessor_instances.size()) {
-      ACULERR_ << idx <<"  driver instances not present,# available drivers:"<<accessor_instances.size();
+      ACULERR_ <<"  driver instance index:"<<idx<<"not present,# available drivers:"<<accessor_instances.size();
 
     return NULL;
   }

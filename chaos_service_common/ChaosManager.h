@@ -66,7 +66,7 @@ class ChaosManager : public chaos::common::utility::SingletonCW<ChaosManager>{
                  bool                            alive_only,
                  unsigned int                    last_node_sequence_id,
                  unsigned int                    page_length,
-                 uint64_t&                       lastid,
+                 uint32_t&                       numberofpage,
                  ChaosStringVector&              node_found,
                  uint32_t                        millisec_to_wait=5000,
                  const std::string&              impl="");

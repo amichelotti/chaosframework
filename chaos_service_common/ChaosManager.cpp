@@ -743,7 +743,7 @@ int ChaosManager::nodeSearch(const std::string&              unique_id_filter,
                              bool                            alive_only,
                              unsigned int                    last_node_sequence_id,
                              unsigned int                    page_length,
-                             uint64_t&                       lastid,
+                             uint32_t&                       lastid,
                              ChaosStringVector&              node_found,
                              uint32_t                        millisec_to_wait,
                              const std::string&              impl) {
