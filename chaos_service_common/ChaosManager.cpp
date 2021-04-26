@@ -25,6 +25,8 @@
 #include <ChaosMetadataService/api/service/GetSnapshotForNode.h>
 #include <ChaosMetadataService/api/service/CreateNewSnapshot.h>
 #include <ChaosMetadataService/api/service/RestoreSnapshot.h>
+#include <ChaosMetadataService/api/service/GetAllSnapshot.h>
+#include <ChaosMetadataService/api/service/GetNodesForSnapshot.h>
 
 #include <ChaosMetadataService/api/service/GetVariable.h>
 #include <ChaosMetadataService/api/service/SetVariable.h>
@@ -156,6 +158,52 @@ int ChaosManager::init(const chaos::common::data::CDataWrapper& best_available_d
 
   return 0;
 }
+std::map<uint64_t,std::string> ChaosManager::getAllSnapshot(const std::string& query_filter){
+std::map<uint64_t,std::string> snapshot_found;
+CDWUniquePtr res;
+
+  
+    if (persistence_driver) {
+          CALC_EXEC_START;
+    ChaosUniquePtr<chaos::common::data::CDataWrapper> message(new CDataWrapper());
+    message->addStringValue("snapshot_name", query_filter);
+    
+    GetAllSnapshot node;
+       res = node.execute(MOVE(message));
+
+
+           if(res.get() &&
+               res->hasKey("snapshot_list_result") &&
+               res->isVectorValue("snapshot_list_result")) {
+            
+            CMultiTypeDataArrayWrapperSPtr snapshot_desc_list = res->getVectorValue("snapshot_list_result");
+            for(int idx = 0;
+                idx < snapshot_desc_list->size();
+                idx++) {
+                ChaosUniquePtr<chaos::common::data::CDataWrapper> tmp_desc(snapshot_desc_list->getCDataWrapperElementAtIndex(idx));
+                
+                if(tmp_desc->hasKey("snap_name")) {
+                    if(!query_filter.empty()){
+                        std::string cmp=tmp_desc->getStringValue("snap_name");
+                        // TODO: implement filter in DB query
+                        if(strstr(cmp.c_str(),query_filter.c_str())){
+                            uint64_t tm=tmp_desc->getInt64Value("snap_ts");
+                            snapshot_found[tm]=cmp;
+                            
+                        }
+                    } else {
+                        uint64_t tm=tmp_desc->getInt64Value("snap_ts");
+                        snapshot_found[tm]=tmp_desc->getStringValue("snap_name");
+                        
+                    }
+                }
+            }
+        }
+   
+      CALC_EXEC_END
+    }
+    return snapshot_found;
+}
 
 chaos::common::data::VectorCDWShrdPtr ChaosManager::getLiveChannel(const std::vector<std::string>& channels) {
   chaos::common::data::VectorCDWShrdPtr results;
@@ -217,7 +265,34 @@ ChaosStringVector ChaosManager::getSnapshotForNode(const std::string&uid){
   }
   return snapshot_found;
 
-}                                  
+}
+
+ChaosStringVector ChaosManager::getNodesForSnapshot(const std::string&uid){
+  ChaosStringVector snapshot_found;
+  if (persistence_driver) {
+    GetNodesForSnapshot node;
+    CALC_EXEC_START;
+    ChaosUniquePtr<chaos::common::data::CDataWrapper> message(new CDataWrapper());
+    message->addStringValue("snapshot_name", uid);
+
+    CDWUniquePtr res = node.execute(MOVE(message));
+    if(res.get() &&
+               res->hasKey("node_in_snapshot") &&
+               res->isVectorValue("node_in_snapshot")) {
+                //we have result
+                CMultiTypeDataArrayWrapperSPtr snapshot_desc_list = res->getVectorValue("node_in_snapshot");
+                for(int idx = 0;
+                    idx < snapshot_desc_list->size();
+                    idx++) {
+                    const std::string node_uid = snapshot_desc_list->getStringElementAtIndex(idx);
+                    snapshot_found.push_back(node_uid);
+                }
+            }
+    CALC_EXEC_END
+  }
+  return snapshot_found;
+
+}
 chaos::common::data::CDWUniquePtr ChaosManager::createNewSnapshot(const std::string& snapshot_name,const ChaosStringVector& node_list){
 CDWUniquePtr res;
 
