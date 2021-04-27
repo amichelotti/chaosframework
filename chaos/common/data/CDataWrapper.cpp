@@ -1093,6 +1093,12 @@ bool CDataWrapper::isBinaryValue(const std::string& key) const{
     }
     return false;
 }
+bool CDataWrapper::isCDataWrapperValue() const{
+    bson_iter_t element_found;bson_iter_init(&element_found, ACCESS_BSON(bson));
+    if(BSON_ITER_HOLDS_DOCUMENT(&element_found))return true;
+   
+    return false;
+}
 
 bool CDataWrapper::isCDataWrapperValue(const std::string& key) const{
     FIND_AND_CHECK(key, BSON_ITER_HOLDS_DOCUMENT){

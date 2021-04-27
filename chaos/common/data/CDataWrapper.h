@@ -358,6 +358,8 @@ throw chaos::CException(-2, ss.str(), __PRETTY_FUNCTION__);
                 bool isStringValue(const std::string& key) const;
                 bool isBinaryValue(const std::string& key) const;
                 bool isCDataWrapperValue(const std::string& key) const;
+                bool isCDataWrapperValue() const;
+
                 bool isVectorValue(const std::string& key) const;
                 bool isJsonValue(const std::string& key) const;
                 chaos::DataType::DataType getValueType(const std::string& key) const;

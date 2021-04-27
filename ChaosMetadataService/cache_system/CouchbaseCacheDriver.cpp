@@ -25,8 +25,7 @@
 #include <chaos/common/global.h>
 #include <chaos/common/chaos_constants.h>
 #include <string>
-
-#include <boost/regex.hpp>
+#include <regex>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 
@@ -431,15 +430,15 @@ bool CouchbaseDriverPool::validateString(std::string& server_description) {
     boost::algorithm::trim(server_description);
     std::string normalized_server_desc = boost::algorithm::to_lower_copy(server_description);
     //! Regular expression for check server endpoint with the sintax hostname:[priority_port:service_port]
-    boost::regex CouchbaseHostNameOnlyRegExp("[a-zA-Z0-9]+(.[a-zA-Z0-9]+)+");
+    std::regex CouchbaseHostNameOnlyRegExp("[a-zA-Z0-9]+(.[a-zA-Z0-9]+)+");
     //! Regular expression for check server endpoint with the sintax hostname:[priority_port:service_port]
-    boost::regex CouchbaseHostNameRegExp("[a-zA-Z0-9]+(.[a-zA-Z0-9]+)+:[0-9]{4,5}");
+    std::regex CouchbaseHostNameRegExp("[a-zA-Z0-9]+(.[a-zA-Z0-9]+)+:[0-9]{4,5}");
     //! Regular expression for check server endpoint with the sintax ip:[priority_port:service_port]
-    boost::regex CouchbaseIPAndPortRegExp("\\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\b:[0-9]{4,5}");
+    std::regex CouchbaseIPAndPortRegExp("\\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\b:[0-9]{4,5}");
     //check if the description is well formed
-    if(!regex_match(normalized_server_desc, CouchbaseHostNameOnlyRegExp) &&
-       !regex_match(normalized_server_desc, CouchbaseHostNameRegExp) &&
-       !regex_match(normalized_server_desc, CouchbaseIPAndPortRegExp)) return false;
+    if(!std::regex_match(normalized_server_desc, CouchbaseHostNameOnlyRegExp) &&
+       !std::regex_match(normalized_server_desc, CouchbaseHostNameRegExp) &&
+       !std::regex_match(normalized_server_desc, CouchbaseIPAndPortRegExp)) return false;
     return true;
 }
 

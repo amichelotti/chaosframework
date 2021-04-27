@@ -44,6 +44,9 @@ DeviceSharedDataWorkerMetricCollector::~DeviceSharedDataWorkerMetricCollector() 
 int DeviceSharedDataWorkerMetricCollector::executeJob(WorkerJobPtr job_info,
                                                        void* cookie) {
                                                            int ret=0;
+    if(job_info.get()==NULL){
+        return -1;
+    }
     DeviceSharedWorkerJob& job = *reinterpret_cast<DeviceSharedWorkerJob*>(job_info.get());
     uint32_t total_data = (uint32_t)job.data_pack->size() + (uint32_t)job.key.size();
     ret= DeviceSharedDataWorker::executeJob(job_info, cookie);
@@ -63,6 +66,9 @@ int DeviceSharedDataWorkerMetricCollector::executeJob(WorkerJobPtr job_info,
 }
 
 int DeviceSharedDataWorkerMetricCollector::submitJobInfo(WorkerJobPtr job_info, int64_t milliseconds_to_wait) {
+    if(job_info.get()==NULL){
+        return -1;
+    }
     DeviceSharedWorkerJob& job = *reinterpret_cast<DeviceSharedWorkerJob*>(job_info.get());
     uint32_t total_data = (uint32_t)job.data_pack->size()  + (uint32_t)job.key.size();
     

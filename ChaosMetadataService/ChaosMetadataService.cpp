@@ -33,7 +33,7 @@
 #include <boost/algorithm/string.hpp>
 #include <chaos/common/healt_system/HealtManager.h>
 #include <chaos/common/io/SharedManagedDirecIoDataDriver.h>
-
+#include <regex>
 #include <chaos/common/utility/ObjectFactoryRegister.h>
 #include <chaos/common/configuration/GlobalConfiguration.h>
 using namespace std;
@@ -497,7 +497,7 @@ void ChaosMetadataService::signalHanlder(int signalNumber) {
 void ChaosMetadataService::fillKVParameter(std::map<std::string, std::string>& kvmap,
                                            const std::vector<std::string>& multitoken_param) {
     //! Regular expression for check server endpoint with the sintax hostname:[priority_port:service_port]
-    boost::regex KVParamRegex("[a-zA-Z0-9/_-]+:[a-zA-Z0-9/_-]+");
+    std::regex KVParamRegex("[a-zA-Z0-9/_-]+:[a-zA-Z0-9/_-]+");
     std::vector<std::string> kv_splitted;
     std::vector<std::string> kvtokens;
     for(std::vector<std::string>::const_iterator it = multitoken_param.begin();
@@ -508,7 +508,7 @@ void ChaosMetadataService::fillKVParameter(std::map<std::string, std::string>& k
         
         
         
-        if(!regex_match(param_key, KVParamRegex)) {
+        if(!std::regex_match(param_key, KVParamRegex)) {
             throw chaos::CException(-3, "Malformed kv parameter string", __PRETTY_FUNCTION__);
         }
         

@@ -65,6 +65,11 @@ void DeviceSharedDataWorker::deinit()  {
 
 int DeviceSharedDataWorker::executeJob(WorkerJobPtr job_info, void* cookie) {
     int err = 0;
+    if(job_info.get()==NULL){
+        ERR << "Invalid Job Info";
+
+        return -1;
+    }
     DeviceSharedWorkerJob &job = *reinterpret_cast<DeviceSharedWorkerJob*>(job_info.get());
     ObjectStorageDataAccess *obj_storage_da = reinterpret_cast<ObjectStorageDataAccess *>(cookie);
     
@@ -75,13 +80,20 @@ int DeviceSharedDataWorker::executeJob(WorkerJobPtr job_info, void* cookie) {
     //read lock on mantainance mutex
     if(static_cast<DataServiceNodeDefinitionType::DSStorageType>(job.key_tag)&DataServiceNodeDefinitionType::DSStorageTypeHistory){
            //write data on object storage
+           if(job.data_pack->data()){
             CDataWrapper data_pack((char *)job.data_pack->data());
             //push received datapack into object storage
+            
             if((err = obj_storage_da->pushObject(job.key,
                                                  MOVE(job.meta_tag),
                                                  data_pack))) {
-                ERR << "Error pushing datapack into object storage driver";
+                ERR << job.key<<" Error pushing datapack into object storage driver";
+                usleep(100000);
             }
+           } else {
+            ERR << job.key<<" Invalid data pack";
+ 
+           }
             
     }
    return err;

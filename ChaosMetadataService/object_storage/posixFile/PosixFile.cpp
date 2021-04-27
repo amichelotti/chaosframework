@@ -1425,7 +1425,7 @@ void PosixFile::timeout() {
   for (write_path_t::iterator id = s_lastWriteDir.begin(); id != s_lastWriteDir.end(); ) {
     uint64_t ts = chaos::common::utility::TimingUtil::getTimeStamp();
 
-    if ((ts - id->second.ts) > (POSIX_MSEC_QUANTUM)) {
+    if ((ts - id->second.ts) > (POSIX_MSEC_QUANTUM*2)) {
       //not anymore used
       /* if (last_access_mutex.try_lock() == false) {
         continue;

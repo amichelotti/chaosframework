@@ -56,13 +56,6 @@ bool checkURL(const std::string& url){
 	//boost::smatch match0,match1;
 	return	regex_match(url,DirectIOHostIPAndEndpointRegExp) || regex_match(url,DirectIOServerDescriptionHostAndEndpointRegExp);
 	
-/*
-boost::regex DirectIOHostIPAndEndpointRegExp(_DirectIOHostIPAndEndpoint);
-    boost::regex DirectIOServerDescriptionHostAndEndpointRegExp(_DirectIOServerDescriptionHostAndEndpoint);
-	//boost::smatch match0,match1;
-	return	boost::regex_match(url,DirectIOHostIPAndEndpointRegExp) ||
-	boost::regex_match(url,DirectIOServerDescriptionHostAndEndpointRegExp);
-	*/
 return true;
 }
 /*
