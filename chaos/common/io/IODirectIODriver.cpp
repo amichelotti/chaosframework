@@ -285,7 +285,7 @@ int IODirectIODriver::loadDatasetTypeFromSnapshotTag(const std::string& restore_
 
 void IODirectIODriver::addServerURL(const std::string& url) {
     ChaosWriteLock wl(mutext_feeder);
-    if(!common::direct_io::DirectIOClient::checkURL(url)) {
+    if(!common::direct_io::checkURL(url)) {
         IODirectIODriver_LERR_ << "Url " << url << " non well formed";
         return;
     }
@@ -310,7 +310,7 @@ chaos::common::data::CDataWrapper* IODirectIODriver::updateConfiguration(chaos::
         size_t numerbOfserverAddressConfigured = liveMemAddrConfig->size();
         for ( int idx = 0; idx < numerbOfserverAddressConfigured; idx++ ){
             string serverDesc = liveMemAddrConfig->getStringElementAtIndex(idx);
-            if(!common::direct_io::DirectIOClient::checkURL(serverDesc)) {
+            if(!common::direct_io::checkURL(serverDesc)) {
                 IODirectIODriver_DLDBG_ << "Data proxy server description " << serverDesc << " non well formed";
                 continue;
             }

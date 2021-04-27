@@ -20,8 +20,13 @@
  */
 
 #include <chaos/common/direct_io/DirectIOURLManagment.h>
-
+#if __cplusplus >= 201103L
+#include <regex>
+using namespace std;
+#else
 #include <boost/regex.hpp>
+using namespace boost;
+#endif
 #include <boost/format.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
@@ -37,27 +42,48 @@ using namespace chaos::common::direct_io;
 #define  DirectIOHostName  "[a-zA-Z0-9]+(.[a-zA-Z0-9]+)+:[0-9]{4,5}:[0-9]{4,5}"
 //! Regular expression for check server endpoint with the sintax ip:[priority_port:service_port]
 #define DirectIOIPAndPort  "\\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\b:[0-9]{4,5}:[0-9]{4,5}"
+namespace chaos{
+	namespace common{
+		namespace direct_io{
 
-bool DirectIOURLManagment::checkURL(const std::string& url) {
+bool checkURL(const std::string& url){
+	// boost regex get invalid free on chaos
+	const char _DirectIOHostIPAndEndpoint[]=DirectIOHostIPAndEndpoint;
+	const char _DirectIOServerDescriptionHostAndEndpoint[]= DirectIOServerDescriptionHostAndEndpoint ;
 
-    boost::regex DirectIOHostIPAndEndpointRegExp(DirectIOHostIPAndEndpoint);
-    boost::regex DirectIOServerDescriptionHostAndEndpointRegExp(DirectIOServerDescriptionHostAndEndpoint);
-	boost::smatch match0,match1;
-	return	boost::regex_match(url, match0,DirectIOHostIPAndEndpointRegExp) ||
-	boost::regex_match(url, match1,DirectIOServerDescriptionHostAndEndpointRegExp);
+	regex DirectIOHostIPAndEndpointRegExp(_DirectIOHostIPAndEndpoint);
+    regex DirectIOServerDescriptionHostAndEndpointRegExp(_DirectIOServerDescriptionHostAndEndpoint);
+	//boost::smatch match0,match1;
+	return	regex_match(url,DirectIOHostIPAndEndpointRegExp) || regex_match(url,DirectIOServerDescriptionHostAndEndpointRegExp);
+	
+/*
+boost::regex DirectIOHostIPAndEndpointRegExp(_DirectIOHostIPAndEndpoint);
+    boost::regex DirectIOServerDescriptionHostAndEndpointRegExp(_DirectIOServerDescriptionHostAndEndpoint);
+	//boost::smatch match0,match1;
+	return	boost::regex_match(url,DirectIOHostIPAndEndpointRegExp) ||
+	boost::regex_match(url,DirectIOServerDescriptionHostAndEndpointRegExp);
+	*/
+return true;
 }
+/*
+bool DirectIOURLManagment::checkURL(const std::string& url) {
+return checkUrl();
+    
+}*/
 
 
 bool DirectIOURLManagment::decoupleServerDescription(const std::string& server_desc,
 													 std::string& priority_desc,
 													 std::string& service_desc) {
 	std::vector<std::string> server_desc_tokens;
-    boost::regex DirectIOHostNameRegExp(DirectIOHostName);
-    boost::regex DirectIOIPAndPortRegExp(DirectIOIPAndPort);
-	if(!boost::regex_match(server_desc, DirectIOHostNameRegExp) &&
-       !boost::regex_match(server_desc, DirectIOIPAndPortRegExp)) {
+	
+    regex DirectIOHostNameRegExp(DirectIOHostName);
+    regex DirectIOIPAndPortRegExp(DirectIOIPAndPort);
+	if(!regex_match(server_desc, DirectIOHostNameRegExp) &&
+       !regex_match(server_desc, DirectIOIPAndPortRegExp)) {
         return false;
     }
+
 	boost::algorithm::split(server_desc_tokens, server_desc, boost::algorithm::is_any_of(":"), boost::algorithm::token_compress_on);
 	
 	//create the two servers description
@@ -94,3 +120,4 @@ bool DirectIOURLManagment::decodeServerDescriptionWithEndpoint(const std::string
     endpoint = boost::lexical_cast<uint16_t>(tokens[1]);
     return true;
 }
+		}}}
