@@ -391,7 +391,8 @@ namespace chaos {
             node_type_all_server=128,
             //!search root processes
             node_type_root = 256,
-            node_type_ceu = 512
+            node_type_ceu = 512,
+            node_type_all = 1024
 
             
             

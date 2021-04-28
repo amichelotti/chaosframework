@@ -24,14 +24,21 @@
 #include "../AbstractApi.h"
 
 namespace chaos {
-    namespace metadata_service {
-        namespace api {
-            namespace node {
-                CHAOS_MDS_DEFINE_API_CLASS(NodeSearch);
-            }
-        }
-    }
-}
+namespace metadata_service {
+namespace api {
+namespace node {
+class NodeSearch : public AbstractApi {
+ protected:
+ public:
+  NodeSearch();
+  ~NodeSearch();
+  chaos::common::data::CDWUniquePtr execute(chaos::common::data::CDWUniquePtr api_data);
+  std::vector<std::string>          search(const std::string& name, const std::string& impl = "", uint32_t maxres = 100000);
+};
 
+}  // namespace node
+}  // namespace api
+}  // namespace metadata_service
+}  // namespace chaos
 
 #endif /* defined(__CHAOSFramework__NodeSearch__) */

@@ -20,6 +20,7 @@
  */
 #include "QueryDataMsgPSConsumer.h"
 #include "api/logging/SubmitEntry.h"
+#include "api/node/NodeSearch.h"
 using namespace chaos::metadata_service::worker;
 using namespace chaos::metadata_service::cache_system;
 
@@ -185,6 +186,16 @@ void QueryDataMsgPSConsumer::init(void* init_data) {
 void QueryDataMsgPSConsumer::start() {
   DBG << "Starting Msg consumer";
   cons->start();
+  api::node::NodeSearch node;
+  std::vector<std::string> nodes=node.search(""); // search every node
+  for(std::vector<std::string>::iterator i=nodes.begin();i!=nodes.end();i++){
+    if (cons->subscribe(*i) != 0) {
+        ERR <<" cannot subscribe to :" << *i<<" err:"<<cons->getLastError();
+                
+    } else {
+        DBG <<"] Subscribed to:" << *i;
+    }  
+  }
  /* std::string keysub="CHAOS_LOG";
   if (cons->subscribe(keysub) != 0) {
       ERR <<" cannot subscribe to :" << keysub<<" err:"<<cons->getLastError();
@@ -209,14 +220,14 @@ int QueryDataMsgPSConsumer::consumeHealthDataEvent(const std::string&           
                                                    const ChaosStringSetConstSPtr meta_tag_set,
                                                    BufferSPtr                    channel_data) {
   int err = 0;
-  {
+  
     boost::mutex::scoped_lock ll(map_m);
-    bool                      subok = true;
-    CDataWrapper health_data_pack((char *)channel_data->data());
-    bool isACUEU=(channel_data.get()==NULL)||(health_data_pack.hasKey(chaos::ControlUnitHealtDefinitionValue::CU_HEALT_OUTPUT_DATASET_PUSH_RATE));
+    
+    
+/*    bool isACUEU=(channel_data.get()==NULL)||(health_data_pack.hasKey(chaos::ControlUnitHealtDefinitionValue::CU_HEALT_OUTPUT_DATASET_PUSH_RATE));
 
     if(isACUEU){
-     // DBG << "Received healt from:"<<key<<" is:"<<((channel_data.get()==NULL)?"registration":"normal");
+      DBG << "Received healt from:"<<key<<" is:"<<((channel_data.get()==NULL)?"registration":"normal");
 
       std::string rootname = key;
       size_t      pos      = key.find(NodeHealtDefinitionKey::HEALT_KEY_POSTFIX);
@@ -234,41 +245,25 @@ int QueryDataMsgPSConsumer::consumeHealthDataEvent(const std::string&           
             }
       }
 
-      /*
-      std::vector<std::string> tosub = {
-            DataPackPrefixID::OUTPUT_DATASET_POSTFIX,
-            DataPackPrefixID::INPUT_DATASET_POSTFIX,
-            DataPackPrefixID::CUSTOM_DATASET_POSTFIX,
-            DataPackPrefixID::SYSTEM_DATASET_POSTFIX,
-            DataPackPrefixID::DEV_ALARM_DATASET_POSTFIX,
-            DataPackPrefixID::CU_ALARM_DATASET_POSTFIX
-            };
-       int64_t seq=-1;
-        if(channel_data.get()&&health_data_pack.hasKey(DataPackCommonKey::DPCK_SEQ_ID)){
-          seq=health_data_pack.getInt64Value(DataPackCommonKey::DPCK_SEQ_ID);
-        }
-      for (auto i : tosub) {
-          std::string keysub = rootname + i;
-          if(alive_map.find(keysub)==alive_map.end()){
-            if (cons->subscribe(keysub) != 0) {
-              ERR << seq<<"] cannot subscribe to :" << keysub<<" err:"<<cons->getLastError();
+      
+    }
+  }*/
+  if(channel_data.get()==NULL || channel_data->data()==NULL){
+    DBG<<"Empty health for:\""<<key<<"\" registration pack";
+    if(alive_map.find(key)==alive_map.end()){
+        if (cons->subscribe(key) != 0) {
+              ERR <<"] cannot subscribe to :" << key<<" err:"<<cons->getLastError();
               
             } else {
-              alive_map[keysub]= TimingUtil::getTimeStamp();
+              alive_map[key]= TimingUtil::getTimeStamp();
 
-              DBG << seq<<"] Subscribed to:" << keysub<<" at:"<<alive_map[keysub];
+              DBG <<"] Subscribed to:" << key<<" at:"<<alive_map[key];
             }
-          } else {
-           //   DBG << seq<<"] Already subscribed:" << keysub;
-
-          }
-      }*/
-    }
-  }
-  if(channel_data.get()==NULL){
-    DBG<<"Empty health for:\""<<key<<"\" registration pack?";
+      }
     return 0;
   }
+  CDataWrapper health_data_pack((char *)channel_data->data());
+
   return QueryDataConsumer::consumeHealthDataEvent(key, hst_tag, meta_tag_set, channel_data);
 }
 

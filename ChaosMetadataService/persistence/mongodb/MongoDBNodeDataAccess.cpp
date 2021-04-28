@@ -504,8 +504,13 @@ int MongoDBNodeDataAccess::searchNode(chaos::common::data::CDataWrapper **result
                 bson_find_and<<BSON("$or"<<bson_find_or.arr());
                 break;
             }
+            case chaos::NodeType::NodeSearchType::node_type_all:{
+                break;
+            }
             default:
                 bson_find_and << BSON( chaos::NodeDefinitionKey::NODE_TYPE << type_of_node);
+
+            break;
 
 
         }

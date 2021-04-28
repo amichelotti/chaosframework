@@ -210,6 +210,7 @@ void ChaosMetadataService::init(void *init_data)  {
 }
 
 int ChaosMetadataService::notifyNewNode(const std::string& nodeuid){
+    LCND_LDBG<<" NEW NODE:"<<nodeuid;
     return message_consumer->consumeHealthDataEvent(nodeuid, 0, ChaosStringSetConstSPtr(),  ChaosMakeSharedPtr<Buffer>());
 
 }

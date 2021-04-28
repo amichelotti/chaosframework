@@ -69,8 +69,8 @@ int IODirectIOPSMsgDriver::storeHealthData(const std::string& key,
                                       CDWShrdPtr data_to_store,
                                       DataServiceNodeDefinitionType::DSStorageType storage_type,
                                       const ChaosStringSet& tag_set){
-    IODirectIODriver::storeHealthData(key,data_to_store,storage_type,tag_set);                                    
-    return storeData(key,data_to_store,storage_type,tag_set);
+    //IODirectIODriver::storeHealthData(key,data_to_store,storage_type,tag_set);                                    
+    return storeData(key,data_to_store,DataServiceNodeDefinitionType::DSStorageTypeLive,tag_set);
   }
 void IODirectIOPSMsgDriver::init(void* _init_parameter) {
   IODirectIODriver::init(_init_parameter);

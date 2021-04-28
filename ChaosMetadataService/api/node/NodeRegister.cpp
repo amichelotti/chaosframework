@@ -78,6 +78,8 @@ CDWUniquePtr NodeRegister::agentRegistration(CDWUniquePtr api_data) {
     const std::string agent_uid = api_data->getStringValue(NodeDefinitionKey::NODE_UNIQUE_ID);
     //fetch the unit server data access
     GET_DATA_ACCESS(AgentDataAccess, a_da, -1)
+    ChaosMetadataService::getInstance()->notifyNewNode(agent_uid); 
+
     try {
         if((err = a_da->insertUpdateAgentDescription(*api_data))) {
             LOG_AND_TROW(USRA_ERR, -1, CHAOS_FORMAT("Error %1% registering agent %2%", %err%agent_uid));
@@ -128,6 +130,7 @@ CDWUniquePtr NodeRegister::simpleRegistration(CDWUniquePtr api_data) {
     USRA_INFO << "Registering NODE: " << node_uid;
     std::string ttype;
     GET_DATA_ACCESS(UtilityDataAccess, u_da, -3)
+    ChaosMetadataService::getInstance()->notifyNewNode(node_uid); 
 
     try {
         if((err = n_da->checkNodePresence(is_present,node_uid, ttype))) {
@@ -237,6 +240,8 @@ CDWUniquePtr NodeRegister::unitServerRegistration(CDWUniquePtr api_data) {
     //we can porceed with uniserver registration
     const std::string unit_server_alias = api_data->getStringValue(NodeDefinitionKey::NODE_UNIQUE_ID);
     USRA_INFO << "Register unit server " << unit_server_alias;
+    ChaosMetadataService::getInstance()->notifyNewNode(unit_server_alias); 
+
     try {
         if((err = us_da->checkPresence(unit_server_alias, is_present))) {
             //err
