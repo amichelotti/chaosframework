@@ -134,7 +134,12 @@ namespace chaos {
         static const char * const   OPT_HA_ZONE_NAME                    = "ha-zone-name";
         static const char * const   CONTROL_MANAGER_UNIT_SERVER_ALIAS   = "unit-server-alias";
 
- 
+    #if ENABLE_ZMQ_MONITOR
+        static const char * const  OPT_ENABLE_ZMQ_MONITOR               = "zmq-monitor";
+
+        #endif
+     
+
     }
     /** @} */ // end of ParamOption
     
@@ -1522,7 +1527,11 @@ namespace chaos {
         static const unsigned int DPCK_DATASET_TYPE_CU_ALARM           = 6;
         //! the last log dataset
         static const unsigned int DPCK_DATASET_TYPE_LOG           = 7;
-       
+       //! the last all dataset (virtual)
+        static const          int DPCK_DATASET_TYPE_ALL          = -1;
+        //! the health,system,alarms (virtual)
+        static const          int DPCK_DATASET_TYPE_STATUS          = 255;
+
         //! the command dataset
         static const unsigned int DPCK_DATASET_TYPE_COMMAND            = 8;
        
@@ -1706,7 +1715,10 @@ namespace chaos {
         static const char * const CU_ALARM_DATASET_ID  = "cu_alarms";
         static const char * const HEALTH_DATASET_ID    = "health";
         static const char * const COMMAND_DATASET_ID    = "command";
-        static const char * const LOG_DATASET_ID    = "log";
+        static const char * const LOG_DATASET_ID        = "log";
+        static const char * const ALL_DATASET_ID        = "all"; // all datasets
+        static const char * const ALL_DATASET_STATUS    = "status"; // health + system + alarms
+
 
     }
     /** @} */ // end of DataPackPrefixID
@@ -1786,7 +1798,7 @@ namespace chaos {
                 return "unknown";
         }
     }
-    static inline unsigned int HumanTodatasetType(const std::string& domain) {
+    static inline int HumanTodatasetType(const std::string& domain) {
         if(domain == DataPackID::OUTPUT_DATASET_ID)
             return DataPackCommonKey::DPCK_DATASET_TYPE_OUTPUT;
         if(domain==DataPackID::INPUT_DATASET_ID)
@@ -1801,6 +1813,10 @@ namespace chaos {
             return DataPackCommonKey::DPCK_DATASET_TYPE_DEV_ALARM;
         if(domain==DataPackID::CU_ALARM_DATASET_ID)
             return DataPackCommonKey::DPCK_DATASET_TYPE_CU_ALARM;
+        if(domain==DataPackID::LOG_DATASET_ID)
+            return DataPackCommonKey::DPCK_DATASET_TYPE_LOG;
+        if(domain==DataPackID::ALL_DATASET_ID)
+            return DataPackCommonKey::DPCK_DATASET_TYPE_ALL;
         return DataPackCommonKey::DPCK_DATASET_TYPE_OUTPUT;
         
     }
