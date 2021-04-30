@@ -114,14 +114,17 @@ CDWUniquePtr NodeSearch::execute(CDWUniquePtr api_data) {
   }
   return CDWUniquePtr(result);
 }
-std::vector<std::string> NodeSearch::search(const std::string&unique_id_filter,const std::string&impl,uint32_t maxres){
+std::vector<std::string> NodeSearch::search(const std::string&unique_id_filter,const std::string& type,const std::string&impl,uint32_t maxres){
+  return search(unique_id_filter,chaos::NodeType::human2NodeType(type),impl,maxres);
+}
+std::vector<std::string> NodeSearch::search(const std::string&unique_id_filter,const chaos::NodeType::NodeSearchType type,const std::string&impl,uint32_t maxres){
 ChaosUniquePtr<chaos::common::data::CDataWrapper> message(new CDataWrapper());
 std::vector<std::string> node_found;
     message->addStringValue("unique_id_filter", unique_id_filter);
     if (impl.size() > 0)
       message->addStringValue("impl", impl);
 
-    message->addInt32Value("node_type_filter", (int32_t)chaos::NodeType::node_type_all);
+    message->addInt32Value("node_type_filter", (int32_t)type);
     message->addBoolValue("alive_only", false);
     message->addInt32Value("result_page_length", maxres);
     CDWUniquePtr res = execute(MOVE(message));

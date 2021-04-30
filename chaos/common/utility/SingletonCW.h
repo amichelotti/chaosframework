@@ -46,7 +46,16 @@ namespace chaos {
                     call_once(boost::bind(&_singletonInit, conf), flag);
                     return t;
                 }
-                
+                static T *getInstance() {
+                    //static T singletonInstance;
+                    call_once(_singletonInit0, flag);
+                    return t;
+                }  
+                static void _singletonInit0() {
+                    if(t==0){
+                        t= new T();
+                    }
+                }           
                 static void _singletonInit(const chaos::common::data::CDataWrapper&conf) {
                     if(t==0){
                         t= new T(conf);

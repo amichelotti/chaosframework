@@ -130,11 +130,9 @@ namespace chaos {
              the NodeHealtSet Structure. when the counter reach the 0 it the healt set is published and the counter
              is reset to a new random value
              */
-            class HealtManager:
+            class HealtManagerBase:
             public chaos::common::async_central::TimerHandler,
-            public chaos::common::utility::Singleton<HealtManager>,
             public chaos::common::utility::StartableService {
-                friend class chaos::common::utility::Singleton<HealtManager>;
                 //! counter for positioning new node healt set into the right fire slot
                 unsigned int last_fire_counter_set;
                 //!incremented at every timer timeout modded with HEALT_FIRE_SLOTS the result is the slot to fire
@@ -147,15 +145,11 @@ namespace chaos {
                 //! network broker and channel for comunicate with mds
                 chaos::common::message::MultiAddressMessageChannel  *mds_message_channel;
                 
-                //! permit to lock the access to publishing direct io channel
-                boost::mutex                                        mutex_publishing;
-                
                 //! drive rfor publishing the data
                 ChaosUniquePtr<chaos::common::io::IODataDriver>      io_data_driver;
                 
                 //! private non locked push method for a healt set
-                inline void _publish(const ChaosSharedPtr<NodeHealtSet>& heath_set,
-                                     uint64_t publish_ts);
+               
                 
                 chaos::common::utility::ProcStat current_proc_info;
                 //last sampling resurce usage
@@ -164,15 +158,19 @@ namespace chaos {
 //                double last_total_time;
 //                uint64_t last_sampling_time;
                 //! update the information about process
-                inline void updateProcInfo();
+                
                 //! timer handler for check what slot needs to be fired
                 void timeout();
             protected:
                 //! default constructor and destructor
-                HealtManager();
-                ~HealtManager();
+                HealtManagerBase();
+                ~HealtManagerBase();
                 
-               
+                //! permit to lock the access to publishing direct io channel
+                boost::mutex                                        mutex_publishing;
+                 void updateProcInfo();
+                virtual void _publish(const ChaosSharedPtr<NodeHealtSet>& heath_set,
+                                     uint64_t publish_ts);
                 chaos::common::data::CDWShrdPtr prepareNodeDataPack(NodeHealtSet& node_health_set,
                                                                     uint64_t push_timestamp);
                 
@@ -301,6 +299,12 @@ namespace chaos {
                  */
                 void publishNodeHealt(const std::string& node_uid);
             };
+
+            class HealtManager:public HealtManagerBase,public chaos::common::utility::Singleton<HealtManager>{
+                friend class chaos::common::utility::Singleton<HealtManager>;
+
+            };
+
         }
     }
 }

@@ -176,10 +176,19 @@ namespace chaos{
                         end = set_p_req_ts_index.end();
                         it != end && max_purge_check;
                         max_purge_check--){
+                        
                         //purge outdated promise
                         if(current_check_ts >= (*it).timeout_ts) {
                             LDBG_ << DEFINE_LOG_HEADER(FutureHelper) << __FUNCTION__ << CHAOS_FORMAT(" - Remove the promise for request of index %1%", %(*it).promise_id);
+                            try{
                             set_p_req_ts_index.erase(it++);
+                            } catch(std::exception& err){
+                                LERR_ << DEFINE_LOG_HEADER(FutureHelper) <<" error removing promise:"<<err.what();
+
+                            } catch(...){
+                                LERR_ << DEFINE_LOG_HEADER(FutureHelper) <<" uknown  exception removing promise";
+
+                            }
                         } else {
                             ++it;
                         }

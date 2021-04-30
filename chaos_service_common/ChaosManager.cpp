@@ -5,27 +5,27 @@
  * Created on 21/04/2021
  */
 #include "ChaosManager.h"
+#include <chaos/common/message/MDSMessageChannel.h>
+#include <ChaosMetadataService/api/node/ClearCommandQueue.h>
 #include <ChaosMetadataService/api/node/CommandTemplateSubmit.h>
+#include <ChaosMetadataService/api/node/KillCurrentCommand.h>
 #include <ChaosMetadataService/api/node/NodeGetDescription.h>
 #include <ChaosMetadataService/api/node/NodeNewDelete.h>
 #include <ChaosMetadataService/api/node/NodeSearch.h>
 #include <ChaosMetadataService/api/node/NodeSetDescription.h>
 #include <ChaosMetadataService/api/node/UpdateProperty.h>
-#include <ChaosMetadataService/api/node/ClearCommandQueue.h>
-#include <ChaosMetadataService/api/node/KillCurrentCommand.h>
 
 #include <ChaosMetadataService/api/unit_server/GetSetFullUnitServer.h>
 #include <ChaosMetadataService/api/unit_server/LoadUnloadControlUnit.h>
 #include <ChaosMetadataService/api/unit_server/ManageCUType.h>
 
+#include <ChaosMetadataService/api/agent/CheckAgentHostedProcess.h>
 #include <ChaosMetadataService/api/agent/GetAgentForNode.h>
-#include <ChaosMetadataService/api/agent/NodeOperation.h>
-#include <ChaosMetadataService/api/agent/SaveNodeAssociation.h>
-#include <ChaosMetadataService/api/agent/LoadNodeAssociation.h>
 #include <ChaosMetadataService/api/agent/ListNodeForAgent.h>
 #include <ChaosMetadataService/api/agent/LoadAgentDescription.h>
-#include <ChaosMetadataService/api/agent/CheckAgentHostedProcess.h>
-
+#include <ChaosMetadataService/api/agent/LoadNodeAssociation.h>
+#include <ChaosMetadataService/api/agent/NodeOperation.h>
+#include <ChaosMetadataService/api/agent/SaveNodeAssociation.h>
 
 #include <ChaosMetadataService/api/script/LoadFullScript.h>
 #include <ChaosMetadataService/api/script/ManageScriptInstance.h>
@@ -106,19 +106,42 @@ CDWShrdPtr ChaosManager::getLiveChannel(const std::string& key, int domain) {
 }
 ChaosManager::ChaosManager(const chaos::common::data::CDataWrapper& conf)
     : cache_driver(NULL), persistence_driver(NULL) {
-  init(conf);
+  if (init(conf) != 0) {
+    throw chaos::CException(-1, "Cannot initialize ", __PRETTY_FUNCTION__);
+  }
+}
+ChaosManager::ChaosManager()
+    : cache_driver(NULL), persistence_driver(NULL) {
+  chaos::common::message::MDSMessageChannel* mdsChannel = chaos::common::network::NetworkBroker::getInstance()->getMetadataserverMessageChannel();
+  if (mdsChannel) {
+    CDWUniquePtr best_available_da_ptr;
+    if (!mdsChannel->getDataDriverBestConfiguration(best_available_da_ptr, 5000)) {
+      //InizializableService::initImplementation(chaos::service_common::ChaosManager::getInstance(), (void*)best_available_da_ptr.get(), "ChaosManager", __PRETTY_FUNCTION__);
+      chaos::common::network::NetworkBroker::getInstance()->disposeMessageChannel(mdsChannel);
+
+      if (best_available_da_ptr.get()) {
+        if (init(*best_available_da_ptr) != 0) {
+          throw chaos::CException(-1, "Cannot initialize ", __PRETTY_FUNCTION__);
+        }
+      } else {
+        throw chaos::CException(-2, "Cannot retrive valid configuration ", __PRETTY_FUNCTION__);
+      }
+    } else {
+      chaos::common::network::NetworkBroker::getInstance()->disposeMessageChannel(mdsChannel);
+
+      throw chaos::CException(-3, "Cannot retrive configuration ", __PRETTY_FUNCTION__);
+    }
+  } else {
+      throw chaos::CException(-4, "Cannot create a MDS channel ", __PRETTY_FUNCTION__);
+
+  }
 }
 ChaosManager::~ChaosManager() {
   InizializableService::deinitImplementation(DriverPoolManager::getInstance(), "DriverPoolManager", __PRETTY_FUNCTION__);
   StartableService::stopImplementation(MDSBatchExecutor::getInstance(), "MDSBatchExecutor", __PRETTY_FUNCTION__);
   StartableService::deinitImplementation(MDSBatchExecutor::getInstance(), "MDSBatchExecutor", __PRETTY_FUNCTION__);
 }
-void ChaosManager::init(void* initd) {
-  if (initd) {
-    const chaos::common::data::CDataWrapper* p = (chaos::common::data::CDataWrapper*)initd;
-    init(*p);
-  }
-}
+
 int ChaosManager::init(const chaos::common::data::CDataWrapper& best_available_da_ptr) {
   CDWUniquePtr cs;
   DBGET << "Initialize parameters:" << best_available_da_ptr.getJSONString();
@@ -153,13 +176,14 @@ int ChaosManager::init(const chaos::common::data::CDataWrapper& best_available_d
     cache_driver = DriverPoolManager::getInstance()->getCacheDrvPtr();
     if (cache_driver == NULL) {
       DBGETERR << "Cannot use direct cache";
-
+      return -1;
     } else {
       DBGET << "Using direct cache";
     }
     persistence_driver = DriverPoolManager::getInstance()->getPersistenceDrvPtr();
     if (persistence_driver == NULL) {
       DBGETERR << "Cannot use direct persistence";
+      return -2;
 
     } else {
       DBGET << "Using direct persistence";
@@ -317,8 +341,8 @@ chaos::common::data::CDWUniquePtr ChaosManager::deleteSnapshot(const std::string
   }
   return res;
 }
-chaos::common::data::CDWUniquePtr ChaosManager::agentNodeOperation(const std::string& node_uid,int32_t op){
-   CDWUniquePtr res;
+chaos::common::data::CDWUniquePtr ChaosManager::agentNodeOperation(const std::string& node_uid, int32_t op) {
+  CDWUniquePtr res;
 
   if (persistence_driver) {
     CALC_EXEC_START;
@@ -330,10 +354,9 @@ chaos::common::data::CDWUniquePtr ChaosManager::agentNodeOperation(const std::st
     CALC_EXEC_END
   }
   return res;
-
 }
 
-chaos::common::data::CDWUniquePtr ChaosManager::clearCommandQueue(const std::string&name){
+chaos::common::data::CDWUniquePtr ChaosManager::clearCommandQueue(const std::string& name) {
   CDWUniquePtr res;
 
   if (persistence_driver) {
@@ -347,8 +370,8 @@ chaos::common::data::CDWUniquePtr ChaosManager::clearCommandQueue(const std::str
   }
   return res;
 }
-chaos::common::data::CDWUniquePtr ChaosManager::killCurrentCommand(const std::string&name){
-CDWUniquePtr res;
+chaos::common::data::CDWUniquePtr ChaosManager::killCurrentCommand(const std::string& name) {
+  CDWUniquePtr res;
 
   if (persistence_driver) {
     CALC_EXEC_START;
@@ -362,7 +385,7 @@ CDWUniquePtr res;
   return res;
 }
 
-chaos::common::data::CDWUniquePtr ChaosManager::checkAgentHostedProcess(const std::string&name){
+chaos::common::data::CDWUniquePtr ChaosManager::checkAgentHostedProcess(const std::string& name) {
   CDWUniquePtr res;
 
   if (persistence_driver) {
@@ -377,7 +400,7 @@ chaos::common::data::CDWUniquePtr ChaosManager::checkAgentHostedProcess(const st
   return res;
 }
 
-chaos::common::data::CDWUniquePtr ChaosManager::loadAgentDescription(const std::string&agent_uid,bool loaddata){
+chaos::common::data::CDWUniquePtr ChaosManager::loadAgentDescription(const std::string& agent_uid, bool loaddata) {
   CDWUniquePtr res;
 
   if (persistence_driver) {
@@ -393,8 +416,8 @@ chaos::common::data::CDWUniquePtr ChaosManager::loadAgentDescription(const std::
   return res;
 }
 
-chaos::common::data::CDWUniquePtr ChaosManager::listNodeForAgent(const std::string&agent_uid){
-CDWUniquePtr res;
+chaos::common::data::CDWUniquePtr ChaosManager::listNodeForAgent(const std::string& agent_uid) {
+  CDWUniquePtr res;
 
   if (persistence_driver) {
     CALC_EXEC_START;
@@ -407,8 +430,8 @@ CDWUniquePtr res;
   }
   return res;
 }
-chaos::common::data::CDWUniquePtr ChaosManager::loadNodeAssociation(const std::string&agent_uid,const std::string&node_association){
-CDWUniquePtr res;
+chaos::common::data::CDWUniquePtr ChaosManager::loadNodeAssociation(const std::string& agent_uid, const std::string& node_association) {
+  CDWUniquePtr res;
 
   if (persistence_driver) {
     CALC_EXEC_START;
@@ -423,8 +446,8 @@ CDWUniquePtr res;
   return res;
 }
 
-chaos::common::data::CDWUniquePtr ChaosManager::saveNodeAssociation(const std::string&agent_uid,const chaos::common::data::CDataWrapper& node_association){
- CDWUniquePtr res;
+chaos::common::data::CDWUniquePtr ChaosManager::saveNodeAssociation(const std::string& agent_uid, const chaos::common::data::CDataWrapper& node_association) {
+  CDWUniquePtr res;
 
   if (persistence_driver) {
     CALC_EXEC_START;
@@ -437,11 +460,10 @@ chaos::common::data::CDWUniquePtr ChaosManager::saveNodeAssociation(const std::s
     CALC_EXEC_END
   }
   return res;
-
 }
 
 chaos::common::data::CDWUniquePtr ChaosManager::getSnapshotDatasetForNode(const std::string& snapname, const std::string& node_uid) {
-CDWUniquePtr res;
+  CDWUniquePtr res;
 
   if (persistence_driver) {
     CALC_EXEC_START;
@@ -451,27 +473,27 @@ CDWUniquePtr res;
 
     GetSnapshotDatasetsForNode node;
     res = node.execute(MOVE(message));
-    if(res.get()){
-          std::map<uint64_t,std::string> mapsnap_res;
+    if (res.get()) {
+      std::map<uint64_t, std::string> mapsnap_res;
 
-    CMultiTypeDataArrayWrapperSPtr snapshot_list = res->getVectorValue("dataset_list");
-                if(snapshot_list->size()){
-                    res->addStringValue("name",node_uid);
-                    res->addInt64Value("timestamp",mapsnap_res.begin()->first);
-                }
-                for(int idx = 0;
-                    idx < snapshot_list->size();
-                    idx++) {
-                    ChaosUniquePtr<chaos::common::data::CDataWrapper> snapshot_dataset_element(snapshot_list->getCDataWrapperElementAtIndex(idx));
-                    
-                    const std::string dataset_name = snapshot_dataset_element->getStringValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_NAME);
-                    ChaosUniquePtr<chaos::common::data::CDataWrapper> val(snapshot_dataset_element->getCSDataValue("dataset_value"));
-                    if(val->hasKey(chaos::DataPackCommonKey::DPCK_DATASET_TYPE)){
-                        std::string ret=datasetTypeToHuman(val->getUInt32Value(chaos::DataPackCommonKey::DPCK_DATASET_TYPE));
-                        res->addCSDataValue(ret,*val);
-                    }
-                }
-            }
+      CMultiTypeDataArrayWrapperSPtr snapshot_list = res->getVectorValue("dataset_list");
+      if (snapshot_list->size()) {
+        res->addStringValue("name", node_uid);
+        res->addInt64Value("timestamp", mapsnap_res.begin()->first);
+      }
+      for (int idx = 0;
+           idx < snapshot_list->size();
+           idx++) {
+        ChaosUniquePtr<chaos::common::data::CDataWrapper> snapshot_dataset_element(snapshot_list->getCDataWrapperElementAtIndex(idx));
+
+        const std::string                                 dataset_name = snapshot_dataset_element->getStringValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_NAME);
+        ChaosUniquePtr<chaos::common::data::CDataWrapper> val(snapshot_dataset_element->getCSDataValue("dataset_value"));
+        if (val->hasKey(chaos::DataPackCommonKey::DPCK_DATASET_TYPE)) {
+          std::string ret = datasetTypeToHuman(val->getUInt32Value(chaos::DataPackCommonKey::DPCK_DATASET_TYPE));
+          res->addCSDataValue(ret, *val);
+        }
+      }
+    }
     CALC_EXEC_END
   }
   return res;

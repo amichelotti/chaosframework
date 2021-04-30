@@ -206,7 +206,7 @@ SET(cnd_src
 
 SET(service_src  ../chaos_service_common/persistence/mongodb/MongoDBHAConnectionManager.cpp
                   ../chaos_service_common/persistence/mongodb/MongoDBAccessor.cpp
-                  ../chaos_service_common/DriverPoolManager.cpp)
+                  ../chaos_service_common/DriverPoolManager.cpp ../chaos_service_common/health_system/HealtManagerDirect.cpp)
 
 SET(service_src  ${service_src} ../chaos_service_common/persistence/mongodb/mongodb_cxx/MongoDBCXXDriver.cpp)
 

@@ -42,6 +42,7 @@ class ChaosManager : public chaos::common::utility::SingletonCW<ChaosManager>{
   //! Device MEssage channel to control via chaos rpc the device
   //chaos::common::message::DeviceMessageChannel *deviceChannel;
   //! The io driver for accessing live data of the device
+  ChaosManager();
 
   ChaosManager(const chaos::common::data::CDataWrapper&cw);
    virtual ~ChaosManager();
@@ -55,7 +56,6 @@ class ChaosManager : public chaos::common::utility::SingletonCW<ChaosManager>{
   bool hasDirectPersistence() const {return (persistence_driver!=NULL);}
   chaos::common::io::IODataDriverShrdPtr live_driver;
 
-  void init(void*);
     chaos::common::data::CDWShrdPtr  getLiveChannel(const std::string& key);
 
   chaos::common::data::CDWShrdPtr  getLiveChannel(const std::string& key, int domain);

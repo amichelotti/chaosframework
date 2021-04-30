@@ -33,7 +33,9 @@ class NodeSearch : public AbstractApi {
   NodeSearch();
   ~NodeSearch();
   chaos::common::data::CDWUniquePtr execute(chaos::common::data::CDWUniquePtr api_data);
-  std::vector<std::string>          search(const std::string& name, const std::string& impl = "", uint32_t maxres = 100000);
+  std::vector<std::string>          search(const std::string& name, const std::string& type ,const std::string& impl = "", uint32_t maxres = 100000);
+
+  std::vector<std::string>          search(const std::string& name, const chaos::NodeType::NodeSearchType nt=chaos::NodeType::node_type_all,const std::string& impl = "", uint32_t maxres = 100000);
 };
 
 }  // namespace node

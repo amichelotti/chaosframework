@@ -22,6 +22,8 @@
 #include "mds_constants.h"
 #include "ChaosMetadataService.h"
 #include <chaos_service_common/DriverPoolManager.h>
+#include <chaos_service_common/health_system/HealtManagerDirect.h>
+
 #include "QueryDataConsumer.h"
 #include "QueryDataMsgPSConsumer.h"
 
@@ -31,7 +33,6 @@
 #include <chaos/common/exception/CException.h>
 #include <boost/format.hpp>
 #include <boost/algorithm/string.hpp>
-#include <chaos/common/healt_system/HealtManager.h>
 #include <chaos/common/io/SharedManagedDirecIoDataDriver.h>
 #include <regex>
 #include <chaos/common/utility/ObjectFactoryRegister.h>
@@ -50,7 +51,7 @@ using namespace chaos::service_common;
 using namespace chaos::metadata_service;
 using namespace chaos::metadata_service::api;
 using namespace chaos::metadata_service::batch;
-using namespace chaos::common::healt_system;
+using namespace chaos::service_common::health_system;
 using namespace chaos::common::cache_system;
 using namespace chaos::service_common::persistence::data_access;
 
@@ -199,7 +200,7 @@ void ChaosMetadataService::init(void *init_data)  {
 
         InizializableService::initImplementation(SharedManagedDirecIoDataDriver::getInstance(), NULL, "SharedManagedDirecIoDataDriver", __PRETTY_FUNCTION__);
 
-        StartableService::initImplementation(HealtManager::getInstance(), NULL, "HealthManager", __PRETTY_FUNCTION__);
+        StartableService::initImplementation(HealtManagerDirect::getInstance(), NULL, "HealtManagerDirect", __PRETTY_FUNCTION__);
 
         
     } catch (CException& ex) {
@@ -250,9 +251,9 @@ void ChaosMetadataService::start()  {
                                                                                    chaos::common::constants::HBTimersTimeoutinMSec);
 
 
-        StartableService::startImplementation(HealtManager::getInstance(), "HealthManager", __PRETTY_FUNCTION__);
-        HealtManager::getInstance()->addNewNode(unique_uid);
-        HealtManager::getInstance()->addNodeMetricValue(unique_uid,
+        StartableService::startImplementation(HealtManagerDirect::getInstance(), "HealtManagerDirect", __PRETTY_FUNCTION__);
+        HealtManagerDirect::getInstance()->addNewNode(unique_uid);
+        HealtManagerDirect::getInstance()->addNodeMetricValue(unique_uid,
                                                             NodeHealtDefinitionKey::NODE_HEALT_STATUS,
                                                             NodeHealtDefinitionValue::NODE_HEALT_STATUS_START);
             
@@ -440,7 +441,7 @@ std::vector<bool> ChaosMetadataService::areNodeAlive(const ChaosStringVector& ui
  Stop the toolkit execution
  */
 void ChaosMetadataService::stop() {
-    CHAOS_NOT_THROW(StartableService::stopImplementation(HealtManager::getInstance(), "HealthManager", __PRETTY_FUNCTION__););
+    CHAOS_NOT_THROW(StartableService::stopImplementation(HealtManagerDirect::getInstance(), "HealtManagerDirect", __PRETTY_FUNCTION__););
 
     chaos::common::async_central::AsyncCentralManager::getInstance()->removeTimer(this);
     #if defined(KAFKA_RDK_ENABLE) || defined(KAFKA_ASIO_ENABLE)
@@ -463,7 +464,7 @@ void ChaosMetadataService::stop() {
 void ChaosMetadataService::deinit() {
     InizializableService::deinitImplementation(SharedManagedDirecIoDataDriver::getInstance(), "SharedManagedDirecIoDataDriver", __PRETTY_FUNCTION__);
 
-    CHAOS_NOT_THROW(StartableService::deinitImplementation(HealtManager::getInstance(), "HealthManager", __PRETTY_FUNCTION__););
+    CHAOS_NOT_THROW(StartableService::deinitImplementation(HealtManagerDirect::getInstance(), "HealtManagerDirect", __PRETTY_FUNCTION__););
 
     InizializableService::deinitImplementation(cron_job::MDSCronusManager::getInstance(),
                                                "MDSConousManager",

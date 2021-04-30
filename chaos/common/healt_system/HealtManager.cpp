@@ -38,9 +38,9 @@ using namespace chaos::common::healt_system;
 using namespace chaos::common::async_central;
 using namespace chaos::cu::data_manager;
 
-#define HM_INFO INFO_LOG(HealtManager)
-#define HM_DBG DBG_LOG(HealtManager)
-#define HM_ERR ERR_LOG(HealtManager)
+#define HM_INFO INFO_LOG(HealtManagerBase)
+#define HM_DBG DBG_LOG(HealtManagerBase)
+#define HM_ERR ERR_LOG(HealtManagerBase)
 
 #define HEALT_NEED_NODE_NO_METRIC_PRESENCE(n,m)\
 if(map_node.count(n) == 0) return;\
@@ -78,49 +78,49 @@ SendHealthStatAsyncJob::~SendHealthStatAsyncJob() {
 void SendHealthStatAsyncJob::run() {
     
 }
-#pragma mark HealtManager
-HealtManager::HealtManager():
+#pragma mark HealtManagerBase
+HealtManagerBase::HealtManagerBase():
 mds_message_channel(NULL),
 last_fire_counter_set(0),
 current_fire_slot(0){}
 
-HealtManager::~HealtManager() {
+HealtManagerBase::~HealtManagerBase() {
     //clear node map
     map_node.clear();
 }
 
-void HealtManager::updateProcInfo() {
+void HealtManagerBase::updateProcInfo() {
     //used to compute the resource occupaiton between sampling time
     ProcStatCalculator::update(current_proc_info);
 }
 
 
-void HealtManager::init(void *init_data)  {}
+void HealtManagerBase::init(void *init_data)  {}
 
-int HealtManager::sayHello()  {
+int HealtManagerBase::sayHello()  {
     return -1;
 }
 
-void HealtManager::start()  {
+void HealtManagerBase::start()  {
     AsyncCentralManager::getInstance()->addTimer(this, 0, (HEALT_FIRE_TIMEOUT / HEALT_FIRE_SLOTS)*1000);
 }
 
-void HealtManager::stop()  {
+void HealtManagerBase::stop()  {
     AsyncCentralManager::getInstance()->removeTimer(this);
 }
 
-void HealtManager::deinit()  {
+void HealtManagerBase::deinit()  {
     //    if(mds_message_channel) {
     //        NetworkBroker::getInstance()->disposeMessageChannel(mds_message_channel);
     //        mds_message_channel = NULL;
     //    }
 }
 
-const ProcStat& HealtManager::getLastProcInfo() {
+const ProcStat& HealtManagerBase::getLastProcInfo() {
     return current_proc_info;
 }
 
-void HealtManager::addNewNode(const std::string& node_uid) {
+void HealtManagerBase::addNewNode(const std::string& node_uid) {
     
     CHAOS_BOOST_LOCK_WRAP_EXCEPTION(boost::unique_lock<boost::shared_mutex> wl(map_node_mutex);, return;)
     if(map_node.count(node_uid) != 0) return;
@@ -150,7 +150,7 @@ void HealtManager::addNewNode(const std::string& node_uid) {
     HM_INFO << "Added new health dataset for node :'" << node_uid << "' with push counter of " << healt_metric->fire_slot;
 }
 
-void HealtManager::removeNode(const std::string& node_uid) {
+void HealtManagerBase::removeNode(const std::string& node_uid) {
     boost::unique_lock<boost::shared_mutex> wl(map_node_mutex);
     HM_DBG<<"Healt removing node:"<<node_uid;
     if(map_node.count(node_uid) == 0) return;
@@ -158,7 +158,7 @@ void HealtManager::removeNode(const std::string& node_uid) {
     map_node.erase(node_uid);
 }
 
-void HealtManager::addNodeMetric(const std::string& node_uid,
+void HealtManagerBase::addNodeMetric(const std::string& node_uid,
                                  const std::string& node_metric,
                                  chaos::DataType::DataType metric_type) {
     try{
@@ -196,7 +196,7 @@ void HealtManager::addNodeMetric(const std::string& node_uid,
     }CHAOS_BOOST_LOCK_EXCEPTION_CACTH(lock_exception,)
 }
 
-void HealtManager::addNodeMetricValue(const std::string& node_uid,
+void HealtManagerBase::addNodeMetricValue(const std::string& node_uid,
                                       const std::string& node_metric,
                                       int32_t int32_value,
                                       bool publish) {
@@ -219,7 +219,7 @@ void HealtManager::addNodeMetricValue(const std::string& node_uid,
         if(publish) {publishNodeHealt(node_uid);}
     }CHAOS_BOOST_LOCK_EXCEPTION_CACTH(lock_exception,)
 }
-void HealtManager::addNodeMetricValue(const std::string& node_uid,
+void HealtManagerBase::addNodeMetricValue(const std::string& node_uid,
                                       const std::string& node_metric,
                                       int64_t int64_value,
                                       bool publish) {
@@ -240,7 +240,7 @@ void HealtManager::addNodeMetricValue(const std::string& node_uid,
         if(publish) {publishNodeHealt(node_uid);}
     }CHAOS_BOOST_LOCK_EXCEPTION_CACTH(lock_exception,)
 }
-void HealtManager::addNodeMetricValue(const std::string& node_uid,
+void HealtManagerBase::addNodeMetricValue(const std::string& node_uid,
                                       const std::string& node_metric,
                                       double double_value,
                                       bool publish) {
@@ -259,7 +259,7 @@ void HealtManager::addNodeMetricValue(const std::string& node_uid,
         if(publish) {publishNodeHealt(node_uid);}
     }CHAOS_BOOST_LOCK_EXCEPTION_CACTH(lock_exception,)
 }
-void HealtManager::addNodeMetricValue(const std::string& node_uid,
+void HealtManagerBase::addNodeMetricValue(const std::string& node_uid,
                                       const std::string& node_metric,
                                       const std::string& str_value,
                                       bool publish) {
@@ -279,7 +279,7 @@ void HealtManager::addNodeMetricValue(const std::string& node_uid,
     }CHAOS_BOOST_LOCK_EXCEPTION_CACTH(lock_exception,)
 }
 
-void HealtManager::addNodeMetricValue(const std::string& node_uid,
+void HealtManagerBase::addNodeMetricValue(const std::string& node_uid,
                                       const std::string& node_metric,
                                       const char * c_str_value,
                                       bool publish) {
@@ -299,7 +299,7 @@ void HealtManager::addNodeMetricValue(const std::string& node_uid,
     }CHAOS_BOOST_LOCK_EXCEPTION_CACTH(lock_exception,)
 }
 
-std::string HealtManager::getNodeMetricStringValue(const std::string& node_uid,
+std::string HealtManagerBase::getNodeMetricStringValue(const std::string& node_uid,
                                         const std::string& node_metric){
     std::string ret="uknown";
     try{
@@ -321,7 +321,7 @@ std::string HealtManager::getNodeMetricStringValue(const std::string& node_uid,
 
 }
 
-int32_t HealtManager::getNodeMetricI32Value(const std::string& node_uid,
+int32_t HealtManagerBase::getNodeMetricI32Value(const std::string& node_uid,
                                         const std::string& node_metric){
 int32_t ret=0xdeaddead;
     try{
@@ -342,7 +342,7 @@ int32_t ret=0xdeaddead;
     return ret;
 }
 
-void HealtManager::addNodeMetricValue(const std::string& node_uid,
+void HealtManagerBase::addNodeMetricValue(const std::string& node_uid,
                                       const std::string& node_metric,
                                       const bool bool_value,
                                       bool publish) {
@@ -364,7 +364,7 @@ void HealtManager::addNodeMetricValue(const std::string& node_uid,
     }CHAOS_BOOST_LOCK_EXCEPTION_CACTH(lock_exception,)
 }
 
-CDWShrdPtr HealtManager::prepareNodeDataPack(NodeHealtSet& node_health_set,
+CDWShrdPtr HealtManagerBase::prepareNodeDataPack(NodeHealtSet& node_health_set,
                                              uint64_t push_timestamp) {
     CDWShrdPtr node_data_pack = ChaosMakeSharedPtr<CDataWrapper>();
     int64_t cur_ts_usec = TimingUtil::getTimeStampInMicroseconds();
@@ -402,7 +402,7 @@ CDWShrdPtr HealtManager::prepareNodeDataPack(NodeHealtSet& node_health_set,
 }
 
 //publish the healt for the ndoe uid
-void HealtManager::publishNodeHealt(const std::string& node_uid) {
+void HealtManagerBase::publishNodeHealt(const std::string& node_uid) {
     if(map_node.count(node_uid) == 0) return;
     
     //allocate the datapack
@@ -412,7 +412,7 @@ void HealtManager::publishNodeHealt(const std::string& node_uid) {
     _publish(map_node[node_uid], TimingUtil::getTimeStamp());
 }
 
-void HealtManager::timeout() {
+void HealtManagerBase::timeout() {
     uint64_t cur_time = TimingUtil::getTimeStamp();
     //publish all registered metric
     boost::shared_lock<boost::shared_mutex> rl(map_node_mutex);
@@ -428,7 +428,7 @@ void HealtManager::timeout() {
     ++current_fire_slot %= HEALT_FIRE_SLOTS;
 }
 
-void HealtManager::_publish(const ChaosSharedPtr<NodeHealtSet>& heath_set,
+void HealtManagerBase::_publish(const ChaosSharedPtr<NodeHealtSet>& heath_set,
                             uint64_t publish_ts) {
     int err = 0;
     //lock the driver for bublishing

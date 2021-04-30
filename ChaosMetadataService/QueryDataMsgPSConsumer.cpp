@@ -114,8 +114,10 @@ void QueryDataMsgPSConsumer::messageHandler(const chaos::common::message::ele_t&
 
       }
 
+    } else if(pktype==DataPackCommonKey::DPCK_DATASET_TYPE_HEALTH) {
+      alive_map[kp]=TimingUtil::getTimeStamp();
     } else {
-    st = data.cd->getInt32Value(DataServiceNodeDefinitionKey::DS_STORAGE_TYPE);
+     st = data.cd->getInt32Value(DataServiceNodeDefinitionKey::DS_STORAGE_TYPE);
 
     }
 
@@ -182,20 +184,36 @@ void QueryDataMsgPSConsumer::init(void* init_data) {
     throw chaos::CException(-1, "cannot initialize Publish Subscribe:" + cons->getLastError(), __PRETTY_FUNCTION__);
   }
 }
+void QueryDataMsgPSConsumer::subscribeProcess(int attempt){
+DBG << "Starting SubscribeProcess";
 
-void QueryDataMsgPSConsumer::start() {
-  DBG << "Starting Msg consumer";
-  cons->start();
-  api::node::NodeSearch node;
-  std::vector<std::string> nodes=node.search(""); // search every node
+api::node::NodeSearch node;
+sleep(10);
+
+while(attempt--){
+  std::vector<std::string> nodes=node.search("",(chaos::NodeType::NodeSearchType)(((int)chaos::NodeType::node_type_ceu )| ((int)chaos::NodeType::node_type_agent)| ((int)chaos::NodeType::node_type_us))); // search CEU
+
+  DBG <<"] Found " << nodes.size()<< " to subscribe";
+
   for(std::vector<std::string>::iterator i=nodes.begin();i!=nodes.end();i++){
+    DBG <<"] Subscribing to:" << *i;
+
     if (cons->subscribe(*i) != 0) {
         ERR <<" cannot subscribe to :" << *i<<" err:"<<cons->getLastError();
                 
     } else {
         DBG <<"] Subscribed to:" << *i;
+        
     }  
   }
+}
+} 
+void QueryDataMsgPSConsumer::start() {
+  DBG << "Starting Msg consumer";
+
+  cons->start();
+  boost::thread(&QueryDataMsgPSConsumer::subscribeProcess, this,1);
+
  /* std::string keysub="CHAOS_LOG";
   if (cons->subscribe(keysub) != 0) {
       ERR <<" cannot subscribe to :" << keysub<<" err:"<<cons->getLastError();
