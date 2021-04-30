@@ -413,28 +413,28 @@ static inline const char* nodeTypeToString(unsigned int nt) {
   }
 }
 static inline NodeSearchType human2NodeType(const std::string& what) {
-  chaos::NodeType::NodeSearchType node_type = chaos::NodeType::NodeSearchType::node_type_all;
+  chaos::NodeType::NodeSearchType node_type = chaos::NodeType::node_type_all;
 
   if (what == "agent")
-    node_type = chaos::NodeType::NodeSearchType::node_type_agent;
+    node_type = chaos::NodeType::node_type_agent;
   if (what == "us")
-    node_type = chaos::NodeType::NodeSearchType::node_type_us;
+    node_type = chaos::NodeType::node_type_us;
   if (what == "webui")
-    node_type = chaos::NodeType::NodeSearchType::node_type_wan;
+    node_type = chaos::NodeType::node_type_wan;
   if (what == "mds")
-    node_type = chaos::NodeType::NodeSearchType::node_type_cds;
+    node_type = chaos::NodeType::node_type_cds;
   if (what == "variable")
-    node_type = chaos::NodeType::NodeSearchType::node_type_variable;
+    node_type = chaos::NodeType::node_type_variable;
   if (what == "tag")
-    node_type = chaos::NodeType::NodeSearchType::node_type_tag;
+    node_type = chaos::NodeType::node_type_tag;
   if (what == "server")
-    node_type = chaos::NodeType::NodeSearchType::node_type_all_server;
+    node_type = chaos::NodeType::node_type_all_server;
   if (what == "root")
-    node_type = chaos::NodeType::NodeSearchType::node_type_root;
+    node_type = chaos::NodeType::node_type_root;
   if (what == "ceu")
-    node_type = chaos::NodeType::NodeSearchType::node_type_ceu;
+    node_type = chaos::NodeType::node_type_ceu;
   if (what == "cu")
-    node_type = chaos::NodeType::NodeSearchType::node_type_cu;
+    node_type = chaos::NodeType::node_type_cu;
 
   return node_type;
 }
