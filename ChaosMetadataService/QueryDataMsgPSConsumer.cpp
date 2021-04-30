@@ -97,13 +97,13 @@ void QueryDataMsgPSConsumer::messageHandler(const chaos::common::message::ele_t&
     tag->insert(data.cd->getStringValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_TAG));
     meta_tag_set.reset(tag);
   }
-  std::string kp = data.key;
+  std::string kp ;//= data.key;
 
-  std::replace(kp.begin(), kp.end(), '.', '/');
+  //std::replace(kp.begin(), kp.end(), '.', '/');
   //DBG<<"data from:"<<kp<<" size:"<<data.cd->getBSONRawSize();
-  if(data.cd->hasKey(DataPackCommonKey::DPCK_DATASET_TYPE)){
+  if(data.cd->hasKey(DataPackCommonKey::DPCK_DATASET_TYPE)&&data.cd->hasKey(NodeDefinitionKey::NODE_UNIQUE_ID)){
     int pktype=data.cd->getInt32Value(DataPackCommonKey::DPCK_DATASET_TYPE);
-    kp=kp+datasetTypeToPostfix(pktype);
+    kp=data.cd->getStringValue(NodeDefinitionKey::NODE_UNIQUE_ID)+datasetTypeToPostfix(pktype);
      uint32_t                st=(uint32_t)DataServiceNodeDefinitionType::DSStorageTypeLive;
     if(pktype==DataPackCommonKey::DPCK_DATASET_TYPE_LOG){
     //  DBG<<"Queue:"<<CObjectProcessingPriorityQueue<CDataWrapper>::queueSize()<<" LOG:"<<data.cd->getJSONString();
@@ -114,9 +114,9 @@ void QueryDataMsgPSConsumer::messageHandler(const chaos::common::message::ele_t&
 
       }
 
-    } else if(pktype==DataPackCommonKey::DPCK_DATASET_TYPE_HEALTH) {
+    } /*else if(pktype==DataPackCommonKey::DPCK_DATASET_TYPE_HEALTH) {
       alive_map[kp]=TimingUtil::getTimeStamp();
-    } else {
+    }*/ else {
      st = data.cd->getInt32Value(DataServiceNodeDefinitionKey::DS_STORAGE_TYPE);
 
     }
@@ -149,13 +149,13 @@ void QueryDataMsgPSConsumer::messageError(const chaos::common::message::ele_t& d
     if(data.cd.get()&&data.cd->hasKey("msg")&&data.cd->hasKey("err")){
       ERR<<"key:"<<data.key<<" ["<<path<<"] err msg:"<<data.cd->getStringValue("msg")<<" err:"<<data.cd->getInt32Value("err");
     }
-    if(i!=alive_map.end()){
+  /*  if(i!=alive_map.end()){
       DBG<<" removing from alive list:"<<i->first;
       alive_map.erase(i);
     } else {
       DBG<<path<<" is not in the alive list";
 
-    }
+    }*/
 
 }
 
