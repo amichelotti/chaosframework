@@ -386,7 +386,7 @@ typedef enum {
   //!search root processes
   node_type_root = 256,
   node_type_ceu  = node_type_cu|node_type_root,
-  node_type_all_server = node_type_agent|node_type_cds|node_type_wan|node_type_wan|node_type_us,
+  node_type_all_server = node_type_agent|node_type_cds|node_type_wan|node_type_wan|node_type_us|node_type_root,
   node_type_all  = node_type_all_server|node_type_ceu
 
 } NodeSearchType;
