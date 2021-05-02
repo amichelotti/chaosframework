@@ -737,7 +737,7 @@ void ControlManager::sendUnitServerRegistration() {
   unit_server_registration_pack->addStringValue(NodeDefinitionKey::NODE_UNIQUE_ID, unit_server_alias);
   unit_server_registration_pack->addStringValue(NodeDefinitionKey::NODE_TYPE, NodeType::NODE_TYPE_UNIT_SERVER);
   unit_server_registration_pack->addStringValue(NodeDefinitionKey::NODE_BUILD_INFO,
-                                                ChaosCUToolkit::getInstance()->getBuildInfo(chaos::common::data::CDWUniquePtr())->getJSONString());
+                                                ChaosCUToolkit::getInstance()->getBuildInfo(chaos::common::data::CDWUniquePtr())->getCompliantJSONString());
 
   if (unit_server_key.size()) {
     //the key need to be forwarded

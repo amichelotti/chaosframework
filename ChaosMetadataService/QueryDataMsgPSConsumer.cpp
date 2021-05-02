@@ -114,9 +114,9 @@ void QueryDataMsgPSConsumer::messageHandler(const chaos::common::message::ele_t&
 
       }
 
-    } /*else if(pktype==DataPackCommonKey::DPCK_DATASET_TYPE_HEALTH) {
+    } else if(pktype==DataPackCommonKey::DPCK_DATASET_TYPE_HEALTH) {
       alive_map[kp]=TimingUtil::getTimeStamp();
-    }*/ else {
+    } else {
      st = data.cd->getInt32Value(DataServiceNodeDefinitionKey::DS_STORAGE_TYPE);
 
     }

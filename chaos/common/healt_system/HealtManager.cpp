@@ -102,7 +102,7 @@ int HealtManagerBase::sayHello()  {
 }
 
 void HealtManagerBase::start()  {
-    AsyncCentralManager::getInstance()->addTimer(this, 0, (HEALT_FIRE_TIMEOUT / HEALT_FIRE_SLOTS)*1000);
+    AsyncCentralManager::getInstance()->addTimer(this, 5000, (HEALT_FIRE_TIMEOUT / HEALT_FIRE_SLOTS)*1000);
 }
 
 void HealtManagerBase::stop()  {
