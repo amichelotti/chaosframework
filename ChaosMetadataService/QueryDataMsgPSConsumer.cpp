@@ -19,7 +19,7 @@
  * permissions and limitations under the Licence.
  */
 #include "QueryDataMsgPSConsumer.h"
-#include "api/logging/SubmitEntry.h"
+#include "api/logging/SubmitEntryBase.h"
 #include "api/node/NodeSearch.h"
 using namespace chaos::metadata_service::worker;
 using namespace chaos::metadata_service::cache_system;
@@ -132,7 +132,7 @@ void QueryDataMsgPSConsumer::messageHandler(const chaos::common::message::ele_t&
   }
 }
   void QueryDataMsgPSConsumer::processBufferElement(chaos::common::data::CDWShrdPtr log_entry){
-      chaos::metadata_service::api::logging::SubmitEntry se;
+      chaos::metadata_service::api::logging::SubmitEntryBase se;
   //      DBG<<"Queue:"<<CObjectProcessingPriorityQueue<CDataWrapper>::queueSize()<<" WRITE ";
 
       se.execute(log_entry->clone());        
