@@ -48,16 +48,16 @@ IODirectIOPSMsgDriver::IODirectIOPSMsgDriver(const std::string& alias)
   msgbrokerdrv = "kafka-rdk";
   msgbrokerdrv = GlobalConfiguration::getInstance()->getOption<std::string>(InitOption::OPT_MSG_BROKER_DRIVER);
 
-  prod            = chaos::common::message::MessagePSDriver::getProducerDriver(msgbrokerdrv);
+  prod = chaos::common::message::MessagePSDriver::getProducerDriver(msgbrokerdrv);
   std::string gid;
-  if(GlobalConfiguration::getInstance()->hasOption(InitOption::CONTROL_MANAGER_UNIT_SERVER_ALIAS)){
-    gid= GlobalConfiguration::getInstance()->getOption<std::string>(InitOption::CONTROL_MANAGER_UNIT_SERVER_ALIAS);
+  if (GlobalConfiguration::getInstance()->hasOption(InitOption::CONTROL_MANAGER_UNIT_SERVER_ALIAS)) {
+    gid = GlobalConfiguration::getInstance()->getOption<std::string>(InitOption::CONTROL_MANAGER_UNIT_SERVER_ALIAS);
   }
   if (gid == "") {
     gid = "IODirectIODriver";
   }
   cons = chaos::common::message::MessagePSDriver::getConsumerDriver(msgbrokerdrv, gid);
-  if(cons->handlersEmpty()){
+  if (cons->handlersEmpty()) {
     cons->addHandler(chaos::common::message::MessagePublishSubscribeBase::ONARRIVE, boost::bind(&IODirectIOPSMsgDriver::defaultHandler, this, _1));
   }
 }
@@ -65,13 +65,13 @@ IODirectIOPSMsgDriver::IODirectIOPSMsgDriver(const std::string& alias)
 IODirectIOPSMsgDriver::~IODirectIOPSMsgDriver() {
   // SO that if used as shared pointer will be called once the object is destroyed
 }
-int IODirectIOPSMsgDriver::storeHealthData(const std::string& key,
-                                      CDWShrdPtr data_to_store,
-                                      DataServiceNodeDefinitionType::DSStorageType storage_type,
-                                      const ChaosStringSet& tag_set){
-    //IODirectIODriver::storeHealthData(key,data_to_store,storage_type,tag_set);                                    
-    return storeData(key,data_to_store,DataServiceNodeDefinitionType::DSStorageTypeLive,tag_set);
-  }
+int IODirectIOPSMsgDriver::storeHealthData(const std::string&                           key,
+                                           CDWShrdPtr                                   data_to_store,
+                                           DataServiceNodeDefinitionType::DSStorageType storage_type,
+                                           const ChaosStringSet&                        tag_set) {
+  //IODirectIODriver::storeHealthData(key,data_to_store,storage_type,tag_set);
+  return storeData(key, data_to_store, DataServiceNodeDefinitionType::DSStorageTypeLive, tag_set);
+}
 void IODirectIOPSMsgDriver::init(void* _init_parameter) {
   IODirectIODriver::init(_init_parameter);
   if (GlobalConfiguration::getInstance()->getConfiguration()->hasKey(InitOption::OPT_MSG_BROKER_SERVER)) {
@@ -85,18 +85,18 @@ void IODirectIOPSMsgDriver::init(void* _init_parameter) {
   }
 }
 void IODirectIOPSMsgDriver::defaultHandler(const chaos::common::message::ele_t& data) {
-  std::map<std::string, chaos::common::message::msgHandler>::iterator i,end;
+  std::map<std::string, chaos::common::message::msgHandler>::iterator i, end;
   {
     boost::mutex::scoped_lock ll(hmutex);
-    i= handler_map.find(data.key);
-    end=handler_map.end();
+    i   = handler_map.find(data.key);
+    end = handler_map.end();
   }
   if (i != end) {
     IODirectIOPSMsgDriver_DLDBG_ << "calling handler associated to:" << data.key;
 
     i->second(data);
   }
-IODirectIOPSMsgDriver_DLDBG_ << " message from:" << data.key<< " no handler found among:"<<handler_map.size();
+  IODirectIOPSMsgDriver_DLDBG_ << " message from:" << data.key << " no handler found among:" << handler_map.size();
 
   return;
 }
@@ -117,13 +117,13 @@ int IODirectIOPSMsgDriver::addHandler(const std::string& key, chaos::common::mes
   std::replace(topic.begin(), topic.end(), '/', '.');
   boost::mutex::scoped_lock ll(hmutex);
   handler_map[topic] = cb;
-  IODirectIOPSMsgDriver_DLDBG_ <<handler_map.size()<< "] adding handler for:" << topic;
+  IODirectIOPSMsgDriver_DLDBG_ << handler_map.size() << "] adding handler for:" << topic;
 
   return 0;
 }
-int IODirectIOPSMsgDriver::addHandler(chaos::common::message::msgHandler cb){
-    cons->addHandler(chaos::common::message::MessagePublishSubscribeBase::ONARRIVE,cb);
-    return 0;
+int IODirectIOPSMsgDriver::addHandler(chaos::common::message::msgHandler cb) {
+  cons->addHandler(chaos::common::message::MessagePublishSubscribeBase::ONARRIVE, cb);
+  return 0;
 }
 
 void IODirectIOPSMsgDriver::deinit() {
@@ -136,7 +136,7 @@ void IODirectIOPSMsgDriver::deinit() {
 }
 
 int IODirectIOPSMsgDriver::storeData(const std::string&                           key,
-                                     CDWShrdPtr&                                   data_to_store,
+                                     CDWShrdPtr&                                  data_to_store,
                                      DataServiceNodeDefinitionType::DSStorageType storage_type,
                                      const ChaosStringSet&                        tag_set) {
   int err = 0;
@@ -144,24 +144,28 @@ int IODirectIOPSMsgDriver::storeData(const std::string&                         
     IODirectIOPSMsgDriver_LERR_ << "Packet not allocated";
     return -100;
   }
-  if(storage_type!=DataServiceNodeDefinitionType::DSStorageTypeUndefined){
+  if (storage_type != DataServiceNodeDefinitionType::DSStorageTypeUndefined) {
     if (!data_to_store->hasKey(DataServiceNodeDefinitionKey::DS_STORAGE_TYPE)) {
       data_to_store->addInt32Value(DataServiceNodeDefinitionKey::DS_STORAGE_TYPE, storage_type);
-    } else {
-      data_to_store->setValue(DataServiceNodeDefinitionKey::DS_STORAGE_TYPE, storage_type);
+    }  else {
+        data_to_store->setValue(DataServiceNodeDefinitionKey::DS_STORAGE_TYPE, storage_type);
+      }
+
+    if (tag_set.size()) {
+      if (!data_to_store->hasKey(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_TAG)) {
+        data_to_store->addStringValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_TAG, *tag_set.begin());
+      } else {
+        data_to_store->setValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_TAG, *tag_set.begin());
+      }
     }
-  
-  if (tag_set.size()) {
-    if (!data_to_store->hasKey(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_TAG)) {
-      data_to_store->addStringValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_TAG, *tag_set.begin());
-    } else {
-      data_to_store->setValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_TAG, *tag_set.begin());
-    }
-  }
   }
   if (data_to_store->hasKey(NodeDefinitionKey::NODE_UNIQUE_ID)) {
     if ((err = prod->pushMsgAsync(*data_to_store.get(), data_to_store->getStringValue(NodeDefinitionKey::NODE_UNIQUE_ID))) != 0) {
       DEBUG_CODE(IODirectIOPSMsgDriver_LERR_ << "Error pushing " << prod->getLastError());
+    }
+  } else {
+    if ((err = prod->pushMsgAsync(*data_to_store.get(), key)) != 0) {
+      DEBUG_CODE(IODirectIOPSMsgDriver_LERR_ << "Error pushing key:" << key << " error:" << prod->getLastError());
     }
   }
 
