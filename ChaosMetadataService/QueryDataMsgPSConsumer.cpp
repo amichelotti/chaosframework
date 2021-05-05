@@ -120,7 +120,6 @@ void QueryDataMsgPSConsumer::messageHandler(const chaos::common::message::ele_t&
      st = data.cd->getInt32Value(DataServiceNodeDefinitionKey::DS_STORAGE_TYPE);
 
     }
-
     QueryDataConsumer::consumePutEvent(kp, (uint8_t)st, meta_tag_set, *(data.cd.get()));
     
   }

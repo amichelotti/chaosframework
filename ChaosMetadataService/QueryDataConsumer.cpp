@@ -23,7 +23,7 @@
 #include "ChaosMetadataService.h"
 #include "persistence/persistence.h"
 #include "worker/DeviceSharedDataWorker.h"
-
+#define SKIP_OLDER_THAN 5*60000
 #if CHAOS_PROMETHEUS
 #include "worker/DeviceSharedDataWorkerMetricCollector.h"
 #endif
@@ -125,7 +125,14 @@ int QueryDataConsumer::consumePutEvent(const std::string&                 key,
     int32_t lat = TimingUtil::getTimeStampInMicroseconds() - data_pack.getInt64Value(DataPackCommonKey::DPCK_HIGH_RESOLUTION_TIMESTAMP);
     data_pack.addInt32Value(DataPackCommonKey::NODE_MDS_TIMEDIFF, lat);
   }
-
+  if((hst_tag==0) || (hst_tag==DataServiceNodeDefinitionType::DSStorageTypeLive)){
+    // if only live and there are packets older 5min skip
+    if(data_pack.hasKey(DataPackCommonKey::DPCK_TIMESTAMP)){
+      if((now-data_pack.getInt64Value(DataPackCommonKey::DPCK_TIMESTAMP))>SKIP_OLDER_THAN){
+        return 0;
+      }
+    }
+  }
   data_pack.addInt64Value(NodeHealtDefinitionKey::NODE_HEALT_MDS_TIMESTAMP, now);
   BufferSPtr channel_data_injected(data_pack.getBSONDataBuffer().release());
 

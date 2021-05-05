@@ -33,7 +33,7 @@
 
 #define CCDLAPP_ LAPP_ << CouchbaseCacheDriver_LOG_HEAD
 #define CCDLDBG_ LDBG_ << CouchbaseCacheDriver_LOG_HEAD << __PRETTY_FUNCTION__ << " - "
-#define CCDLERR_ LERR_ << CouchbaseCacheDriver_LOG_HEAD
+#define CCDLERR_ LERR_ << CouchbaseCacheDriver_LOG_HEAD << __PRETTY_FUNCTION__ << " - "
 
 using namespace chaos::common::data;
 using namespace chaos::common::utility;
@@ -98,7 +98,7 @@ void CouchbaseCacheDriver::setCallback(lcb_t instance,
     const Result *result = reinterpret_cast<const Result*>(cookie);
     if((result->err = error) != LCB_SUCCESS) {
         result->err_str = lcb_strerror(instance, error);
-        CCDLERR_ << result->err_str;
+        CCDLERR_ << "Error setting:"<<result->err_str;
     }
 }
 
@@ -381,11 +381,11 @@ lcb_t* CouchbaseDriverPool::allocateResource(const std::string& pool_identificat
         lcb_cntl(*new_instance, LCB_CNTL_SET, LCB_CNTL_CONFDELAY_THRESH, &num_events);
         
     } catch(chaos::CException& ex) {
-        DEBUG_CODE(CCDLERR_ << CHAOS_FORMAT("Error allocating new cache instance", %ex.what());)
+        CCDLERR_ << CHAOS_FORMAT("Error allocating new cache instance", %ex.what());
         lcb_destroy(*new_instance);
         new_instance.reset();
     } catch(...) {
-        DEBUG_CODE(CCDLERR_ << "Generic error allocating new cache instance";)
+        CCDLERR_ << "Generic error allocating new cache instance";
         lcb_destroy(*new_instance);
         new_instance.reset();
     }
