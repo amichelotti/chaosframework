@@ -114,9 +114,9 @@ void QueryDataMsgPSConsumer::messageHandler(const chaos::common::message::ele_t&
 
       }
 
-    } else if(pktype==DataPackCommonKey::DPCK_DATASET_TYPE_HEALTH) {
+    } /*else if(pktype==DataPackCommonKey::DPCK_DATASET_TYPE_HEALTH) {
       alive_map[kp]=TimingUtil::getTimeStamp();
-    } else {
+    }*/ else {
      st = data.cd->getInt32Value(DataServiceNodeDefinitionKey::DS_STORAGE_TYPE);
 
     }
@@ -144,7 +144,7 @@ void QueryDataMsgPSConsumer::messageError(const chaos::common::message::ele_t& d
     std::string path=data.key;
     std::replace(path.begin(), path.end(), '.', '/');
 
-    std::map<std::string, uint64_t>::iterator i=alive_map.find(path);
+  //  std::map<std::string, uint64_t>::iterator i=alive_map.find(path);
     if(data.cd.get()&&data.cd->hasKey("msg")&&data.cd->hasKey("err")){
       ERR<<"key:"<<data.key<<" ["<<path<<"] err msg:"<<data.cd->getStringValue("msg")<<" err:"<<data.cd->getInt32Value("err");
     }
