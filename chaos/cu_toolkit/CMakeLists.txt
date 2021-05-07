@@ -103,7 +103,6 @@ IF (BUILD_FORCE_STATIC)
 
 
 SET(chaos_cutoolkit_lib ${CMAKE_INSTALL_PREFIX}/lib)
-MESSAGE("ALEDEBUG chaos_cutoolkit_lib :" ${chaos_cutoolkit_lib})
 set (BOOST_LIBPATH  ${CMAKE_INSTALL_PREFIX}/boostinstall/lib )
 
 

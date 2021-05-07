@@ -3,7 +3,7 @@ IF(CMAKE_INSTALL_PREFIX)
 ELSE()
   set(PREFIX ${CMAKE_CURRENT_LIST_DIR})
 ENDIF()
-
+SET(chaos_FOUND TRUE)
 execute_process(COMMAND "grep CHAOS_ENABLE_C11:BOOL=OFF ${PREFIX}/CMakeConfiguration.txt"   
    RESULT_VARIABLE retcode)
 

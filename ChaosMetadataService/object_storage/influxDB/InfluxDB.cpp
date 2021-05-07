@@ -89,6 +89,13 @@ int InfluxDB::pushObject(const std::string&                       key,
   }
   const uint64_t now = chaos::common::utility::TimingUtil::getTimeStamp();
 
+ inline bool skipDefault(const std::string& name){
+  if(name==chaos::DataPackCommonKey::DPCK_DATASET_TYPE) return true;
+  if(name==chaos::DataPackCommonKey::DPCK_DEVICE_ID) return true;
+
+return false;
+}
+
   //
   const int64_t ts = stored_object.getInt64Value(chaos::DataPackCommonKey::DPCK_TIMESTAMP);//TimingUtil::getTimeStamp() & 0xFFFFFFFFFFFFFF00ULL;
 
@@ -113,7 +120,7 @@ int InfluxDB::pushObject(const std::string&                       key,
   }
   int first=0;
   for (std::vector<std::string>::iterator i = contained_key.begin(); i != contained_key.end(); i++) {
-    if (*i != chaos::DataPackCommonKey::DPCK_DEVICE_ID) {
+    if (!skipDefault(*i)) {
       char c=(first==0)?' ':',';
       switch (stored_object.getValueType(*i)) {
         case DataType::TYPE_BOOLEAN:
@@ -134,11 +141,15 @@ int InfluxDB::pushObject(const std::string&                       key,
           first++;
 
           break;
-        case DataType::TYPE_STRING:
-          measurements << c << *i << "=\"" << stored_object.getStringValue(*i) << "\"";
-          first++;
-
-         nmeas++;
+        case DataType::TYPE_STRING:{
+          std::string val=stored_object.getStringValue(*i);
+          if((val.size()>0)&&(val.size()<(1024*64))){
+            
+            measurements << c << *i << "=\"" << val << "\"";
+            first++;
+            nmeas++;
+          }
+        }
         default:
         break;
 
