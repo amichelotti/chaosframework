@@ -77,7 +77,12 @@ InfluxDB::~InfluxDB() {
   push_end=true;
   push_th.join();
 }
+inline bool skipDefault(const std::string& name){
+  if(name==chaos::DataPackCommonKey::DPCK_DATASET_TYPE) return true;
+  if(name==chaos::DataPackCommonKey::DPCK_DEVICE_ID) return true;
 
+return false;
+}
 int InfluxDB::pushObject(const std::string&                       key,
                          const ChaosStringSetConstSPtr            meta_tags,
                          const chaos::common::data::CDataWrapper& stored_object) {
@@ -89,12 +94,7 @@ int InfluxDB::pushObject(const std::string&                       key,
   }
   const uint64_t now = chaos::common::utility::TimingUtil::getTimeStamp();
 
- inline bool skipDefault(const std::string& name){
-  if(name==chaos::DataPackCommonKey::DPCK_DATASET_TYPE) return true;
-  if(name==chaos::DataPackCommonKey::DPCK_DEVICE_ID) return true;
-
-return false;
-}
+ 
 
   //
   const int64_t ts = stored_object.getInt64Value(chaos::DataPackCommonKey::DPCK_TIMESTAMP);//TimingUtil::getTimeStamp() & 0xFFFFFFFFFFFFFF00ULL;
