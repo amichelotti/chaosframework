@@ -122,7 +122,7 @@ template <typename BC> class Property {
   std::map<std::string, std::string> abstract2props;
   std::map<std::string, conversion_func_t> prop2setHandler;
   std::map<std::string, conversion_func_t> prop2getHandler;
-  boost::mutex lock;
+  boost::recursive_mutex lock;
 public:
   void reset() { props.reset(); }
   chaos::common::data::CDWUniquePtr getProperties(bool sync = false) {
@@ -320,7 +320,6 @@ chaos::common::data::CDWUniquePtr createProperty(
   chaos::common::data::CDWUniquePtr
   setProperty(const std::string &propname,
               const chaos::common::data::CDataWrapper &val, bool sync = false) {
-   // boost::mutex::scoped_lock ll (lock);
     std::string realpropname = propname;
     if(!val.hasKey(PROPERTY_VALUE_KEY)){
         throw chaos::CException(-10,propname+" missing required key 'value' in:"+val.getJSONString(),__FUNCTION__);
@@ -560,6 +559,7 @@ chaos::common::data::CDWUniquePtr createProperty(
   chaos::common::data::CDWUniquePtr
   replaceProperty(const std::string &propname,
                   const chaos::common::data::CDataWrapper &p) {
+    boost::recursive_mutex::scoped_lock ll(lock); 
     if (props.hasKey(propname)) {
      // props.setValue(propname, &p);
      props.replaceKey(propname,p);
