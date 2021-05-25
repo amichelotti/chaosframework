@@ -56,6 +56,7 @@ option(CHAOS_DRIVER_MISC "Driver Misc" ON)
 option(CHAOS_DRIVER_CCALT "Driver CCALT" ON)
 option(CHAOS_DRIVER_LUMINOMETER "Driver Luminometer" OFF)
 option(CHAOS_ENABLE_ZMQ_MONITOR "Enable ZMQ Monitor" OFF)
+option(CHAOS_EPICS_SUPPORT "Enable EPICS SUPPORT/DRIVERS" OFF)
 
 option(GPUFIT "Fast Fitting libraries (needs CUDA toolkit)" OFF)
 
