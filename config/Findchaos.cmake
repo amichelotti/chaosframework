@@ -60,6 +60,8 @@ message(STATUS "ENABLING MINSIZEREL on ${PROJECT_NAME}")
 ENDIF()
 
 set(chaos_INCLUDE_DIRS ${PREFIX}/include)
+set(chaos_LIB_DIR ${PREFIX}/lib)
+
 FILE(GLOB boost_libs ${PREFIX}/lib/libboost*.a)
 
 set(chaos_LIBRARIES chaos_cutoolkit chaos_common)
