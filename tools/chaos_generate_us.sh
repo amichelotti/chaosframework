@@ -266,7 +266,7 @@ for c in $listcmake;do
 		    mylib=${BASH_REMATCH[1]}
 		 #   echo "-->$mylib"
 		    lista_lib="$lista_lib $mylib";
-		    varlink=`grep -i "target_link_libraries\ *(\ *$mylib" $CL | tail -1`;
+		    varlink=`grep -i "target_link_libraries\ *(\ *$mylib" $CL | grep -v PRIVATE| tail -1`;
 		    
 		    patt="\($mylib\ +(.+)\ *\)"
 		    if [[ "$varlink" =~ $patt ]]; then
