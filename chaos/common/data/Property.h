@@ -240,7 +240,7 @@ chaos::common::data::CDWUniquePtr createProperty(
       }
     if (!props.hasKey(propname)) {
       if(!value.hasKey(PROPERTY_VALUE_KEY)){
-       throw chaos::CException(-2,propname+" missing required key 'value",__FUNCTION__);
+       throw chaos::CException(-2,propname+" missing required key'" PROPERTY_VALUE_KEY"'",__FUNCTION__);
      }
       chaos::common::data::CDWUniquePtr val=value.clone();
       if (pubname.size() > 0) {
