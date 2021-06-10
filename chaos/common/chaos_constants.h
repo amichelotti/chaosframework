@@ -900,17 +900,19 @@ static const char* const CONTROL_UNIT_DATASET_ATTRIBUTE_CONVFACT = "cudk_ds_attr
 //!key representing the offset the attribute
 static const char* const CONTROL_UNIT_DATASET_ATTRIBUTE_OFFSET = "cudk_ds_attr_offset";
 
-//!key representing the offset the attribute
+
+//!key representing the warning threshold set-readout
 static const char* const CONTROL_UNIT_DATASET_ATTRIBUTE_WARN_THR = "cudk_ds_attr_wrn_thr";
 
-//!key representing the offset the attribute
+//!key representing the error threshold set-readout
 static const char* const CONTROL_UNIT_DATASET_ATTRIBUTE_ERROR_THR = "cudk_ds_attr_err_thr";
+
 
 /// TO ADD
 //!key representing the minimum working value
-static const char* const CONTROL_UNIT_DATASET_ATTRIBUTE_MIN_WORK_VALUE = "cudk_ds_attr_min_work";
+//static const char* const CONTROL_UNIT_DATASET_ATTRIBUTE_MIN_WORK_VALUE = "cudk_ds_attr_min_work";
 //!key representing the maximum working value
-static const char* const CONTROL_UNIT_DATASET_ATTRIBUTE_MAX_WORK_VALUE = "cudk_ds_attr_max_work";
+//static const char* const CONTROL_UNIT_DATASET_ATTRIBUTE_MAX_WORK_VALUE = "cudk_ds_attr_max_work";
 
 //!key representing the interval of time in us in which the set is still compliant with min and max working
 static const char* const CONTROL_UNIT_DATASET_ATTRIBUTE_THR_TIME_US = "cudk_ds_attr_thr_time_us";
@@ -934,8 +936,14 @@ static const char* const CONTROL_UNIT_DATASET_INITIALIZATION = "cudk_ds_init";
 //!key representing the default value
 static const char* const CONTROL_UNIT_DATASET_MAX_RANGE = "cudk_ds_max_range";
 
+//!key representing the max warn range
+static const char* const CONTROL_UNIT_DATASET_MAX_WARN_RANGE = "cudk_ds_max_warn_range";
+
 //!key representing the default value
 static const char* const CONTROL_UNIT_DATASET_MIN_RANGE = "cudk_ds_min_range";
+
+//!key representing the min warn range
+static const char* const CONTROL_UNIT_DATASET_MIN_WARN_RANGE = "cudk_ds_min_warn_range";
 
 //!key representing the bitmask flasgs of @DataType::DataTypeModfier that are applied on data type
 static const char* const CONTROL_UNIT_DATASET_MODIFIER = "cudk_ds_mod";

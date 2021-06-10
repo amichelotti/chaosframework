@@ -127,8 +127,11 @@ namespace chaos {
                                             const std::string& unit = std::string("NA"),
                                              const std::string& conv = std::string("1"),
                                             const std::string& off = std::string("0"),
-                                            const std::string& warnThr = std::string("0"),
-                                            const std::string& errorThr = std::string("0")
+                                            const std::string& warnThrlo = std::string(""),
+                                            const std::string& warnThrhi = std::string(""),
+                                            const std::string& errorThr = std::string(""),
+                                            const std::string& warngThr = std::string("")
+
 
                                             );
 

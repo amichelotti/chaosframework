@@ -440,8 +440,9 @@ int AbstractDriver::setDrvProperty(const std::string &key, const std::string &va
 }
 
 chaos::common::data::CDWUniquePtr AbstractDriver::getDrvProperties() {
-
-  return getProperties(true);
+chaos::common::data::CDWUniquePtr ret=getProperties(true);
+//  LDBG_<<"Properties:"<<ret->getJSONString();
+  return ret;
 }
 void AbstractDriver::setLastError(const std::string&str){
   lastError=str;
