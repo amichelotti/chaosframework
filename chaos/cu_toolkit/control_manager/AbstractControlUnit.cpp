@@ -1955,6 +1955,9 @@ int AbstractControlUnit::checkStdAlarms() {
       CDataWrapper t;
       fillCDatawrapperWithCachedValue(cache_input_attribute_vector,t);
     }*/
+    if(inp==NULL || out==NULL){
+      continue;
+    }
     switch (inp->type) {
       case DataType::TYPE_BOOLEAN: {
         if (*(inp->getValuePtr<bool>()) != *(out->getValuePtr<bool>())) {
@@ -1997,8 +2000,11 @@ int AbstractControlUnit::checkStdAlarms() {
     double          res;
   
     AttributeValue* val=NULL; 
-    if(i->i_idx>=0)val=cache_input_attribute_vector[i->i_idx];
-    if(i->o_idx>=0)val=cache_input_attribute_vector[i->o_idx];
+    if(i->i_idx>=0){
+      val=cache_input_attribute_vector[i->i_idx];
+    } else if(i->o_idx>=0){
+      val=cache_output_attribute_vector[i->o_idx];
+      }
     if(val){
     switch (val->type) {
       
@@ -3328,6 +3334,10 @@ void AbstractControlUnit::updateDatasetFromDriverProperty() {
 
             } else if (dstype == chaos::DataType::TYPE_STRING) {
               getAttributeCache()->setOutputAttributeValue(attrname, cd->getStringValue(PROPERTY_VALUE_KEY));
+            } else if (dstype == chaos::DataType::TYPE_BYTEARRAY) {
+              uint32_t size;
+               const char*ptr=cd->getBinaryValue(PROPERTY_VALUE_KEY,size);
+              getAttributeCache()->setOutputAttributeValue(attrname, (void*)ptr,size);
             }
           }
         }
@@ -3415,22 +3425,42 @@ void AbstractControlUnit::addPublicDriverPropertyToDataset(bool addDriverHandler
     chaos::common::data::CDWUniquePtr ret = accessor_instances[idx]->getDrvProperties();
     std::vector<std::string>          props;
     ret->getAllKey(props);
+  
     for (std::vector<std::string>::iterator i = props.begin(); i != props.end(); i++) {
       if (ret->isCDataWrapperValue(*i)) {
+          std::string desc;
+          int count=1;
         chaos::common::data::CDWUniquePtr cd = ret->getCSDataValue(*i);
+        if(cd->hasKey(PROPERTY_VALUE_DESC_KEY)){
+          desc=cd->getStringValue(PROPERTY_VALUE_DESC_KEY);
+        }
+        if(cd->hasKey(PROPERTY_VALUE_COUNT_KEY)){
+          count=cd->getInt32Value(PROPERTY_VALUE_COUNT_KEY);
+        }
         if (cd->hasKey(PROPERTY_VALUE_KEY) && cd->hasKey(PROPERTY_VALUE_PUB_KEY)) {
           std::string attrname = cd->getStringValue(PROPERTY_VALUE_PUB_KEY);
 
-          ACULDBG_ << "ADDING ATTRIBUTE:" << *i << " as " << attrname;
           DataType::DataSetAttributeIOAttribute type = chaos::DataType::Bidirectional;
           if (cd->hasKey(PROPERTY_VALUE_IO_KEY)) {
             type = (DataType::DataSetAttributeIOAttribute)cd->getInt32Value(PROPERTY_VALUE_IO_KEY);
           }
+
           if(cd->hasKey(PROPERTY_VALUE_ALARM_LVL_KEY)){
               addStateVariable(StateVariableTypeAlarmDEV, attrname, "Notify alarm on "+attrname);
           }
           chaos::DataType::DataType dstype = cd->getValueType(PROPERTY_VALUE_KEY);
-          addAttributeToDataSet(attrname, cd->getStringValue(PROPERTY_VALUE_DESC_KEY), dstype, type);
+          if(dstype==chaos::DataType::TYPE_BYTEARRAY ){
+            unsigned int subtype=(unsigned int)cd->getBinarySubtype(PROPERTY_VALUE_KEY);
+            addBinaryAttributeAsSubtypeToDataSet(attrname,desc,( DataType::BinarySubtype )subtype,
+                                                                   count,
+                                                                   type);
+            ACULDBG_ << "ADDING "<<chaos::DataType::subtypeDescriptionByIndex(subtype)<<" Array ("<<count<<"):" << *i << " as " << attrname<<" type:"<<dstype<<" IO:"<<type;
+                                                        
+          } else {
+            ACULDBG_ << "ADDING ATTRIBUTE:" << *i << " as " << attrname<<" type:"<<dstype<<" IO:"<<type;
+
+            addAttributeToDataSet(attrname, desc, dstype, type);
+          }
           if (addDriverHandlers && ((type == chaos::DataType::Bidirectional) || (type == chaos::DataType::Input))) {
             if (dstype == chaos::DataType::TYPE_DOUBLE) {
               addHandlerOnInputAttributeName<AbstractControlUnit, double>(this, &AbstractControlUnit::setDrvProp, attrname);

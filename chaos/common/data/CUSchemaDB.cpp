@@ -261,14 +261,25 @@ void CUSchemaDB::addAttributeToDataSet(const std::string& node_uid,
             
             typeMaxDimension = maxDimension;
             break;
-        case DataType::TYPE_BYTEARRAY:
+       /* case DataType::TYPE_BYTEARRAY:
+    
             if(maxDimension == 0)
                 throw CException(1, "for byte array type need to be specified the max  string lenght", "CUSchemaDB::addAttributeToDataSet");
             typeMaxDimension = maxDimension;
+            break;*/
+        default:{
+
+            if(maxDimension == 0){
+                std::stringstream ss;
+                ss<<attributeType<<" for byte array type need to be specified the max  string lenght:"<<node_uid<<"/"<<attributeName;     
+                throw CException(1, ss.str(), "CUSchemaDB::addAttributeToDataSet");
+            }
+            typeMaxDimension = maxDimension;
+            /*std::stringstream ss;
+            ss<<attributeType<<" unmanaged type:"<<node_uid<<"/"<<attributeName;          
+            throw CException(attributeType, ss.str(), "CUSchemaDB::addAttributeToDataSet");*/
             break;
-        default:
-            throw CException(attributeType, "unmanaged type:"+node_uid +std::string("/")+attributeName, "CUSchemaDB::addAttributeToDataSet");
-            break;
+        }
     }
     
     bool isChild = false;

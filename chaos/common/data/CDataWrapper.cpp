@@ -466,6 +466,24 @@ void CDataWrapper::addBinaryValue(const std::string& key,
                        (const uint8_t *)buff,
                        buf_len);
 }
+void CDataWrapper::addArray(const std::string& key,char* arr,int count){
+    addBinaryValue(key,chaos::DataType::SUB_TYPE_INT8,(const char*)arr,count);
+}
+void CDataWrapper::addArray(const std::string& key,int32_t* arr,int count){
+    addBinaryValue(key,chaos::DataType::SUB_TYPE_INT32,(const char*)arr,count*sizeof(int32_t));
+}
+void CDataWrapper::addArray(const std::string& key,double* arr,int count){
+    addBinaryValue(key,chaos::DataType::SUB_TYPE_DOUBLE,(const char*)arr,count*sizeof(double));
+}
+void CDataWrapper::addArray(const std::string& key,float* arr,int count){
+    addBinaryValue(key,chaos::DataType::SUB_TYPE_FLOAT,(const char*)arr,count*sizeof(float));
+}
+void CDataWrapper::addArray(const std::string& key,int16_t* arr,int count){
+     addBinaryValue(key,chaos::DataType::SUB_TYPE_INT16,(const char*)arr,count*sizeof(int16_t));
+}
+void CDataWrapper::addArray(const std::string& key,int64_t* arr,int count){
+    addBinaryValue(key,chaos::DataType::SUB_TYPE_INT64,(const char*)arr,count*sizeof(int64_t));
+}
 
 void CDataWrapper::append(const std::string& key,int32_t val){
     addInt32Value(key, val);
@@ -1131,7 +1149,24 @@ chaos::DataType::DataType CDataWrapper::getValueType(const std::string& key) con
             break;
         case BSON_TYPE_BINARY:
             result = chaos::DataType::TYPE_BYTEARRAY;
-            break;
+            /*switch(getBinarySubtype(key)){
+                case chaos::DataType::SUB_TYPE_INT8:
+                return chaos::DataType::TYPE_VECTOR_INT8;
+                case chaos::DataType::SUB_TYPE_INT32:
+                return chaos::DataType::TYPE_VECTOR_INT32;
+                case chaos::DataType::SUB_TYPE_FLOAT:
+                return chaos::DataType::TYPE_VECTOR_FLOAT;
+                case chaos::DataType::SUB_TYPE_DOUBLE:
+                return chaos::DataType::TYPE_VECTOR_DOUBLE;
+                case chaos::DataType::SUB_TYPE_INT16:
+                return chaos::DataType::TYPE_VECTOR_INT16;
+                case chaos::DataType::SUB_TYPE_INT64:
+                return chaos::DataType::TYPE_VECTOR_INT64;
+                case chaos::DataType::SUB_TYPE_BOOLEAN:
+                return chaos::DataType::TYPE_VECTOR_BOOL;     
+
+            }*/
+            return result;
         case BSON_TYPE_UTF8:
             result = chaos::DataType::TYPE_STRING;
             break;

@@ -1163,11 +1163,13 @@ typedef enum DataType {
   TYPE_CLUSTER,
   //!modifier to be ored to normal data types
   TYPE_VECTOR_BOOL = 0x100,
-
   TYPE_VECTOR_INT32  = 0x101,
   TYPE_VECTOR_INT64  = 0x102,
   TYPE_VECTOR_DOUBLE = 0x103,
   TYPE_VECTOR_STRING = 0x104,
+  TYPE_VECTOR_FLOAT  = 0x105,
+  TYPE_VECTOR_INT16  = 0x106,
+  TYPE_VECTOR_INT8  = 0x106,
 
   TYPE_ACCESS_ARRAY = 0x100,
   TYPE_UNDEFINED
@@ -1245,6 +1247,7 @@ typedef enum BinarySubtype {
   SUB_TYPE_STRING,
   //! the subtype is represented by a specific mime type tagged in specific dataset constants
   SUB_TYPE_MIME,
+  SUB_TYPE_FLOAT,
   //! no specific encoding
   SUB_TYPE_NONE,
   //! unsigned flag
