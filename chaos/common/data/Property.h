@@ -338,9 +338,9 @@ class Property {
               const chaos::common::data::CDataWrapper &val,
               bool                                     sync = false) {
     std::string realpropname = propname;
-    if (!val.hasKey(PROPERTY_VALUE_KEY)) {
+ /*   if (!val.hasKey(PROPERTY_VALUE_KEY)) {
       throw chaos::CException(-10, propname + " missing required key 'value' in:" + val.getJSONString(), __FUNCTION__);
-    }
+    }*/
     boost::recursive_mutex::scoped_lock ll(lock);
 
     chaos::common::data::CDWUniquePtr prop = retriveProp(realpropname);
@@ -567,11 +567,13 @@ class Property {
       if (p.isCDataWrapperValue(*i)) {
         chaos::common::data::CDataWrapper cd;
         p.getCSDataValue(*i, cd);
-        if (cd.hasKey(PROPERTY_VALUE_KEY)) {
+        setProperty(*i, cd, sync);
+
+       /* if (cd.hasKey(PROPERTY_VALUE_KEY)) {
           setProperty(*i, cd, sync);
         } else {
-          LERR_ << __FUNCTION__ << " CDWrapper property:" << *i << " misses required key 'value'";
-        }
+          LERR_ << __FUNCTION__ << " CDWrapper property:" << *i << " misses required key '"<<PROPERTY_VALUE_KEY<<"'";
+        }*/
       } else {
         chaos::common::data::CDataWrapper cd;
         p.copyKeyToNewKey(*i, PROPERTY_VALUE_KEY, cd);
