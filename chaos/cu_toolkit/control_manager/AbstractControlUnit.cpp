@@ -857,7 +857,7 @@ void         AbstractControlUnit::doInitRpCheckList() {
                 ss << " warning if set!=readout ,";
 
               } else {
-                ss << " warning if set/readout > " << atof(attributeInfo.warningThreshold.c_str()) << ",";
+                ss << " warning if |set-readout| > " << atof(attributeInfo.warningThreshold.c_str()) << ",";
               }
               error_set = true;
             }
@@ -866,11 +866,10 @@ void         AbstractControlUnit::doInitRpCheckList() {
                 ss << " error if set!=readout ,";
 
               } else {
-                ss << " error if set-readout > " << atof(attributeInfo.errorThreshold.c_str());
+                ss << " error if |set-readout| > " << atof(attributeInfo.errorThreshold.c_str());
               }
               error_set = true;
             }
-            addStateVariable(StateVariableTypeAlarmCU, *i + "_out_min_range", ss.str());
             if (error_set) {
               addStateVariable(StateVariableTypeAlarmCU, *i + "_out_of_set", ss.str());
             }
@@ -880,41 +879,77 @@ void         AbstractControlUnit::doInitRpCheckList() {
             a.range = attributeInfo;
 
             ioTocheck.push_back(a);
-            ACULDBG_ << "CHECK " << ioTocheck.size() << " " << *i << " set (" << a.i_idx << ") read (" << a.o_idx << ") :" << ss.str();
+            ACULDBG_ << "ENABLING CHECK " << ioTocheck.size() << " " << *i << " set (" << a.i_idx << ") read (" << a.o_idx << ") :" << ss.str();
           }
           
-        } else {
+        }
           bool limitcheck=false;
         if(attributeInfo.maxRange.size()||attributeInfo.warningMaxRange.size()){
             std::stringstream ss;
-            ss << " if error if > " << attributeInfo.maxRange << ", warning if > "<<attributeInfo.warningMaxRange;
-            addStateVariable(StateVariableTypeAlarmCU, *i + "_out_max_range", ss.str());
+            ss << " Error if "<<*i<<" > " << attributeInfo.maxRange << ", warning if > "<<attributeInfo.warningMaxRange;
+            addStateVariable(StateVariableTypeAlarmCU, *i + "_in_max_range", ss.str());
             limitcheck=true;
+            ACULDBG_ << "ENABLING INPUT LIMIT CHECK " << limitTocheck.size() << " " << ss.str();
+
         }
         if(attributeInfo.minRange.size()||attributeInfo.warningMinRange.size()){
             std::stringstream ss;
-            ss << " if error if M " << attributeInfo.minRange << ", warning if > "<<attributeInfo.warningMinRange;
-            addStateVariable(StateVariableTypeAlarmCU, *i + "_out_min_range", ss.str());
+            ss << " Error if  " <<*i<<" < "<< attributeInfo.minRange << ", warning if > "<<attributeInfo.warningMinRange;
+            addStateVariable(StateVariableTypeAlarmCU, *i + "_in_min_range", ss.str());
             limitcheck=true;
+            ACULDBG_ << "ENABLING INPUT LIMIT CHECK " << limitTocheck.size() << " " << ss.str();
+
 
         }
         if(limitcheck){
             checkAttribute_t a;
             a.range = attributeInfo;
 
-        if (attributeInfo.dir == chaos::DataType::Input) {
             a.i_idx = attribute_value_shared_cache->getSharedDomain(DOMAIN_INPUT).getIndexForName(*i);
 
-        } else {
-            a.o_idx = attribute_value_shared_cache->getSharedDomain(DOMAIN_OUTPUT).getIndexForName(*i);
+            a.o_idx = -1;
 
-        }
-                    limitTocheck.push_back(a);
+            limitTocheck.push_back(a);
 
 
-        }
         }
         
+      }
+      inp.clear();
+      attribute_value_shared_cache->getSharedDomain(DOMAIN_OUTPUT).getAttributeNames(inp);
+      for (ChaosStringVector::iterator i = inp.begin(); i != inp.end(); i++) {
+        RangeValueInfo attributeInfo;
+
+        getAttributeRangeValueInfo(*i, attributeInfo);
+
+        bool limitcheck=false;
+        if(attributeInfo.maxRange.size()||attributeInfo.warningMaxRange.size()){
+            std::stringstream ss;
+            ss << " Error if "<<*i<<" > " << attributeInfo.maxRange << ", warning if > "<<attributeInfo.warningMaxRange;
+            addStateVariable(StateVariableTypeAlarmCU, *i + "_out_max_range", ss.str());
+            limitcheck=true;
+            ACULDBG_ << "ENABLING OUTPUT LIMIT CHECK " << limitTocheck.size() << " " << ss.str();
+
+        }
+        if(attributeInfo.minRange.size()||attributeInfo.warningMinRange.size()){
+            std::stringstream ss;
+            ss << " Error if  " <<*i<<" < "<< attributeInfo.minRange << ", warning if > "<<attributeInfo.warningMinRange;
+            addStateVariable(StateVariableTypeAlarmCU, *i + "_out_min_range", ss.str());
+            limitcheck=true;
+            ACULDBG_ << "ENABLING OUTPUT LIMIT CHECK " << limitTocheck.size() << " " << ss.str();
+
+        }
+        if(limitcheck){
+            checkAttribute_t a;
+            a.range = attributeInfo;
+
+            a.o_idx = attribute_value_shared_cache->getSharedDomain(DOMAIN_OUTPUT).getIndexForName(*i);
+
+            a.i_idx = -1;
+        limitTocheck.push_back(a);
+
+        }
+
       }
       
 
@@ -1835,8 +1870,8 @@ void AbstractControlUnit::fillCachedValueVector(AttributeCache&               at
   }
 }
 int AbstractControlUnit::checkLimFn( double rval, const chaos::common::data::RangeValueInfo& i) {
-  std::string alrmmax = i.name + "_out_max_range";
-  std::string alrmmin  = i.name + "_out_min_range";
+  std::string alrmmax = i.name + ((i.dir==chaos::DataType::Input)?"_in_max_range":"out_max_range");
+  std::string alrmmin  = i.name + ((i.dir==chaos::DataType::Input)?"_in_min_range":"out_min_range");
   int err=0;
   if(i.warningMaxRange.size()){
       double      max     = atof(i.warningMaxRange.c_str());
@@ -1874,7 +1909,7 @@ int AbstractControlUnit::checkLimFn( double rval, const chaos::common::data::Ran
         }
   }
   if(i.minRange.size()){
-      double      min    = atof(i.maxRange.c_str());
+      double      min    = atof(i.minRange.c_str());
       if (rval < min) {
           setStateVariableSeverity(StateVariableTypeAlarmCU, alrmmin, chaos::common::alarm::MultiSeverityAlarmLevelHigh);
           ACULDBG_ << i.name << " MIN CHECK failed " << rval << " < " << min;
@@ -1893,20 +1928,20 @@ int AbstractControlUnit::checkFn(double sval, double rval, const chaos::common::
 
   checkLimFn(rval,i);
 
-  double res=fabs(sval-res);
+  double res=fabs(sval-rval);
   
     
   if (i.errorThreshold.size()) {
       if (i.errorThreshold.c_str() == "0") {
         if (sval != rval) {
-          ACULDBG_ << i.name << " SETPOINT/READOUT ERROR CHECK failed " << rval << " != " << sval;
+          ACULDBG_ << i.name << " |SETPOINT-READOUT| ERROR CHECK failed " << rval << " != " << sval;
 
           setStateVariableSeverity(StateVariableTypeAlarmCU, alrm, chaos::common::alarm::MultiSeverityAlarmLevelHigh);
           err++;
           return err;
         } 
       } else if (res > atof(i.errorThreshold.c_str())) {
-        ACULDBG_ << i.name << " SETPOINT/READOUT ERROR CHECK failed readout:" << rval << " setpoint :" << sval << " threshold:" << atof(i.errorThreshold.c_str()) << " res:" << res;
+        ACULDBG_ << i.name << " |SETPOINT-READOUT| ERROR CHECK failed readout:" << rval << " setpoint :" << sval << " threshold:" << atof(i.errorThreshold.c_str()) << " res:" << res;
 
         setStateVariableSeverity(StateVariableTypeAlarmCU, alrm, chaos::common::alarm::MultiSeverityAlarmLevelHigh);
         err++;
@@ -1916,14 +1951,14 @@ int AbstractControlUnit::checkFn(double sval, double rval, const chaos::common::
     if (i.warningThreshold.size()) {
       if (i.warningThreshold.c_str() == "0") {
         if (sval != rval) {
-          ACULDBG_ << i.name << " SETPOINT/READOUT WARNING CHECK failed " << rval << " != " << sval;
+          ACULDBG_ << i.name << " |SETPOINT-READOUT| WARNING CHECK failed " << rval << " != " << sval;
 
           setStateVariableSeverity(StateVariableTypeAlarmCU, alrm, chaos::common::alarm::MultiSeverityAlarmLevelWarning);
           err++;
           return err;
         } 
       } else if (res > atof(i.warningThreshold.c_str())) {
-        ACULDBG_ << i.name << " SETPOINT/READOUT WARNING CHECK failed readout:" << rval << " setpoint:" << sval << " threshold:" << atof(i.errorThreshold.c_str()) << " res:" << res;
+        ACULDBG_ << i.name << " |SETPOINT-READOUT| WARNING CHECK failed readout:" << rval << " setpoint:" << sval << " threshold:" << atof(i.warningThreshold.c_str()) << " res:" << res;
         setStateVariableSeverity(StateVariableTypeAlarmCU, alrm, chaos::common::alarm::MultiSeverityAlarmLevelWarning);
         err++;
           return err;
