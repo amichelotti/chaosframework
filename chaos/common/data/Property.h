@@ -185,7 +185,7 @@ class Property {
  * @return chaos::common::data::CDWUniquePtr 
  */
   chaos::common::data::CDWUniquePtr createProperty(
-      const std::string  propname,
+      const std::string&  propname,
       conversion_func_t  getHandler,
       conversion_func_t  setHandler,
       const std::string &pubname = "") {
@@ -202,10 +202,10 @@ class Property {
       LERR_ << "Cannot initialize property " + propname + " from get callback";
       return chaos::common::data::CDWUniquePtr();
     }
-    if (!props.hasKey(propname)) {
+    if (!props.isCDataWrapperValue(propname)) {
       if (pubname.size() > 0) {
         ret->append(PROPERTY_VALUE_PUB_KEY, pubname);
-
+        if (!ret->hasKey(PROPERTY_VALUE_IO_KEY)) {
         if ((getHandler != NULL) && (setHandler == NULL)) {
           ret->append(PROPERTY_VALUE_IO_KEY, (int32_t)chaos::DataType::Output);
         } else if ((getHandler == NULL) && (setHandler != NULL)) {
@@ -214,6 +214,7 @@ class Property {
         } else {
           ret->append(PROPERTY_VALUE_IO_KEY, (int32_t)chaos::DataType::Bidirectional);
         }
+        }
         abstract2props[pubname] = propname;
       }
       if (ret.get()) {
@@ -221,7 +222,9 @@ class Property {
       }
 
     } else {
-      setProperty(propname, *ret.get());
+      LERR_ << "Property '"<<propname<<"' ("<<pubname<<") is already present, setting "<<ret->getJSONString();
+
+     // setProperty(propname, *ret.get());
     }
     return props.clone();
   }
