@@ -216,7 +216,7 @@ int CouchbaseCacheDriver::getData(const ChaosStringVector& keys,
     //crate vrapper result
     int err = 0;
     CouchbasePoolSlot *pool_element = driver_pool.pool->getNewResource();
-    if(pool_element) {
+    if(pool_element && pool_element->resource_pooled) {
         MultiGetResult result_wrap(multi_data);
         for(ChaosStringVectorConstIterator it = keys.begin(),
             end = keys.end();
@@ -235,6 +235,9 @@ int CouchbaseCacheDriver::getData(const ChaosStringVector& keys,
         err = 0;
     } else {
         err = -1;
+        CCDLERR_<< "Cannot retrieve pool for nkeys:"<<keys.size();
+
+        return err;
     }
     driver_pool.pool->releaseResource(pool_element);
     return err;
