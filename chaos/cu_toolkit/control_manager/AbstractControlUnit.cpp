@@ -1507,13 +1507,18 @@ void AbstractControlUnit::fillRestoreCacheWithDatasetFromTag(chaos::cu::data_man
                                                              AbstractSharedDomainCache&                    restore_cache) {
   std::vector<std::string> dataset_key;
   dataset.getAllKey(dataset_key);
+  ChaosSharedPtr<SharedCacheLockDomain> w_lock = attribute_value_shared_cache->getLockOnDomain((SharedCacheDomain)domain, true);
+  w_lock->lock();
+
   for (std::vector<std::string>::iterator it = dataset_key.begin();
        it != dataset_key.end();
        it++) {
+       
     restore_cache.addAttribute((SharedCacheDomain)domain,
                                *it,
                                dataset.getVariantValue(*it));
   }
+  
 }
 
 void AbstractControlUnit::checkForRestoreOnInit() {
@@ -1590,6 +1595,7 @@ CDWUniquePtr AbstractControlUnit::_unitRestoreToSnapshot(CDWUniquePtr restorePar
 
     throw MetadataLoggingCException(getCUID(), err, "Error loading dataset form snapshot", __PRETTY_FUNCTION__);
   } else {
+    
     restore_cache->init(NULL);
 
     for (int idx = 0; idx < 4; idx++) {
@@ -1597,11 +1603,12 @@ CDWUniquePtr AbstractControlUnit::_unitRestoreToSnapshot(CDWUniquePtr restorePar
       dataset_at_tag = key_data_storage->getDatasetFromRestorePoint(restore_snapshot_tag,
                                                                     (KeyDataStorageDomain)idx);
       if (dataset_at_tag.get()) {
-        ACULDBG_ << CHAOS_FORMAT("Dataset restored from tag %1% -> %2%: %3%", % restore_snapshot_tag %datasetTypeToHuman(idx) % dataset_at_tag->getJSONString());
         //fill cache with dataset key/value
         fillRestoreCacheWithDatasetFromTag((KeyDataStorageDomain)idx,
                                            *dataset_at_tag.get(),
                                            *restore_cache.get());
+        ACULDBG_ << CHAOS_FORMAT("Dataset restored from tag %1% -> %2%: %3%", % restore_snapshot_tag %datasetTypeToHuman(idx) % dataset_at_tag->getJSONString());
+
       }
     }
     *attribute_value_shared_cache->getAttributeValue(DOMAIN_SYSTEM, ControlUnitDatapackSystemKey::SETPOINT_STATE)->getValuePtr<int32_t>() = ControlUnitNodeDefinitionType::SetpointRestoreRunning;  //running

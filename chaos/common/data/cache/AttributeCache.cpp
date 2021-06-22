@@ -48,7 +48,10 @@ void AttributeCache::addAttribute(const string& name,
                                   uint32_t size,
                                   chaos::DataType::DataType type,
                                   const std::vector<chaos::DataType::BinarySubtype>& sub_type) {
-    if(mapAttributeNameIndex.count(name)) return;
+    if(mapAttributeNameIndex.count(name))  {
+        LERR_<<__PRETTY_FUNCTION__<<" Attribute name '"<<name<<"' exists";
+        return;
+    }
     
     VariableIndexType tmpIndex;
     
@@ -84,7 +87,10 @@ void AttributeCache::addAttribute(const string& name,
 
 void AttributeCache::addAttribute(const std::string& name,
                                   const chaos::common::data::CDataVariant& value) {
-    if(mapAttributeNameIndex.count(name)) return;
+    if(mapAttributeNameIndex.count(name)) {
+        LERR_<<__PRETTY_FUNCTION__<<" Attribute name '"<<name<<"' exists";
+        return;
+    }
     uint32_t size;
     VariableIndexType tmpIndex;
     chaos::DataType::DataType type;
@@ -106,9 +112,14 @@ void AttributeCache::addAttribute(const std::string& name,
         case chaos::DataType::TYPE_INT64:
             size = sizeof(int64_t);
             break;
+        case chaos::DataType::TYPE_STRING:
+            size = value.asString().size();
+            break;
             
         default:
-            size = 0;
+            size = 8;
+            LERR_<<__PRETTY_FUNCTION__<<" Attribute name '"<<name<<"' unsupported type:"<<type;
+
             break;
     }
     ChaosSharedPtr<AttributeValue> tmpSP(new AttributeValue(name, tmpIndex, size, type, sub_type));
@@ -118,7 +129,8 @@ void AttributeCache::addAttribute(const std::string& name,
     tmpSP->sharedBitmapChangedAttribute = &bitmapChangedAttribute;
     
     vector_attribute_value.push_back(tmpSP);
-    tmpSP->setValue(value);
+    
+    tmpSP->setValue(value,true);
 }
 
 void AttributeCache::getAttributeNames(std::vector<std::string>& names) {

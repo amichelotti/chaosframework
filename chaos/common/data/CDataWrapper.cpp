@@ -69,7 +69,10 @@ static void bsonValueDestroy(bson_value_t* bson_values) {if(bson_values){bson_va
 CDataWrapper::CDataWrapper():
 bson(ALLOCATE_BSONT(bson_new())),
 array_index(0){
-    CHAOS_ASSERT(bson);
+        if(bson==NULL){
+              throw CException(-53, "Invalid BSON", __PRETTY_FUNCTION__);
+
+    }
 }
 bool CDataWrapper::isJSON(const::std::string&str){
     if(str.size()){
@@ -91,8 +94,10 @@ array_index(0){
     } else {
         bson = ALLOCATE_BSONT(bson_new());
     }
-    CHAOS_ASSERT(bson);
-}
+    if(bson==NULL){
+              throw CException(-61, "Invalid BSON", __PRETTY_FUNCTION__);
+
+    }}
 bool CDataWrapper::operator==(const CDataWrapper&d) const {
     int32_t siz1,siz2;
     const char*buf1=getBSONRawData(siz1);
@@ -128,7 +133,10 @@ array_index(0) {
     } else {
         bson = ALLOCATE_BSONT(bson_new());
     }
-    CHAOS_ASSERT(bson);
+ if(bson==NULL){
+              throw CException(-52, "Invalid BSON ", __PRETTY_FUNCTION__);
+
+    }
 }
 
 CDataWrapper::CDataWrapper(const std::string& json_document):
@@ -992,7 +1000,10 @@ string CDataWrapper::toHash() const{
 
 CDataVariant CDataWrapper::getVariantValue(const std::string& key) const{
     //check if key is present
-    if(!hasKey(key)) return CDataVariant();
+    if(!hasKey(key)) {
+        LERR_<<__PRETTY_FUNCTION__<<" Key '"+key+"' not found ";
+        return CDataVariant();
+    }
     //create variant using the typed data
     switch (getValueType(key)) {
         case chaos::DataType::TYPE_BOOLEAN:
@@ -1019,6 +1030,8 @@ CDataVariant CDataWrapper::getVariantValue(const std::string& key) const{
         case  chaos::DataType::TYPE_BYTEARRAY:
             return CDataVariant(getBinaryValueAsCDataBuffer(key));
         default:
+               throw CException(-120, "Variant value type for key '"+key+"' unsupported", __PRETTY_FUNCTION__);
+
             break;
     }
     return CDataVariant();
