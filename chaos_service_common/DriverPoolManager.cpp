@@ -115,10 +115,16 @@ chaos::common::cache_system::CacheDriver* DriverPoolManager::getCacheDrvPtr() {
 AbstractPersistenceDriver* DriverPoolManager::getPersistenceDrvPtr() {
     return persistence_driver.get();
 }
+chaos::service_common::persistence::data_access::AbstractPersistenceDriver* DriverPoolManager::getObjectStorageDrvPtr(){
+      return storage_driver.get();
+}
 
 AbstractPersistenceDriver& DriverPoolManager::getObjectStorageDrv() {
     return *storage_driver;
 }
 AbstractPersistenceDriver& DriverPoolManager::getLogDrv() {
     return *log_driver;
+}
+AbstractPersistenceDriver* DriverPoolManager::getLogDrvPtr() {
+    return log_driver.get();
 }

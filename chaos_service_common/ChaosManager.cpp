@@ -105,13 +105,13 @@ CDWShrdPtr ChaosManager::getLiveChannel(const std::string& key, int domain) {
   return ret;
 }
 ChaosManager::ChaosManager(const chaos::common::data::CDataWrapper& conf)
-    : cache_driver(NULL), persistence_driver(NULL) {
+    : cache_driver(NULL), persistence_driver(NULL),storage_driver(NULL) {
   if (init(conf) != 0) {
     throw chaos::CException(-1, "Cannot initialize ", __PRETTY_FUNCTION__);
   }
 }
 ChaosManager::ChaosManager()
-    : cache_driver(NULL), persistence_driver(NULL) {
+    : cache_driver(NULL), persistence_driver(NULL),storage_driver(NULL) {
   chaos::common::message::MDSMessageChannel* mdsChannel = chaos::common::network::NetworkBroker::getInstance()->getMetadataserverMessageChannel();
   if (mdsChannel) {
     CDWUniquePtr best_available_da_ptr;
@@ -146,8 +146,8 @@ int ChaosManager::init(const chaos::common::data::CDataWrapper& best_available_d
   CDWUniquePtr cs;
   DBGET << "Initialize parameters:" << best_available_da_ptr.getJSONString();
 
-  if (best_available_da_ptr.hasKey("cache")) {
-    cs = best_available_da_ptr.getCSDataValue("cache");
+  if (best_available_da_ptr.hasKey(chaos::DataServiceNodeDefinitionKey::DS_CACHE_SETTINGS)) {
+    cs = best_available_da_ptr.getCSDataValue(chaos::DataServiceNodeDefinitionKey::DS_CACHE_SETTINGS);
     if (cs->hasKey(OPT_CACHE_DRIVER)) {
       std::string                                     cache_impl_name = cs->getStringValue(OPT_CACHE_DRIVER) + "CacheDriver";
       chaos::common::cache_system::CacheDriverSetting setpar;
@@ -157,14 +157,34 @@ int ChaosManager::init(const chaos::common::data::CDataWrapper& best_available_d
       DBGET << "direct cache parameters:" << cs->getJSONString();
     }
   }
-  if (best_available_da_ptr.hasKey("persistence")) {
-    cs = best_available_da_ptr.getCSDataValue("persistence");
+  if (best_available_da_ptr.hasKey(chaos::DataServiceNodeDefinitionKey::DS_ADMIN_SETTINGS)) {
+    cs = best_available_da_ptr.getCSDataValue(chaos::DataServiceNodeDefinitionKey::DS_ADMIN_SETTINGS);
     if (cs->hasKey(chaos::service_common::persistence::OPT_PERSITENCE_IMPL)) {
       chaos::service_common::persistence::data_access::PersistenceDriverSetting settings;
 
       settings.init(*cs.get());
       DriverPoolManager::persistentSetting = settings;
       DBGET << "persistent parameters:" << cs->getJSONString();
+    }
+  }
+  if (best_available_da_ptr.hasKey(chaos::DataServiceNodeDefinitionKey::DS_STORAGE_SETTINGS)) {
+    cs = best_available_da_ptr.getCSDataValue(chaos::DataServiceNodeDefinitionKey::DS_STORAGE_SETTINGS);
+    if (cs->hasKey(chaos::service_common::persistence::OPT_PERSITENCE_IMPL)) {
+      chaos::service_common::persistence::data_access::PersistenceDriverSetting settings;
+
+      settings.init(*cs.get());
+      DriverPoolManager::objectSetting = settings;
+      DBGET << "object parameters:" << cs->getJSONString();
+    }
+  }
+  if (best_available_da_ptr.hasKey(chaos::DataServiceNodeDefinitionKey::DS_LOG_SETTINGS)) {
+    cs = best_available_da_ptr.getCSDataValue(chaos::DataServiceNodeDefinitionKey::DS_LOG_SETTINGS);
+    if (cs->hasKey(chaos::service_common::persistence::OPT_PERSITENCE_IMPL)) {
+      chaos::service_common::persistence::data_access::PersistenceDriverSetting settings;
+
+      settings.init(*cs.get());
+      DriverPoolManager::logSetting = settings;
+      DBGET << "log parameters:" << cs->getJSONString();
     }
   }
 
@@ -187,6 +207,24 @@ int ChaosManager::init(const chaos::common::data::CDataWrapper& best_available_d
 
     } else {
       DBGET << "Using direct persistence";
+    }
+
+    storage_driver = DriverPoolManager::getInstance()->getObjectStorageDrvPtr();
+    if (storage_driver == NULL) {
+      DBGETERR << "Cannot use direct storage driver";
+      return -2;
+
+    } else {
+      DBGET << "Using direct storage driver";
+    }
+
+    log_driver = DriverPoolManager::getInstance()->getLogDrvPtr();
+    if (log_driver == NULL) {
+      DBGETERR << "Cannot use log direct driver";
+      return -2;
+
+    } else {
+      DBGET << "Using log direct driver";
     }
   }
 

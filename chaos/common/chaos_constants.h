@@ -774,6 +774,11 @@ static const char* const DS_SUBSCRIBE_KEY_LIST  = "dsndk_subkey_list";
 
 static const char* const DS_TIMESTAMP_UNCERTENTY = "dsndk_ts_unc";
 
+static const char* const DS_ADMIN_SETTINGS = "ds_admin_settings";
+static const char* const DS_STORAGE_SETTINGS = "ds_storage_settings";
+static const char* const DS_CACHE_SETTINGS = "ds_cache_settings";
+static const char* const DS_LOG_SETTINGS = "ds_log_settings";
+
 }  // namespace DataServiceNodeDefinitionKey
 /** @} */  // end of DataServiceNodeDefinitionKey
 

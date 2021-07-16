@@ -183,6 +183,34 @@ CDWShrdPtr CUCommonUtility::getConfigurationToUse(const std::string &           
 }
 static int64_t                                    nu_cache_ts = 0;
 static std::vector<ChaosSharedPtr<CDataWrapper> > data_services;
+static CDataWrapper fillWrapperFromPersistenceParams(chaos::service_common::persistence::data_access::PersistenceDriverSetting& setting){
+  CDataWrapper persistence;
+  if(setting.persistence_implementation.size()){
+    std::vector<std::string> pers_servers=setting.persistence_server_list;//ChaosMetadataService::getInstance()->getGlobalConfigurationInstance()->getOption< std::vector< std::string> >(chaos::service_common::persistence::OPT_PERSITENCE_SERVER_ADDR_LIST);
+    persistence.addStringValue(chaos::service_common::persistence::OPT_PERSITENCE_IMPL, setting.persistence_implementation);
+    if ( pers_servers.size()){
+
+      for (std::vector<std::string>::iterator i = pers_servers.begin(); i != pers_servers.end(); i++) {
+        if (*i == "localhost" || (*i == "127.0.0.1")) {
+          persistence.appendStringToArray(chaos::GlobalConfiguration::getInstance()->getLocalServerAddress());
+        } else {
+          persistence.appendStringToArray(*i);
+        }
+      }
+    persistence.finalizeArrayForKey(chaos::service_common::persistence::OPT_PERSITENCE_SERVER_ADDR_LIST);
+    return persistence;
+  }
+  std::map<std::string,std::string> parameter = setting.persistence_kv_param_map;
+  for (std::map<std::string,std::string>::iterator i = parameter.begin(); i != parameter.end(); i++) {
+      persistence.appendStringToArray(i->first+":"+i->second);
+  }
+  if(parameter.begin()!=parameter.end()){
+      persistence.finalizeArrayForKey(chaos::service_common::persistence::OPT_PERSITENCE_KV_PARAMTER);
+
+  }
+}
+return persistence;
+}
 void                                              CUCommonUtility::addDataServicePack(ChaosUniquePtr<chaos::common::data::CDataWrapper> &result, chaos::metadata_service::persistence::data_access::DataServiceDataAccess *ds_da, unsigned numner_or_result) {
   int     err = 0;
   int64_t now = TimingUtil::getTimeStamp();
@@ -207,29 +235,17 @@ void                                              CUCommonUtility::addDataServic
     result->finalizeArrayForKey(chaos::DataServiceNodeDefinitionKey::DS_BROKER_ADDRESS_LIST);
     result->addInt64Value(chaos::DataServiceNodeDefinitionKey::DS_TIMESTAMP_UNCERTENTY, (uint64_t)ChaosMetadataService::timePrecisionMask);
   }
-   
-  std::vector<std::string> pers_servers=DriverPoolManager::persistentSetting.persistence_server_list;//ChaosMetadataService::getInstance()->getGlobalConfigurationInstance()->getOption< std::vector< std::string> >(chaos::service_common::persistence::OPT_PERSITENCE_SERVER_ADDR_LIST);
-  if ( pers_servers.size()){
-    CDataWrapper persistence;
+  
+  if(DriverPoolManager::objectSetting.persistence_implementation.size()){
+      result->append(chaos::DataServiceNodeDefinitionKey::DS_STORAGE_SETTINGS, fillWrapperFromPersistenceParams(DriverPoolManager::objectSetting));
 
-  //  persistence.addStringValue(chaos::service_common::persistence::OPT_PERSITENCE_IMPL, GlobalConfiguration::getInstance()->getOption<std::string>(chaos::service_common::persistence::OPT_PERSITENCE_IMPL));
-  persistence.addStringValue(chaos::service_common::persistence::OPT_PERSITENCE_IMPL, DriverPoolManager::persistentSetting.persistence_implementation);
-    for (std::vector<std::string>::iterator i = pers_servers.begin(); i != pers_servers.end(); i++) {
-      if (*i == "localhost" || (*i == "127.0.0.1")) {
-        persistence.appendStringToArray(GlobalConfiguration::getInstance()->getLocalServerAddress());
-      } else {
-        persistence.appendStringToArray(*i);
-      }
-    }
-    persistence.finalizeArrayForKey(chaos::service_common::persistence::OPT_PERSITENCE_SERVER_ADDR_LIST);
-   // std::vector<std::string> parameter = GlobalConfiguration::getInstance()->getOption<std::vector<std::string> >(chaos::service_common::persistence::OPT_PERSITENCE_KV_PARAMTER);
-    std::map<std::string,std::string> parameter = DriverPoolManager::persistentSetting.persistence_kv_param_map;
-    for (std::map<std::string,std::string>::iterator i = parameter.begin(); i != parameter.end(); i++) {
-      persistence.appendStringToArray(i->first+":"+i->second);
-    }
-    persistence.finalizeArrayForKey(chaos::service_common::persistence::OPT_PERSITENCE_KV_PARAMTER);
-    result->append("persistence", persistence);
   }
+ if( DriverPoolManager::persistentSetting.persistence_implementation.size()){ 
+    result->append(chaos::DataServiceNodeDefinitionKey::DS_ADMIN_SETTINGS, fillWrapperFromPersistenceParams(DriverPoolManager::persistentSetting));
+ }
+ if( DriverPoolManager::logSetting.persistence_implementation.size()){ 
+    result->append(chaos::DataServiceNodeDefinitionKey::DS_LOG_SETTINGS, fillWrapperFromPersistenceParams(DriverPoolManager::logSetting));
+ }
  // std::vector<std::string> cache_server = GlobalConfiguration::getInstance()->getOption<std::vector<std::string> >(OPT_CACHE_SERVER_LIST);
   std::vector<std::string> cache_server = DriverPoolManager::cacheSetting.startup_chache_servers;
   if (cache_server.size()) {
@@ -250,8 +266,9 @@ void                                              CUCommonUtility::addDataServic
       cache.appendStringToArray(i->first+":"+i->second);
     }
     cache.finalizeArrayForKey(OPT_CACHE_DRIVER_KVP);
-    result->append("cache", cache);
+    result->append(chaos::DataServiceNodeDefinitionKey::DS_CACHE_SETTINGS, cache);
   }
+
 
   //constructs the result
   //result.reset(new CDataWrapper());

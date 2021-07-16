@@ -35,6 +35,9 @@ class ChaosManager : public chaos::common::utility::SingletonCW<ChaosManager>{
  private:
   chaos::common::cache_system::CacheDriver*                                   cache_driver;
   chaos::service_common::persistence::data_access::AbstractPersistenceDriver* persistence_driver;
+  chaos::service_common::persistence::data_access::AbstractPersistenceDriver* storage_driver;
+    chaos::service_common::persistence::data_access::AbstractPersistenceDriver* log_driver;
+
 
   //  ::common::misc::data::DBbase* db;
   // NetworkBroker *broker;

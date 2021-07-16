@@ -75,6 +75,8 @@ namespace chaos{
             }
             
             chaos::service_common::persistence::data_access::AbstractPersistenceDriver& getObjectStorageDrv();
+            chaos::service_common::persistence::data_access::AbstractPersistenceDriver* getObjectStorageDrvPtr();
+
             template<typename T>
             T* getStorageDataAccess() {
                 if(storage_driver.get() == NULL) throw CException(-1, "No Storage Driver Found", __PRETTY_FUNCTION__);
@@ -82,6 +84,8 @@ namespace chaos{
             }
 
             chaos::service_common::persistence::data_access::AbstractPersistenceDriver& getLogDrv();
+            chaos::service_common::persistence::data_access::AbstractPersistenceDriver* getLogDrvPtr();
+
             template<typename T>
             T* getLogDataAccess() {
                 if(log_driver.get() == NULL) throw CException(-1, "No Logging Driver Found", __PRETTY_FUNCTION__);
