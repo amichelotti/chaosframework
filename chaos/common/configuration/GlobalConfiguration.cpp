@@ -432,19 +432,23 @@ void GlobalConfiguration::fillKVParameter(std::map<std::string, std::string>& kv
         if(regex.size() &&
            !boost::regex_match(kv_param_value,
                                boost::regex(regex))) {
-               throw chaos::CException(-3, "Malformed kv parameter string", __PRETTY_FUNCTION__);
-           }
-        
-        //clear previosly pair
-        kv_splitted.clear();
-        
-        //get new pair
-        boost::algorithm::split(kv_splitted,
-                                kv_param_value,
-                                boost::algorithm::is_any_of(":"),
-                                boost::algorithm::token_compress_on);
-        // add key/value pair
-        kvmap.insert(make_pair(kv_splitted[0], kv_splitted[1]));
+               std::stringstream ss;
+               ss<<"Malformed kv parameter string:"<<kv_param_value<<" regex:"<<regex;
+               LERR_<<ss.str();
+              // throw chaos::CException(-3,ss.str(), __PRETTY_FUNCTION__);
+           } else {
+                    
+                    //clear previosly pair
+                    kv_splitted.clear();
+                    
+                    //get new pair
+                    boost::algorithm::split(kv_splitted,
+                                            kv_param_value,
+                                            boost::algorithm::is_any_of(":"),
+                                            boost::algorithm::token_compress_on);
+                    // add key/value pair
+                    kvmap.insert(make_pair(kv_splitted[0], kv_splitted[1]));
+        }
     }
 }
 

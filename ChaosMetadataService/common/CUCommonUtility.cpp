@@ -198,7 +198,6 @@ static CDataWrapper fillWrapperFromPersistenceParams(chaos::service_common::pers
         }
       }
     persistence.finalizeArrayForKey(chaos::service_common::persistence::OPT_PERSITENCE_SERVER_ADDR_LIST);
-    return persistence;
   }
   std::map<std::string,std::string> parameter = setting.persistence_kv_param_map;
   for (std::map<std::string,std::string>::iterator i = parameter.begin(); i != parameter.end(); i++) {
@@ -211,7 +210,7 @@ static CDataWrapper fillWrapperFromPersistenceParams(chaos::service_common::pers
 }
 return persistence;
 }
-void                                              CUCommonUtility::addDataServicePack(ChaosUniquePtr<chaos::common::data::CDataWrapper> &result, chaos::metadata_service::persistence::data_access::DataServiceDataAccess *ds_da, unsigned numner_or_result) {
+void CUCommonUtility::addDataServicePack(ChaosUniquePtr<chaos::common::data::CDataWrapper> &result, chaos::metadata_service::persistence::data_access::DataServiceDataAccess *ds_da, unsigned numner_or_result) {
   int     err = 0;
   int64_t now = TimingUtil::getTimeStamp();
 
@@ -307,6 +306,8 @@ void                                              CUCommonUtility::addDataServic
 
     throw CException(err, "No best endpoint found", __PRETTY_FUNCTION__);
   }
+  CUCU_DBG << "Configuration pack:" << result->getJSONString();
+
 }
 #if 0
 void CUCommonUtility::addDataServicePack(const std::string& cu_uid,ChaosUniquePtr<chaos::common::data::CDataWrapper>& init_datapack,

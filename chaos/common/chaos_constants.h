@@ -755,6 +755,7 @@ static const char* const DS_STORAGE_TYPE = "dsndk_storage_type";
 //!define a constant that tells to update output even if there is no change
 static const char* const DS_UPDATE_ANYWAY = "dsndk_update_anyway";
 
+
 //!define the numbers of second for the ageing time, that is maximu number of second
 //!for wich the data need to remain archive within the !CHAOS storage system. A value
 //! of 0 mean infinit persistence[uint32_t]
@@ -983,6 +984,7 @@ static const char* const CONTROL_UNIT_DATASET_HISTORY_BURST_TAG = "dsndk_history
 
 static const char* const CONTROL_UNIT_DATASET_TAG = "dsndk_tag";
 
+
 }  // namespace ControlUnitNodeDefinitionKey
 /** @} */  // end of ControlUnitNodeDefinitionKey
 
@@ -1116,6 +1118,8 @@ static const char* const CU_CLASS_TYPE = "cudk_cu_class";
 
 //!  hostname
 static const char* const CU_SOURCE_HOSTNAME = "cudk_hostname";
+//!define a constant that tells the maximum logs for ms (default 0)
+static const char* const CU_LOG_MAX_MS = "cudk_log_max_ms";
 
 }  // namespace ControlUnitDatapackSystemKey
 

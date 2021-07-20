@@ -61,6 +61,7 @@ ApiProxyResult SetInstanceDescription::execute(SetInstanceDescriptionHelper& api
     //add the deafult scheduler delay
     instance_description.addInt64Value(ControlUnitDatapackSystemKey::THREAD_SCHEDULE_DELAY, api_data.default_schedule_delay);
     instance_description.addInt32Value(DataServiceNodeDefinitionKey::DS_UPDATE_ANYWAY, api_data.update_anyway);
+    instance_description.addInt32Value(ControlUnitDatapackSystemKey::CU_LOG_MAX_MS, api_data.max_log_ms);
 
     if(legacy_support) {
         //add the storage type
@@ -136,6 +137,7 @@ history_ageing(0),
 history_time(0),
 live_time(0),
 update_anyway(60000),
+max_log_ms(0),
 restore_apply(false),
 restore_type(0),
 default_schedule_delay(1000000),

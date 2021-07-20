@@ -445,14 +445,14 @@ SET(cnd_src  ${cnd_src}	worker/DeviceSharedDataWorkerMetricCollector.cpp
 ENDIF(CHAOS_PROMETHEUS)
 
 IF (BUILD_FORCE_STATIC  )
-  ADD_LIBRARY(chaos_cds STATIC ${cnd_src} ${api_src} ${service_src})
+  ADD_LIBRARY(chaos_cds STATIC ${cnd_src} ${api_src} ${service_src} ${posix_src})
   TARGET_LINK_LIBRARIES(chaos_cds chaos_common couchbaseS mongoclient mongocxx bsoncxx)
 ELSE (BUILD_FORCE_STATIC)
-  ADD_LIBRARY(chaos_cds SHARED ${cnd_src} ${api_src} ${service_src})
+  ADD_LIBRARY(chaos_cds SHARED ${cnd_src} ${api_src} ${service_src} ${posix_src})
   set_target_properties(chaos_cds PROPERTIES VERSION 1.0.0 SOVERSION 1)
 ENDIF (BUILD_FORCE_STATIC)
 
-ADD_EXECUTABLE(${PROJECT_NAME} main.cpp  ${posix_src} )
+ADD_EXECUTABLE(${PROJECT_NAME} main.cpp )
 
 #add dependency
 add_dependencies(chaos_cds mongo-cxx-driver)

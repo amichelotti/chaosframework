@@ -96,6 +96,10 @@ namespace chaos {
                         update_anyway
                      */
                     uint32_t update_anyway;
+                     /*!
+                        max_log_ms
+                     */
+                    uint32_t max_log_ms;
                     /*!
                      the time that need to pass before store another datapack into the live system
                      */

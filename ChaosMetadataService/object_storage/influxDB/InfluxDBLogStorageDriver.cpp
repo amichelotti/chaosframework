@@ -23,6 +23,7 @@
 
 #include "../../ChaosMetadataService.h"
 #include <boost/algorithm/string.hpp>
+#include <chaos_service_common/DriverPoolManager.h>
 
 #include "InfluxDBLogStorageDriver.h"
 #include "InfluxDB.h"
@@ -31,6 +32,7 @@ using namespace chaos;
 using namespace chaos::service_common::persistence::data_access;
 
 using namespace chaos::metadata_service;
+using namespace chaos::service_common;
 
 using namespace chaos::metadata_service::object_storage;
 using namespace chaos::metadata_service::object_storage::abstraction;
@@ -50,11 +52,11 @@ InfluxDBLogStorageDriver::~InfluxDBLogStorageDriver() {}
 void InfluxDBLogStorageDriver::init(void *init_data) throw (chaos::CException) {
     AbstractPersistenceDriver::init(init_data);
 
-    const ChaosStringVector url_list = settings.persistence_server_list;
-    const std::string user = settings.persistence_kv_param_map["user"];
-    const std::string password = settings.persistence_kv_param_map["pwd"];
-    const std::string database = settings.persistence_kv_param_map["db"];
-    const std::string retention = settings.persistence_kv_param_map["retention"];
+    const ChaosStringVector url_list = DriverPoolManager::logSetting.persistence_server_list;
+    const std::string user = DriverPoolManager::logSetting.persistence_kv_param_map["user"];
+    const std::string password = DriverPoolManager::logSetting.persistence_kv_param_map["pwd"];
+    const std::string database = DriverPoolManager::logSetting.persistence_kv_param_map["db"];
+    const std::string retention = DriverPoolManager::logSetting.persistence_kv_param_map["retention"];
 
     std::string servername="localhost";
     std::string funcpath="";

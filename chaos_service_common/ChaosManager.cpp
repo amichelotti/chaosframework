@@ -144,6 +144,7 @@ ChaosManager::~ChaosManager() {
 
 int ChaosManager::init(const chaos::common::data::CDataWrapper& best_available_da_ptr) {
   CDWUniquePtr cs;
+
   DBGET << "Initialize parameters:" << best_available_da_ptr.getJSONString();
 
   if (best_available_da_ptr.hasKey(chaos::DataServiceNodeDefinitionKey::DS_CACHE_SETTINGS)) {
@@ -189,9 +190,13 @@ int ChaosManager::init(const chaos::common::data::CDataWrapper& best_available_d
   }
 
   if (cache_driver == NULL || persistence_driver == NULL) {
+    try{
     InizializableService::initImplementation(DriverPoolManager::getInstance(), NULL, "DriverPoolManager", __PRETTY_FUNCTION__);
-    StartableService::initImplementation(MDSBatchExecutor::getInstance(), NULL, "MDSBatchExecutor", __PRETTY_FUNCTION__);
-    StartableService::startImplementation(MDSBatchExecutor::getInstance(), "MDSBatchExecutor", __PRETTY_FUNCTION__);
+    
+    } catch(...){
+            DBGETERR << "Error Initializing";
+
+    }
 
     cache_driver = DriverPoolManager::getInstance()->getCacheDrvPtr();
     if (cache_driver == NULL) {
@@ -208,7 +213,8 @@ int ChaosManager::init(const chaos::common::data::CDataWrapper& best_available_d
     } else {
       DBGET << "Using direct persistence";
     }
-
+    StartableService::initImplementation(MDSBatchExecutor::getInstance(), NULL, "MDSBatchExecutor", __PRETTY_FUNCTION__);
+    StartableService::startImplementation(MDSBatchExecutor::getInstance(), "MDSBatchExecutor", __PRETTY_FUNCTION__);
     storage_driver = DriverPoolManager::getInstance()->getObjectStorageDrvPtr();
     if (storage_driver == NULL) {
       DBGETERR << "Cannot use direct storage driver";
@@ -226,6 +232,8 @@ int ChaosManager::init(const chaos::common::data::CDataWrapper& best_available_d
     } else {
       DBGET << "Using log direct driver";
     }
+    
+
   }
 
   return 0;

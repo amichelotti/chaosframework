@@ -53,7 +53,7 @@ using namespace chaos::cu::driver_manager;
 using namespace chaos::cu::driver_manager::driver;
 
 #define DS_UPDATE_ANYWAY_DEF 60000
-
+#define CONTROL_UNIT_LOG_MAX_MS_DEF 10000
 #define DBG DBG_LOG(AbstractControlUnit)
 #define ERR ERR_LOG(AbstractControlUnit)
 
@@ -146,6 +146,7 @@ AbstractControlUnit::AbstractControlUnit(const std::string& _control_unit_type,
     , timestamp_hw_acq_cached_value()
     , thread_schedule_daly_cached_value()
     , ds_update_anyway(DS_UPDATE_ANYWAY_DEF)
+    , log_maxupdate_ms(CONTROL_UNIT_LOG_MAX_MS_DEF)
     , last_push(0)
     , key_data_storage()
     , busy(true) {
@@ -256,6 +257,8 @@ void AbstractControlUnit::_initPropertyGroup() {
   pg_abstract_cu.addProperty(DataServiceNodeDefinitionKey::DS_STORAGE_LIVE_TIME, "Set the control unit storage type", DataType::TYPE_INT64, 0, CDataVariant((int64_t)0));
   pg_abstract_cu.addProperty(DataServiceNodeDefinitionKey::DS_STORAGE_HISTORY_TIME, "Set the control unit storage type", DataType::TYPE_INT64, 0, CDataVariant((int64_t)0));
   pg_abstract_cu.addProperty(DataServiceNodeDefinitionKey::DS_UPDATE_ANYWAY, "Update the dataset anyway (ms)", DataType::TYPE_INT32, 0, CDataVariant((int32_t)DS_UPDATE_ANYWAY_DEF));
+  pg_abstract_cu.addProperty(ControlUnitDatapackSystemKey::CU_LOG_MAX_MS, "Maximum log rate (ms) 0 always", DataType::TYPE_INT32, 0, CDataVariant((int32_t)CONTROL_UNIT_LOG_MAX_MS_DEF));
+  log_maxupdate_ms=CONTROL_UNIT_LOG_MAX_MS_DEF;
   ds_update_anyway = DS_UPDATE_ANYWAY_DEF;
   //    CDWUniquePtr burst_type_desc(new CDataWrapper());
   //    burst_type_desc->addInt32Value(DataServiceNodeDefinitionKey::DS_HISTORY_BURST_TYPE, DataServiceNodeDefinitionType::DSStorageBurstTypeUndefined);
@@ -2222,6 +2225,8 @@ void AbstractControlUnit::initSystemAttributeOnSharedAttributeCache() {
   //add update anyway
   domain_attribute_setting.addAttribute(DataServiceNodeDefinitionKey::DS_UPDATE_ANYWAY, DS_UPDATE_ANYWAY_DEF, DataType::TYPE_INT32);
 
+  domain_attribute_setting.addAttribute(ControlUnitDatapackSystemKey::CU_LOG_MAX_MS, CONTROL_UNIT_LOG_MAX_MS_DEF, DataType::TYPE_INT32);
+
   //command status
   domain_attribute_setting.addAttribute(DataPackSystemKey::DP_SYS_QUEUED_CMD, 0, DataType::TYPE_INT32);
   domain_attribute_setting.addAttribute(DataPackSystemKey::DP_SYS_STACK_CMD, 0, DataType::TYPE_INT32);
@@ -2724,6 +2729,9 @@ void AbstractControlUnit::propertyUpdatedHandler(const std::string&  group_name,
     } else if (property_name.compare(DataServiceNodeDefinitionKey::DS_UPDATE_ANYWAY) == 0) {
       *attribute_value_shared_cache->getAttributeValue(DOMAIN_SYSTEM, DataServiceNodeDefinitionKey::DS_UPDATE_ANYWAY)->getValuePtr<int32_t>() = new_value.asInt32();
       ds_update_anyway                                                                                                                        = new_value.asInt32();
+    } else if (property_name.compare(ControlUnitDatapackSystemKey::CU_LOG_MAX_MS) == 0) {
+      *attribute_value_shared_cache->getAttributeValue(DOMAIN_SYSTEM, ControlUnitDatapackSystemKey::CU_LOG_MAX_MS)->getValuePtr<int32_t>() = new_value.asInt32();
+      log_maxupdate_ms                                                                                                                        = new_value.asInt32();
     }
   }
 }
@@ -3188,8 +3196,8 @@ void AbstractControlUnit::alarmChanged(const std::string& state_variable_tag,
   CHAOS_ASSERT(alarm);
 
   //update alarm log
-  if ((alarm_ms->max_freq_log_ms == 0) ||
-      (alarm_logging_channel && (alarm_ms->max_freq_log_ms > 0) && ((alarm->getLastUpdateTimestamp() - alarm_ms->last_log_ms) > alarm_ms->max_freq_log_ms))) {
+  if ((log_maxupdate_ms == 0) ||
+      (alarm_logging_channel && (log_maxupdate_ms > 0) && ((alarm->getLastUpdateTimestamp() - alarm_ms->last_log_ms) > log_maxupdate_ms))) {
     // ACULDBG_ << "State "<<state_variable_name<<" last modified:"<<( alarm->getLastUpdateTimestamp() -alarm_ms->last_log_ms)<<" ms freq:"<<alarm_ms->max_freq_log_ms;
 
     alarm_logging_channel->logAlarm(getCUID(),

@@ -136,20 +136,20 @@ void ChaosMetadataService::init(void *init_data)  {
         uint64_t tmp=pow(2,(uint32_t)log2(timeError_opt));
         timePrecisionMask=~(tmp-1);
         if(getGlobalConfigurationInstance()->hasOption(OPT_CACHE_DRIVER_KVP)) {
-            GlobalConfiguration::getInstance()->fillKVParameter(setting.cache_driver_setting.key_value_custom_param,
+            GlobalConfiguration::fillKVParameter(setting.cache_driver_setting.key_value_custom_param,
                                                                 getGlobalConfigurationInstance()->getOption< std::vector<std::string> >(OPT_CACHE_DRIVER_KVP), "");
 //            fillKVParameter(setting.cache_driver_setting.key_value_custom_param,
 //                            getGlobalConfigurationInstance()->getOption< std::vector<std::string> >(OPT_CACHE_DRIVER_KVP));
         }
         
         if(getGlobalConfigurationInstance()->hasOption(OPT_OBJ_STORAGE_DRIVER_KVP)) {
-            GlobalConfiguration::getInstance()->fillKVParameter(setting.object_storage_setting.key_value_custom_param,
+            GlobalConfiguration::fillKVParameter(setting.object_storage_setting.key_value_custom_param,
                                                                 getGlobalConfigurationInstance()->getOption< std::vector<std::string> >(OPT_OBJ_STORAGE_DRIVER_KVP), "");
 //            fillKVParameter(setting.object_storage_setting.key_value_custom_param,
 //                            getGlobalConfigurationInstance()->getOption< std::vector<std::string> >(OPT_OBJ_STORAGE_DRIVER_KVP));
         }
          if(getGlobalConfigurationInstance()->hasOption(OPT_LOG_STORAGE_DRIVER_KVP)) {
-            GlobalConfiguration::getInstance()->fillKVParameter(setting.log_storage_setting.key_value_custom_param,
+            GlobalConfiguration::fillKVParameter(setting.log_storage_setting.key_value_custom_param,
                                                                 getGlobalConfigurationInstance()->getOption< std::vector<std::string> >(OPT_LOG_STORAGE_DRIVER_KVP), "");
 //            fillKVParameter(setting.object_storage_setting.key_value_custom_param,
 //                            getGlobalConfigurationInstance()->getOption< std::vector<std::string> >(OPT_OBJ_STORAGE_DRIVER_KVP));

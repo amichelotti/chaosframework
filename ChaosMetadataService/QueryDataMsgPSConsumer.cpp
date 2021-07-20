@@ -64,34 +64,7 @@ void QueryDataMsgPSConsumer::messageHandler(const chaos::common::message::ele_t&
   try {
   ChaosStringSetConstSPtr meta_tag_set;
 
-/*if((data.key=="CHAOS_LOG")&&(data.cd->hasKey(MetadataServerLoggingDefinitionKeyRPC::PARAM_NODE_LOGGING_LOG_SOURCE_IDENTIFIER))){
-      std::string key=data.cd->getStringValue(MetadataServerLoggingDefinitionKeyRPC::PARAM_NODE_LOGGING_LOG_SOURCE_IDENTIFIER)+"_log";
 
-      QueryDataConsumer::consumePutEvent(key, (uint8_t)DataServiceNodeDefinitionType::DSStorageTypeLive, meta_tag_set, *(data.cd.get()));
-      //PriorityQueuedElement<CDataWrapper>::PriorityQueuedElementType element(data.cd.get());
-    //  DBG<<"Queue:"<<CObjectProcessingPriorityQueue<CDataWrapper>::queueSize()<<" LOG:"<<data.cd->getJSONString();
-      if(CObjectProcessingPriorityQueue<CDataWrapper>::queueSize()<MAX_LOG_QUEUE){
-        CObjectProcessingPriorityQueue<CDataWrapper>::push(data.cd,0);
-      } else {
-        ERR<<"too many logs on queue for DB:"<<CObjectProcessingPriorityQueue<CDataWrapper>::queueSize();
-
-      }
-    return;
-  }
-  if((data.key.size()>4)&&(data.key.compare(data.key.size()-4,4,DataPackPrefixID::LOG_DATASET_POSTFIX)==0)){
-      std::string kp = data.key;
-      std::replace(kp.begin(), kp.end(), '.', '/');
-      QueryDataConsumer::consumePutEvent(kp, (uint8_t)DataServiceNodeDefinitionType::DSStorageTypeLive, meta_tag_set, *(data.cd.get()));
-      //PriorityQueuedElement<CDataWrapper>::PriorityQueuedElementType element(data.cd.get());
-      DBG<<"Queue:"<<CObjectProcessingPriorityQueue<CDataWrapper>::queueSize()<<" LOG:"<<data.cd->getJSONString();
-      if(CObjectProcessingPriorityQueue<CDataWrapper>::queueSize()<MAX_LOG_QUEUE){
-        CObjectProcessingPriorityQueue<CDataWrapper>::push(data.cd,0);
-      } else {
-        ERR<<"too many logs on queue for DB:"<<CObjectProcessingPriorityQueue<CDataWrapper>::queueSize();
-
-      }
-    return;
-  }*/
   if (data.cd->hasKey(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_TAG)) {
     ChaosStringSet* tag = new ChaosStringSet();
     tag->insert(data.cd->getStringValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_TAG));
@@ -110,13 +83,22 @@ void QueryDataMsgPSConsumer::messageHandler(const chaos::common::message::ele_t&
       if(CObjectProcessingPriorityQueue<CDataWrapper>::queueSize()<MAX_LOG_QUEUE){
         CObjectProcessingPriorityQueue<CDataWrapper>::push(data.cd,0);
       } else {
-        ERR<<"too many logs on queue for DB:"<<CObjectProcessingPriorityQueue<CDataWrapper>::queueSize();
-
+        ERR<<kp<<"] too many logs on queue for DB:"<<CObjectProcessingPriorityQueue<CDataWrapper>::queueSize();
+        return;
       }
 
-    } /*else if(pktype==DataPackCommonKey::DPCK_DATASET_TYPE_HEALTH) {
-      alive_map[kp]=TimingUtil::getTimeStamp();
-    }*/ else {
+    } else if(pktype==DataPackCommonKey::DPCK_DATASET_TYPE_HEALTH) {
+      uint64_t ts=0;
+
+      if(data.cd->hasKey(DataPackCommonKey::DPCK_TIMESTAMP)){
+        ts=data.cd->getInt64Value(DataPackCommonKey::DPCK_TIMESTAMP);
+        if((TimingUtil::getTimeStamp()-ts)>(chaos::common::constants::HBTimersTimeoutinMSec*2)){
+          // skip healt too old
+          return;
+        }
+      }
+     // alive_map[kp]=TimingUtil::getTimeStamp();
+    } else {
      st = data.cd->getInt32Value(DataServiceNodeDefinitionKey::DS_STORAGE_TYPE);
 
     }

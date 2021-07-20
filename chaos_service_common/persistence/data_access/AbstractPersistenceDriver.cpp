@@ -52,7 +52,7 @@ int PersistenceDriverSetting::init(const chaos::common::data::CDataWrapper& cs) 
     chaos::common::data::CMultiTypeDataArrayWrapperSPtr v = cs.getVectorValue(OPT_PERSITENCE_KV_PARAMTER);
     if (v.get()) {
       std::vector<std::string> a = *v;
-      chaos::GlobalConfiguration::getInstance()->fillKVParameter(persistence_kv_param_map, a, "[a-zA-Z0-9/_-]+:[a-zA-Z0-9/_-]+");
+      chaos::GlobalConfiguration::fillKVParameter(persistence_kv_param_map, a, "[a-zA-Z0-9/_-]+:[a-zA-Z0-9/_-]+");
       for (std::map<std::string, std::string>::iterator i = persistence_kv_param_map.begin(); i != persistence_kv_param_map.end(); i++) {
         APD_DBG << i->first << "=" << i->second;
       }

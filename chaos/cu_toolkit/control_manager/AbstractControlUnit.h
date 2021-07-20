@@ -298,7 +298,7 @@ class AbstractControlUnit : public DeclareAction,
   uint32_t push_dataset_size;
   uint64_t push_tot_size;
   uint64_t last_push;
-  int32_t  ds_update_anyway;
+  int32_t  ds_update_anyway,log_maxupdate_ms;
   //! identify last timestamp whene the push rate has been acquired;
   uint64_t last_push_rate_grap_ts;
 
