@@ -220,6 +220,7 @@ class Property {
       if (ret.get()) {
         props.append(propname, *ret.get());
       }
+      LDBG_ << "Create Property '"<<propname<<"' ("<<pubname<<") "<<ret->getJSONString()<<" full properties:"<<props.getJSONString();
 
     } else {
       LERR_ << "Property '"<<propname<<"' ("<<pubname<<") is already present, setting "<<ret->getJSONString();
@@ -287,7 +288,7 @@ class Property {
       //   LDBG_<<__FUNCTION__<<" -0 retrive prop full before:"<<props.getJSONString();
 
       chaos::common::data::CDWUniquePtr p = props.getCSDataValue(propname);
-      //   LDBG_<<__FUNCTION__<<" -1 retrive prop:"<<propname<<" :"<<p->getJSONString()<< " full:"<<props.getJSONString();
+      // LDBG_<<__FUNCTION__<<" -1 retrive prop:"<<propname<<" :"<<p->getJSONString()<< " full:"<<props.getJSONString();
       return p;
     } /*else {
       LERR_ << propname << " doesnt match an object, trying public";
@@ -295,8 +296,11 @@ class Property {
     std::map<std::string, std::string>::iterator i =
         abstract2props.find(propname);
     if (i != abstract2props.end()) {
+    //  LDBG_<<__FUNCTION__<<" -1 retrive prop name:"<<propname<<" maps to property:"<<i->second;
+
+      propname                            = i->second;
+
       if (props.isCDataWrapperValue(i->second)) {
-        propname                            = i->second;
         chaos::common::data::CDWUniquePtr p = props.getCSDataValue(propname);
         //      LDBG_<<__FUNCTION__<<" -2 retrive prop:"<<propname<<" :"<<p->getJSONString()<< " full:"<<props.getJSONString();
         return p;
@@ -325,11 +329,24 @@ class Property {
     chaos::common::data::CDWUniquePtr prop = retriveProp(realpropname);
     if (prop.get()) {
       prop->setAsString(PROPERTY_VALUE_KEY, val);
-      LDBG_ << __FUNCTION__ << "- Set property:" << realpropname << " string value:" << val << " full prop:" << prop->getJSONString();
-      props.replaceKey(realpropname, *prop.get());
       if (sync) {
-        syncWrite(realpropname, prop);
+        chaos::common::data::CDWUniquePtr ret =
+            syncWrite(realpropname, prop);
+        if(ret.get()){
+          props.replaceKey(realpropname, *ret.get());
+          LDBG_ << __FUNCTION__ << "- Set and sync property:" << realpropname << " string value:" << val << " prop:" << ret->getJSONString();
+
+        } else {
+          props.replaceKey(realpropname, *prop.get());
+        LDBG_ << __FUNCTION__ << "- Set and sync/EMPTY property:" << realpropname << " string value:" << val << " prop:" << prop->getJSONString();
+
+        }
+
+      } else {
+        props.replaceKey(realpropname, *prop.get());
+        LDBG_ << __FUNCTION__ << "- Set property:" << realpropname << " string value:" << val << " prop:" << prop->getJSONString();
       }
+        LDBG_ << __FUNCTION__ << "- Full properties" << props.getJSONString();
 
       return prop;
     }
