@@ -289,9 +289,9 @@ class Property {
       chaos::common::data::CDWUniquePtr p = props.getCSDataValue(propname);
       //   LDBG_<<__FUNCTION__<<" -1 retrive prop:"<<propname<<" :"<<p->getJSONString()<< " full:"<<props.getJSONString();
       return p;
-    } else {
+    } /*else {
       LERR_ << propname << " doesnt match an object, trying public";
-    }
+    }*/
     std::map<std::string, std::string>::iterator i =
         abstract2props.find(propname);
     if (i != abstract2props.end()) {
