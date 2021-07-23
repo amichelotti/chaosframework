@@ -1879,15 +1879,15 @@ void AbstractControlUnit::fillCachedValueVector(AttributeCache&               at
     cached_value.push_back(attribute_cache.getValueSettingForIndex(idx));
   }
 }
-int AbstractControlUnit::checkLimFn( double rval, const chaos::common::data::RangeValueInfo& i) {
-  std::string alrmmax = i.name + ((i.dir==chaos::DataType::Input)?"_in_max_range":"out_max_range");
-  std::string alrmmin  = i.name + ((i.dir==chaos::DataType::Input)?"_in_min_range":"out_min_range");
+int AbstractControlUnit::checkLimFn( double rval, const chaos::common::data::RangeValueInfo& i,int dir) {
+  std::string alrmmax = i.name + ((dir==0)?"_in_max_range":"_out_max_range");
+  std::string alrmmin  = i.name + ((dir==0)?"_in_min_range":"_out_min_range");
   int err=0;
   if(i.warningMaxRange.size()){
       double      max     = atof(i.warningMaxRange.c_str());
       if (rval > max) {
           setStateVariableSeverity(StateVariableTypeAlarmCU, alrmmax, chaos::common::alarm::MultiSeverityAlarmLevelWarning);
-          ACULDBG_ << i.name << " WARN MAX CHECK failed " << rval << " > " << max;
+          ACULDBG_ << i.name << " WARN MAX CHECK failed " << rval << " > " << max<<" alrm:"<<alrmmax;
           err++;
         } else {
           setStateVariableSeverity(StateVariableTypeAlarmCU, alrmmax, chaos::common::alarm::MultiSeverityAlarmLevelClear);
@@ -1898,7 +1898,7 @@ int AbstractControlUnit::checkLimFn( double rval, const chaos::common::data::Ran
       double      max     = atof(i.maxRange.c_str());
       if (rval > max) {
           setStateVariableSeverity(StateVariableTypeAlarmCU, alrmmax, chaos::common::alarm::MultiSeverityAlarmLevelHigh);
-          ACULDBG_ << i.name << " MAX CHECK failed " << rval << " > " << max;
+          ACULDBG_ << i.name << " MAX CHECK failed " << rval << " > " << max<<" alrm:"<<alrmmax;
           err++;
 
         } else {
@@ -1910,7 +1910,7 @@ int AbstractControlUnit::checkLimFn( double rval, const chaos::common::data::Ran
       double      min    = atof(i.warningMinRange.c_str());
       if (rval < min) {
           setStateVariableSeverity(StateVariableTypeAlarmCU, alrmmin, chaos::common::alarm::MultiSeverityAlarmLevelWarning);
-          ACULDBG_ << i.name << " WARN MIN CHECK failed " << rval << " < " << min;
+          ACULDBG_ << i.name << " WARN MIN CHECK failed " << rval << " < " << min<<" alrm:"<<alrmmin;
           err++;
 
         } else {
@@ -1922,10 +1922,11 @@ int AbstractControlUnit::checkLimFn( double rval, const chaos::common::data::Ran
       double      min    = atof(i.minRange.c_str());
       if (rval < min) {
           setStateVariableSeverity(StateVariableTypeAlarmCU, alrmmin, chaos::common::alarm::MultiSeverityAlarmLevelHigh);
-          ACULDBG_ << i.name << " MIN CHECK failed " << rval << " < " << min;
+          ACULDBG_ << i.name << " MIN CHECK failed " << rval << " < " << min<<" alrm:"<<alrmmin;
           err++;
 
         } else {
+         
           setStateVariableSeverity(StateVariableTypeAlarmCU, alrmmin, chaos::common::alarm::MultiSeverityAlarmLevelClear);
 
         }
@@ -1936,7 +1937,7 @@ int AbstractControlUnit::checkFn(double sval, double rval, const chaos::common::
   int         err     = 0;
   std::string alrm    = i.name + "_out_of_set";
 
-  checkLimFn(rval,i);
+  //  checkLimFn(rval,i);
 
   double res=fabs(sval-rval);
   
@@ -2045,9 +2046,12 @@ int AbstractControlUnit::checkStdAlarms() {
     double          res;
   
     AttributeValue* val=NULL; 
+    int dir=-1;
     if(i->i_idx>=0){
+      dir=0;
       val=cache_input_attribute_vector[i->i_idx];
     } else if(i->o_idx>=0){
+      dir=1;
       val=cache_output_attribute_vector[i->o_idx];
       }
     if(val){
@@ -2055,19 +2059,19 @@ int AbstractControlUnit::checkStdAlarms() {
       
       case DataType::TYPE_INT32: {
         int32_t sval = *(val->getValuePtr<int32_t>());
-        level        = checkLimFn(sval, i->range);
+        level        = checkLimFn(sval, i->range,dir);
 
         break;
       }
       case DataType::TYPE_INT64: {
         int64_t sval = *(val->getValuePtr<int64_t>());
-        level        = checkLimFn(sval, i->range);
+        level        = checkLimFn(sval, i->range,dir);
 
         break;
       }
       case DataType::TYPE_DOUBLE: {
         double sval = *(val->getValuePtr<double>());
-        level   = checkLimFn(sval, i->range);
+        level   = checkLimFn(sval, i->range,dir);
 
         break;
       }

@@ -584,7 +584,7 @@ class AbstractControlUnit : public DeclareAction,
   std::vector<checkAttribute_t > ioTocheck;
   std::vector<checkAttribute_t > limitTocheck;
   int checkFn(double sval, double rval, const chaos::common::data::RangeValueInfo& i);
-  int checkLimFn(double rval, const chaos::common::data::RangeValueInfo& i);
+  int checkLimFn(double rval, const chaos::common::data::RangeValueInfo& i,int dir);
 
   void addPublicDriverPropertyToDataset(bool addDriverHandlers = true);
   void updateDatasetFromDriverProperty();
