@@ -578,9 +578,11 @@ class Property {
           LERR_ << __FUNCTION__ << " CDWrapper property:" << *i << " misses required key '"<<PROPERTY_VALUE_KEY<<"'";
         }*/
       } else {
-        chaos::common::data::CDataWrapper cd;
-        p.copyKeyToNewKey(*i, PROPERTY_VALUE_KEY, cd);
-        setProperty(*i, cd, sync);
+        //chaos::common::data::CDataWrapper cd;
+        
+        //p.copyKeyToNewKey(*i, PROPERTY_VALUE_KEY, cd);
+       // setProperty(*i, cd, sync);
+       setProperty(*i, p.getStringValue(*i), sync);
       }
     }
     return props.clone();
