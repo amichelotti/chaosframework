@@ -284,33 +284,23 @@ class Property {
   }
 
   chaos::common::data::CDWUniquePtr retriveProp(std::string &propname) {
+    std::map<std::string, std::string>::iterator i =
+        abstract2props.find(propname);
+    if (i != abstract2props.end()) {
+      propname=i->second;
+    }
+
     if (props.isCDataWrapperValue(propname)) {
       //   LDBG_<<__FUNCTION__<<" -0 retrive prop full before:"<<props.getJSONString();
 
       chaos::common::data::CDWUniquePtr p = props.getCSDataValue(propname);
-      // LDBG_<<__FUNCTION__<<" -1 retrive prop:"<<propname<<" :"<<p->getJSONString()<< " full:"<<props.getJSONString();
+      //   LDBG_<<__FUNCTION__<<" -1 retrive prop:"<<propname<<" :"<<p->getJSONString()<< " full:"<<props.getJSONString();
       return p;
-    } /*else {
-      LERR_ << propname << " doesnt match an object, trying public";
-    }*/
-    std::map<std::string, std::string>::iterator i =
-        abstract2props.find(propname);
-    if (i != abstract2props.end()) {
-    //  LDBG_<<__FUNCTION__<<" -1 retrive prop name:"<<propname<<" maps to property:"<<i->second;
-
-      propname                            = i->second;
-
-      if (props.isCDataWrapperValue(i->second)) {
-        chaos::common::data::CDWUniquePtr p = props.getCSDataValue(propname);
-        //      LDBG_<<__FUNCTION__<<" -2 retrive prop:"<<propname<<" :"<<p->getJSONString()<< " full:"<<props.getJSONString();
-        return p;
-      } else {
-        LERR_ << "public:" << propname << " doesnt match an object";
-      }
     } else {
-      LERR_ << propname << " not found in public";
+      LERR_ << propname << " not found!";
     }
     return chaos::common::data::CDWUniquePtr();
+  
   }
   /**
    * @brief Set an existing  Property object from key value string
