@@ -31,7 +31,7 @@ using namespace chaos::metadata_service::batch;
 using namespace chaos::metadata_service::persistence::data_access;
 
 #define MDSBC_INFO INFO_LOG(MDSBatchCommand)
-#define MDSBC_DBG  DBG_LOG(MDSBatchCommand)
+#define MDSBC_DBG  DBG_LOG(MDSBatchCommand) <<" "<<getUID()<<" - "<<getAlias()
 #define MDSBC_ERR  ERR_LOG(MDSBatchCommand)
 
 //! default constructor
@@ -85,6 +85,9 @@ void MDSBatchCommand::ccHandler() {
 
 // inherited method
 bool MDSBatchCommand::timeoutHandler() {
+   
+    MDSBC_DBG<<"Timeout ";
+
     return true;
 }
 
