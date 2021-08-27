@@ -99,7 +99,10 @@ void QueryDataMsgPSConsumer::messageHandler(const chaos::common::message::ele_t&
       }
      // alive_map[kp]=TimingUtil::getTimeStamp();
     } else {
-     st = data.cd->getInt32Value(DataServiceNodeDefinitionKey::DS_STORAGE_TYPE);
+        st = data.cd->getInt32Value(DataServiceNodeDefinitionKey::DS_STORAGE_TYPE);
+        if(pktype!=DataPackCommonKey::DPCK_DATASET_TYPE_OUTPUT){
+          st|=(uint32_t)DataServiceNodeDefinitionType::DSStorageTypeLive;
+        }
 
     }
     QueryDataConsumer::consumePutEvent(kp, (uint8_t)st, meta_tag_set, *(data.cd.get()));

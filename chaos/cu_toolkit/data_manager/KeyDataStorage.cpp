@@ -241,21 +241,21 @@ int KeyDataStorage::pushDataSet(KeyDataStorageDomain domain,
             //system channel need to be push ever either in live and in history
             err=io_data_driver->storeData(system_key,
                                           dataset,
-                                          (DataServiceNodeDefinitionType::DSStorageType) ((int)storage_type|(int)DataServiceNodeDefinitionType::DSStorageTypeLive),
+                                          storage_type,
                                           current_tags());
             break;
         case KeyDataStorageDomainCUAlarm:
             //system channel need to be push ever either in live and in history
             err=io_data_driver->storeData(cu_alarm_key,
                                           dataset,
-                                          (DataServiceNodeDefinitionType::DSStorageType) ((int)storage_type|(int)DataServiceNodeDefinitionType::DSStorageTypeLive),
+                                          storage_type,
                                           current_tags());
             break;
         case KeyDataStorageDomainDevAlarm:
             //system channel need to be push ever either in live and in history
             err=io_data_driver->storeData(dev_alarm_key,
                                           dataset,
-                                          (DataServiceNodeDefinitionType::DSStorageType) ((int)storage_type|(int)DataServiceNodeDefinitionType::DSStorageTypeLive),
+                                          storage_type,
                                           current_tags());
             break;
         case KeyDataStorageDomainHealth:
