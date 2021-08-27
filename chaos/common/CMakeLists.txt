@@ -282,7 +282,7 @@ SET(common_lib_src  ChaosCommon.cpp
 
 
 SET(common_lib_src ${common_lib_src}
-                    additional_lib/mongoose.c additional_lib/sqlite3.c additional_lib/base64.cpp)
+                    additional_lib/mongoose.c additional_lib/HttpPost.cpp additional_lib/sqlite3.c additional_lib/base64.cpp)
 
 
 SET(common_lib_src ${common_lib_src}
