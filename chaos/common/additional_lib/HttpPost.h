@@ -2,6 +2,7 @@
 #define __HTTP_POST__
 #include <string>
 #include <sstream>
+#include <stdint.h>
 namespace chaos{
     namespace common{
         namespace http{
