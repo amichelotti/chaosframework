@@ -8,8 +8,10 @@ namespace chaos{
             class HttpPost{
                 std::string clientid;
                 void *mgr;
+                const uint32_t timeo;
+                int counter;
                 public:
-                HttpPost(const std::string& id="Chaos HttpPost");
+                HttpPost(const std::string& id="Chaos HttpPost",uint32_t timeout_ms=2000);
                 ~HttpPost();
 
                 /**
