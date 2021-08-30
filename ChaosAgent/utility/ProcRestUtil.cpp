@@ -46,8 +46,8 @@ std::string ProcRestUtil::normalizeName(const std::string& node_name) {
     boost::replace_all(result,"/","_");
     return result;
 }
-void ProcRestUtil::launchProcess(const chaos::service_common::data::agent::AgentAssociation& node_association_info,const chaos::common::data::CDWUniquePtr& param){
 
+void ProcRestUtil::launchProcess(const chaos::service_common::data::agent::AgentAssociation& node_association_info,const chaos::common::data::CDWUniquePtr& param){
     int pid = 0;
     std::string exec_command;
     boost::filesystem::path init_file;
