@@ -111,7 +111,7 @@ int InfluxDB::pushObject(const std::string&                       key,
 
   ChaosStringVector contained_key;
   stored_object.getAllKey(contained_key);
-  boost::mutex::scoped_lock ll(iolock);
+  // boost::mutex::scoped_lock ll(iolock);
   if (nmeas >= MAX_MEASURES) {
       ERR<<" reached max number of measurements sending "<<nmeas<< " measurements";
       return -1;
@@ -268,7 +268,7 @@ if (nmeas >0) {
     std::string ret;
     int res=influxdb_cpp::push_db( ret, measurements.str(), si);
     if(res!=0){
-      ERR<<" result:"<<res<<" database:"<<ret<<" sent:\""<<measurements.str()<<"\"";
+      ERR<<" result:"<<res<<" database:"<<ret<<" sent:"<<nmeas<<" mesurements, size:"<<measurements.str().size();
     }
  measurements.clear();
     measurements.str("");
