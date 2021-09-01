@@ -60,6 +60,11 @@ int MongoDBScriptDataAccess::insertNewScript(ChaosUniquePtr<chaos::common::data:
 try{
     mongo::BSONObjBuilder builder;
         long long seq=(long long)TimingUtil::getTimeStamp();
+        if(( err = updateScript(serialization))) {
+            SDA_ERR << "Error updating new script, try new";
+        } else {
+            return err;
+        } 
         if(serialization->hasKey("seq")){
             if(serialization->getInt64Value("seq")){
                 seq=serialization->getInt64Value("seq"); // maintain the original sequence
@@ -75,13 +80,20 @@ try{
                                         DATA_ACCESS_LOG_1_ENTRY("Insert",
                                                                 i));)
         //inset on database new script description
-        if((err = connection->insert(MONGO_DB_COLLECTION_NAME(MONGODB_COLLECTION_SCRIPT),
+      /*  if((err = connection->insert(MONGO_DB_COLLECTION_NAME(MONGODB_COLLECTION_SCRIPT),
                                      i))) {
             SDA_ERR << "Error creating new script";
         } else {
             //add sccript content
             err = updateScript(serialization);
         }
+*/
+        if(err = connection->insert(MONGO_DB_COLLECTION_NAME(MONGODB_COLLECTION_SCRIPT),i)){
+            SDA_ERR << "Error inserting new script:"<<err;
+
+        }
+
+        
     } catch (const mongo::DBException &e) {
         SDA_ERR << e.what();
         err = e.getCode();
@@ -122,10 +134,18 @@ int MongoDBScriptDataAccess::insertNewScript(Script& script_entry) {
         << CHAOS_SBD_DESCRIPTION << script_entry.script_description.description
         <<chaos::ExecutionUnitNodeDefinitionKey::EXECUTION_SCRIPT_INSTANCE_LANGUAGE<< script_entry.script_description.language;
         */
+
+        if(( err = updateScript(script_entry))) {
+            SDA_ERR << "Error updating new script, try inserting";
+        } else {
+            return err;
+        }
+
         ScriptSDWrapper s_dw;
         s_dw.dataWrapped() = script_entry;
     
         ChaosUniquePtr<chaos::common::data::CDataWrapper> serialization = s_dw.serialize();
+        
         if(serialization->hasKey("seq")){
          builder << "seq" <<(long long)serialization->getInt64Value("seq");
 
@@ -140,13 +160,19 @@ int MongoDBScriptDataAccess::insertNewScript(Script& script_entry) {
                                         DATA_ACCESS_LOG_1_ENTRY("Insert",
                                                                 i));)
         //inset on database new script description
-        if((err = connection->insert(MONGO_DB_COLLECTION_NAME(MONGODB_COLLECTION_SCRIPT),
+       /* if((err = connection->insert(MONGO_DB_COLLECTION_NAME(MONGODB_COLLECTION_SCRIPT),
                                      i))) {
             SDA_ERR << "Error creating new script";
         } else {
-            //add sccript content
+            //add script content
             err = updateScript(script_entry);
+        }*/
+        if(err = connection->insert(MONGO_DB_COLLECTION_NAME(MONGODB_COLLECTION_SCRIPT),i)){
+            SDA_ERR << "Error creating new script, err:"<<err;
+
         }
+
+        
     } catch (const mongo::DBException &e) {
         SDA_ERR << e.what();
         err = e.getCode();
@@ -179,7 +205,7 @@ int MongoDBScriptDataAccess::updateScript(ChaosUniquePtr<chaos::common::data::CD
         //inset on database new script description
         if((err = connection->update(MONGO_DB_COLLECTION_NAME(MONGODB_COLLECTION_SCRIPT),
                                      q,
-                                     u))) {
+                                     u,true))) {
             SDA_ERR << "Error Updating script content";
         }
     } catch (const mongo::DBException &e) {
