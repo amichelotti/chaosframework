@@ -59,8 +59,14 @@ int MongoDBScriptDataAccess::insertNewScript(ChaosUniquePtr<chaos::common::data:
     int err = 0;
 try{
     mongo::BSONObjBuilder builder;
-        builder << "seq" <<(long long)TimingUtil::getTimeStamp();
-
+        long long seq=(long long)TimingUtil::getTimeStamp();
+        if(serialization->hasKey("seq")){
+            if(serialization->getInt64Value("seq")){
+                seq=serialization->getInt64Value("seq"); // maintain the original sequence
+            }
+        } 
+        builder << "seq" <<seq;
+        
         mongo::BSONObj u(serialization->getBSONRawData(size));
         builder.appendElements(u);
         mongo::BSONObj i = builder.obj();
