@@ -178,26 +178,12 @@ int CDataWrapper::countKeys() const{
 
 //add a string value
 void CDataWrapper::addStringValue(const std::string& key, const string& value,const int max_size) {
-        char buf[max_size+1];
-        const char*ptr=value.c_str();
-        int siz=value.size();
-        if(max_size>0){
-            memset(buf,0,max_size+1);
-           // LDBG_<<"Allocating for :\""<<value<<"\"("<<value.size()<<") size:"<<max_size;
-        }
-
-        if((max_size>siz)||(siz==0)){
-            memcpy(buf,ptr,siz);
-            buf[siz]=0;
-            ptr=buf;
-            siz=max_size+1;
-        }
-    
+      
         bson_append_utf8(ACCESS_BSON(bson),
                         key.c_str(),
                         (int)key.size(),
-                        ptr,
-                        siz);
+                        value.c_str(),
+                        value.size());
     
 }
 
@@ -1317,19 +1303,11 @@ int CDataWrapper::setBson(const bson_iter_t *v ,const bool& val){
 
 int CDataWrapper::setBson(const bson_iter_t *v ,const std::string& val){
     if(ITER_TYPE(v)== BSON_TYPE_UTF8){
-         bson_value_t *vv = ( bson_value_t *)bson_iter_value((bson_iter_t *)v);
-        if((val.size()+1)<vv->value.v_utf8.len){
-            void* ptr=vv->value.v_utf8.str;
-            memset(ptr,0,vv->value.v_utf8.len);
-            memcpy(ptr, val.c_str(),(val.size()+1));
-
-        } else {
-            char key[256];
-            strncpy(key,bson_iter_key_unsafe(v),sizeof(key));
-            removeKey(key);
-            addStringValue(key,val);
-        }
-        
+        char key[256];
+        strncpy(key,bson_iter_key_unsafe(v),sizeof(key));
+        removeKey(key);
+        addStringValue(key,val);
+    
         return (val.size()+1);
 
     }
@@ -1341,6 +1319,8 @@ int CDataWrapper::setBson(const bson_iter_t *v ,const void* val){
         const bson_value_t *vv = bson_iter_value((bson_iter_t *)v);
         memcpy((void*)(v->raw + v->d3), (void*)val,vv->value.v_binary.data_len);
         return vv->value.v_binary.data_len;
+    } else if(ITER_TYPE(v)== BSON_TYPE_UTF8){
+        return setBson(v,std::string((const char*)val));
     }
     return -1;
 }
