@@ -94,8 +94,7 @@ int MongoDBControlUnitDataAccess::checkPresence(const std::string& unit_server_u
                                                 bool& presence) {
     CHAOS_ASSERT(node_data_access)
     return node_data_access->checkNodePresence(presence,
-                                               unit_server_unique_id,
-                                               NodeType::NODE_TYPE_CONTROL_UNIT);
+                                               unit_server_unique_id);
 }
 
 int MongoDBControlUnitDataAccess::getControlUnitWithAutoFlag(const std::string& unit_server_host,

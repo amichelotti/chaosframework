@@ -26,7 +26,7 @@ namespace chaos{
     break;
   case MG_EV_HTTP_REPLY:{
     std::stringstream *ptr= (std::stringstream *)nc->mgr->user_data;
-    LDBG_<<"Got reply:"<< hm->body.len<<" resp:"<< hm->body.p,hm->resp_code;
+  //  LDBG_<<"Got reply:"<< hm->body.len<<" resp:"<< hm->body.p,hm->resp_code;
     if(ptr&&hm->body.p && hm->body.len){
         ptr->write((char*)hm->body.p,hm->body.len);
         //LDBG_<<hm->body.len<<"] Read:"<<(char*)hm->body.p;

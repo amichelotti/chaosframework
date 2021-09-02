@@ -47,6 +47,8 @@
 #include <ChaosMetadataService/api/control_unit/InitDeinit.h>
 #include <ChaosMetadataService/api/control_unit/SetInputDatasetAttributeValues.h>
 #include <ChaosMetadataService/api/control_unit/SetInstanceDescription.h>
+#include <ChaosMetadataService/api/control_unit/SendStorageBurst.h>
+
 #include <ChaosMetadataService/api/control_unit/StartStop.h>
 #include <ChaosMetadataService/api/service/GetVariable.h>
 #include <ChaosMetadataService/api/service/RemoveVariable.h>
@@ -868,6 +870,18 @@ chaos::common::data::CDWUniquePtr ChaosManager::deleteInstance(const std::string
   }
   return res;
 }
+chaos::common::data::CDWUniquePtr ChaosManager::sendStorageBurst(const chaos::common::data::CDataWrapper& value){
+  CDWUniquePtr res;
+  if (persistence_driver) {
+    SendStorageBurst node;
+    CALC_EXEC_START;
+    res = node.execute(MOVE(value.clone()));
+    CALC_EXEC_END
+  }
+  return res;
+
+}
+
 chaos::common::data::CDWUniquePtr ChaosManager::setNodeDescription(const chaos::common::data::CDataWrapper& value) {
   CDWUniquePtr res;
   if (persistence_driver) {

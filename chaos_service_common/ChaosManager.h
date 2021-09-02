@@ -107,6 +107,8 @@ chaos::common::data::CDWUniquePtr commandTemplateSubmit(const std::string&uid,co
 ChaosStringVector getSnapshotForNode(const std::string&uid);
 chaos::common::data::CDWUniquePtr createNewSnapshot(const std::string& snapshot_name,const ChaosStringVector& node_list); 
 chaos::common::data::CDWUniquePtr restoreSnapshot(const std::string& snapshot_name);
+chaos::common::data::CDWUniquePtr sendStorageBurst(const chaos::common::data::CDataWrapper& value);
+
 std::map<uint64_t,std::string> getAllSnapshot(const std::string& query_filter);
 ChaosStringVector getNodesForSnapshot(const std::string& query_filter);
 std::map<uint64_t, std::string> getAllSnapshotOfCU(const std::string& cu);
