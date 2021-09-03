@@ -423,7 +423,7 @@ chaos::common::data::CDWUniquePtr data(new CDataWrapper());
                     last.reset(curr.release());
                 }
             }
-            if(lastid>0){
+            if(lastid>-1){
                 //
                 chaos::common::data::CDWUniquePtr data(new CDataWrapper());
                 data->addStringValue(ExecutionUnitNodeDefinitionKey::CHAOS_SBD_NAME, scriptID);
