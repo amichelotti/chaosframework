@@ -970,7 +970,6 @@ chaos::common::data::CDWUniquePtr ChaosManager::nodeNew(const std::string& uid, 
     NodeNewDelete node;
     CALC_EXEC_START;
     ChaosUniquePtr<chaos::common::data::CDataWrapper> message(new CDataWrapper());
-    message->addBoolValue("reset", false);
     if (parent.size()) {
       message->addStringValue(chaos::NodeDefinitionKey::NODE_PARENT, parent);
     }
