@@ -106,6 +106,7 @@ chaos::common::data::CDWUniquePtr setInputDatasetAttributeValues(const std::stri
 chaos::common::data::CDWUniquePtr commandTemplateSubmit(const std::string&uid,const std::string& command_alias,const chaos::common::data::CDWUniquePtr& slow_command_data,const chaos::common::batch_command::SubmissionRuleType::SubmissionRule submission_rule,const uint32_t priority,const uint64_t scheduler_steps_delay,const uint32_t submission_checker_steps_delay);
 ChaosStringVector getSnapshotForNode(const std::string&uid);
 chaos::common::data::CDWUniquePtr createNewSnapshot(const std::string& snapshot_name,const ChaosStringVector& node_list); 
+chaos::common::data::CDWUniquePtr setSnapshotDatasetsForNode(const std::string& snapshot_name,const std::string& uid,chaos::common::data::VectorCDWShrdPtr& ds); 
 chaos::common::data::CDWUniquePtr restoreSnapshot(const std::string& snapshot_name);
 chaos::common::data::CDWUniquePtr sendStorageBurst(const chaos::common::data::CDataWrapper& value);
 

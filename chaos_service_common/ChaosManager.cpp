@@ -39,6 +39,7 @@
 #include <ChaosMetadataService/api/service/GetSnapshotDatasetsForNode.h>
 #include <ChaosMetadataService/api/service/GetSnapshotForNode.h>
 #include <ChaosMetadataService/api/service/RestoreSnapshot.h>
+#include <ChaosMetadataService/api/service/SetSnapshotDatasetsForNode.h>
 
 #include <ChaosMetadataService/api/control_unit/Delete.h>
 #include <ChaosMetadataService/api/control_unit/DeleteInstance.h>
@@ -546,6 +547,25 @@ chaos::common::data::CDWUniquePtr ChaosManager::getSnapshotDatasetForNode(const 
   }
   return res;
 }
+chaos::common::data::CDWUniquePtr ChaosManager::setSnapshotDatasetsForNode(const std::string& snapshot_name,const std::string& uid,chaos::common::data::VectorCDWShrdPtr& datasets_value_vec){
+  CDWUniquePtr res;
+
+    CDWUniquePtr message(new CDataWrapper());
+    message->addStringValue(chaos::NodeDefinitionKey::NODE_UNIQUE_ID, uid);
+    message->addStringValue("snapshot_name", snapshot_name);
+
+    for(chaos::common::data::VectorCDWShrdPtr::const_iterator i=datasets_value_vec.begin();i!=datasets_value_vec.end();i++){
+    	message->appendCDataWrapperToArray(*(i->get()));
+    }
+    message->finalizeArrayForKey("dataset");
+  if (persistence_driver) {
+    CALC_EXEC_START;
+    SetSnapshotDatasetsForNode node;
+    res = node.execute(MOVE(message));
+    CALC_EXEC_END
+  }
+  return res;
+}
 
 chaos::common::data::CDWUniquePtr ChaosManager::createNewSnapshot(const std::string& snapshot_name, const ChaosStringVector& node_list) {
   CDWUniquePtr res;
@@ -773,7 +793,7 @@ chaos::common::data::CDWUniquePtr ChaosManager::loadFullDescription(const std::s
         last.reset(curr.release());
       }
     }
-    if (lastid > 0) {
+    if (lastid > -1) {
       //
       chaos::common::data::CDWUniquePtr data(new CDataWrapper());
       data->addStringValue(ExecutionUnitNodeDefinitionKey::CHAOS_SBD_NAME, scriptID);
@@ -817,6 +837,7 @@ chaos::common::data::CDWUniquePtr ChaosManager::searchScript(const std::string& 
     api_data->addInt64Value("last_sequence_id", start_sequence_id);
     api_data->addInt32Value("page_lenght", page_lenght);
     res = node.execute(MOVE(api_data));
+
     CALC_EXEC_END
   }
   return res;
