@@ -26,9 +26,9 @@
 #include <chaos/common/data/Buffer.hpp>
 #include <chaos/common/data/CDataWrapper.h>
 #include <chaos/common/utility/ChaosAllocator.h>
-
-#include <stdint.h>
-#include <cassert>      //assert
+//#include <chaos/common/global.h>
+//#include <stdint.h>
+//#include <cassert>      //assert
 
 namespace chaos {
     namespace common {
@@ -125,6 +125,12 @@ namespace chaos {
                 
                 ChaosUniquePtr<chaos::common::data::CDataWrapper> readCDataWrapper() {
                     const char * bson_start = (buffer.data() + cursor);
+                    if((*(uint32_t*)bson_start)==0xdeaddead){
+                      //  LDBG_<<"Unique pointer empty";
+
+                        cursor+=sizeof(uint32_t);
+                        return ChaosUniquePtr<chaos::common::data::CDataWrapper>();
+                    }
                     ChaosUniquePtr<chaos::common::data::CDataWrapper> result(new chaos::common::data::CDataWrapper(bson_start));
                     cursor += result->getBSONRawSize();
                     return result;
@@ -132,6 +138,11 @@ namespace chaos {
                 
                 ChaosSharedPtr<chaos::common::data::CDataWrapper> readCDataWrapperAsShrdPtr() {
                     const char * bson_start = (buffer.data() + cursor);
+                    if((*(uint32_t*)bson_start)==0xdeaddead){
+                     //   LDBG_<<"Shared pointer empty";
+                        cursor+=sizeof(uint32_t);
+                        return ChaosSharedPtr<chaos::common::data::CDataWrapper>();
+                    }
                     ChaosSharedPtr<chaos::common::data::CDataWrapper> result(new chaos::common::data::CDataWrapper(bson_start));
                     cursor += result->getBSONRawSize();
                     return result;

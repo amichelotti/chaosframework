@@ -162,6 +162,7 @@ void AttributeValueSharedCache::addAttribute(SharedCacheDomain domain,
 void AttributeValueSharedCache::addAttribute(SharedCacheDomain domain,
                                              const std::string&  name,
                                              chaos::common::data::CDataVariant value) {
+    
     getSharedDomain(domain).addAttribute(name, value);
 }
 

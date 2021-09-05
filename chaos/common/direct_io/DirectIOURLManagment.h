@@ -28,7 +28,7 @@
 namespace chaos {
 	namespace common {
 		namespace direct_io {
-			
+			bool checkURL(const std::string&url);
 			/*!
 			 Class for DirectIO URL managment
 			 */
@@ -49,7 +49,7 @@ namespace chaos {
 											   std::vector<std::string>& servers_desc);
 				
 				//! static check method for the enteri DirectIO URL (host:p_port:s_port:endpoint)
-				static bool checkURL(const std::string& url);
+				//static bool checkURL(const std::string& url);
 			};
 			
 		}

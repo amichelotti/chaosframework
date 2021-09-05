@@ -151,12 +151,14 @@ int MongoDBNodeDataAccess::insertNewNode(CDataWrapper& node_description) {
         if(!node_description.hasKey(chaos::NodeDefinitionKey::NODE_TYPE)) return -2;
         if(!node_description.hasKey("seq")) {
             CHAOS_ASSERT(utility_data_access)
-            if(utility_data_access->getNextSequenceValue("nodes", sequence_id)) {
+           if(utility_data_access->getNextSequenceValue("nodes", sequence_id)) {
                 MDBNDA_ERR << "Error getting new sequence for node";
                 return err;
             } else {
                 node_description.addInt64Value("seq", sequence_id);
             }
+          //  node_description.addInt64Value("seq", chaos::common::utility::TimingUtil::getTimeStamp());
+
         }
         
         ChaosUniquePtr<SerializationBuffer> ser(node_description.getBSONData());
@@ -434,6 +436,8 @@ int MongoDBNodeDataAccess::deleteNode(const std::string& node_unique_id,
     }
     return err;
 }
+#define BUILD_SEARCH(x,v) \
+if((int)search_type & (int)x){bson_find_or << BSON( chaos::NodeDefinitionKey::NODE_TYPE << v);}
 
 int MongoDBNodeDataAccess::searchNode(chaos::common::data::CDataWrapper **result,
                                       const std::string& criteria,
@@ -457,12 +461,23 @@ int MongoDBNodeDataAccess::searchNode(chaos::common::data::CDataWrapper **result
     //compose query
     
     //filter on sequence
-    if((search_type!=chaos::NodeType::NodeSearchType::node_type_cds)&&(search_type!=chaos::NodeType::NodeSearchType::node_type_all_server)){
+    if(!(search_type&chaos::NodeType::NodeSearchType::node_type_cds)){
         bson_find_and << BSON( "seq" << BSON("$gt"<<last_unique_id));
     }
     
     //filter on type
     if(search_type>0) {
+        BUILD_SEARCH(chaos::NodeType::NodeSearchType::node_type_us,chaos::NodeType::NODE_TYPE_UNIT_SERVER);
+        BUILD_SEARCH(chaos::NodeType::NodeSearchType::node_type_cu,chaos::NodeType::NODE_TYPE_CONTROL_UNIT);
+        BUILD_SEARCH(chaos::NodeType::NodeSearchType::node_type_agent,chaos::NodeType::NODE_TYPE_AGENT);
+        BUILD_SEARCH(chaos::NodeType::NodeSearchType::node_type_cds,chaos::NodeType::NODE_TYPE_DATA_SERVICE);
+        BUILD_SEARCH(chaos::NodeType::NodeSearchType::node_type_wan,chaos::NodeType::NODE_TYPE_WAN_PROXY);
+        BUILD_SEARCH(chaos::NodeType::NodeSearchType::node_type_root,chaos::NodeType::NODE_TYPE_ROOT);
+
+        bson_find_and<<BSON("$or"<<bson_find_or.arr());
+
+
+        /*
         switch(search_type) {
             case chaos::NodeType::NodeSearchType::node_type_us:
                 type_of_node = chaos::NodeType::NODE_TYPE_UNIT_SERVER;
@@ -502,11 +517,26 @@ int MongoDBNodeDataAccess::searchNode(chaos::common::data::CDataWrapper **result
                 bson_find_and<<BSON("$or"<<bson_find_or.arr());
                 break;
             }
+            case chaos::NodeType::NodeSearchType::node_type_all:{
+               bson_find_or<<BSON( chaos::NodeDefinitionKey::NODE_TYPE << chaos::NodeType::NODE_TYPE_ROOT)<<
+                BSON( chaos::NodeDefinitionKey::NODE_TYPE << chaos::NodeType::NODE_TYPE_UNIT_SERVER)<<
+                BSON( chaos::NodeDefinitionKey::NODE_TYPE << chaos::NodeType::NODE_TYPE_WAN_PROXY)<<
+                BSON( chaos::NodeDefinitionKey::NODE_TYPE << chaos::NodeType::NODE_TYPE_AGENT)<<
+                BSON( chaos::NodeDefinitionKey::NODE_TYPE << chaos::NodeType::NODE_TYPE_DATA_SERVICE)<<
+                BSON( chaos::NodeDefinitionKey::NODE_TYPE << chaos::NodeType::NODE_TYPE_ROOT)<<
+                BSON( chaos::NodeDefinitionKey::NODE_TYPE << chaos::NodeType::NODE_TYPE_CONTROL_UNIT);
+                bson_find_and<<BSON("$or"<<bson_find_or.arr());
+                
+                break;
+            }
             default:
                 bson_find_and << BSON( chaos::NodeDefinitionKey::NODE_TYPE << type_of_node);
 
+            break;
 
-        }
+            
+        }*/
+        
         
     }
 #ifdef HEALTH_ON_DB

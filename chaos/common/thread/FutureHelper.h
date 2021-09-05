@@ -35,8 +35,8 @@
 #include <boost/multi_index/ordered_index.hpp>
 #include <boost/multi_index/hashed_index.hpp>
 
-#define TIMEOUT_PURGE_PROMISE 30000
-#define PURGE_TIMER_REPEAT_DELAY 30000
+#define TIMEOUT_PURGE_PROMISE 60000
+#define PURGE_TIMER_REPEAT_DELAY 60000
 
 namespace chaos{
     namespace common {
@@ -172,17 +172,28 @@ namespace chaos{
                     uint64_t current_check_ts = chaos::common::utility::TimingUtil::getTimeStamp();
                     DEBUG_CODE(LDBG_ << DEFINE_LOG_HEADER(FutureHelper) << __FUNCTION__ << " - Start cleaning promises";);
                     unsigned int max_purge_check = 10;
+                    try{
+
                     for(SetPromisesReqTSIndexIter it = set_p_req_ts_index.begin(),
                         end = set_p_req_ts_index.end();
                         it != end && max_purge_check;
                         max_purge_check--){
+                        
                         //purge outdated promise
                         if(current_check_ts >= (*it).timeout_ts) {
                             LDBG_ << DEFINE_LOG_HEADER(FutureHelper) << __FUNCTION__ << CHAOS_FORMAT(" - Remove the promise for request of index %1%", %(*it).promise_id);
                             set_p_req_ts_index.erase(it++);
+                            
                         } else {
                             ++it;
                         }
+                    }
+                    } catch(std::exception& err){
+                                LERR_ << DEFINE_LOG_HEADER(FutureHelper) <<" error removing promise:"<<err.what();
+
+                    } catch(...){
+                        LERR_ << DEFINE_LOG_HEADER(FutureHelper) <<" uknown  exception removing promise";
+
                     }
                 }
             public:

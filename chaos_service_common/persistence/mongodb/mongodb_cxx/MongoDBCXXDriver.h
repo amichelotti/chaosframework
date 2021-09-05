@@ -19,8 +19,8 @@
  * permissions and limitations under the Licence.
  */
 
-#ifndef __CHAOSFramework__BaseMongoDBDiver__h
-#define __CHAOSFramework__BaseMongoDBDiver__h
+#ifndef __CHAOSFramework__BaseMongoDBDriver__h
+#define __CHAOSFramework__BaseMongoDBDriver__h
 
 #if defined(__APPLE__)
 #include <mongocxx/v_noabi/mongocxx/pool.hpp>
@@ -36,7 +36,8 @@ namespace chaos {
         namespace persistence {
             namespace mongodb {
                 namespace mongodb_cxx {
-                    class BaseMongoDBDiver {
+                    class BaseMongoDBDriver {
+                        // just one instance
                         static mongocxx::instance       drv_instance;
                         ChaosSharedPtr<mongocxx::pool>  pool_shared_ptr;
                     protected:
@@ -47,8 +48,8 @@ namespace chaos {
                         mongocxx::pool& getPool();
                         ChaosSharedPtr<mongocxx::pool> getSharedPool();
                     public:
-                        BaseMongoDBDiver();
-                        virtual ~BaseMongoDBDiver();
+                        BaseMongoDBDriver();
+                        virtual ~BaseMongoDBDriver();
                     };
                 }
             }
@@ -56,4 +57,4 @@ namespace chaos {
     }
 }
 
-#endif /* __CHAOSFramework__BaseMongoDBDiver__h */
+#endif /* __CHAOSFramework__BaseMongoDBDriver__h */

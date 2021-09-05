@@ -79,6 +79,9 @@ CDWUniquePtr GetInstance::execute(CDWUniquePtr api_data) {
         if(pg.hasProperty(DataServiceNodeDefinitionKey::DS_UPDATE_ANYWAY)) {
             result->addVariantValue(DataServiceNodeDefinitionKey::DS_UPDATE_ANYWAY, pg.getProperty(DataServiceNodeDefinitionKey::DS_UPDATE_ANYWAY).getPropertyValue());
         }
+        if(pg.hasProperty(ControlUnitDatapackSystemKey::CU_LOG_MAX_MS)) {
+            result->addVariantValue(ControlUnitDatapackSystemKey::CU_LOG_MAX_MS, pg.getProperty(ControlUnitDatapackSystemKey::CU_LOG_MAX_MS).getPropertyValue());
+        }
     }
     return CDWUniquePtr(result);
 }

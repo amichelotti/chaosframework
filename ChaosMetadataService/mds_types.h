@@ -27,9 +27,9 @@
 
 #include "batch/mds_service_batch.h"
 #include "persistence/persistence.h"
-#include "cache_system/cache_system_types.h"
+#include <chaos/common/caching_system/cache_system_types.h>
 #include "object_storage/object_storage_types.h"
-
+#include "worker/DataWorker.h"
 #include <chaos/common/utility/StartableService.h>
 
 namespace chaos{
@@ -46,7 +46,7 @@ namespace chaos{
             std::map<std::string, std::string>	persistence_kv_param_map;
             
             //!cache configuration
-            chaos::metadata_service::cache_system::CacheDriverSetting cache_driver_setting;
+            chaos::common::cache_system::CacheDriverSetting cache_driver_setting;
             
             //----------object storage configuration----------------
             chaos::metadata_service::object_storage::ObjStorageSetting  object_storage_setting;

@@ -130,7 +130,7 @@ IF (CHAOS_TARGET)
 IF(KAFKA_ASIO_ENABLE)
 MESSAGE("ENABLING DEP KAFKA")
 
-add_definitions(-DKAFKA_ASIO_ENABLE -DLIBKAFKAASIO_NO_COMPRESSION)
+add_definitions(-DKAFKA_ASIO_ENABLE -DLIBKAFKAASIO_NO_COMPRESSION -DUSE_MESSAGE_PUBLISH_SUBCRIBE)
 
 
 # ExternalProject_Add(
@@ -176,7 +176,6 @@ MESG("Install lz4 compression library")
   
 IF(KAFKA_RDK_ENABLE)
 MESSAGE("ENABLING RDK KAFKA")
-
 ExternalProject_Add(
 	 librdkafa
 	 GIT_REPOSITORY https://github.com/edenhill/librdkafka.git
@@ -195,7 +194,7 @@ ExternalProject_Add(
     LOG_BUILD 1
     LOG_INSTALL 1
 	)
-add_definitions(-DKAFKA_RDK_ENABLE)
+add_definitions(-DKAFKA_RDK_ENABLE -DUSE_MESSAGE_PUBLISH_SUBCRIBE)
 
 ENDIF(KAFKA_RDK_ENABLE)
 
@@ -283,7 +282,7 @@ SET(common_lib_src  ChaosCommon.cpp
 
 
 SET(common_lib_src ${common_lib_src}
-                    additional_lib/mongoose.c additional_lib/sqlite3.c additional_lib/base64.cpp)
+                    additional_lib/mongoose.c additional_lib/HttpPost.cpp additional_lib/sqlite3.c additional_lib/base64.cpp)
 
 
 SET(common_lib_src ${common_lib_src}
@@ -553,6 +552,11 @@ SET(common_lib_src ${common_lib_src}
 SET(common_lib_src ${common_lib_src}
                     thread/WaitSemaphore.cpp)
 
+SET(common_lib_src ${common_lib_src}
+                    caching_system/CacheDriver.cpp
+                    caching_system/cache_system_types.cpp
+                    )
+
 IF(CHAOS_PROMETHEUS)
 MESG("Add source code for metrics: ${CHAOS_PROMETHEUS}")  
 ADD_DEFINITIONS(-DCHAOS_PROMETHEUS)
@@ -611,7 +615,7 @@ ENDIF()
 
 
 IF(WIN32)
-MESSAGE("ALEDEBUG CMAKE_INSTALL_PREFIX" ${CMAKE_INSTALL_PREFIX} )
+MESSAGE("WIN32 CMAKE_INSTALL_PREFIX" ${CMAKE_INSTALL_PREFIX} )
 set (BOOST_LIBPATH  ${CMAKE_INSTALL_PREFIX}/boostinstall/lib )
 SET (ZMQ_LIBPATH ${CMAKE_INSTALL_PREFIX}/lib)
 SET(BUILD_LIBRARY ${BUILD_LIBRARY} jsoncpp.lib)

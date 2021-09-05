@@ -22,6 +22,7 @@
 //#include <chaos/common/global.h>
 
 #include "../../ChaosMetadataService.h"
+#include <chaos_service_common/DriverPoolManager.h>
 
 #include "PosixFileObjectStorageDriver.h"
 #include "PosixFile.h"
@@ -31,6 +32,7 @@ using namespace chaos;
 using namespace chaos::service_common::persistence::data_access;
 
 using namespace chaos::metadata_service;
+using namespace chaos::service_common;
 
 using namespace chaos::metadata_service::object_storage;
 using namespace chaos::metadata_service::object_storage::abstraction;
@@ -53,7 +55,7 @@ void PosixFileObjectStorageDriver::init(void *init_data) throw (chaos::CExceptio
     bool removeTemp =false;
     bool genroot=false;
     bool compressed=false;
-    MapKVP& obj_storage_kvp = metadata_service::ChaosMetadataService::getInstance()->setting.object_storage_setting.key_value_custom_param;
+    MapKVP& obj_storage_kvp = DriverPoolManager::objectSetting.persistence_kv_param_map;
     if(obj_storage_kvp.count("data")) {
         dir=obj_storage_kvp["data"]; 
     }

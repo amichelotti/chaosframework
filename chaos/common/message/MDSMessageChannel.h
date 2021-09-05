@@ -47,16 +47,7 @@ namespace chaos {
                 //!Evition handler
                 void evictionHandler(const chaos::common::network::ServiceRetryInformation& service_retry_information);
             protected:
-            int searchNodeInt(const std::string& unique_id_filter,
-                               chaos::NodeType::NodeSearchType node_type_filter,
-                               bool alive_only,
-                               unsigned int last_node_sequence_id,
-                               unsigned int page_length,
-                               uint64_t & lastid,
-
-                               ChaosStringVector& node_found,
-                               uint32_t millisec_to_wait,
-                               const std::string& impl);
+           
                 //! base constructor
                 /*!
                  The base constructor prepare the base class constructor call to be adapted for metadataserver comunication. For the MDS the node address is
@@ -80,6 +71,17 @@ namespace chaos {
                 //!Management handler
                 void manageResource();
             public:
+
+             int searchNodeInt(const std::string& unique_id_filter,
+                               chaos::NodeType::NodeSearchType node_type_filter,
+                               bool alive_only,
+                               unsigned int last_node_sequence_id,
+                               unsigned int page_length,
+                               uint64_t & lastid,
+
+                               ChaosStringVector& node_found,
+                               uint32_t millisec_to_wait,
+                               const std::string& impl);
                 using MultiAddressMessageChannel::getNumberOfManagedNodes;
                 
                 void setEndpointAutoConfiguration(bool _auto_configure_endpoint);

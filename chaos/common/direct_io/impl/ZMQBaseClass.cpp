@@ -69,8 +69,8 @@ boost::str(boost::format("zmq error %1% [%2%]")%err%zmq_strerror(err))
 
 const char * const EmptyMessage = "";
 
-#define MESSAGE_GOOD_CONTEXT(sc) "ZMQ " #sc " for %1% configured with %2%=%3%"
-#define MESSAGE_ERR_CONTEXT(sc) "Error setting ZMQ " #sc "for %1% with %2%=%3%"
+#define MESSAGE_GOOD_CONTEXT(sc) "ZMQ " #sc " for %1% configured with %2% = %3%"
+#define MESSAGE_ERR_CONTEXT(sc) "Error setting ZMQ " #sc "for %1% with %2% = %3%"
 
 #define SUCCESS_STRING_ON_CONTEXT(x) CHAOS_FORMAT(MESSAGE_GOOD_CONTEXT(Context),%domain%x%prop_value)
 #define SUCCESS_STRING_ON_SOCKET(x) CHAOS_FORMAT(MESSAGE_GOOD_CONTEXT(Socket),%domain%x%prop_value)
@@ -88,7 +88,7 @@ if(err) {\
 ZMQDIO_BASE_LERR_ << ERROR_STRING_ON_CONTEXT(s);\
 return err;\
 } else {\
-ZMQDIO_BASE_LAPP_ << SUCCESS_STRING_ON_CONTEXT(s);\
+ZMQDIO_BASE_LDBG_ << SUCCESS_STRING_ON_CONTEXT(s);\
 }\
 return 0;\
 }
@@ -138,7 +138,7 @@ int ZMQBaseClass::setSocketOption(void *socket,
             ZMQDIO_BASE_LERR_ << ERROR_STRING_ON_SOCKET(socket_option_name);
             return err;
         } else {
-            ZMQDIO_BASE_LAPP_ << SUCCESS_STRING_ON_SOCKET(socket_option_name);
+            ZMQDIO_BASE_LDBG_ << SUCCESS_STRING_ON_SOCKET(socket_option_name);
         }
     }
     return 0;
@@ -436,7 +436,7 @@ int ZMQBaseClass::reveiceDatapack(void *socket,
             if((err = readMessage(socket,
                                   tmp_buffer,
                                   has_more_messages))) {
-                ZMQDIO_BASE_LAPP_ << "Error consuming unrecognized messages";
+                ZMQDIO_BASE_LERR_ << "Error consuming unrecognized messages";
                 break;
             }
         };

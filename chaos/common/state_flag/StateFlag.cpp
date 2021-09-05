@@ -112,18 +112,18 @@ const std::string& StateFlagListener::getStateFlagListenerUUID(){
 #pragma mark StateFlag
 StateFlag::StateFlag():
 flag_description("",""),
-current_level(0){}
+current_level(0),mask(0xFF){}
 
 
 StateFlag::StateFlag(const std::string& _name,
                      const std::string& _description):
 flag_description(_name,
                  _description),lastUpdateTimestamp_ms(0),
-current_level(0){}
+current_level(0),mask(0xFF){}
 
 StateFlag::StateFlag(const StateFlag& src):
 flag_description(src.flag_description),
-current_level(src.current_level){}
+current_level(src.current_level),mask(src.mask){}
 
 StateFlag& StateFlag::operator=(const StateFlag  &rhs) {
     if(this != &rhs) {
@@ -131,6 +131,7 @@ StateFlag& StateFlag::operator=(const StateFlag  &rhs) {
         flag_description.description = rhs.flag_description.description;
         current_level = rhs.current_level;
         set_levels = rhs.set_levels;
+        mask=rhs.mask;
     }
     return *this;
 };
@@ -146,7 +147,16 @@ const std::string& StateFlag::getFlagUUID() const {
 const std::string& StateFlag::getName() const {
     return flag_description.name;
 }
+void StateFlag::setMask(uint8_t _mask){
+    SL_DBG << getName()<<" MASK:"<<std::hex<<(uint32_t)_mask;
 
+    mask=_mask;
+    setCurrentLevel(current_level);
+}
+uint8_t StateFlag::getMask(){
+    return mask;
+}
+                
 bool StateFlag::addLevel(const StateLevel& level_state) {
     StatusLevelContainerOrderedIndex& ordered_index = boost::multi_index::get<ordered_index_tag>(set_levels);
     //chec if the level has been already added
@@ -184,8 +194,8 @@ void StateFlag::setCurrentLevel(int8_t _current_level) {
     StatusLevelContainerOrderedIndex& local_ordered_index = set_levels.get<ordered_index_tag>();
     StatusLevelContainerOrderedIndexIterator it = local_ordered_index.find(_current_level);
     if(it == local_ordered_index.end()) return;
-    if(current_level != _current_level){
-        current_level = _current_level;
+    if((current_level) != (_current_level&mask)){
+        current_level = _current_level&mask;
         fire(0);
     } else {
         local_ordered_index.modify(it, increment_counter);
@@ -193,7 +203,10 @@ void StateFlag::setCurrentLevel(int8_t _current_level) {
 }
 
 int8_t StateFlag::getCurrentLevel() const {
-    return current_level;
+  /*  if(mask!=0xFF){
+       SL_DBG<<" state "<<getName()<<" masked:0x"<<std::hex<<(uint32_t)mask<< " result:"<<(current_level&mask); 
+    }*/
+    return current_level&mask;
 }
 
 const StateLevel& StateFlag::getCurrentStateLevel() const {

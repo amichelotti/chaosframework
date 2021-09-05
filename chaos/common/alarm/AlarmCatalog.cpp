@@ -74,6 +74,11 @@ AlarmDescription *AlarmCatalog::getAlarmByOrderedID(const unsigned int alarm_ord
 void AlarmCatalog::setAllAlarmSeverity(int8_t new_severity) {
     StateFlagCatalog::setAllFlagState(new_severity);
 }
+void AlarmCatalog::setAllAlarmMask(int8_t new_severity){
+    StateFlagCatalog::setAllFlagMask(new_severity);
+
+}
+
 
 ChaosUniquePtr<chaos::common::data::CDataBuffer> AlarmCatalog::getRawFlagsLevel() {
     return StateFlagCatalog::getRawFlagsLevel();
@@ -81,6 +86,10 @@ ChaosUniquePtr<chaos::common::data::CDataBuffer> AlarmCatalog::getRawFlagsLevel(
 
 void AlarmCatalog::setApplyRawFlagsValue(ChaosUniquePtr<chaos::common::data::CDataBuffer>& raw_level) {
     StateFlagCatalog::setApplyRawFlagsValue(raw_level);
+}
+int AlarmCatalog::countMask() const{
+    return     StateFlagCatalog::countMask();
+
 }
 
 ChaosUniquePtr<chaos::common::data::CDataWrapper> AlarmCatalog::serialize() {

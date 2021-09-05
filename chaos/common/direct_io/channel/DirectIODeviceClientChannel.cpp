@@ -256,6 +256,8 @@ int DirectIODeviceClientChannel::requestLastOutputData(const ChaosStringVector& 
             for(int idx = 0;
                 idx < result_header->number_of_result;
                 idx++) {
+              //  DIODCCLDBG_ << "key:" << keys[idx];
+
                 results.push_back(data_buffer_answer.readCDataWrapperAsShrdPtr());
             }
         }

@@ -25,8 +25,7 @@
 #include <chaos/common/global.h>
 #include <chaos/common/chaos_constants.h>
 #include <string>
-
-#include <boost/regex.hpp>
+#include <regex>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 
@@ -34,11 +33,12 @@
 
 #define CCDLAPP_ LAPP_ << CouchbaseCacheDriver_LOG_HEAD
 #define CCDLDBG_ LDBG_ << CouchbaseCacheDriver_LOG_HEAD << __PRETTY_FUNCTION__ << " - "
-#define CCDLERR_ LERR_ << CouchbaseCacheDriver_LOG_HEAD
+#define CCDLERR_ LERR_ << CouchbaseCacheDriver_LOG_HEAD << __PRETTY_FUNCTION__ << " - "
 
 using namespace chaos::common::data;
 using namespace chaos::common::utility;
 using namespace chaos::common::constants;
+using namespace chaos::common::cache_system;
 using namespace chaos::metadata_service::cache_system;
 
 DEFINE_CLASS_FACTORY(CouchbaseCacheDriver, CacheDriver);
@@ -98,7 +98,7 @@ void CouchbaseCacheDriver::setCallback(lcb_t instance,
     const Result *result = reinterpret_cast<const Result*>(cookie);
     if((result->err = error) != LCB_SUCCESS) {
         result->err_str = lcb_strerror(instance, error);
-        CCDLERR_ << result->err_str;
+        CCDLERR_ << "Error setting:"<<result->err_str;
     }
 }
 
@@ -134,7 +134,7 @@ CouchbaseCacheDriver::~CouchbaseCacheDriver() {}
 void CouchbaseCacheDriver::init(void *init_data)  {
     //call superclass init
     CacheDriver::init(init_data);
-    InizializableService::initImplementation(driver_pool, NULL, "CouchbaseDriverPool", __PRETTY_FUNCTION__);
+    InizializableService::initImplementation(driver_pool, init_data, "CouchbaseDriverPool", __PRETTY_FUNCTION__);
 }
 
 //!deinit
@@ -216,7 +216,7 @@ int CouchbaseCacheDriver::getData(const ChaosStringVector& keys,
     //crate vrapper result
     int err = 0;
     CouchbasePoolSlot *pool_element = driver_pool.pool->getNewResource();
-    if(pool_element) {
+    if(pool_element && pool_element->resource_pooled) {
         MultiGetResult result_wrap(multi_data);
         for(ChaosStringVectorConstIterator it = keys.begin(),
             end = keys.end();
@@ -235,6 +235,9 @@ int CouchbaseCacheDriver::getData(const ChaosStringVector& keys,
         err = 0;
     } else {
         err = -1;
+        CCDLERR_<< "Cannot retrieve pool for nkeys:"<<keys.size();
+
+        return err;
     }
     driver_pool.pool->releaseResource(pool_element);
     return err;
@@ -255,6 +258,7 @@ int CouchbaseCacheDriver::removeServer(const std::string& server_desc) {
 static void couchbaseInstanceDeallocator(lcb_t *cb_ist) {
     if(cb_ist){}
 }
+#if 0
 
 CouchbaseDriverPool::CouchbaseDriverPool():
 instance_created(0),
@@ -278,6 +282,12 @@ minimum_instance_in_pool(ChaosMetadataService::getInstance()->setting.cache_driv
                                  this,
                                  minimum_instance_in_pool));
 }
+#else
+CouchbaseDriverPool::CouchbaseDriverPool():
+instance_created(0),minimum_instance_in_pool(3){
+  
+}
+#endif
 
 CouchbaseDriverPool::~CouchbaseDriverPool() {}
 
@@ -374,11 +384,11 @@ lcb_t* CouchbaseDriverPool::allocateResource(const std::string& pool_identificat
         lcb_cntl(*new_instance, LCB_CNTL_SET, LCB_CNTL_CONFDELAY_THRESH, &num_events);
         
     } catch(chaos::CException& ex) {
-        DEBUG_CODE(CCDLERR_ << CHAOS_FORMAT("Error allocating new cache instance", %ex.what());)
+        CCDLERR_ << CHAOS_FORMAT("Error allocating new cache instance", %ex.what());
         lcb_destroy(*new_instance);
         new_instance.reset();
     } catch(...) {
-        DEBUG_CODE(CCDLERR_ << "Generic error allocating new cache instance";)
+        CCDLERR_ << "Generic error allocating new cache instance";
         lcb_destroy(*new_instance);
         new_instance.reset();
     }
@@ -393,7 +403,29 @@ void CouchbaseDriverPool::deallocateResource(const std::string& pool_identificat
     delete(pooled_driver);
 }
 
-void CouchbaseDriverPool::init(void *init_data)  {}
+void CouchbaseDriverPool::init(void *init_data)  {
+    if(init_data){
+        CacheDriverSetting* cache_settings=(CacheDriverSetting*)init_data;
+          
+    all_server_to_use = cache_settings->startup_chache_servers;
+    
+    if(cache_settings->key_value_custom_param.count("bucket")) {
+        bucket_name = cache_settings->key_value_custom_param["bucket"];
+    }
+    minimum_instance_in_pool=cache_settings->caching_pool_min_instances_number;
+    if(cache_settings->key_value_custom_param.count("user")) {
+        bucket_user = cache_settings->key_value_custom_param["user"];
+    }
+    
+    if(cache_settings->key_value_custom_param.count("pwd")) {
+        bucket_pwd = cache_settings->key_value_custom_param["pwd"];
+    }
+    
+    pool.reset(new CouchbasePool("couchbase_cache_driver",
+                                 this,
+                                 minimum_instance_in_pool));
+    }
+}
 
 void CouchbaseDriverPool::deinit()  {}
 
@@ -401,15 +433,15 @@ bool CouchbaseDriverPool::validateString(std::string& server_description) {
     boost::algorithm::trim(server_description);
     std::string normalized_server_desc = boost::algorithm::to_lower_copy(server_description);
     //! Regular expression for check server endpoint with the sintax hostname:[priority_port:service_port]
-    boost::regex CouchbaseHostNameOnlyRegExp("[a-zA-Z0-9]+(.[a-zA-Z0-9]+)+");
+    std::regex CouchbaseHostNameOnlyRegExp("[a-zA-Z0-9]+(.[a-zA-Z0-9]+)+");
     //! Regular expression for check server endpoint with the sintax hostname:[priority_port:service_port]
-    boost::regex CouchbaseHostNameRegExp("[a-zA-Z0-9]+(.[a-zA-Z0-9]+)+:[0-9]{4,5}");
+    std::regex CouchbaseHostNameRegExp("[a-zA-Z0-9]+(.[a-zA-Z0-9]+)+:[0-9]{4,5}");
     //! Regular expression for check server endpoint with the sintax ip:[priority_port:service_port]
-    boost::regex CouchbaseIPAndPortRegExp("\\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\b:[0-9]{4,5}");
+    std::regex CouchbaseIPAndPortRegExp("\\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\b:[0-9]{4,5}");
     //check if the description is well formed
-    if(!regex_match(normalized_server_desc, CouchbaseHostNameOnlyRegExp) &&
-       !regex_match(normalized_server_desc, CouchbaseHostNameRegExp) &&
-       !regex_match(normalized_server_desc, CouchbaseIPAndPortRegExp)) return false;
+    if(!std::regex_match(normalized_server_desc, CouchbaseHostNameOnlyRegExp) &&
+       !std::regex_match(normalized_server_desc, CouchbaseHostNameRegExp) &&
+       !std::regex_match(normalized_server_desc, CouchbaseIPAndPortRegExp)) return false;
     return true;
 }
 

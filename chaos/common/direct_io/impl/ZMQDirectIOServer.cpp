@@ -73,10 +73,10 @@ void ZMQDirectIOServer::init(void *init_data)  {
     
     //create the endpoint strings
     priority_socket_bind_str = boost::str( boost::format("tcp://*:%1%") % priority_port);
-    ZMQDIO_SRV_LAPP_ << "priority socket bind url: " << priority_socket_bind_str;
+    ZMQDIO_SRV_LDBG_ << "priority socket bind url: " << priority_socket_bind_str;
     
     service_socket_bind_str = boost::str( boost::format("tcp://*:%1%") % service_port);
-    ZMQDIO_SRV_LAPP_ << "service socket bind url: " << service_socket_bind_str;
+    ZMQDIO_SRV_LDBG_ << "service socket bind url: " << service_socket_bind_str;
 }
 
 //! Start the implementation
@@ -105,7 +105,7 @@ void ZMQDirectIOServer::start()  {
     }
     
     //queue thread
-    ZMQDIO_SRV_LAPP_ << CHAOS_FORMAT("Allocating and binding socket to %1%/%2%",%priority_socket_bind_str%service_socket_bind_str);
+    ZMQDIO_SRV_LDBG_ << CHAOS_FORMAT("Allocating and binding socket to %1%/%2%",%priority_socket_bind_str%service_socket_bind_str);
     try{
         //start the treads for the proxies
         server_threads_group.add_thread(new boost::thread(boost::bind(&ZMQDirectIOServer::poller,
@@ -139,27 +139,27 @@ void ZMQDirectIOServer::start()  {
                                                                           WorkerTypeService,
                                                                           &DirectIOHandler::serviceDataReceived)));
         }
-        ZMQDIO_SRV_LAPP_ << CHAOS_FORMAT("ZMQ high priority socket managed by %1% threads", %direct_io_thread_number);
+        ZMQDIO_SRV_LDBG_ << CHAOS_FORMAT("ZMQ high priority socket managed by %1% threads", %direct_io_thread_number);
     } catch(boost::exception_detail::clone_impl<boost::exception_detail::error_info_injector<boost::lock_error> >& lock_error_exception) {
         ZMQDIO_SRV_LERR_ << lock_error_exception.what();
         throw chaos::CException(0, std::string(lock_error_exception.what()), __PRETTY_FUNCTION__);
     }
-    ZMQDIO_SRV_LAPP_ << "Threads allocated and started";
+    ZMQDIO_SRV_LDBG_ << "Threads allocated and started";
 }
 
 //! Stop the implementation
 void ZMQDirectIOServer::stop()  {
     run_server = false;
     DirectIOServer::stop();
-    ZMQDIO_SRV_LAPP_ << "Deallocating zmq context";
+    ZMQDIO_SRV_LDBG_ << "Deallocating zmq context";
     zmq_ctx_shutdown(zmq_context);
     zmq_ctx_term(zmq_context);
-    ZMQDIO_SRV_LAPP_ << "ZMQ Context deallocated";
+    ZMQDIO_SRV_LDBG_ << "ZMQ Context deallocated";
     
     //wiath all thread
-    ZMQDIO_SRV_LAPP_ << "Join on all thread";
+    ZMQDIO_SRV_LDBG_ << "Join on all thread";
     server_threads_group.join_all();
-    ZMQDIO_SRV_LAPP_ << "All thread stopped";
+    ZMQDIO_SRV_LDBG_ << "All thread stopped";
 }
 
 //! Deinit the implementation
@@ -192,9 +192,9 @@ void ZMQDirectIOServer::poller(const std::string& public_url,
     proxy_socket_configuration["ZMQ_RCVTIMEO"] = "-1";
     proxy_socket_configuration["ZMQ_SNDTIMEO"] = "1000";
     
-    ZMQDIO_SRV_LAPP_ << CHAOS_FORMAT("Enter pooler for %1%", %public_url);
+    ZMQDIO_SRV_LDBG_ << CHAOS_FORMAT("Enter pooler for %1%", %public_url);
     //start creating two socker for service and priority
-    ZMQDIO_SRV_LAPP_ << "Allocating and binding priority socket to "<< priority_socket_bind_str;
+    ZMQDIO_SRV_LDBG_ << "Allocating and binding priority socket to "<< priority_socket_bind_str;
 
     public_socket = zmq_socket (zmq_context, ZMQ_ROUTER);
     if(public_socket == NULL){
@@ -244,7 +244,7 @@ void ZMQDirectIOServer::poller(const std::string& public_url,
         }
         public_socket = NULL;
     }
-    ZMQDIO_SRV_LAPP_ << CHAOS_FORMAT("Leaving pooler for %1%", %public_url);
+    ZMQDIO_SRV_LDBG_ << CHAOS_FORMAT("Leaving pooler for %1%", %public_url);
 }
 
 void ZMQDirectIOServer::worker(unsigned int w_type,
@@ -268,7 +268,7 @@ void ZMQDirectIOServer::worker(unsigned int w_type,
     
     if((worker_socket = zmq_socket(zmq_context,
                                    ZMQ_DEALER)) == NULL) {
-        ZMQDIO_SRV_LAPP_ << "Error creating worker socket";
+        ZMQDIO_SRV_LERR_ << "Error creating worker socket";
         return;
     }
 
@@ -290,19 +290,19 @@ void ZMQDirectIOServer::worker(unsigned int w_type,
         if((err = ZMQBaseClass::connectSocket(worker_socket,
                                               INPROC_PRIORITY,
                                               "ZMQ Server Worker"))) {
-            ZMQDIO_SRV_LAPP_ << CHAOS_FORMAT("Error connecting worker socket with error %1%",%err);
+            ZMQDIO_SRV_LERR_ << CHAOS_FORMAT("Error connecting worker socket with error %1%",%err);
             return;
         }
     } else if(w_type == WorkerTypeService) {
         if((err = ZMQBaseClass::connectSocket(worker_socket,
                                               INPROC_SERVICE,
                                               "ZMQ Server Worker"))) {
-            ZMQDIO_SRV_LAPP_ << CHAOS_FORMAT("Error connecting worker socket with error %1%",%err);
+            ZMQDIO_SRV_LERR_ << CHAOS_FORMAT("Error connecting worker socket with error %1%",%err);
             return;
         }
     }
     
-    ZMQDIO_SRV_LAPP_ << "Entering in the thread loop for worker socket";
+    ZMQDIO_SRV_LDBG_ << "Entering in the thread loop for worker socket";
     while (run_server) {
         try {
             if((err = reveiceDatapack(worker_socket,
@@ -322,7 +322,7 @@ void ZMQDirectIOServer::worker(unsigned int w_type,
                         if((err = sendDatapack(worker_socket,
                                                identity,
                                                MOVE(data_pack_answer)))){
-                            ZMQDIO_SRV_LAPP_ << CHAOS_FORMAT("Error sending answer with code %1%", %err);
+                            ZMQDIO_SRV_LERR_ << CHAOS_FORMAT("Error sending answer with code %1%", %err);
                         }
                     }
                 } else {
@@ -333,7 +333,7 @@ void ZMQDirectIOServer::worker(unsigned int w_type,
             DECODE_CHAOS_EXCEPTION(ex)
         }
     }
-    ZMQDIO_SRV_LAPP_ << "Leaving the thread loop for worker socket";
+    ZMQDIO_SRV_LDBG_ << "Leaving the thread loop for worker socket";
     if((err = zmq_close(worker_socket))) {
         ZMQDIO_SRV_LERR_ << CHAOS_FORMAT("Error closing worker socket with error %1%",%err);
     }

@@ -61,6 +61,7 @@ ApiProxyResult SetInstanceDescription::execute(SetInstanceDescriptionHelper& api
     //add the deafult scheduler delay
     instance_description.addInt64Value(ControlUnitDatapackSystemKey::THREAD_SCHEDULE_DELAY, api_data.default_schedule_delay);
     instance_description.addInt32Value(DataServiceNodeDefinitionKey::DS_UPDATE_ANYWAY, api_data.update_anyway);
+    instance_description.addInt32Value(ControlUnitDatapackSystemKey::CU_LOG_MAX_MS, api_data.max_log_ms);
 
     if(legacy_support) {
         //add the storage type
@@ -136,6 +137,7 @@ history_ageing(0),
 history_time(0),
 live_time(0),
 update_anyway(60000),
+max_log_ms(0),
 restore_apply(false),
 restore_type(0),
 default_schedule_delay(1000000),
@@ -172,7 +174,7 @@ void SetInstanceDescriptionHelper::addAttributeConfig(const std::string& attribu
                                                       const std::string& attribute_default_value,
                                                       const std::string& attribute_max_range,
                                                       const std::string& attribute_min_range,const std::string& increment,
-                                            const std::string& unit,const std::string& conv,const std::string& off ) {
+                                            const std::string& unit,const std::string& conv,const std::string& off,const std::string& wthlo,const std::string& wthhi ,const std::string& errorth  ,const std::string& warnth  ) {
     CDWUniquePtr attr(new CDataWrapper());
     attr->addStringValue(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_NAME, attribute_name);
     attr->addStringValue(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_DEFAULT_VALUE, attribute_default_value);
@@ -182,6 +184,11 @@ void SetInstanceDescriptionHelper::addAttributeConfig(const std::string& attribu
     if(unit.size()>0)attr->addStringValue(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_UNIT, unit);
     if(conv.size()>0)attr->addStringValue(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_CONVFACT, conv);
     if(off.size()>0)attr->addStringValue(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_OFFSET, off);
+    if(wthlo.size()>0)attr->addStringValue(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_MIN_WARN_RANGE, wthlo);
+    if(wthhi.size()>0)attr->addStringValue(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_MAX_WARN_RANGE, wthhi);
+
+    if(errorth.size()>0)attr->addStringValue(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_ERROR_THR, errorth);
+    if(warnth.size()>0)attr->addStringValue(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_WARN_THR, warnth);
 
    
 

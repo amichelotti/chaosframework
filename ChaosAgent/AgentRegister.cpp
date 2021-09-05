@@ -173,7 +173,7 @@ ChaosUniquePtr<chaos::common::data::CDataWrapper> AgentRegister::getAgentRegistr
     result->addInt32Value(NodeDefinitionKey::NODE_REST_PORT,ChaosAgent::getInstance()->settings.restport);
 
     result->addStringValue(NodeDefinitionKey::NODE_BUILD_INFO,
-                           ChaosAgent::getInstance()->getBuildInfo(chaos::common::data::CDWUniquePtr ())->getJSONString());
+                           ChaosAgent::getInstance()->getBuildInfo(chaos::common::data::CDWUniquePtr ())->getCompliantJSONString());
     //add control unit alias
     for(MapWorkerIterator iter = map_worker.begin();
         iter != map_worker.end();

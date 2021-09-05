@@ -47,8 +47,8 @@ using namespace boost::algorithm;
 #define ZMQC_LERR ERR_LOG(ZMQClient)
 
 #define ZMQ_DO_AGAIN(x) do{x}while(err == EAGAIN);
-#define ZMQ_SOCKET_MAINTENANCE_TIMEOUT (1000 * 30)
-#define ZMQ_SOCKET_LIFETIME_TIMEOUT (1000 * 60)
+#define ZMQ_SOCKET_MAINTENANCE_TIMEOUT (5000 * 30)
+#define ZMQ_SOCKET_LIFETIME_TIMEOUT (5000 * 60)
 //-------------------------------------------------------
 DEFINE_CLASS_FACTORY(ZMQClient, RpcClient);
 
@@ -209,14 +209,23 @@ ZMQSocketPoolDef* ZMQClient::allocateResource(const std::string& pool_identifica
                                               uint32_t& alive_for_ms) {
     int err = 0;
     int linger = 0;
-    int water_mark = 2;
+    //int water_mark = 2;
+    int water_mark = 5000;
     std::string new_id;
     ChaosUniquePtr<ZMQSocketPoolDef> socket_def(new ZMQSocketPoolDef());
     //set the alive time to one minute
     alive_for_ms = ZMQ_SOCKET_LIFETIME_TIMEOUT;
+    
     //create zmq socket
     socket_def->socket = zmq_socket (zmq_context, ZMQ_DEALER);
+
     if(!socket_def->socket) {
+        if(!zmq_context){
+            ZMQC_LERR << "Cannot create ZMQ socket :"<<pool_identification<<" EMPTY CONTEXT, err:"<<strerror(errno);
+ 
+        } else {
+            ZMQC_LERR << "Cannot create ZMQ socket :"<<pool_identification<<", err:"<<strerror(errno);
+        }
         return NULL;
     } else if ((err = zmq_setsockopt(socket_def->socket, ZMQ_LINGER, &linger, sizeof(int)))) {
     } else if ((err = zmq_setsockopt(socket_def->socket, ZMQ_RCVHWM, &water_mark, sizeof(int)))) {
@@ -375,6 +384,9 @@ void ZMQClient::processBufferElement(NFISharedPtr messageInfo) {
                 int32_t sent_error = zmq_errno();
                 std::string error_message = zmq_strerror(sent_error);
                 ZMQC_LERR << "Error sending message seq_id:"<<loc_seq_id<<" with code:" << sent_error << " message:" <<error_message<<" @"<<messageInfo->destinationAddr;
+                 if(message_data.get()){
+                    ZMQC_LERR <<" message:"<<loc_seq_id<<" was:"<<message_data->getJSONString(); 
+                 }
                  (*counter_zmqerror_uptr)++;
                 if(messageInfo->is_request) {
                     forwadSubmissionResultError(MOVE(messageInfo),
@@ -396,6 +408,9 @@ void ZMQClient::processBufferElement(NFISharedPtr messageInfo) {
                     int32_t sent_error = zmq_errno();
                     std::string error_message = zmq_strerror(sent_error);
                     ZMQC_LERR << "Error receiving ack for message seq_id:"<<loc_seq_id<<" with code:" << sent_error << " message:" <<error_message<<" @"<<messageInfo->destinationAddr;
+                    if(message_data.get()){
+                        ZMQC_LERR <<" message:"<<loc_seq_id<<" was:"<<message_data->getJSONString(); 
+                    }
                      (*counter_zmqerror_uptr)++;
                     if(messageInfo->is_request) {
                         forwadSubmissionResultError(MOVE(messageInfo),

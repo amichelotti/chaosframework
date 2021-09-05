@@ -19,7 +19,8 @@
  * permissions and limitations under the Licence.
  */
 #include "QueryDataMsgPSConsumer.h"
-
+#include "api/logging/SubmitEntryBase.h"
+#include "api/node/NodeSearch.h"
 using namespace chaos::metadata_service::worker;
 using namespace chaos::metadata_service::cache_system;
 
@@ -36,6 +37,7 @@ using namespace chaos::common::direct_io::channel;
 #define DBG DBG_LOG(QueryDataMsgPSConsumer)
 #define ERR ERR_LOG(QueryDataMsgPSConsumer)
 
+#define MAX_LOG_QUEUE 100
 //constructor
 namespace chaos {
 namespace metadata_service {
@@ -59,20 +61,67 @@ QueryDataMsgPSConsumer::QueryDataMsgPSConsumer(const std::string& id)
   cons = chaos::common::message::MessagePSDriver::getConsumerDriver(msgbrokerdrv, groupid);
 }
 void QueryDataMsgPSConsumer::messageHandler(const chaos::common::message::ele_t& data) {
+  try {
   ChaosStringSetConstSPtr meta_tag_set;
-  uint32_t                st = data.cd->getInt32Value(DataServiceNodeDefinitionKey::DS_STORAGE_TYPE);
+
+
   if (data.cd->hasKey(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_TAG)) {
     ChaosStringSet* tag = new ChaosStringSet();
     tag->insert(data.cd->getStringValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_TAG));
     meta_tag_set.reset(tag);
   }
-  std::string kp = data.key;
+  std::string kp ;//= data.key;
 
-  std::replace(kp.begin(), kp.end(), '.', '/');
+  //std::replace(kp.begin(), kp.end(), '.', '/');
   //DBG<<"data from:"<<kp<<" size:"<<data.cd->getBSONRawSize();
+  if(data.cd->hasKey(DataPackCommonKey::DPCK_DATASET_TYPE)&&data.cd->hasKey(NodeDefinitionKey::NODE_UNIQUE_ID)){
+    int pktype=data.cd->getInt32Value(DataPackCommonKey::DPCK_DATASET_TYPE);
+    kp=data.cd->getStringValue(NodeDefinitionKey::NODE_UNIQUE_ID)+datasetTypeToPostfix(pktype);
+     uint32_t                st=(uint32_t)DataServiceNodeDefinitionType::DSStorageTypeLive;
+    if(pktype==DataPackCommonKey::DPCK_DATASET_TYPE_LOG){
+    //  DBG<<"Queue:"<<CObjectProcessingPriorityQueue<CDataWrapper>::queueSize()<<" LOG:"<<data.cd->getJSONString();
+      if(CObjectProcessingPriorityQueue<CDataWrapper>::queueSize()<MAX_LOG_QUEUE){
+        CObjectProcessingPriorityQueue<CDataWrapper>::push(data.cd,0);
+      } else {
+        ERR<<kp<<"] too many logs on queue for DB:"<<CObjectProcessingPriorityQueue<CDataWrapper>::queueSize();
+        return;
+      }
 
-  QueryDataConsumer::consumePutEvent(kp, (uint8_t)st, meta_tag_set, *(data.cd.get()));
+    } else if(pktype==DataPackCommonKey::DPCK_DATASET_TYPE_HEALTH) {
+      uint64_t ts=0;
+
+      if(data.cd->hasKey(DataPackCommonKey::DPCK_TIMESTAMP)){
+        ts=data.cd->getInt64Value(DataPackCommonKey::DPCK_TIMESTAMP);
+        if((TimingUtil::getTimeStamp()-ts)>(chaos::common::constants::HBTimersTimeoutinMSec*2)){
+          // skip healt too old
+          return;
+        }
+      }
+     // alive_map[kp]=TimingUtil::getTimeStamp();
+    } else {
+        st = data.cd->getInt32Value(DataServiceNodeDefinitionKey::DS_STORAGE_TYPE);
+        if(pktype!=DataPackCommonKey::DPCK_DATASET_TYPE_OUTPUT){
+          st|=(uint32_t)DataServiceNodeDefinitionType::DSStorageTypeLive;
+        }
+
+    }
+    QueryDataConsumer::consumePutEvent(kp, (uint8_t)st, meta_tag_set, *(data.cd.get()));
+    
+  }
+  } catch(const chaos::CException& e ){
+    ERR<<"Chaos Exception caught processing key:"<<data.key<<" ("<<data.off<<","<<data.par<<") error:"<<e.what();
+  } catch(...){
+    ERR<<"Unknown Exception caught processing key:"<<data.key<<" ("<<data.off<<","<<data.par<<")";
+
+  }
 }
+  void QueryDataMsgPSConsumer::processBufferElement(chaos::common::data::CDWShrdPtr log_entry){
+      chaos::metadata_service::api::logging::SubmitEntryBase se;
+  //      DBG<<"Queue:"<<CObjectProcessingPriorityQueue<CDataWrapper>::queueSize()<<" WRITE ";
+
+      se.execute(log_entry->clone());        
+      
+  }
 
 void QueryDataMsgPSConsumer::messageError(const chaos::common::message::ele_t& data) {
   ChaosStringSetConstSPtr meta_tag_set;
@@ -80,23 +129,27 @@ void QueryDataMsgPSConsumer::messageError(const chaos::common::message::ele_t& d
     std::string path=data.key;
     std::replace(path.begin(), path.end(), '.', '/');
 
-    std::map<std::string, uint64_t>::iterator i=alive_map.find(path);
+  //  std::map<std::string, uint64_t>::iterator i=alive_map.find(path);
     if(data.cd.get()&&data.cd->hasKey("msg")&&data.cd->hasKey("err")){
       ERR<<"key:"<<data.key<<" ["<<path<<"] err msg:"<<data.cd->getStringValue("msg")<<" err:"<<data.cd->getInt32Value("err");
     }
-    if(i!=alive_map.end()){
+  /*  if(i!=alive_map.end()){
       DBG<<" removing from alive list:"<<i->first;
       alive_map.erase(i);
     } else {
       DBG<<path<<" is not in the alive list";
 
-    }
+    }*/
 
 }
 
 void QueryDataMsgPSConsumer::init(void* init_data) {
+
   QueryDataConsumer::init(init_data);
   msgbroker = GlobalConfiguration::getInstance()->getOption<std::string>(InitOption::OPT_MSG_BROKER_SERVER);
+  DBG<<"Initialize, my broker is:"<<msgbroker;
+
+  CObjectProcessingPriorityQueue<CDataWrapper>::init(1);
 
   cons->addServer(msgbroker);
 
@@ -115,10 +168,41 @@ void QueryDataMsgPSConsumer::init(void* init_data) {
     throw chaos::CException(-1, "cannot initialize Publish Subscribe:" + cons->getLastError(), __PRETTY_FUNCTION__);
   }
 }
+void QueryDataMsgPSConsumer::subscribeProcess(int attempt){
+DBG << "Starting SubscribeProcess";
 
+api::node::NodeSearch node;
+sleep(10);
+
+while(attempt--){
+  std::vector<std::string> nodes=node.search("",(chaos::NodeType::NodeSearchType)(((int)chaos::NodeType::node_type_ceu )| ((int)chaos::NodeType::node_type_agent)| ((int)chaos::NodeType::node_type_us))); // search CEU
+
+  DBG <<"] Found " << nodes.size()<< " to subscribe";
+
+  for(std::vector<std::string>::iterator i=nodes.begin();i!=nodes.end();i++){
+    DBG <<"] Subscribing to:" << *i;
+
+    if (cons->subscribe(*i) != 0) {
+        ERR <<" cannot subscribe to :" << *i<<" err:"<<cons->getLastError();
+                
+    } else {
+        DBG <<"] Subscribed to:" << *i;
+        
+    }  
+  }
+}
+} 
 void QueryDataMsgPSConsumer::start() {
   DBG << "Starting Msg consumer";
+
   cons->start();
+  boost::thread(&QueryDataMsgPSConsumer::subscribeProcess, this,1);
+
+ /* std::string keysub="CHAOS_LOG";
+  if (cons->subscribe(keysub) != 0) {
+      ERR <<" cannot subscribe to :" << keysub<<" err:"<<cons->getLastError();
+              
+  }*/ 
 }
 
 void QueryDataMsgPSConsumer::stop() {
@@ -128,6 +212,9 @@ void QueryDataMsgPSConsumer::stop() {
 
 void QueryDataMsgPSConsumer::deinit() {
   QueryDataConsumer::deinit();
+  DBG << "Wait for queue will empty";
+  CObjectProcessingPriorityQueue<CDataWrapper>::deinit(true);
+  DBG << "Queue is empty";
 }
 
 int QueryDataMsgPSConsumer::consumeHealthDataEvent(const std::string&            key,
@@ -135,54 +222,50 @@ int QueryDataMsgPSConsumer::consumeHealthDataEvent(const std::string&           
                                                    const ChaosStringSetConstSPtr meta_tag_set,
                                                    BufferSPtr                    channel_data) {
   int err = 0;
-  {
+  
     boost::mutex::scoped_lock ll(map_m);
-    bool                      subok = true;
-    CDataWrapper health_data_pack((char *)channel_data->data());
-    bool isACUEU=(channel_data.get()==NULL)||(health_data_pack.hasKey(chaos::ControlUnitHealtDefinitionValue::CU_HEALT_OUTPUT_DATASET_PUSH_RATE));
+    
+    
+/*    bool isACUEU=(channel_data.get()==NULL)||(health_data_pack.hasKey(chaos::ControlUnitHealtDefinitionValue::CU_HEALT_OUTPUT_DATASET_PUSH_RATE));
 
     if(isACUEU){
-     // DBG << "Received healt from:"<<key<<" is:"<<((channel_data.get()==NULL)?"registration":"normal");
+      DBG << "Received healt from:"<<key<<" is:"<<((channel_data.get()==NULL)?"registration":"normal");
 
       std::string rootname = key;
       size_t      pos      = key.find(NodeHealtDefinitionKey::HEALT_KEY_POSTFIX);
       if (pos != std::string::npos) {
         rootname.erase(pos, strlen(NodeHealtDefinitionKey::HEALT_KEY_POSTFIX));
       }
-      std::vector<std::string> tosub = {
-            DataPackPrefixID::OUTPUT_DATASET_POSTFIX,
-            DataPackPrefixID::INPUT_DATASET_POSTFIX,
-            DataPackPrefixID::CUSTOM_DATASET_POSTFIX,
-            DataPackPrefixID::SYSTEM_DATASET_POSTFIX,
-            DataPackPrefixID::DEV_ALARM_DATASET_POSTFIX,
-            DataPackPrefixID::CU_ALARM_DATASET_POSTFIX
-            };
-       int64_t seq=-1;
-        if(channel_data.get()&&health_data_pack.hasKey(DataPackCommonKey::DPCK_SEQ_ID)){
-          seq=health_data_pack.getInt64Value(DataPackCommonKey::DPCK_SEQ_ID);
-        }
-      for (auto i : tosub) {
-          std::string keysub = rootname + i;
-          if(alive_map.find(keysub)==alive_map.end()){
-            if (cons->subscribe(keysub) != 0) {
-              ERR << seq<<"] cannot subscribe to :" << keysub<<" err:"<<cons->getLastError();
+      if(alive_map.find(rootname)==alive_map.end()){
+        if (cons->subscribe(rootname) != 0) {
+              ERR <<"] cannot subscribe to :" << rootname<<" err:"<<cons->getLastError();
               
             } else {
-              alive_map[keysub]= TimingUtil::getTimeStamp();
+              alive_map[rootname]= TimingUtil::getTimeStamp();
 
-              DBG << seq<<"] Subscribed to:" << keysub<<" at:"<<alive_map[keysub];
+              DBG <<"] Subscribed to:" << rootname<<" at:"<<alive_map[rootname];
             }
-          } else {
-           //   DBG << seq<<"] Already subscribed:" << keysub;
-
-          }
       }
+
+      
     }
-  }
-  if(channel_data.get()==NULL){
-    DBG<<"Empty health for:\""<<key<<"\" registration pack?";
+  }*/
+  if(channel_data.get()==NULL || channel_data->data()==NULL){
+    DBG<<"Empty health for:\""<<key<<"\" registration pack";
+    if(alive_map.find(key)==alive_map.end()){
+        if (cons->subscribe(key) != 0) {
+              ERR <<"] cannot subscribe to :" << key<<" err:"<<cons->getLastError();
+              
+            } else {
+              alive_map[key]= TimingUtil::getTimeStamp();
+
+              DBG <<"] Subscribed to:" << key<<" at:"<<alive_map[key];
+            }
+      }
     return 0;
   }
+  CDataWrapper health_data_pack((char *)channel_data->data());
+
   return QueryDataConsumer::consumeHealthDataEvent(key, hst_tag, meta_tag_set, channel_data);
 }
 

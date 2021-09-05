@@ -77,6 +77,10 @@ void GlobalConfiguration::preParseStartupParameters()  {
         #else
         addOption(InitOption::OPT_DATA_IO_IMPL, po::value< string >()->default_value(std::string("IODirectIODriver")), "Specify the data io implementation");
         #endif
+        #if ENABLE_ZMQ_MONITOR
+        addOption(InitOption::OPT_ENABLE_ZMQ_MONITOR, po::value< bool >()->default_value(true), "Monitor zmq connections");
+
+        #endif
         addOption(InitOption::OPT_DIRECT_IO_IMPLEMENTATION, po::value< string >()->default_value(std::string("ZMQ")), "Specify the direct io implementation");
         addOption(InitOption::OPT_DIRECT_IO_PRIORITY_SERVER_PORT, po::value<uint32_t>()->default_value(_DIRECT_IO_PRIORITY_PORT), "DirectIO priority server port");
         addOption(InitOption::OPT_DIRECT_IO_SERVICE_SERVER_PORT, po::value<uint32_t>()->default_value(_DIRECT_IO_SERVICE_PORT), "DirectIO service server port");
@@ -428,19 +432,23 @@ void GlobalConfiguration::fillKVParameter(std::map<std::string, std::string>& kv
         if(regex.size() &&
            !boost::regex_match(kv_param_value,
                                boost::regex(regex))) {
-               throw chaos::CException(-3, "Malformed kv parameter string", __PRETTY_FUNCTION__);
-           }
-        
-        //clear previosly pair
-        kv_splitted.clear();
-        
-        //get new pair
-        boost::algorithm::split(kv_splitted,
-                                kv_param_value,
-                                boost::algorithm::is_any_of(":"),
-                                boost::algorithm::token_compress_on);
-        // add key/value pair
-        kvmap.insert(make_pair(kv_splitted[0], kv_splitted[1]));
+               std::stringstream ss;
+               ss<<"Malformed kv parameter string:"<<kv_param_value<<" regex:"<<regex;
+               LERR_<<ss.str();
+              // throw chaos::CException(-3,ss.str(), __PRETTY_FUNCTION__);
+           } else {
+                    
+                    //clear previosly pair
+                    kv_splitted.clear();
+                    
+                    //get new pair
+                    boost::algorithm::split(kv_splitted,
+                                            kv_param_value,
+                                            boost::algorithm::is_any_of(":"),
+                                            boost::algorithm::token_compress_on);
+                    // add key/value pair
+                    kvmap.insert(make_pair(kv_splitted[0], kv_splitted[1]));
+        }
     }
 }
 

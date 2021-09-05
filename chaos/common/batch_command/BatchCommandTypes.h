@@ -135,7 +135,7 @@ namespace chaos {
                         FF_SET_SCHEDULER_DELAY      = 1,    /**< The command bring his own scheduler delay time */
                         FF_SET_SUBMISSION_RETRY     = 2,    /**< The delay between a submiossion check and another, submiossion chek consist to check the current command running state to determinate
                                                              when the new command can be installed */
-                        FF_SET_COMMAND_TIMEOUT		= 4,    /**< The timeout of the current istnace of the command, expressed in microsecond */
+                        FF_SET_COMMAND_TIMEOUT		= 4,    /**< The timeout of the current instance of the command, expressed in microsecond */
                         
                         FF_LOCK_USER_MOD			= 8		/**< Active or deactivation of the user modificaiton on the command features */
                     } FeatureFlag;

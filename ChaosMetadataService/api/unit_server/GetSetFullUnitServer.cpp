@@ -171,6 +171,9 @@ CDWUniquePtr GetSetFullUnitServer::execute(CDWUniquePtr api_data) {
                            if(cuw->hasKey(DataServiceNodeDefinitionKey::DS_UPDATE_ANYWAY)) {
                                pg.addProperty(DataServiceNodeDefinitionKey::DS_UPDATE_ANYWAY, cuw->getVariantValue(DataServiceNodeDefinitionKey::DS_UPDATE_ANYWAY));
                            }
+                           if(cuw->hasKey(ControlUnitDatapackSystemKey::CU_LOG_MAX_MS)) {
+                               pg.addProperty(ControlUnitDatapackSystemKey::CU_LOG_MAX_MS, cuw->getVariantValue(ControlUnitDatapackSystemKey::CU_LOG_MAX_MS));
+                           }
                            PropertyGroupVectorSDWrapper pgv_sdw;
                            pgv_sdw().push_back(pg);
                            if((err = n_da->updatePropertyDefaultValue(cu_id, pgv_sdw()))){

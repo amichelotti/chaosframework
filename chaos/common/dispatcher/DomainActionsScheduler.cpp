@@ -199,7 +199,7 @@ void DomainActionsScheduler::processBufferElement(CDWShrdPtr rpc_call_action) {
                 }
                 */
             }
-            LDBG_<<__FUNCTION__<<" "<<rpc_call_action->getJSONString()<<" need answer:"<<needAnswer;
+          //  LDBG_<<__FUNCTION__<<" "<<rpc_call_action->getJSONString()<<" need answer:"<<needAnswer;
             //synCronusly call the action in the current thread
             
             action_result = actionDescriptionPtr->call(MOVE(action_message));

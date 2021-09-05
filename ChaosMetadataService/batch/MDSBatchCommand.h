@@ -21,7 +21,7 @@
 #ifndef __CHAOSFramework__MDSBatchCommand__
 #define __CHAOSFramework__MDSBatchCommand__
 
-#include "../DriverPoolManager.h"
+#include <chaos_service_common/DriverPoolManager.h>
 #include "../persistence/data_access/DataAccess.h"
 #include <chaos/common/batch_command/BatchCommand.h>
 #include <chaos/common/message/MessageRequestFuture.h>
@@ -139,7 +139,7 @@ namespace chaos{
                 
                 template<typename T>
                 T* getDataAccess() {
-                    return DriverPoolManager::getInstance()->getPersistenceDataAccess<T>();
+                    return chaos::service_common::DriverPoolManager::getInstance()->getPersistenceDataAccess<T>();
                 }
                 
                 

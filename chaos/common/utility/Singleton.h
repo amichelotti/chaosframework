@@ -55,12 +55,12 @@ friend class Singleton<ClassName>;
                     //static T singletonInstance;
                     call_once(_singletonInit, flag);
                     return t;
-                }
+                }    
                 static void _singletonInit() {
                     if(t==0){
                         t= new T();
                     }
-                }
+                }            
                 virtual ~Singleton(){if(t) delete t;t=0L;}
             protected:
                 static T*  t;

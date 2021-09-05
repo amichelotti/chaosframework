@@ -89,7 +89,7 @@ namespace chaos{
 					std::string alias;
 					std::string version;
 					std::string init_parameter;
-                    std::string props;
+                    std::map<std::string,std::string> props;
 				} DrvRequestInfo;
                 
                 //forward declaration

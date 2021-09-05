@@ -51,8 +51,9 @@ CDWUniquePtr NodeNewDelete::execute(CDWUniquePtr api_data) {
     if(remove){
         NS_DBG<<" deleting "<<node_uid<<" ("<<node_type<<")";
         // we have to delete also data.
-        ChaosMetadataService::getInstance()->removeStorageData(node_uid,0,chaos::common::utility::TimingUtil::getTimeStamp());
-
+        if(api_data->hasKey("erasedata")&&api_data->getBoolValue("erasedata")){
+         ChaosMetadataService::getInstance()->removeStorageData(node_uid,0,chaos::common::utility::TimingUtil::getTimeStamp());
+        }
         if (n_da->deleteNode(node_uid,node_type)){
               LOG_AND_TROW(NS_ERR, -5, "Cannot delete node: "+node_uid+" ["+node_type+"]");
         } else {

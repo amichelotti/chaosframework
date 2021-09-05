@@ -271,7 +271,7 @@ execute_process(
 	   endif()
 	 ENDIF()
 #	 install (CODE "add_subdirectory(${CMAKE_INSTALL_PREFIX}/UnitServer)")
-MESSAGE("ALEDEBUG adding UnitServer at " ${TOP_DIRECTORY} )
+MESSAGE("WIN32 adding UnitServer at " ${TOP_DIRECTORY} )
 	 add_subdirectory(${TOP_DIRECTORY}/UnitServer)
       ENDIF()
     ENDIF()

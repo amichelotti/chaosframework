@@ -52,9 +52,9 @@ void NodeAckCommand::setHandler(CDataWrapper *data) {
     int err = 0;
     
     node_uid = data->getStringValue(chaos::NodeDefinitionKey::NODE_UNIQUE_ID);
-
+    rpc_addr=data->getStringValue(chaos::NodeDefinitionKey::NODE_RPC_ADDR);
     
-    request = createRequest(data->getStringValue(chaos::NodeDefinitionKey::NODE_RPC_ADDR),
+    request = createRequest(rpc_addr,
                             NodeDomainAndActionRPC::RPC_DOMAIN,
                             NodeDomainAndActionRPC::ACTION_REGISTRATION_ACK);
     message_data.reset(new CDataWrapper(data->getBSONRawData()));
@@ -74,7 +74,24 @@ void NodeAckCommand::ccHandler() {
         }
             
         case MESSAGE_PHASE_SENT:
-        case MESSAGE_PHASE_COMPLETED:
+        case MESSAGE_PHASE_COMPLETED:{
+             
+    //prepare load data pack to sento to control unit
+    chaos::common::data::CDWUniquePtr  autoload_pack = CUCommonUtility::prepareRequestPackForLoadControlUnit(node_uid,
+                                                                          getDataAccess<mds_data_access::NodeDataAccess>(),
+                                                                  getDataAccess<mds_data_access::ControlUnitDataAccess>(),
+                                                                  getDataAccess<mds_data_access::DataServiceDataAccess>());
+    if(autoload_pack.get()){
+        DBG << "Load packet for:" << node_uid;//<<" LOAD:"<<autoload_pack->getCompliantJSONString();
+        request = createRequest(rpc_addr,
+                                UnitServerNodeDomainAndActionRPC::RPC_DOMAIN,
+                                UnitServerNodeDomainAndActionRPC::ACTION_UNIT_SERVER_LOAD_CONTROL_UNIT);
+         sendMessage(*request,
+                        MOVE(autoload_pack));
+        //prepare auto init and autostart message into autoload pack
+       
+    }
+        }
         case MESSAGE_PHASE_TIMEOUT:
         default:
             BC_END_RUNNING_PROPERTY

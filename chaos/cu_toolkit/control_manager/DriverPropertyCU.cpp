@@ -36,8 +36,7 @@ using namespace chaos::cu::control_manager;
  Construct
  */
 DriverPropertyCU::DriverPropertyCU(const string& _control_unit_id, const string& _control_unit_param, const ControlUnitDriverList& _control_unit_drivers)
-    : RTAbstractControlUnit(_control_unit_id, _control_unit_param, _control_unit_drivers) {
-  driver = getAccessoInstanceByIndex(0);
+    : RTAbstractControlUnit(_control_unit_id, _control_unit_param, _control_unit_drivers),driver(NULL) {
 
 }
 
