@@ -3,7 +3,7 @@ IF(CMAKE_INSTALL_PREFIX)
 ELSE()
   set(PREFIX ${CMAKE_CURRENT_LIST_DIR})
 ENDIF()
-
+SET(chaos_FOUND TRUE)
 execute_process(COMMAND "grep CHAOS_ENABLE_C11:BOOL=OFF ${PREFIX}/CMakeConfiguration.txt"   
    RESULT_VARIABLE retcode)
 
@@ -60,6 +60,8 @@ message(STATUS "ENABLING MINSIZEREL on ${PROJECT_NAME}")
 ENDIF()
 
 set(chaos_INCLUDE_DIRS ${PREFIX}/include)
+set(chaos_LIB_DIR ${PREFIX}/lib)
+
 FILE(GLOB boost_libs ${PREFIX}/lib/libboost*.a)
 
 set(chaos_LIBRARIES chaos_cutoolkit chaos_common)
@@ -67,6 +69,11 @@ set(chaos_client_LIBRARIES chaos_metadata_service_client)
 SET(CMAKE_INSTALL_RPATH "${PREFIX}/lib")
 link_directories(${PREFIX}/lib ${PREFIX}/lib64)
 include_directories(${chaos_INCLUDE_DIRS})
+include_directories("${chaos_INCLUDE_DIRS}/compiler/gcc/")
+include_directories("${chaos_INCLUDE_DIRS}/os/Linux")
+include_directories("${chaos_INCLUDE_DIRS}/modules/libcom/src/osi")
+link_directories("${chaos_LIB_DIR}/linux-x86_64/")
+
 SET(FrameworkLib ${chaos_LIBRARIES} ${boost_libs} pthread dl ${GCC_COVERAGE_LINK_LIB})
 IF (WIN32)
 include(${PREFIX}/CMakeMacroUtilsWin.txt)

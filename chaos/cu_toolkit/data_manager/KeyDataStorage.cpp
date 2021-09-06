@@ -241,7 +241,6 @@ int KeyDataStorage::pushDataSet(KeyDataStorageDomain domain,
             //system channel need to be push ever either in live and in history
             err=io_data_driver->storeData(system_key,
                                           dataset,
-                                          //DataServiceNodeDefinitionType::DSStorageTypeLiveHistory,
                                           storage_type,
                                           current_tags());
             break;
@@ -249,7 +248,6 @@ int KeyDataStorage::pushDataSet(KeyDataStorageDomain domain,
             //system channel need to be push ever either in live and in history
             err=io_data_driver->storeData(cu_alarm_key,
                                           dataset,
-                                          /*DataServiceNodeDefinitionType::DSStorageTypeLiveHistory*/
                                           storage_type,
                                           current_tags());
             break;
@@ -257,7 +255,6 @@ int KeyDataStorage::pushDataSet(KeyDataStorageDomain domain,
             //system channel need to be push ever either in live and in history
             err=io_data_driver->storeData(dev_alarm_key,
                                           dataset,
-                                          /*DataServiceNodeDefinitionType::DSStorageTypeLiveHistory,*/
                                           storage_type,
                                           current_tags());
             break;
@@ -393,7 +390,7 @@ void KeyDataStorage::updateConfiguration(const std::string& conf_name,
     } else if(conf_name.compare(DataServiceNodeDefinitionKey::DS_STORAGE_TYPE) == 0){
         storage_type = static_cast<DataServiceNodeDefinitionType::DSStorageType>(conf_value.asInt32());
     }
-    KeyDataStorageLDBG << CHAOS_FORMAT("Set value %1% to property %2%", %conf_value.asString()%conf_name);
+    KeyDataStorageLDBG << CHAOS_FORMAT("Set value %1% to property %2% storage_type %3%", %conf_value.asString()%conf_name%storage_type);
 }
 
 void KeyDataStorage::setOverrideStorageType(chaos::DataServiceNodeDefinitionType::DSStorageType _override_storage_type) {

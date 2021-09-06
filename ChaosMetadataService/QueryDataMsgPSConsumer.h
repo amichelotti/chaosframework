@@ -38,10 +38,10 @@ class QueryDataMsgPSConsumer : public QueryDataConsumer,protected chaos::common:
   static boost::mutex                            map_m;
   void                                    messageHandler(const chaos::common::message::ele_t& data);
   void                                  messageError(const chaos::common::message::ele_t& data);
-
+  int subscribe_retry;
   //---------------- DirectIODeviceServerChannelHandler -----------------------
   void processBufferElement(chaos::common::data::CDWShrdPtr log_entry);
-
+  void subscribeProcess(int attempt);
  public:
   QueryDataMsgPSConsumer(const std::string& id);
   ~QueryDataMsgPSConsumer(){}

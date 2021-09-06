@@ -20,16 +20,17 @@
  */
 
 #include "CreateSnapshotBatch.h"
-#include "../../DriverPoolManager.h"
+#include <chaos_service_common/DriverPoolManager.h>
 
 #include <chaos/common/utility/UUIDUtil.h>
 
 using namespace chaos::common::data;
 using namespace chaos::common::utility;
 using namespace chaos::common::network;
+using namespace chaos::service_common;
 
 using namespace chaos::metadata_service;
-using namespace chaos::metadata_service::cache_system;
+using namespace chaos::common::cache_system;
 using namespace chaos::metadata_service::batch::general;
 
 #define G_RS_INFO INFO_LOG(CreateSnapshotBatch)

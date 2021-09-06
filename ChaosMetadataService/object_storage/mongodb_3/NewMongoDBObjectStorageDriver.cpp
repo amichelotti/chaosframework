@@ -75,10 +75,10 @@ void NewMongoDBObjectStorageDriver::init(void *init_data) throw (chaos::CExcepti
     if(obj_stoarge_kvp.count("minPoolSize")) {
     }
     //initilize pool
-    BaseMongoDBDiver::initPool(url_list, user, password, database);
+    BaseMongoDBDriver::initPool(url_list, user, password, database);
 
     //register the data access implementations
-    registerDataAccess<ObjectStorageDataAccess>(new MongoDBObjectStorageDataAccess(BaseMongoDBDiver::getPool()));
+    registerDataAccess<ObjectStorageDataAccess>(new MongoDBObjectStorageDataAccess(BaseMongoDBDriver::getPool()));
 }
 
 void NewMongoDBObjectStorageDriver::deinit() throw (chaos::CException) {

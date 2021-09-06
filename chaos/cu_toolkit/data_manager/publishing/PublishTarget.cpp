@@ -81,7 +81,7 @@ bool PublishTarget::addServer(const std::string &server_url_new) {
     //lock the feeder
     ChaosWriteLock wl(mutext_feeder);
     
-    if (!DirectIOClient::checkURL(server_url_new)) {
+    if (!checkURL(server_url_new)) {
         ERR << CHAOS_FORMAT("Url %1% non well formed", %server_url_new);
         return false;
     }
@@ -95,7 +95,7 @@ bool PublishTarget::removeServer(const std::string &server_url_erase) {
     //lock the feeder
     ChaosWriteLock wl(mutext_feeder);
     
-    if (!DirectIOClient::checkURL(server_url_erase)) {
+    if (!checkURL(server_url_erase)) {
         ERR << CHAOS_FORMAT("Url %1% non well formed", %server_url_erase);
         return false;
     }

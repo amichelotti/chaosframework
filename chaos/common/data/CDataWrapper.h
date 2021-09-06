@@ -106,6 +106,7 @@ namespace chaos {
                 int setBson(const bson_iter_t *v ,const CDataWrapper* val);
 
             public:
+            static bool isJSON(const::std::string&str);
                 CDataWrapper();
                 CDataWrapper(const bson_t *copy_bson);
 
@@ -298,6 +299,55 @@ throw chaos::CException(-2, ss.str(), __PRETTY_FUNCTION__);
                                     chaos::DataType::BinarySubtype sub_type,
                                     const char *buff,
                                     int bufLen);
+
+                void addArray(const std::string& key,bool* arr,int count);
+                void addArray(const std::string& key,char* arr,int count);
+                void addArray(const std::string& key,int32_t* arr,int count);
+                void addArray(const std::string& key,double* arr,int count);
+                void addArray(const std::string& key,float* arr,int count);
+
+                void addArray(const std::string& key,int16_t* arr,int count);
+                void addArray(const std::string& key,int64_t* arr,int count);
+                
+               
+
+                template<typename T>
+                int getArray(const std::string& key,T* arr,int count=-1){
+                    int ret=0;
+                    uint32_t size;
+                    if(arr==NULL){
+                        return -1;
+                    }
+                    const char* ptr=getBinaryValue(key , size);
+                    int rsize=count*sizeof(T);
+                   
+                    if(ptr==NULL){
+                        return -2;
+                    }
+                    if(rsize>=0){   
+                        memcpy((void*)arr,ptr,rsize);
+                        return count;
+                    }
+                    memcpy((void*)arr,ptr,size);
+                    return size/sizeof(T);
+
+                }
+                template<typename T>
+                std::vector<T> getArray(const std::string& key){
+                     std::vector<T> res;
+                     uint32_t size;
+                    const char* ptr=getBinaryValue(key , size);
+                    int count=size/sizeof(T);
+                    for(int cnt=0;cnt<count;cnt++){
+                        T tmp=((T*)ptr)[cnt];
+                        res.push_back((tmp));
+                    }
+                    return res;
+                   
+                }
+
+               
+
                 //return the bson data
                 SerializationBufferUPtr getBSONData() const;
                 BufferUPtr getBSONDataBuffer() const;
@@ -357,6 +407,8 @@ throw chaos::CException(-2, ss.str(), __PRETTY_FUNCTION__);
                 bool isStringValue(const std::string& key) const;
                 bool isBinaryValue(const std::string& key) const;
                 bool isCDataWrapperValue(const std::string& key) const;
+                bool isCDataWrapperValue() const;
+
                 bool isVectorValue(const std::string& key) const;
                 bool isJsonValue(const std::string& key) const;
                 chaos::DataType::DataType getValueType(const std::string& key) const;

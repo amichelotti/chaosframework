@@ -21,7 +21,9 @@
 
 #include "mds_constants.h"
 #include "ChaosMetadataService.h"
-#include "DriverPoolManager.h"
+#include <chaos_service_common/DriverPoolManager.h>
+#include <chaos_service_common/health_system/HealtManagerDirect.h>
+
 #include "QueryDataConsumer.h"
 #include "QueryDataMsgPSConsumer.h"
 
@@ -31,9 +33,8 @@
 #include <chaos/common/exception/CException.h>
 #include <boost/format.hpp>
 #include <boost/algorithm/string.hpp>
-#include <chaos/common/healt_system/HealtManager.h>
 #include <chaos/common/io/SharedManagedDirecIoDataDriver.h>
-
+#include <regex>
 #include <chaos/common/utility/ObjectFactoryRegister.h>
 #include <chaos/common/configuration/GlobalConfiguration.h>
 using namespace std;
@@ -45,13 +46,13 @@ using namespace chaos::common::async_central;
 using namespace chaos::common::data::structured;
 using namespace chaos::metadata_service::cache_system;
 
-using namespace chaos::metadata_service;
+using namespace chaos::service_common;
 
 using namespace chaos::metadata_service;
 using namespace chaos::metadata_service::api;
 using namespace chaos::metadata_service::batch;
-using namespace chaos::common::healt_system;
-
+using namespace chaos::service_common::health_system;
+using namespace chaos::common::cache_system;
 using namespace chaos::service_common::persistence::data_access;
 
 WaitSemaphore ChaosMetadataService::waitCloseSemaphore;
@@ -110,9 +111,9 @@ void ChaosMetadataService::init(void *init_data)  {
             throw chaos::CException(-4, "No persistence's server list provided", __PRETTY_FUNCTION__);
         }
         
-        if(getGlobalConfigurationInstance()->hasOption(OPT_PERSITENCE_KV_PARAMTER)) {
+        if(getGlobalConfigurationInstance()->hasOption(chaos::service_common::persistence::OPT_PERSITENCE_KV_PARAMTER)) {
             fillKVParameter(setting.persistence_kv_param_map,
-                            getGlobalConfigurationInstance()->getOption< std::vector< std::string> >(OPT_PERSITENCE_KV_PARAMTER));
+                            getGlobalConfigurationInstance()->getOption< std::vector< std::string> >(chaos::service_common::persistence::OPT_PERSITENCE_KV_PARAMTER));
         }
         
         //check for mandatory configuration
@@ -135,25 +136,43 @@ void ChaosMetadataService::init(void *init_data)  {
         uint64_t tmp=pow(2,(uint32_t)log2(timeError_opt));
         timePrecisionMask=~(tmp-1);
         if(getGlobalConfigurationInstance()->hasOption(OPT_CACHE_DRIVER_KVP)) {
-            GlobalConfiguration::getInstance()->fillKVParameter(setting.cache_driver_setting.key_value_custom_param,
+            GlobalConfiguration::fillKVParameter(setting.cache_driver_setting.key_value_custom_param,
                                                                 getGlobalConfigurationInstance()->getOption< std::vector<std::string> >(OPT_CACHE_DRIVER_KVP), "");
 //            fillKVParameter(setting.cache_driver_setting.key_value_custom_param,
 //                            getGlobalConfigurationInstance()->getOption< std::vector<std::string> >(OPT_CACHE_DRIVER_KVP));
         }
         
         if(getGlobalConfigurationInstance()->hasOption(OPT_OBJ_STORAGE_DRIVER_KVP)) {
-            GlobalConfiguration::getInstance()->fillKVParameter(setting.object_storage_setting.key_value_custom_param,
+            GlobalConfiguration::fillKVParameter(setting.object_storage_setting.key_value_custom_param,
                                                                 getGlobalConfigurationInstance()->getOption< std::vector<std::string> >(OPT_OBJ_STORAGE_DRIVER_KVP), "");
 //            fillKVParameter(setting.object_storage_setting.key_value_custom_param,
 //                            getGlobalConfigurationInstance()->getOption< std::vector<std::string> >(OPT_OBJ_STORAGE_DRIVER_KVP));
         }
          if(getGlobalConfigurationInstance()->hasOption(OPT_LOG_STORAGE_DRIVER_KVP)) {
-            GlobalConfiguration::getInstance()->fillKVParameter(setting.log_storage_setting.key_value_custom_param,
+            GlobalConfiguration::fillKVParameter(setting.log_storage_setting.key_value_custom_param,
                                                                 getGlobalConfigurationInstance()->getOption< std::vector<std::string> >(OPT_LOG_STORAGE_DRIVER_KVP), "");
 //            fillKVParameter(setting.object_storage_setting.key_value_custom_param,
 //                            getGlobalConfigurationInstance()->getOption< std::vector<std::string> >(OPT_OBJ_STORAGE_DRIVER_KVP));
         }
         //initilize driver pool manager
+        DriverPoolManager::persistentSetting.persistence_implementation=setting.persistence_implementation;
+        DriverPoolManager::persistentSetting.persistence_kv_param_map=setting.persistence_kv_param_map;
+        DriverPoolManager::persistentSetting.persistence_server_list=setting.persistence_server_list;
+
+        DriverPoolManager::cacheSetting.cache_driver_impl=setting.cache_driver_setting.cache_driver_impl;
+        DriverPoolManager::cacheSetting.startup_chache_servers=setting.cache_driver_setting.startup_chache_servers;
+        DriverPoolManager::cacheSetting.caching_pool_min_instances_number=setting.cache_driver_setting.caching_pool_min_instances_number;
+        DriverPoolManager::cacheSetting.log_metric=setting.cache_driver_setting.log_metric;
+        DriverPoolManager::cacheSetting.key_value_custom_param=setting.cache_driver_setting.key_value_custom_param;
+
+        DriverPoolManager::logSetting.persistence_kv_param_map=setting.log_storage_setting.key_value_custom_param;
+        DriverPoolManager::logSetting.persistence_implementation=setting.log_storage_setting.driver_impl;
+        DriverPoolManager::logSetting.persistence_server_list=setting.log_storage_setting.url_list;
+
+        DriverPoolManager::objectSetting.persistence_kv_param_map=setting.object_storage_setting.key_value_custom_param;
+        DriverPoolManager::objectSetting.persistence_implementation=setting.object_storage_setting.driver_impl;
+        DriverPoolManager::objectSetting.persistence_server_list=setting.object_storage_setting.url_list;
+        
         InizializableService::initImplementation(DriverPoolManager::getInstance(), NULL, "DriverPoolManager", __PRETTY_FUNCTION__);
         
         //! batch system
@@ -181,7 +200,7 @@ void ChaosMetadataService::init(void *init_data)  {
 
         InizializableService::initImplementation(SharedManagedDirecIoDataDriver::getInstance(), NULL, "SharedManagedDirecIoDataDriver", __PRETTY_FUNCTION__);
 
-        StartableService::initImplementation(HealtManager::getInstance(), NULL, "HealthManager", __PRETTY_FUNCTION__);
+        StartableService::initImplementation(HealtManagerDirect::getInstance(), NULL, "HealtManagerDirect", __PRETTY_FUNCTION__);
 
         
     } catch (CException& ex) {
@@ -192,6 +211,7 @@ void ChaosMetadataService::init(void *init_data)  {
 }
 
 int ChaosMetadataService::notifyNewNode(const std::string& nodeuid){
+    LCND_LDBG<<" NEW NODE:"<<nodeuid;
     return message_consumer->consumeHealthDataEvent(nodeuid, 0, ChaosStringSetConstSPtr(),  ChaosMakeSharedPtr<Buffer>());
 
 }
@@ -231,9 +251,9 @@ void ChaosMetadataService::start()  {
                                                                                    chaos::common::constants::HBTimersTimeoutinMSec);
 
 
-        StartableService::startImplementation(HealtManager::getInstance(), "HealthManager", __PRETTY_FUNCTION__);
-        HealtManager::getInstance()->addNewNode(unique_uid);
-        HealtManager::getInstance()->addNodeMetricValue(unique_uid,
+        StartableService::startImplementation(HealtManagerDirect::getInstance(), "HealtManagerDirect", __PRETTY_FUNCTION__);
+        HealtManagerDirect::getInstance()->addNewNode(unique_uid);
+        HealtManagerDirect::getInstance()->addNodeMetricValue(unique_uid,
                                                             NodeHealtDefinitionKey::NODE_HEALT_STATUS,
                                                             NodeHealtDefinitionValue::NODE_HEALT_STATUS_START);
             
@@ -421,7 +441,7 @@ std::vector<bool> ChaosMetadataService::areNodeAlive(const ChaosStringVector& ui
  Stop the toolkit execution
  */
 void ChaosMetadataService::stop() {
-    CHAOS_NOT_THROW(StartableService::stopImplementation(HealtManager::getInstance(), "HealthManager", __PRETTY_FUNCTION__););
+    CHAOS_NOT_THROW(StartableService::stopImplementation(HealtManagerDirect::getInstance(), "HealtManagerDirect", __PRETTY_FUNCTION__););
 
     chaos::common::async_central::AsyncCentralManager::getInstance()->removeTimer(this);
     #if defined(KAFKA_RDK_ENABLE) || defined(KAFKA_ASIO_ENABLE)
@@ -444,7 +464,7 @@ void ChaosMetadataService::stop() {
 void ChaosMetadataService::deinit() {
     InizializableService::deinitImplementation(SharedManagedDirecIoDataDriver::getInstance(), "SharedManagedDirecIoDataDriver", __PRETTY_FUNCTION__);
 
-    CHAOS_NOT_THROW(StartableService::deinitImplementation(HealtManager::getInstance(), "HealthManager", __PRETTY_FUNCTION__););
+    CHAOS_NOT_THROW(StartableService::deinitImplementation(HealtManagerDirect::getInstance(), "HealtManagerDirect", __PRETTY_FUNCTION__););
 
     InizializableService::deinitImplementation(cron_job::MDSCronusManager::getInstance(),
                                                "MDSConousManager",
@@ -479,7 +499,7 @@ void ChaosMetadataService::signalHanlder(int signalNumber) {
 void ChaosMetadataService::fillKVParameter(std::map<std::string, std::string>& kvmap,
                                            const std::vector<std::string>& multitoken_param) {
     //! Regular expression for check server endpoint with the sintax hostname:[priority_port:service_port]
-    boost::regex KVParamRegex("[a-zA-Z0-9/_-]+:[a-zA-Z0-9/_-]+");
+    std::regex KVParamRegex("[a-zA-Z0-9/_-]+:[a-zA-Z0-9/_-]+");
     std::vector<std::string> kv_splitted;
     std::vector<std::string> kvtokens;
     for(std::vector<std::string>::const_iterator it = multitoken_param.begin();
@@ -490,7 +510,7 @@ void ChaosMetadataService::fillKVParameter(std::map<std::string, std::string>& k
         
         
         
-        if(!regex_match(param_key, KVParamRegex)) {
+        if(!std::regex_match(param_key, KVParamRegex)) {
             throw chaos::CException(-3, "Malformed kv parameter string", __PRETTY_FUNCTION__);
         }
         

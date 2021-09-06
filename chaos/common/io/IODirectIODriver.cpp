@@ -285,7 +285,7 @@ int IODirectIODriver::loadDatasetTypeFromSnapshotTag(const std::string& restore_
 
 void IODirectIODriver::addServerURL(const std::string& url) {
     ChaosWriteLock wl(mutext_feeder);
-    if(!common::direct_io::DirectIOClient::checkURL(url)) {
+    if(!common::direct_io::checkURL(url)) {
         IODirectIODriver_LERR_ << "Url " << url << " non well formed";
         return;
     }
@@ -303,13 +303,14 @@ chaos::common::data::CDataWrapper* IODirectIODriver::updateConfiguration(chaos::
         IODirectIODriver_DLDBG_ <<"Appling TIMING ERROR MASK:"<<std::hex<<chaos::common::utility::TimingUtil::timestamp_uncertenty_mask;
 
     }
+    
     //checkif someone has passed us the device indetification
     if(newConfigration->hasKey(DataServiceNodeDefinitionKey::DS_DIRECT_IO_FULL_ADDRESS_LIST)){
         chaos_data::CMultiTypeDataArrayWrapperSPtr liveMemAddrConfig = newConfigration->getVectorValue(DataServiceNodeDefinitionKey::DS_DIRECT_IO_FULL_ADDRESS_LIST);
         size_t numerbOfserverAddressConfigured = liveMemAddrConfig->size();
         for ( int idx = 0; idx < numerbOfserverAddressConfigured; idx++ ){
             string serverDesc = liveMemAddrConfig->getStringElementAtIndex(idx);
-            if(!common::direct_io::DirectIOClient::checkURL(serverDesc)) {
+            if(!common::direct_io::checkURL(serverDesc)) {
                 IODirectIODriver_DLDBG_ << "Data proxy server description " << serverDesc << " non well formed";
                 continue;
             }
@@ -401,7 +402,11 @@ void IODirectIODriver::handleEvent(chaos_direct_io::DirectIOClientConnection *cl
         return;
     }
     try {
-        uint32_t service_index = boost::lexical_cast<uint32_t>(client_connection->getCustomStringIdentification());
+        uint32_t service_index=0;
+        if(client_connection){
+            service_index = atoi((client_connection->getCustomStringIdentification().c_str()));
+        }
+        
         switch(event) {
             case chaos_direct_io::DirectIOClientConnectionStateType::DirectIOClientConnectionEventConnected:
                 DEBUG_CODE(IODirectIODriver_DLDBG_ << "Manage Connected event to service with index " << service_index << " and url" << client_connection->getURL();)

@@ -119,13 +119,14 @@ void AbstractDriver::init(void *init_param) {
   #else
       int isjson=0;
 ChaosUniquePtr<CDataWrapper> p;
+
   try {
         p  = CDataWrapper::instanceFromJson((const char*)init_param);
               isjson = (p->isEmpty() == false);
      } catch (...) {
               isjson = 0;
     }
-    if (isjson) {
+    if (isjson&&p.get()) {
       ADLDBG_ << "JSON PARMS:" << p->getJSONString();
       if(p->hasKey(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_PROP)&&p->isCDataWrapperValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_PROP)){
         CDataWrapper cd;
@@ -439,8 +440,9 @@ int AbstractDriver::setDrvProperty(const std::string &key, const std::string &va
 }
 
 chaos::common::data::CDWUniquePtr AbstractDriver::getDrvProperties() {
-
-  return getProperties(true);
+chaos::common::data::CDWUniquePtr ret=getProperties(true);
+//  LDBG_<<"Properties:"<<ret->getJSONString();
+  return ret;
 }
 void AbstractDriver::setLastError(const std::string&str){
   lastError=str;

@@ -114,3 +114,36 @@ CDWUniquePtr NodeSearch::execute(CDWUniquePtr api_data) {
   }
   return CDWUniquePtr(result);
 }
+std::vector<std::string> NodeSearch::search(const std::string&unique_id_filter,const std::string& type,const std::string&impl,uint32_t maxres){
+  return search(unique_id_filter,chaos::NodeType::human2NodeType(type),impl,maxres);
+}
+std::vector<std::string> NodeSearch::search(const std::string&unique_id_filter,const chaos::NodeType::NodeSearchType type,const std::string&impl,uint32_t maxres){
+ChaosUniquePtr<chaos::common::data::CDataWrapper> message(new CDataWrapper());
+std::vector<std::string> node_found;
+    message->addStringValue("unique_id_filter", unique_id_filter);
+    if (impl.size() > 0)
+      message->addStringValue("impl", impl);
+
+    message->addInt32Value("node_type_filter", (int32_t)type);
+    message->addBoolValue("alive_only", false);
+    message->addInt32Value("result_page_length", maxres);
+    CDWUniquePtr res = execute(MOVE(message));
+
+    if (res.get() &&
+        res->hasKey(chaos::NodeType::NODE_SEARCH_LIST_KEY) &&
+        res->isVectorValue(chaos::NodeType::NODE_SEARCH_LIST_KEY)) {
+      //we have result
+      CMultiTypeDataArrayWrapperSPtr snapshot_desc_list = res->getVectorValue(chaos::NodeType::NODE_SEARCH_LIST_KEY);
+      for (int idx = 0;
+           idx < snapshot_desc_list->size();
+           idx++) {
+        ChaosUniquePtr<chaos::common::data::CDataWrapper> element(snapshot_desc_list->getCDataWrapperElementAtIndex(idx));
+        if (element.get() &&
+            element->hasKey(chaos::NodeDefinitionKey::NODE_UNIQUE_ID)) {
+          node_found.push_back(element->getStringValue(chaos::NodeDefinitionKey::NODE_UNIQUE_ID));
+          
+        }
+      }
+    }
+    return node_found;
+}

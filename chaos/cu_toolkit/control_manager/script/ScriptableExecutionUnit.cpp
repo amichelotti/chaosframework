@@ -148,10 +148,12 @@ void ScriptableExecutionUnit::unitDefineActionAndDataset() {
                             SEU_LERR,
                             -1,
                             "NO JSON script information has been set at load time");
-    CHAOS_LASSERT_EXCEPTION(isCUParamInJson(), SEU_LERR, -2, "Load parameter are not a json document");
+   // CHAOS_LASSERT_EXCEPTION(isCUParamInJson(), SEU_LERR, -2, "Load parameter are not a json document");
 
     //!get root json element
-    const Json::Value &json_params = getCUParamJsonRootElement();
+    Json::Reader json_reader;
+    Json::Value json_params;
+    json_reader.parse(getCUParam(), json_params);
 
     //scan json option
     if(json_params.isNull() == false) {

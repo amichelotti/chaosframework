@@ -10,7 +10,7 @@
 #include <chaos/common/direct_io/channel/DirectIOVirtualClientChannel.h>
 #include <chaos/common/utility/UUIDUtil.h>
 #include <chaos/common/direct_io/impl/ZMQDirectIOClient.h>
-
+#include <chaos/common/configuration/GlobalConfiguration.h>
 
 #include <boost/format.hpp>
 
@@ -188,17 +188,24 @@ int ZMQDirectIOClientConnection::getNewSocketPair() {
         
         //set the server information on socket
         decoupleServerDescription(server_description, priority_endpoint, service_endpoint);
-        
-        //allocate monitor
-        monitor_info.run = true;
-        monitor_info.monitor_socket = NULL;
-        monitor_info.unique_identification = getUniqueUUID();
-        monitor_info.monitor_url = boost::str( boost::format("inproc://%1%") % getUniqueUUID());
-        monitor_info.monitor_thread.reset(new boost::thread(boost::bind(&ZMQDirectIOClientConnection::socketMonitor, this)));
-        
-        err = zmq_socket_monitor(socket_priority, monitor_info.monitor_url.c_str(), ZMQ_EVENT_ALL);
-        if(err) throw chaos::CException(err, "Error activating monitor on service socket", __FUNCTION__);
-        
+        #if ENABLE_ZMQ_MONITOR
+        bool enable_monitor=GlobalConfiguration::getInstance()->getOption<bool>(chaos::InitOption::OPT_ENABLE_ZMQ_MONITOR);
+        if(enable_monitor){
+                
+            //allocate monitor
+            monitor_info.run = true;
+            monitor_info.monitor_socket = NULL;
+            monitor_info.unique_identification = getUniqueUUID();
+            monitor_info.monitor_url = boost::str( boost::format("inproc://%1%") % getUniqueUUID());
+            monitor_info.monitor_thread.reset(new boost::thread(boost::bind(&ZMQDirectIOClientConnection::socketMonitor, this)));
+            
+            err = zmq_socket_monitor(socket_priority, monitor_info.monitor_url.c_str(), ZMQ_EVENT_ALL);
+            if(err) throw chaos::CException(err, "Error activating monitor on service socket", __FUNCTION__);
+        } else {
+            DBG << "Monitoring DISABLED ";
+        }
+        #endif
+
         url = boost::str( boost::format("tcp://%1%") % priority_endpoint);
         DEBUG_CODE(DBG << "connect to priority endpoint " << url;)
         err = zmq_connect(socket_priority, url.c_str());

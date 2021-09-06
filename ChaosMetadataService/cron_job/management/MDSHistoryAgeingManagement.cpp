@@ -20,11 +20,13 @@
  */
 
 #include "MDSHistoryAgeingManagement.h"
-#include "../../DriverPoolManager.h"
+#include <chaos_service_common/DriverPoolManager.h>
 #include "../../object_storage/object_storage.h"
 #include "../../ChaosMetadataService.h"
 #include <chaos/common/utility/TimingUtil.h>
 using namespace chaos::common::utility;
+using namespace chaos::service_common;
+
 using namespace chaos::metadata_service::cron_job;
 using namespace chaos::metadata_service::persistence::data_access;
 using namespace chaos::metadata_service::object_storage::abstraction;

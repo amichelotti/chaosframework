@@ -22,7 +22,7 @@
 #ifndef __CHAOSFramework__CacheDriverMetricCollector__
 #define __CHAOSFramework__CacheDriverMetricCollector__
 
-#include "CacheDriver.h"
+#include <chaos/common/caching_system/CacheDriver.h>
 
 #include <chaos/common/metric/metric.h>
 
@@ -36,8 +36,8 @@ namespace chaos {
              Virtual driver that permit to colelct metric on cache driver
              */
             class CacheDriverMetricCollector:
-            public CacheDriver {
-                CacheDriver *wrapped_cache_driver;
+            public chaos::common::cache_system::CacheDriver {
+                chaos::common::cache_system::CacheDriver *wrapped_cache_driver;
                 //! count the pack that are been set to the cache
                 chaos::common::metric::CounterUniquePtr metric_counter_set_pack_count_uptr;
                 //! count the total bandwith in set caching operation
@@ -56,17 +56,17 @@ namespace chaos {
                 
             public:
                 //!base constructo rwith the wrapped dariver
-                CacheDriverMetricCollector(CacheDriver *_wrapped_cache_driver);
+                CacheDriverMetricCollector(chaos::common::cache_system::CacheDriver *_wrapped_cache_driver);
                 ~CacheDriverMetricCollector();
                 //!inherited method
                 int putData(const std::string& key,
-                            CacheData data);
+                            chaos::common::cache_system::CacheData data);
                 //!inherited method
                 int getData(const std::string& key,
-                            CacheData& data);
+                            chaos::common::cache_system::CacheData& data);
                 //!inherited method
                 int getData(const ChaosStringVector&    keys,
-                            MultiCacheData&             multi_data);
+                            chaos::common::cache_system::MultiCacheData&             multi_data);
                 //!inherited method
                 int addServer(const std::string& server_desc);
                 //!inherited method

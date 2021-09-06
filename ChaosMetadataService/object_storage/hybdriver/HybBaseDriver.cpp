@@ -43,7 +43,7 @@ using namespace chaos::metadata_service::object_storage::abstraction;
 
 HybBaseDriver::HybBaseDriver(const std::string& name):
 AbstractPersistenceDriver(name),
-BaseMongoDBDiver(){}
+BaseMongoDBDriver(){}
 
 HybBaseDriver::~HybBaseDriver() {}
 
@@ -72,11 +72,11 @@ void HybBaseDriver::init(void *init_data) throw (chaos::CException) {
     if(obj_stoarge_kvp.count("minPoolSize")) {
     }
     //initilize pool
-    BaseMongoDBDiver::initPool(url_list, user, password, database);
+    BaseMongoDBDriver::initPool(url_list, user, password, database);
     
     //register the data access implementations
     HybBaseDataAccess *acc = dataAccessImpl();
-    acc->pool_ref = BaseMongoDBDiver::getSharedPool();
+    acc->pool_ref = BaseMongoDBDriver::getSharedPool();
     registerDataAccess<ObjectStorageDataAccess>(acc);
 }
 

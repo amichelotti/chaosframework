@@ -214,7 +214,7 @@ delete(x);
                     
                     if(_temp_resource_lot.get() == NULL) {
                         //error creating resource
-                        ERR_LOG(ResourcePool) << CHAOS_FORMAT("Error creating new resource for %1%",%pool_identity);
+                        ERR_LOG(ResourcePool) << CHAOS_FORMAT("Error creating new resource for %1% resources=%2% alive for %3% ms",%pool_identity %created_resources %alive_for_ms);
                     } else {
                         //all is gone well so we can release the temp smatr pointer to result pointer
                         r_pool.push_front(_temp_resource_lot.release());

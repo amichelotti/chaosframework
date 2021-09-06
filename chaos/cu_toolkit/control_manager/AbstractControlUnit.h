@@ -28,7 +28,6 @@
 #include <string>
 #include <vector>
 
-#include <json/json.h>
 
 #include <chaos/common/action/ActionDescriptor.h>
 #include <chaos/common/action/DeclareAction.h>
@@ -197,7 +196,6 @@ class AbstractControlUnit : public DeclareAction,
                  in case isCUParamInJson return false the root json document
                  will contains NULL value.
                  */
-  const Json::Value& getCUParamJsonRootElement();
 
   //! return the type of the control unit
   const std::string& getCUType();
@@ -268,9 +266,7 @@ class AbstractControlUnit : public DeclareAction,
   std::string control_unit_param;
   //!decode control unit paramete in json if conversion is applicable
   bool         is_control_unit_json_param;
-  Json::Reader json_reader;
-  Json::Value  json_parameter_document;
-
+  
   //specify the counter updated by the mds on every initilization that will represent the run of work
   int64_t run_id;
 
@@ -302,7 +298,7 @@ class AbstractControlUnit : public DeclareAction,
   uint32_t push_dataset_size;
   uint64_t push_tot_size;
   uint64_t last_push;
-  int32_t  ds_update_anyway;
+  int32_t  ds_update_anyway,log_maxupdate_ms;
   //! identify last timestamp whene the push rate has been acquired;
   uint64_t last_push_rate_grap_ts;
 
@@ -586,8 +582,9 @@ class AbstractControlUnit : public DeclareAction,
   } checkAttribute_t;
  // bidir (set/readout) to check
   std::vector<checkAttribute_t > ioTocheck;
-  std::vector<checkAttribute_t > oTocheck;
+  std::vector<checkAttribute_t > limitTocheck;
   int checkFn(double sval, double rval, const chaos::common::data::RangeValueInfo& i);
+  int checkLimFn(double rval, const chaos::common::data::RangeValueInfo& i,int dir);
 
   void addPublicDriverPropertyToDataset(bool addDriverHandlers = true);
   void updateDatasetFromDriverProperty();

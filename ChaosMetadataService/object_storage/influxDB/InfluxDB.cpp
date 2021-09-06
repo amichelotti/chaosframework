@@ -77,7 +77,15 @@ InfluxDB::~InfluxDB() {
   push_end=true;
   push_th.join();
 }
+inline bool skipDefault(const std::string& name){
+  if(name==chaos::DataPackCommonKey::DPCK_DATASET_TYPE) return true;
+  if(name==chaos::DataPackCommonKey::DPCK_DEVICE_ID) return true;
+  if(name==chaos::DataServiceNodeDefinitionKey::DS_STORAGE_TYPE) return true;
+  if(name==chaos::DataPackCommonKey::NODE_MDS_TIMEDIFF) return true;
 
+
+return false;
+}
 int InfluxDB::pushObject(const std::string&                       key,
                          const ChaosStringSetConstSPtr            meta_tags,
                          const chaos::common::data::CDataWrapper& stored_object) {
@@ -88,6 +96,8 @@ int InfluxDB::pushObject(const std::string&                       key,
     return -1;
   }
   const uint64_t now = chaos::common::utility::TimingUtil::getTimeStamp();
+
+ 
 
   //
   const int64_t ts = stored_object.getInt64Value(chaos::DataPackCommonKey::DPCK_TIMESTAMP);//TimingUtil::getTimeStamp() & 0xFFFFFFFFFFFFFF00ULL;
@@ -101,7 +111,7 @@ int InfluxDB::pushObject(const std::string&                       key,
 
   ChaosStringVector contained_key;
   stored_object.getAllKey(contained_key);
-  boost::mutex::scoped_lock ll(iolock);
+  // boost::mutex::scoped_lock ll(iolock);
   if (nmeas >= MAX_MEASURES) {
       ERR<<" reached max number of measurements sending "<<nmeas<< " measurements";
       return -1;
@@ -113,7 +123,7 @@ int InfluxDB::pushObject(const std::string&                       key,
   }
   int first=0;
   for (std::vector<std::string>::iterator i = contained_key.begin(); i != contained_key.end(); i++) {
-    if (*i != chaos::DataPackCommonKey::DPCK_DEVICE_ID) {
+    if (!skipDefault(*i)) {
       char c=(first==0)?' ':',';
       switch (stored_object.getValueType(*i)) {
         case DataType::TYPE_BOOLEAN:
@@ -134,11 +144,15 @@ int InfluxDB::pushObject(const std::string&                       key,
           first++;
 
           break;
-        case DataType::TYPE_STRING:
-          measurements << c << *i << "=\"" << stored_object.getStringValue(*i) << "\"";
-          first++;
-
-         nmeas++;
+        case DataType::TYPE_STRING:{
+          std::string val=stored_object.getStringValue(*i);
+          if((val.size()>0)&&(val.size()<(1024*64))){
+            
+            measurements << c << *i << "=\"" << val << "\"";
+            first++;
+            nmeas++;
+          }
+        }
         default:
         break;
 
@@ -254,7 +268,7 @@ if (nmeas >0) {
     std::string ret;
     int res=influxdb_cpp::push_db( ret, measurements.str(), si);
     if(res!=0){
-      ERR<<" result:"<<res<<" database:"<<ret<<" sent:\""<<measurements.str()<<"\"";
+      ERR<<" result:"<<res<<" database:"<<ret<<" sent:"<<nmeas<<" mesurements, size:"<<measurements.str().size();
     }
  measurements.clear();
     measurements.str("");

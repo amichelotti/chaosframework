@@ -20,10 +20,11 @@
  */
 
 #include "AbstractApi.h"
-#include "../DriverPoolManager.h"
+#include <chaos_service_common/DriverPoolManager.h>
 #include "../batch/MDSBatchExecutor.h"
 
 using namespace chaos::common::network;
+using namespace chaos::service_common;
 
 using namespace chaos::metadata_service::api;
 using namespace chaos::metadata_service::batch;

@@ -24,13 +24,13 @@
 
 using namespace chaos::service_common::persistence::mongodb::mongodb_cxx;
 
-mongocxx::instance BaseMongoDBDiver::drv_instance = {};
+mongocxx::instance BaseMongoDBDriver::drv_instance = {};
 
-BaseMongoDBDiver::BaseMongoDBDiver() {}
+BaseMongoDBDriver::BaseMongoDBDriver() {}
 
-BaseMongoDBDiver::~BaseMongoDBDiver() {}
+BaseMongoDBDriver::~BaseMongoDBDriver() {}
 
-void BaseMongoDBDiver:: initPool(const ChaosStringVector& url_list,
+void BaseMongoDBDriver::initPool(const ChaosStringVector& url_list,
                                 const std::string& user,
                                 const std::string& password,
                                 const std::string& database) {
@@ -64,11 +64,11 @@ void BaseMongoDBDiver:: initPool(const ChaosStringVector& url_list,
     pool_shared_ptr = ChaosSharedPtr<mongocxx::pool>(new mongocxx::pool(uri));
 }
 
-mongocxx::pool& BaseMongoDBDiver::getPool() {
+mongocxx::pool& BaseMongoDBDriver::getPool() {
     CHAOS_ASSERT(pool_shared_ptr)
     return *pool_shared_ptr;
 }
 
-ChaosSharedPtr<mongocxx::pool> BaseMongoDBDiver::getSharedPool() {
+ChaosSharedPtr<mongocxx::pool> BaseMongoDBDriver::getSharedPool() {
     return pool_shared_ptr;
 }

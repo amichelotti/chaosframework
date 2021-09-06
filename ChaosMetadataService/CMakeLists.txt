@@ -198,21 +198,22 @@ ExternalProject_Add(
 include_directories(chaos/common ../)
 link_directories(${CMAKE_INSTALL_PREFIX}/lib64)
 
-SET(cnd_src	main.cpp
+SET(cnd_src	
             ChaosMetadataService.cpp
-            DriverPoolManager.cpp
             QueryDataConsumer.cpp
             QueryDataMsgPSConsumer.cpp
             )
 
-SET(cnd_src  ${cnd_src} ../chaos_service_common/persistence/mongodb/MongoDBHAConnectionManager.cpp
-                        ../chaos_service_common/persistence/mongodb/MongoDBAccessor.cpp)
+SET(service_src  ../chaos_service_common/persistence/mongodb/MongoDBHAConnectionManager.cpp
+                  ../chaos_service_common/persistence/mongodb/MongoDBAccessor.cpp
+                  ../chaos_service_common/DriverPoolManager.cpp ../chaos_service_common/health_system/HealtManagerDirect.cpp)
 
-SET(cnd_src  ${cnd_src} ../chaos_service_common/persistence/mongodb/mongodb_cxx/MongoDBCXXDriver.cpp)
+SET(service_src  ${service_src} ../chaos_service_common/persistence/mongodb/mongodb_cxx/MongoDBCXXDriver.cpp)
 
 
-SET(cnd_src  ${cnd_src} ../chaos_service_common/persistence/data_access/AbstractDataAccess.cpp
-						../chaos_service_common/persistence/data_access/AbstractPersistenceDriver.cpp)
+SET(service_src  ${service_src} ../chaos_service_common/persistence/data_access/AbstractDataAccess.cpp
+						../chaos_service_common/persistence/data_access/AbstractPersistenceDriver.cpp
+            ../chaos_service_common/ChaosManager.cpp)
 
 SET(cnd_src  ${cnd_src}	cron_job/MDSCronusManager.cpp
                         cron_job/MDSCronJob.cpp
@@ -221,23 +222,26 @@ SET(cnd_src  ${cnd_src}	cron_job/MDSCronusManager.cpp
 SET(cnd_src  ${cnd_src}	common/CUCommonUtility.cpp
                         common/LogUtility.cpp)
 
-SET(cnd_src  ${cnd_src}	api/ApiManagment.cpp
+  
+SET(api_src  	api/ApiManagment.cpp
                         api/AbstractApi.cpp
                         api/AbstractApiGroup.cpp)
 
-SET(cnd_src  ${cnd_src}	api/logging/LoggingApiGroup.cpp
+SET(api_src  ${api_src}	api/logging/LoggingApiGroup.cpp
                         api/logging/SubmitEntry.cpp
+                        api/logging/SubmitEntryBase.cpp
+
                         api/logging/SearchLogEntry.cpp
                         api/logging/GetLogForSourceUID.cpp
                         api/logging/GetLogDomainForSourceUID.cpp)
 
-SET(cnd_src  ${cnd_src}	api/groups/GroupsApiGroup.cpp
+SET(api_src  ${api_src}	api/groups/GroupsApiGroup.cpp
                         api/groups/AddNode.cpp
                         api/groups/DeleteNode.cpp
                         api/groups/GetDomains.cpp
                         api/groups/GetNodeChilds.cpp)
 
-SET(cnd_src  ${cnd_src}	api/service/ServiceApiGroup.cpp
+SET(api_src  ${api_src}	api/service/ServiceApiGroup.cpp
                         api/service/ResetAll.cpp
                         api/service/GetAllSnapshot.cpp
                         api/service/RestoreSnapshot.cpp
@@ -251,11 +255,11 @@ SET(cnd_src  ${cnd_src}	api/service/ServiceApiGroup.cpp
                         api/service/RemoveVariable.cpp
                         api/service/GetVariable.cpp)
 
-SET(cnd_src  ${cnd_src}	api/healt/HealtApiGroup.cpp
+SET(api_src  ${api_src}	api/healt/HealtApiGroup.cpp
                         api/healt/ProcessHello.cpp
                         api/healt/ProcessBye.cpp)
 
-SET(cnd_src  ${cnd_src}	api/unit_server/UnitServerApiGroup.cpp
+SET(api_src  ${api_src}	api/unit_server/UnitServerApiGroup.cpp
                         api/unit_server/GetDescription.cpp
                         api/unit_server/LoadUnloadControlUnit.cpp
                         api/unit_server/NewUS.cpp
@@ -263,13 +267,13 @@ SET(cnd_src  ${cnd_src}	api/unit_server/UnitServerApiGroup.cpp
                         api/unit_server/ManageCUType.cpp
                         api/unit_server/GetSetFullUnitServer.cpp)
 
-SET(cnd_src  ${cnd_src}	api/data_service/DataServiceApiGroup.cpp
+SET(api_src  ${api_src}	api/data_service/DataServiceApiGroup.cpp
                         api/data_service/AssociationControlUnit.cpp
                         api/data_service/GetAssociationByDS.cpp
                         api/data_service/GetAllDataService.cpp
                         api/data_service/GetBestEndpoints.cpp)
 
-SET(cnd_src  ${cnd_src}	api/control_unit/SetInputDatasetAttributeValues.cpp
+SET(api_src  ${api_src}	api/control_unit/SetInputDatasetAttributeValues.cpp
                         api/control_unit/ControlUnitGroup.cpp
                         api/control_unit/SetInstanceDescription.cpp
                         api/control_unit/SearchInstancesByUS.cpp
@@ -285,7 +289,7 @@ SET(cnd_src  ${cnd_src}	api/control_unit/SetInputDatasetAttributeValues.cpp
                         api/control_unit/SendStorageBurst.cpp)
 
 
-SET(cnd_src  ${cnd_src}	api/node/NodeGroup.cpp
+SET(api_src  ${api_src}	api/node/NodeGroup.cpp
                         api/node/NodeCreateUnitServer.cpp
                         api/node/NodeGetDescription.cpp
                         api/node/NodeRegister.cpp
@@ -314,7 +318,7 @@ SET(cnd_src  ${cnd_src}	api/node/NodeGroup.cpp
                         api/node/GetPropertyDefaultValues.cpp
                         api/node/GetCommandAndTemplateDescription.cpp)
 
-SET(cnd_src  ${cnd_src}	api/script/ScriptGroupApi.cpp
+SET(api_src  ${api_src}	api/script/ScriptGroupApi.cpp
                         api/script/SearchScript.cpp
                         api/script/SaveScript.cpp
                         api/script/RemoveScript.cpp
@@ -325,7 +329,7 @@ SET(cnd_src  ${cnd_src}	api/script/ScriptGroupApi.cpp
                         api/script/UpdateScriptOnNode.cpp
                         api/script/UpdateBindType.cpp)
 
-SET(cnd_src  ${cnd_src}	api/agent/AgentApiGroup.cpp
+SET(api_src  ${api_src}	api/agent/AgentApiGroup.cpp
                         api/agent/LoadAgentDescription.cpp
                         api/agent/ListNodeForAgent.cpp
                         api/agent/GetAgentForNode.cpp
@@ -337,16 +341,13 @@ SET(cnd_src  ${cnd_src}	api/agent/AgentApiGroup.cpp
                         api/agent/GetManagementConfiguration.cpp
                         api/agent/SetManagementConfiguration.cpp)
 
-SET(cnd_src  ${cnd_src}	api/agent/logging/AgentLoggingApiGroup.cpp
+SET(api_src  ${api_src}	api/agent/logging/AgentLoggingApiGroup.cpp
                         api/agent/logging/GetProcessLogEntries.cpp
                         api/agent/logging/ManageNodeLogging.cpp)
 
-#Worker
-SET(cnd_src  ${cnd_src}	worker/DataWorker.cpp
-                        worker/DeviceSharedDataWorker.cpp)
 
 #Persistence
-SET(cnd_src  ${cnd_src} persistence/data_access/UnitServerDataAccess.cpp
+SET(api_src  ${api_src} persistence/data_access/UnitServerDataAccess.cpp
                         persistence/data_access/NodeDataAccess.cpp
                         persistence/data_access/UtilityDataAccess.cpp
                         persistence/data_access/ControlUnitDataAccess.cpp
@@ -357,7 +358,7 @@ SET(cnd_src  ${cnd_src} persistence/data_access/UnitServerDataAccess.cpp
 						persistence/data_access/ScriptDataAccess.cpp
                         persistence/data_access/AgentDataAccess.cpp)
 
-SET(cnd_src  ${cnd_src}	persistence/mongodb/MongoDBPersistenceDriver.cpp
+SET(api_src  ${api_src}	persistence/mongodb/MongoDBPersistenceDriver.cpp
                         persistence/mongodb/MongoDBUnitServerDataAccess.cpp
                         persistence/mongodb/MongoDBNodeDataAccess.cpp
                         persistence/mongodb/MongoDBUtilityDataAccess.cpp
@@ -369,30 +370,29 @@ SET(cnd_src  ${cnd_src}	persistence/mongodb/MongoDBPersistenceDriver.cpp
 						            persistence/mongodb/MongoDBScriptDataAccess.cpp
                         persistence/mongodb/MongoDBAgentDataAccess.cpp)
 #Caching
-SET(cnd_src  ${cnd_src}	cache_system/CacheDriver.cpp
-                        cache_system/CouchbaseCacheDriver.cpp)
+SET(api_src  ${api_src}	cache_system/CouchbaseCacheDriver.cpp)
 
 
 #Object Storage
-SET(cnd_src  ${cnd_src}	object_storage/abstraction/ObjectStorageDataAccess.cpp)
+SET(api_src  ${api_src}	object_storage/abstraction/ObjectStorageDataAccess.cpp)
 
-SET(cnd_src  ${cnd_src}	object_storage/mongodb/MongoDBObjectStorageDataAccess.cpp
+SET(api_src  ${api_src}	object_storage/mongodb/MongoDBObjectStorageDataAccess.cpp
                         object_storage/mongodb/MongoDBObjectStorageDriver.cpp
                         object_storage/mongodb/ShardKeyManagement.cpp)
 
 #mongodb new driver version
-SET(cnd_src  ${cnd_src} object_storage/mongodb_3/MongoDBObjectStorageDataAccess.cpp
+SET(api_src  ${api_src} object_storage/mongodb_3/MongoDBObjectStorageDataAccess.cpp
                         object_storage/mongodb_3/NewMongoDBObjectStorageDriver.cpp
                         object_storage/mongodb_3/ShardKeyManagement.cpp)
 
 
                         #POSIX FILE
-SET(cnd_src  ${cnd_src} object_storage/posixFile/PosixFile.cpp
+SET(posix_src  object_storage/posixFile/PosixFile.cpp
 object_storage/posixFile/PosixFileObjectStorageDriver.cpp
 object_storage/posixFile/BsonFStream.cpp object_storage/posixFile/FileLock.cpp)
 
 
-SET(cnd_src  ${cnd_src} object_storage/influxDB/InfluxDB.cpp
+SET(api_src  ${api_src} object_storage/influxDB/InfluxDB.cpp
 object_storage/influxDB/InfluxDBLogStorageDriver.cpp 
 #object_storage/influxDB/influxdb-cpp-rest/influxdb_simple_async_api.cpp 
 #object_storage/influxDB/influxdb-cpp-rest/influxdb_raw_db.cpp
@@ -400,13 +400,17 @@ object_storage/influxDB/InfluxDBLogStorageDriver.cpp
 )
 
 #hybrid base driver
-SET(cnd_src  ${cnd_src} object_storage/hybdriver/ShardKeyManagement.cpp
-                        object_storage/hybdriver/HybBaseDriver.cpp
-                        object_storage/hybdriver/HybBaseDataAccess.cpp)
+#SET(cnd_src  ${cnd_src} ${api_src} object_storage/hybdriver/ShardKeyManagement.cpp
+#                        object_storage/hybdriver/HybBaseDriver.cpp
+#                        object_storage/hybdriver/HybBaseDataAccess.cpp)
 
 #hybrid cassasndra storage driver
 # SET(cnd_src  ${cnd_src} object_storage/hybdriver/cassandra/CassHybObjectStorageDriver.cpp
 #                         object_storage/hybdriver/cassandra/CassHybDataAccess.cpp)
+
+#Worker
+SET(cnd_src  ${cnd_src}	worker/DataWorker.cpp
+                        worker/DeviceSharedDataWorker.cpp)
 
 SET(cnd_src  ${cnd_src}	batch/MDSBatchExecutor.cpp
                         batch/MDSBatchCommand.cpp)
@@ -440,14 +444,26 @@ SET(cnd_src  ${cnd_src}	worker/DeviceSharedDataWorkerMetricCollector.cpp
                         cache_system/CacheDriverMetricCollector.cpp)
 ENDIF(CHAOS_PROMETHEUS)
 
-ADD_EXECUTABLE(${PROJECT_NAME} ${cnd_src})
+IF (BUILD_FORCE_STATIC  )
+  ADD_LIBRARY(chaos_cds STATIC ${cnd_src} ${api_src} ${service_src} ${posix_src})
+  TARGET_LINK_LIBRARIES(chaos_cds chaos_common couchbaseS mongoclient mongocxx bsoncxx)
+ELSE (BUILD_FORCE_STATIC)
+  ADD_LIBRARY(chaos_cds SHARED ${cnd_src} ${api_src} ${service_src} ${posix_src})
+  set_target_properties(chaos_cds PROPERTIES VERSION 1.0.0 SOVERSION 1)
+ENDIF (BUILD_FORCE_STATIC)
+
+ADD_EXECUTABLE(${PROJECT_NAME} main.cpp )
 
 #add dependency
+add_dependencies(chaos_cds mongo-cxx-driver)
+
 add_dependencies(${PROJECT_NAME} mongo-cxx-driver)
 # add_dependencies(${PROJECT_NAME} cassandra-driver)
 
 FILE(GLOB files "../chaos_service_common/data/node/*.h")
 INSTALL(FILES ${files} DESTINATION include/chaos_service_common/data/node/)
+FILE(GLOB files "../chaos_service_common/*.h")
+INSTALL(FILES ${files} DESTINATION include/chaos_service_common/)
 
 CheckConfigureBuild(couchbaseS libcouchbase:chaos-0.1 "-DLCB_NO_SSL=true;-DLCB_NO_TESTS=true;-DLCB_NO_TOOLS=true;-DLCB_NO_PLUGINS=true" https://github.com/amichelotti)
 
@@ -462,22 +478,31 @@ SET(BUILD_LIBRARY ${BUILD_LIBRARY} chaos_common)
 SET(BUILD_LIBRARY ${BUILD_LIBRARY} boost_random)
 SET(BUILD_LIBRARY ${BUILD_LIBRARY} couchbaseS)
 SET(BUILD_LIBRARY ${BUILD_LIBRARY} mongoclient)
-IF(CERN_ROOT)
-SET(BUILD_LIBRARY ${BUILD_LIBRARY} chaos_driver_misc_cernroot Tree tbb)
-ENDIF()
+
+
+#IF(CERN_ROOT)
+#SET(BUILD_LIBRARY ${BUILD_LIBRARY} chaos_driver_misc_cernroot Tree tbb)
+#ENDIF()
 MESG("Enable link to mongocxx and bsoncxx library")
 SET(BUILD_LIBRARY ${BUILD_LIBRARY} mongocxx)
 SET(BUILD_LIBRARY ${BUILD_LIBRARY} bsoncxx)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE USE_MONGODB3_DRIVER=1)
+target_compile_definitions(chaos_cds PRIVATE USE_MONGODB3_DRIVER=1)
 
 # MESG("Enable link to cassandra and bsoncxx library")
 # SET(BUILD_LIBRARY ${BUILD_LIBRARY} uv)
 # SET(BUILD_LIBRARY ${BUILD_LIBRARY} cassandra)
 # target_compile_definitions(${PROJECT_NAME} PRIVATE USE_CASSANDRA_DRIVER=1)
+TARGET_LINK_LIBRARIES(chaos_cds ${BUILD_LIBRARY})
 
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE ${BUILD_LIBRARY})
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} chaos_cds ${BUILD_LIBRARY})
+
+
 #INSTALL_TARGETS(/bin ${PROJECT_NAME})
 INSTALL(TARGETS ${PROJECT_NAME}
         DESTINATION "bin"
+        PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+INSTALL(TARGETS chaos_cds
+        DESTINATION "lib"
         PERMISSIONS OWNER_WRITE OWNER_READ OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)

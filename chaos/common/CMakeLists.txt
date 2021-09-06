@@ -282,7 +282,7 @@ SET(common_lib_src  ChaosCommon.cpp
 
 
 SET(common_lib_src ${common_lib_src}
-                    additional_lib/mongoose.c additional_lib/sqlite3.c additional_lib/base64.cpp)
+                    additional_lib/mongoose.c additional_lib/HttpPost.cpp additional_lib/sqlite3.c additional_lib/base64.cpp)
 
 
 SET(common_lib_src ${common_lib_src}
@@ -552,6 +552,11 @@ SET(common_lib_src ${common_lib_src}
 SET(common_lib_src ${common_lib_src}
                     thread/WaitSemaphore.cpp)
 
+SET(common_lib_src ${common_lib_src}
+                    caching_system/CacheDriver.cpp
+                    caching_system/cache_system_types.cpp
+                    )
+
 IF(CHAOS_PROMETHEUS)
 MESG("Add source code for metrics: ${CHAOS_PROMETHEUS}")  
 ADD_DEFINITIONS(-DCHAOS_PROMETHEUS)
@@ -610,7 +615,7 @@ ENDIF()
 
 
 IF(WIN32)
-MESSAGE("ALEDEBUG CMAKE_INSTALL_PREFIX" ${CMAKE_INSTALL_PREFIX} )
+MESSAGE("WIN32 CMAKE_INSTALL_PREFIX" ${CMAKE_INSTALL_PREFIX} )
 set (BOOST_LIBPATH  ${CMAKE_INSTALL_PREFIX}/boostinstall/lib )
 SET (ZMQ_LIBPATH ${CMAKE_INSTALL_PREFIX}/lib)
 SET(BUILD_LIBRARY ${BUILD_LIBRARY} jsoncpp.lib)

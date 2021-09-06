@@ -32,6 +32,7 @@ using namespace chaos::metadata_service::object_storage;
 using namespace boost::filesystem;
 #define MAX_PATH_LEN 512
 #include "lz4_stream.h"
+#undef CERN_ROOT
 #ifdef CERN_ROOT
 #include <driver/misc/models/cernRoot/rootUtil.h>
 #include "TFile.h"
@@ -1424,7 +1425,7 @@ void PosixFile::timeout() {
   for (write_path_t::iterator id = s_lastWriteDir.begin(); id != s_lastWriteDir.end(); ) {
     uint64_t ts = chaos::common::utility::TimingUtil::getTimeStamp();
 
-    if ((ts - id->second.ts) > (POSIX_MSEC_QUANTUM)) {
+    if ((ts - id->second.unordered_ts) > (POSIX_MSEC_QUANTUM)) {
       //not anymore used
       /* if (last_access_mutex.try_lock() == false) {
         continue;

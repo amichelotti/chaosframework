@@ -221,11 +221,12 @@ bool AttributeValue::setValue(const CDataVariant& attribute_value,
         case DataType::TYPE_BOOLEAN: {
              if(!grow(sizeof(bool))) return false;
             bool bv = attribute_value.asBool();
+            old_value.bdata=*(bool*)value_buffer;
+            *(bool*)value_buffer=bv;
+
             //copy string to buffer
              if(old_value.bdata!=bv){
-                *(bool*)value_buffer=bv;
                 tag_has_changed =true;
-                old_value.bdata=bv;
             } else {
                 tag_has_changed =false;
 
@@ -238,10 +239,12 @@ bool AttributeValue::setValue(const CDataVariant& attribute_value,
         case DataType::TYPE_INT32: {
             if(!grow(sizeof(int32_t))) return false;
             int32_t i32v = attribute_value.asInt32();
+             old_value.i32data=*(int32_t*)value_buffer;
+
+            *(int32_t*)value_buffer=i32v;
+
             if(old_value.i32data!=i32v){
-                *(int32_t*)value_buffer=i32v;
                 tag_has_changed =true;
-                old_value.i32data=i32v;
             }else {
                 tag_has_changed =false;
 
@@ -257,10 +260,12 @@ bool AttributeValue::setValue(const CDataVariant& attribute_value,
         case DataType::TYPE_INT64: {
             if(!grow(sizeof(int64_t))) return false;
             int64_t i64v = attribute_value.asInt64();
+            old_value.i64data=*(int64_t*)value_buffer;
+
+            *(int64_t*)value_buffer=i64v;
+
              if(old_value.i64data!=i64v){
-                *(int64_t*)value_buffer=i64v;
                 tag_has_changed =true;
-                old_value.i64data=i64v;
             }else {
                 tag_has_changed =false;
 
@@ -274,10 +279,11 @@ bool AttributeValue::setValue(const CDataVariant& attribute_value,
         case DataType::TYPE_DOUBLE: {
             if(!grow(sizeof(double))) return false;
             double dv = attribute_value.asDouble();
+            old_value.ddata=*(double*)value_buffer;
+            *(double*)value_buffer=dv;
+
              if(old_value.ddata!=dv){
-                *(double*)value_buffer=dv;
                 tag_has_changed =true;
-                old_value.ddata=dv;
             }else {
                 tag_has_changed =false;
 
@@ -292,14 +298,16 @@ bool AttributeValue::setValue(const CDataVariant& attribute_value,
 
         case DataType::TYPE_STRING: {
             const std::string value = attribute_value.asString();
+            old_string=(char*)value_buffer;
+            char*ptr=(char*)value_buffer;
+
+            memcpy((void*)ptr,value.c_str(),value.size());
+            *(ptr+value.size())=0;
+
             if(old_string!=value){
                 if(!grow((uint32_t)value.size()+1)) return false;
                 //copy string to buffer
-                char*ptr=(char*)value_buffer;
-                memcpy((void*)ptr,value.c_str(),value.size());
-                *(ptr+value.size())=0;
                 tag_has_changed =true;
-                old_string=value;
 
             } else {
                 tag_has_changed =false;
