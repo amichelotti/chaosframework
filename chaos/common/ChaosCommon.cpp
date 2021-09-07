@@ -21,6 +21,8 @@
 #include <chaos/common/ChaosCommon.h>
 #include <chaos/common/chaos_errors.h>
 #include <chaos/common/network/NetworkBroker.h>
+#include <chaos/common/healt_system/HealtManager.h>
+#include <chaos/common/metadata_logging/metadata_logging.h>
 
 #if CHAOS_PROMETHEUS
 #include <chaos/common/metric/MetricManager.h>
@@ -49,6 +51,8 @@ using namespace chaos;
 using namespace chaos::common::data;
 using namespace chaos::common::network;
 using namespace chaos::common::async_central;
+using namespace chaos::common::healt_system;
+using namespace chaos::common::metadata_logging;
 
 #ifndef _WIN32
 //http://stackoverflow.com/questions/11465148/using-sigaction-c-cpp
@@ -303,8 +307,13 @@ void ChaosAbstractCommon::init(void *init_data) {
                                                                                                     NodeDomainAndActionRPC::RPC_DOMAIN,
                                                                                                     NodeDomainAndActionRPC::ACTION_NODE_SHUTDOWN,
                                                                                                     "Shutdown node immediately");
+        AbstActionDescShrPtr action_description4 = addActionDescritionInstance<ChaosAbstractCommon>(this,
+                                                                                                    &ChaosAbstractCommon::clearAlarm,
+                                                                                                    NodeDomainAndActionRPC::RPC_DOMAIN,
+                                                                                                    NodeDomainAndActionRPC::ACTION_NODE_CLRALRM,
+                                                                                                    "Clear Alarms");                                                                                    
         
-        AbstActionDescShrPtr actionDescription3 = addActionDescritionInstance<ChaosAbstractCommon>(this,
+        AbstActionDescShrPtr actionDescription5 = addActionDescritionInstance<ChaosAbstractCommon>(this,
                                                                                                    &ChaosAbstractCommon::_registrationAck,
                                                                                                    NodeDomainAndActionRPC::RPC_DOMAIN,
                                                                                                    NodeDomainAndActionRPC::ACTION_REGISTRATION_ACK,
@@ -434,3 +443,48 @@ CDWUniquePtr ChaosAbstractCommon::nodeShutDown(CHAOS_UNUSED CDWUniquePtr data) {
     }
     return CDWUniquePtr();   
 }
+CDWUniquePtr ChaosAbstractCommon::clearAlarm(CHAOS_UNUSED CDWUniquePtr data) {
+
+    if(data.get()&&data->hasKey(NodeDefinitionKey::NODE_UNIQUE_ID)){
+        std::string uid=data->getStringValue(NodeDefinitionKey::NODE_UNIQUE_ID);
+
+        if(uid.size()) {
+            logError(uid,"Clear Alarm State",__PRETTY_FUNCTION__,0);
+            return data;   
+
+        
+        } 
+    }
+    LERR_<<"Clear alarms without '"<<NodeDefinitionKey::NODE_UNIQUE_ID<<"'";
+
+    return data;   
+}
+void ChaosAbstractCommon::logError(const std::string&uid, const std::string&msg,const std::string&org,int lvl){
+    chaos::common::metadata_logging::StandardLoggingChannel* standard_logging_channel;
+    StandardLoggingChannel::LogLevel llvl=chaos::common::metadata_logging::StandardLoggingChannel::LogLevelError;
+    standard_logging_channel = (StandardLoggingChannel*)MetadataLoggingManager::getInstance()->getChannel("StandardLoggingChannel");
+    LDBG_ << uid<< "] Alarm level:"<<lvl<<" message:"<<msg<<" origin:"<<org;
+
+    if(standard_logging_channel){
+        if(lvl==1){
+            llvl=chaos::common::metadata_logging::StandardLoggingChannel::LogLevelWarning;
+        } else if((lvl==0)||(lvl==-1)){
+            llvl=chaos::common::metadata_logging::StandardLoggingChannel::LogLevelInfo;
+
+        }
+        //chaos::common::metadata_logging::StandardLoggingChannel::LogLevelError;
+        standard_logging_channel->logMessage(uid,
+                                       org,
+                                       llvl,
+                                       msg);
+    } else {
+        LERR_<<"Cannot retrive Standard logging channel";
+    }
+    if(lvl!=-1){
+        // if -1 just make info without change alarm level
+        HealtManager::getInstance()->addNodeMetricValue(uid,
+                                                                ControlUnitHealtDefinitionValue::CU_HEALT_OUTPUT_ALARM_LEVEL,
+                                                                lvl);
+    }
+}
+
