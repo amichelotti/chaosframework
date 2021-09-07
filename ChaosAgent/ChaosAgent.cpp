@@ -240,8 +240,9 @@ std::string ChaosAgent::scriptWorkingDir(std::string scriptname,std::string uid)
     }
       DBG<<"creating file \""<<fname<<"\"";
 
-  std::ofstream fs(fname);
-  if(fs.is_open()){
+  std::ofstream fs;
+  fs.open(fname);
+  if(!fs.fail()){
     fs.write(towrite->getBuffer(),towrite->getBufferSize());
     fs.close();
     DBG<<"written \""<<fname<<"\""<<towrite->getBufferSize()<<" bytes written";
@@ -249,7 +250,7 @@ std::string ChaosAgent::scriptWorkingDir(std::string scriptname,std::string uid)
     return fname;
   } else {
       std::stringstream ss;
-      ss<<"cannot write file \""<<fname<<"\" of "<<towrite->getBufferSize()<<" bytes";
+      ss<<"cannot write file \""<<fname<<"\" of "<<towrite->getBufferSize()<<" bytes, error:"<< strerror(errno);
     logError(ChaosAgent::getInstance()->settings.agent_uid,ss.str(),__PRETTY_FUNCTION__);
 
 //throw CException(-10, ss.str(), __PRETTY_FUNCTION__);
