@@ -143,6 +143,14 @@ void HealtManagerBase::addNewNode(const std::string& node_uid) {
                                               ChaosSharedPtr<HealtMetric>(new Int64HealtMetric(NodeHealtDefinitionKey::NODE_HEALT_PROCESS_SWAP))));
     healt_metric->map_metric.insert(make_pair(NodeHealtDefinitionKey::NODE_HEALT_PROCESS_UPTIME,
                                               ChaosSharedPtr<HealtMetric>(new Int64HealtMetric(NodeHealtDefinitionKey::NODE_HEALT_PROCESS_UPTIME))));
+    
+    healt_metric->map_metric.insert(make_pair(ControlUnitHealtDefinitionValue::CU_HEALT_OUTPUT_ALARM_LEVEL,
+                                              ChaosSharedPtr<HealtMetric>(new Int32HealtMetric(ControlUnitHealtDefinitionValue::CU_HEALT_OUTPUT_ALARM_LEVEL))));
+    
+    healt_metric->map_metric.insert(make_pair(ControlUnitHealtDefinitionValue::CU_HEALT_OUTPUT_ALARM_MASKED,
+                                              ChaosSharedPtr<HealtMetric>(new Int32HealtMetric(ControlUnitHealtDefinitionValue::CU_HEALT_OUTPUT_ALARM_MASKED))));
+    
+  
     //reset the counter for publishing pushses
     healt_metric->fire_slot = (last_fire_counter_set++ % HEALT_FIRE_SLOTS);
     

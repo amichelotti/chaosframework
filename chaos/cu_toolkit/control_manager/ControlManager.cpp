@@ -336,12 +336,7 @@ void ControlManager::submitControlUnit(ChaosSharedPtr<AbstractControlUnit> contr
   HealtManager::getInstance()->addNodeMetric(control_unit_instance->getCUID(),
                                              ControlUnitHealtDefinitionValue::CU_HEALT_OUTPUT_TOT_PUSH_KSIZE,
                                              chaos::DataType::TYPE_INT32);
-  HealtManager::getInstance()->addNodeMetric(control_unit_instance->getCUID(),
-                                             ControlUnitHealtDefinitionValue::CU_HEALT_OUTPUT_ALARM_MASKED,
-                                             chaos::DataType::TYPE_INT32);
-  HealtManager::getInstance()->addNodeMetric(control_unit_instance->getCUID(),
-                                             ControlUnitHealtDefinitionValue::CU_HEALT_OUTPUT_ALARM_LEVEL,
-                                             chaos::DataType::TYPE_INT32);
+  
 
   queue_submitted_cu.push(control_unit_instance);
 

@@ -248,7 +248,7 @@ void AgentRegister::timeout() {
                     it++) {
                        chaos::common::data::CDWUniquePtr param=ChaosAgent::getInstance()->checkAndPrepareScript(*it);
                     ///
-                    if(it->auto_start) {
+                    if(param.get()&&it->auto_start) {
                         INFO << CHAOS_FORMAT("Autostart node %1%", %it->associated_node_uid);
                         LAUNCH_PROCESS(*it,param);
                         if(it->keep_alive) {
