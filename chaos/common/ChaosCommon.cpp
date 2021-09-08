@@ -460,10 +460,13 @@ CDWUniquePtr ChaosAbstractCommon::clearAlarm(CHAOS_UNUSED CDWUniquePtr data) {
     return data;   
 }
 void ChaosAbstractCommon::logError(const std::string&uid, const std::string&msg,const std::string&org,int lvl){
+    static int oldlvl=-3;
+    static uint32_t nmsg=0;
+
     chaos::common::metadata_logging::StandardLoggingChannel* standard_logging_channel;
     StandardLoggingChannel::LogLevel llvl=chaos::common::metadata_logging::StandardLoggingChannel::LogLevelError;
     standard_logging_channel = (StandardLoggingChannel*)MetadataLoggingManager::getInstance()->getChannel("StandardLoggingChannel");
-    LDBG_ << uid<< "] Alarm level:"<<lvl<<" message:"<<msg<<" origin:"<<org;
+    LDBG_ << uid<< "- ["<<nmsg<<"] Alarm level:"<<lvl<<" message:"<<msg<<" origin:"<<org;
 
     if(standard_logging_channel){
         if(lvl==1){
@@ -472,11 +475,15 @@ void ChaosAbstractCommon::logError(const std::string&uid, const std::string&msg,
             llvl=chaos::common::metadata_logging::StandardLoggingChannel::LogLevelInfo;
 
         }
+        if(!((lvl>-1) && (lvl!=oldlvl))){
         //chaos::common::metadata_logging::StandardLoggingChannel::LogLevelError;
-        standard_logging_channel->logMessage(uid,
-                                       org,
-                                       llvl,
-                                       msg);
+            standard_logging_channel->logMessage(uid,
+                                        org,
+                                        llvl,
+                                        msg);
+            oldlvl=lvl;
+            nmsg++;
+        }
     } else {
         LERR_<<"Cannot retrive Standard logging channel";
     }
