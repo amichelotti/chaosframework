@@ -136,6 +136,22 @@ ExternalProject_Add(
  LOG_CONFIGURE ON
  LOG_BUILD ON)
 
+
+ MESG("Install c couchbase driver")
+ExternalProject_Add(
+ couchbase-c-driver
+ GIT_REPOSITORY https://github.com/couchbase/libcouchbase.git
+ GIT_TAG release-2.10
+ PREFIX "${CMAKE_BINARY_DIR}/ext_dep/couchbase-c-driver-prefix"
+ SOURCE_DIR "${CMAKE_BINARY_DIR}/ext_dep/couchbase-c-driver-src"
+ BINARY_DIR "${CMAKE_BINARY_DIR}/ext_dep/couchbase-c-driver-build"
+ BUILD_COMMAND make CFLAGS=${CMAKE_C_FLAGS} CXXFLAGS=${CMAKE_CXX_FLAGS}
+ CMAKE_ARGS
+  -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX} -DCMAKE_BUILD_TYPE=Release
+ LOG_DOWNLOAD ON
+ LOG_CONFIGURE ON
+ LOG_BUILD ON)
+
 MESG("Install cxx mongodb driver")
 ExternalProject_Add(
  mongo-cxx-driver
@@ -456,6 +472,7 @@ ADD_EXECUTABLE(${PROJECT_NAME} main.cpp )
 
 #add dependency
 add_dependencies(chaos_cds mongo-cxx-driver)
+add_dependencies(chaos_cds couchbase-c-driver)
 
 add_dependencies(${PROJECT_NAME} mongo-cxx-driver)
 # add_dependencies(${PROJECT_NAME} cassandra-driver)
@@ -466,7 +483,7 @@ FILE(GLOB files "../chaos_service_common/*.h")
 INSTALL(FILES ${files} DESTINATION include/chaos_service_common/)
 
 # CheckConfigureBuild(couchbaseS libcouchbase:chaos-0.1 "-DLCB_NO_SSL=true;-DLCB_NO_TESTS=true;-DLCB_NO_TOOLS=true;-DLCB_NO_PLUGINS=true" https://github.com/amichelotti)
-CheckConfigureBuild(couchbaseS libcouchbase:release-2.10 "-DLCB_NO_SSL=true;-DLCB_NO_TESTS=true;-DLCB_NO_TOOLS=true;-DLCB_NO_PLUGINS=true" https://github.com/couchbase)
+# CheckConfigureBuild(couchbaseS libcouchbase:release-2.10 "-DLCB_NO_SSL=true;-DLCB_NO_TESTS=true;-DLCB_NO_TOOLS=true;-DLCB_NO_PLUGINS=true" https://github.com/couchbase)
 IF(BUILD_FORCE_STATIC)
   SET(CMAKE_EXE_LINKER_FLAGS "-static -Wl,--whole-archive -lchaos_common -Wl,--no-whole-archive")
 ENDIF()
