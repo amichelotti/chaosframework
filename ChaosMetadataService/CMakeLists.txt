@@ -145,6 +145,7 @@ ExternalProject_Add(
  PREFIX "${CMAKE_BINARY_DIR}/ext_dep/couchbase-c-driver-prefix"
  SOURCE_DIR "${CMAKE_BINARY_DIR}/ext_dep/couchbase-c-driver-src"
  BINARY_DIR "${CMAKE_BINARY_DIR}/ext_dep/couchbase-c-driver-build"
+ INSTALL_COMMAND cp ${CMAKE_BINARY_DIR}/ext_dep/couchbase-c-driver-build/lib/libcouchbaseS.a ${CMAKE_INSTALL_PREFIX}/lib
  BUILD_COMMAND make CFLAGS=${CMAKE_C_FLAGS} CXXFLAGS=${CMAKE_CXX_FLAGS}
  CMAKE_ARGS
   -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX} -DCMAKE_BUILD_TYPE=Release -DLCB_NO_TESTS=ON -DLCB_NO_PLUGINS=ON -DLCB_NO_MOCK=ON
@@ -462,7 +463,7 @@ ENDIF(CHAOS_PROMETHEUS)
 
 IF (BUILD_FORCE_STATIC  )
   ADD_LIBRARY(chaos_cds STATIC ${cnd_src} ${api_src} ${service_src} ${posix_src})
-  TARGET_LINK_LIBRARIES(chaos_cds chaos_common couchbaseS mongoclient mongocxx bsoncxx)
+  TARGET_LINK_LIBRARIES(chaos_cds chaos_common couchbase mongoclient mongocxx bsoncxx)
 ELSE (BUILD_FORCE_STATIC)
   ADD_LIBRARY(chaos_cds SHARED ${cnd_src} ${api_src} ${service_src} ${posix_src})
   set_target_properties(chaos_cds PROPERTIES VERSION 1.0.0 SOVERSION 1)
@@ -493,7 +494,7 @@ SET(BUILD_LIBRARY ${BUILD_LIBRARY} lz4)
 
 SET(BUILD_LIBRARY ${BUILD_LIBRARY} chaos_common)
 SET(BUILD_LIBRARY ${BUILD_LIBRARY} boost_random)
-SET(BUILD_LIBRARY ${BUILD_LIBRARY} couchbaseS)
+SET(BUILD_LIBRARY ${BUILD_LIBRARY} couchbase)
 SET(BUILD_LIBRARY ${BUILD_LIBRARY} mongoclient)
 
 
@@ -511,7 +512,7 @@ target_compile_definitions(chaos_cds PRIVATE USE_MONGODB3_DRIVER=1)
 # SET(BUILD_LIBRARY ${BUILD_LIBRARY} uv)
 # SET(BUILD_LIBRARY ${BUILD_LIBRARY} cassandra)
 # target_compile_definitions(${PROJECT_NAME} PRIVATE USE_CASSANDRA_DRIVER=1)
-TARGET_LINK_LIBRARIES(chaos_cds ${BUILD_LIBRARY})
+TARGET_LINK_LIBRARIES(chaos_cds PRIVATE ${BUILD_LIBRARY} )
 
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} chaos_cds ${BUILD_LIBRARY})
 
