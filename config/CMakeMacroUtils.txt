@@ -204,14 +204,10 @@ IF (NOT CACHE_DIR)
       WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}/etc
       )
     execute_process(
-      COMMAND ln -sf ./localhost/wan.cfg ./webui.cfg
+      COMMAND ln -sf ./localhost/webui.cfg ./webui.cfg
       WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}/etc
       )
 
-    execute_process(
-      COMMAND ln -sf ./localhost/wan.cfg ./wan.cfg
-      WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}/etc
-      )
 
     execute_process(
       COMMAND ln -sf ./localhost/agent.cfg ./agent.cfg
