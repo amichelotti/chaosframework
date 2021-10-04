@@ -165,7 +165,7 @@ load_config(){
     fi
     
     info_mesg "transferring configuration to MDS " "$MDS_CONFIG"
-    if ! jchaosctl --server localhost:8081 --upload $MDS_CONFIG >& $CHAOS_PREFIX/log/jchaosctl.config.std.out ;then
+    if ! jchaosctl --server http://localhost:8081 --upload $MDS_CONFIG >& $CHAOS_PREFIX/log/jchaosctl.config.std.out ;then
         error_mesg "failed initialization of " "MDS with $MDS_CONFIG"
         exit 1
     fi
@@ -183,7 +183,7 @@ start_us(){
     
     
     info_mesg "starting US through agent " "TEST"
-    if ! jchaosctl --server localhost:8081 --op start --uid TEST;then
+    if ! jchaosctl --server http://localhost:8081 --op start --uid TEST;then
         error_mesg "failed starting of " "TEST"
         exit 1
     fi
@@ -208,7 +208,7 @@ us_stop(){
     if check_proc "$CHAOS_PREFIX/bin/$MDS_EXEC"  && check_proc "$CHAOS_PREFIX/bin/$UI_EXEC";then
         
         info_mesg "stopping... " "TEST"
-        if ! jchaosctl --server localhost:8081 --op stop --uid TEST > $CHAOS_PREFIX/log/jchaosctl.stop.std.out ;then
+        if ! jchaosctl --server http://localhost:8081 --op stop --uid TEST > $CHAOS_PREFIX/log/jchaosctl.stop.std.out ;then
             error_mesg "failed stopping of " "TEST"
         fi
     fi
