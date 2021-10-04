@@ -85,7 +85,7 @@ namespace chaos{
                   return 404;
                 }
 
-                LDBG_<<"exit:"<<s_exit_flag<<" body:"<<res.str();
+               // LDBG_<<"exit:"<<s_exit_flag<<" body:"<<res.str();
 
                 return s_exit_flag;
             }
