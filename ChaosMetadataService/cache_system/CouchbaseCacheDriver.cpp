@@ -332,14 +332,17 @@ lcb_t* CouchbaseDriverPool::allocateResource(const std::string& pool_identificat
         }
         all_server_str.append("/");
         all_server_str.append(bucket_name);
-        CCDLAPP_ << "Create new session";
+        CCDLAPP_ << "Create new session with:"<<all_server_str;
         //assign the host string to the configuration
         create_options.v.v3.connstr = all_server_str.c_str();
         
         //create the instance
         last_err = lcb_create(new_instance.get(), &create_options);
         if (last_err != LCB_SUCCESS) {
-            throw CException(-1, CHAOS_FORMAT("Error initializing the session params: %1% - %2%", %create_options.v.v3.connstr%lcb_strerror(NULL, last_err)), __PRETTY_FUNCTION__);
+            std::stringstream ss;
+            ss<<CHAOS_FORMAT("Error initializing the session params: %1% - %2%", %create_options.v.v3.connstr%lcb_strerror(NULL, last_err));
+            CCDLERR_<<ss.str();
+            throw CException(-1,ss.str() , __PRETTY_FUNCTION__);
         } else {
             CCDLDBG_ << "session params:"<<create_options.v.v3.connstr;
         }

@@ -157,7 +157,7 @@ MESG("Install lz4 compression library")
     GIT_TAG v1.9.2
    # GIT_TAG dev
      PREFIX "${CMAKE_BINARY_DIR}/ext_dep/lz4-prefix"
-     SOURCE_DIR "${CMAKE_BINARY_DIR}/ext_dep/lz4-src"
+     SOURCE_DIR "${CMAKE_BINARY_DIR}/ext_dep/lz4-source"
      BINARY_DIR "${CMAKE_BINARY_DIR}/ext_dep/lz4-build"
      SOURCE_SUBDIR contrib/cmake_unofficial
    #  SOURCE_SUBDIR build/cmake
