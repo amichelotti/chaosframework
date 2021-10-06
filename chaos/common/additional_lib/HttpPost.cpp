@@ -73,14 +73,14 @@ namespace chaos{
                 struct mg_mgr* p=(struct mg_mgr*)mgr;
                 s_exit_flag = 0;
                 counter=0;
-                LDBG_<<"Connecting to:"<<s_url<<" body:"<<body;
+               // LDBG_<<"Connecting to:"<<s_url<<" body:"<<body;
                 mg_connect_http(p, ev_handler, s_url, "Content-Type:application/json\r\n", body.c_str());
                 while ((s_exit_flag == 0)&&(counter<timeo)){
-                    mg_mgr_poll(p, 1000);
+                    mg_mgr_poll(p, 1);
                     counter++;
                 }
                 if(counter==timeo){
-                  LERR_<<"Timeout";
+                  LERR_<<"Timeout of:"<<timeo;
 
                   return 404;
                 }
