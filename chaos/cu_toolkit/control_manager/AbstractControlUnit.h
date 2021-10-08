@@ -242,7 +242,19 @@ class AbstractControlUnit : public DeclareAction,
                                                              int32_t                             dataset_type);
   //check at initilization time ifr need to to a restore or only an apply
   void checkForRestoreOnInit();
+/**
+   * @brief return the default initialized value of a input (set)
+   * 
+   * @param inputds name of the ds input
+   * @return std::string (empty if not initalized)
+   */
+  std::string dsDefaultValue(const std::string& inputds);
 
+  /**
+   * @brief initizalize Set from Readout corresponding readout if not initialized
+   * 
+   */
+  void dsInitSetFromReadout();
  private:
    bool hasstopped;
 
@@ -419,6 +431,7 @@ class AbstractControlUnit : public DeclareAction,
                  */
   virtual void completeOutputAttribute();
 
+  
   //! complete the input attribute
   /*!
                  this method can be overloaded by subclass to add
@@ -742,8 +755,9 @@ class AbstractControlUnit : public DeclareAction,
   //!timer for update push metric
   void timeout();
 
-
   chaos::common::data::CDWUniquePtr setAlarm(chaos::common::data::CDWUniquePtr data);
+
+  chaos::common::data::CDWUniquePtr clrAlarm(chaos::common::data::CDWUniquePtr data);
 
   //!check if attribute hase been autorized by handler
   bool isInputAttributeChangeAuthorizedByHandler(const std::string& attr_name);
@@ -907,6 +921,7 @@ class AbstractControlUnit : public DeclareAction,
   }
   void addAttributesToDataSet(chaos::common::data::CDataWrapper&cd,chaos::DataType::DataSetAttributeIOAttribute io=chaos::DataType::Output);
   void updateDataSet(chaos::common::data::CDataWrapper&cd,chaos::DataType::DataSetAttributeIOAttribute io=chaos::DataType::Output);
+  
 
   CUStateKey::ControlUnitState getState();
   bool                         removeHandlerOnAttributeName(const std::string& attribute_name) {
