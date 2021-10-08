@@ -2826,6 +2826,9 @@ int AbstractControlUnit::pushOutputDataset() {
       return err;
     }
   }
+  if(push_dataset_counter==1){
+    dsInitSetFromReadout();
+  }
   last_push                           = tscor;
   CDWShrdPtr output_attribute_dataset = key_data_storage->getNewDataPackForDomain(KeyDataStorageDomainOutput);
   if (!output_attribute_dataset.get()) {
