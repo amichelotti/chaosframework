@@ -537,7 +537,7 @@ chaos::common::data::CDWUniquePtr AbstractControlUnit::setAlarm(chaos::common::d
       }
       if (data->hasKey("mask") && data->isInt32Value("mask")) {
         uint32_t val = data->getInt32Value("mask");
-
+        mod=true;
         ACULDBG_ << "Set mask of all Alarms to :" << val;
         catalogcu.setAllAlarmMask(val);
         catalogdev.setAllAlarmMask(val);
@@ -551,6 +551,8 @@ chaos::common::data::CDWUniquePtr AbstractControlUnit::setAlarm(chaos::common::d
       AttributeCache& output_cache = attribute_value_shared_cache->getSharedDomain(DOMAIN_SYSTEM);
 
       output_cache.getValueSettingByName(stateVariableEnumToName(variable_type))->setValue(CDataVariant(catalog.maxLevel()));
+      pushDevAlarmDataset();
+      pushCUAlarmDataset();
     }
   }
 
