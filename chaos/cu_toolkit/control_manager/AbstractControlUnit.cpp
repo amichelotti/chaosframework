@@ -553,6 +553,14 @@ chaos::common::data::CDWUniquePtr AbstractControlUnit::setAlarm(chaos::common::d
       output_cache.getValueSettingByName(stateVariableEnumToName(variable_type))->setValue(CDataVariant(catalog.maxLevel()));
       pushDevAlarmDataset();
       pushCUAlarmDataset();
+      HealtManager::getInstance()->addNodeMetricValue(control_unit_id,
+                                                  ControlUnitHealtDefinitionValue::CU_HEALT_OUTPUT_ALARM_LEVEL,
+                                                  std::max(catalogcu.maxLevel(), catalogdev.maxLevel()));
+
+      HealtManager::getInstance()->addNodeMetricValue(control_unit_id,
+                                                  ControlUnitHealtDefinitionValue::CU_HEALT_OUTPUT_ALARM_MASKED,
+                                                  catalogcu.countMask()+ catalogdev.countMask());
+
     }
   }
 
@@ -2449,7 +2457,7 @@ void AbstractControlUnit::_updatePushRateMetric() {
 
   HealtManager::getInstance()->addNodeMetricValue(control_unit_id,
                                                   ControlUnitHealtDefinitionValue::CU_HEALT_OUTPUT_ALARM_MASKED,
-                                                  std::max(map_variable_catalog[StateVariableTypeAlarmCU].countMask(), map_variable_catalog[StateVariableTypeAlarmDEV].countMask()));
+                                                  map_variable_catalog[StateVariableTypeAlarmCU].countMask()+ map_variable_catalog[StateVariableTypeAlarmDEV].countMask());
 
   HealtManager::getInstance()->addNodeMetricValue(control_unit_id,
                                                   ControlUnitHealtDefinitionValue::CU_HEALT_OUTPUT_DATASET_TSOFF,
