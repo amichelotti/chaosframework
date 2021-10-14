@@ -119,7 +119,7 @@ new chaos::common::utility::TypedObjectInstancer<n c, chaos::cu::control_manager
                      */
                     chaos_data::DatasetDB  * const getDeviceDatabase();
                     
-                    
+                    chaos::cu::control_manager::AbstractControlUnit  *getControlUnit(){return abstract_control_unit;}
                     //! return the attribute cache pointer
                     AttributeSharedCacheWrapper * const getAttributeCache();
                     
