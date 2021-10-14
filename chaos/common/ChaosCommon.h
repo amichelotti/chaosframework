@@ -119,8 +119,12 @@ namespace chaos {
         chaos::common::data::CDWUniquePtr getBuildInfo(chaos::common::data::CDWUniquePtr data);
         chaos::common::data::CDWUniquePtr getProcessInfo(chaos::common::data::CDWUniquePtr data);
         virtual chaos::common::data::CDWUniquePtr nodeShutDown(chaos::common::data::CDWUniquePtr data);
+        virtual chaos::common::data::CDWUniquePtr clearAlarm(chaos::common::data::CDWUniquePtr data);
+        virtual void logError(const std::string&uid, const std::string&msg,const std::string&org=__PRETTY_FUNCTION__,int lvl=2);
+
 
         GlobalConfiguration* getGlobalConfigurationInstance();
+        
     };
     
     //templated class to force singleton on master

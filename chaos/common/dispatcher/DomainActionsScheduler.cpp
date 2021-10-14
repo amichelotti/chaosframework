@@ -261,6 +261,9 @@ void DomainActionsScheduler::processBufferElement(CDWShrdPtr rpc_call_action) {
             response_pack->addCSDataValue(RpcActionDefinitionKey::CS_CMDM_ACTION_MESSAGE, *remote_action_result.get());
             //in any case this result must be LOG
             //the result of the action action is sent using this thread
+            if(remote_action_result.get()){
+                LERR_ <<" Sending back answer:"<<remote_action_result->getJSONString();
+            }
             if(!dispatcher->submitMessage(answerIP,
                                           MOVE(response_pack),
                                           false)){

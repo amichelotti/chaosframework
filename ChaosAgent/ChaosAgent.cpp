@@ -22,6 +22,8 @@
 #include "ChaosAgent.h"
 #include "chaos_agent_constants.h"
 #include <chaos/common/utility/FSUtility.h>
+#include <chaos/common/metadata_logging/metadata_logging.h>
+
 #include <chaos/common/healt_system/HealtManager.h>
 #include <chaos/common/io/SharedManagedDirecIoDataDriver.h>
 #include <chaos/common/configuration/GlobalConfiguration.h>
@@ -76,6 +78,8 @@ void ChaosAgent::init(void *init_data)  {
     //settings.agent_uid = CHAOS_FORMAT("ChaosAgent_%1%",%chaos::GlobalConfiguration::getInstance()->getLocalServerAddressAnBasePort());
     
     InizializableService::initImplementation(SharedManagedDirecIoDataDriver::getInstance(), NULL, "SharedManagedDirecIoDataDriver", __PRETTY_FUNCTION__);
+    InizializableService::initImplementation(chaos::common::metadata_logging::MetadataLoggingManager::getInstance(), NULL, "MetadataLoggingManager", __PRETTY_FUNCTION__);
+
     StartableService::initImplementation(HealtManager::getInstance(), NULL, "HealthManager", __PRETTY_FUNCTION__);
     agent_register.reset(new AgentRegister(), "AgentRegister");
     CHECK_ASSERTION_THROW_AND_LOG((agent_register.get() != NULL), ERROR, -1, "AgentRegister instantiation failed");
@@ -91,6 +95,7 @@ void ChaosAgent::init(void *init_data)  {
            restport=getGlobalConfigurationInstance()->getOption< int >(OPT_REST_PORT);
     }
 
+    
     std::string script_path=getGlobalConfigurationInstance()->getOption< std::string >(OPT_SCRIPT_DIR) +"/"+ ChaosAgent::getInstance()->settings.agent_uid;
     boost::filesystem::path p(script_path);
     ChaosAgent::getInstance()->settings.script_dir=script_path;
@@ -105,7 +110,11 @@ void ChaosAgent::init(void *init_data)  {
           DBG << " CREATED DIR:" << p;
         }
         } catch(boost::filesystem::filesystem_error& e){
-            ERROR<< " Exception creating directory:"<<p<<" error:"<< e.what();
+            std::stringstream ss;
+            ss<< " Exception creating directory:"<<p<<" error:"<< e.what();
+            logError(ChaosAgent::getInstance()->settings.agent_uid,ss.str(),__PRETTY_FUNCTION__);
+            
+            ERROR<<ss.str();
       }
         // 
     }
@@ -199,11 +208,26 @@ std::string ChaosAgent::scriptWorkingDir(std::string scriptname,std::string uid)
     DBG<<"creating directory \""<<working_dir<<"\"";
    if ((boost::filesystem::exists(working_dir) == false) &&
             (boost::filesystem::create_directories(working_dir) == false)) {
-         ERROR<<"cannot create directory:\""<<working_dir<<"\"";
+            std::stringstream ss;
+            ss<<"cannot create directory:\""<<working_dir<<"\"";
+            logError(ChaosAgent::getInstance()->settings.agent_uid,ss.str(),__PRETTY_FUNCTION__);
+
+         ERROR<<ss.str();
          return std::string();
   }
-  } catch(...){
-         ERROR<<"Exception cannot create directory:\""<<working_dir<<"\"";
+  } catch(boost::filesystem::filesystem_error& e){
+            std::stringstream ss;
+            ss<< " Filesystem Exception creating directory:"<<working_dir<<" error:"<< e.what();
+            logError(ChaosAgent::getInstance()->settings.agent_uid,ss.str(),__PRETTY_FUNCTION__);
+
+    } catch(...){
+        std::stringstream ss;
+
+         ss<<"Exception cannot create directory:\""<<working_dir<<"\"";
+        logError(ChaosAgent::getInstance()->settings.agent_uid,ss.str(),__PRETTY_FUNCTION__);
+
+        ERROR<<ss.str();
+                                                    
          return std::string();
 
   }
@@ -216,15 +240,21 @@ std::string ChaosAgent::scriptWorkingDir(std::string scriptname,std::string uid)
     }
       DBG<<"creating file \""<<fname<<"\"";
 
-  std::ofstream fs(fname);
-  if(fs.is_open()){
+  std::ofstream fs;
+  fs.open(fname);
+  if(!fs.fail()){
     fs.write(towrite->getBuffer(),towrite->getBufferSize());
     fs.close();
     DBG<<"written \""<<fname<<"\""<<towrite->getBufferSize()<<" bytes written";
     boost::filesystem::permissions(fname,boost::filesystem::owner_all);
     return fname;
   } else {
-    ERROR<<"cannot write file \""<<fname<<"\"";
+      std::stringstream ss;
+      ss<<"cannot write file \""<<fname<<"\" of "<<towrite->getBufferSize()<<" bytes, error:"<< strerror(errno);
+    logError(ChaosAgent::getInstance()->settings.agent_uid,ss.str(),__PRETTY_FUNCTION__);
+
+//throw CException(-10, ss.str(), __PRETTY_FUNCTION__);
+
   }
 
   return std::string("");
@@ -234,8 +264,11 @@ chaos::common::data::CDWUniquePtr ChaosAgent::checkAndPrepareScript(chaos::servi
     if(it.scriptID!=""){
         // probably is a script get the description.
         std::string path,wd;
-        if(chaos::common::network::NetworkBroker::getInstance()->getMetadataserverMessageChannel()->getScriptDesc(it.scriptID,param)==0){
-            INFO <<" AGENT HAS TO START "<<it.scriptID<<" content:"<<param->getJSONString();
+        if((chaos::common::network::NetworkBroker::getInstance()->getMetadataserverMessageChannel()->getScriptDesc(it.scriptID,param)==0)&&param.get()&&param->hasKey("eudk_script_content")){
+            chaos::common::data::CDWUniquePtr cl=param->clone();
+            int sizeb=param->getStringValue("eudk_script_content").size();
+            cl->removeKey("eudk_script_content");
+            INFO <<" AGENT HAS TO START "<<it.scriptID<<" :"<<cl->getJSONString()<< " script size:"<<sizeb;
             wd=scriptWorkingDir(it.scriptID,it.associated_node_uid);
             if(wd.size()){
                 path=writeScript(wd,it.scriptID,param->getStringValue("eudk_script_content"));
@@ -245,9 +278,12 @@ chaos::common::data::CDWUniquePtr ChaosAgent::checkAndPrepareScript(chaos::servi
                     INFO <<"WORKDIR PARAMETER:"<<param->getStringValue("workdir");
 
                     return param;
-                }
-            }
-        }                     
+                }else {
+                    // something went wrong creating directory/file
+                    return chaos::common::data::CDWUniquePtr();        
+                }     
+            }      
+    }
     }
     return param;
 }

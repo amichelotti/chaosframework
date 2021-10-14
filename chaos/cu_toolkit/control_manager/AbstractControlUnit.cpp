@@ -434,6 +434,7 @@ void AbstractControlUnit::_defineActionAndDataset(CDataWrapper& setup_configurat
 
   addActionDescritionInstance<AbstractControlUnit>(this, &AbstractControlUnit::_setDriverProperties, ControlUnitNodeDomainAndActionRPC::CONTROL_UNIT_DRV_SET_PROPERTIES, "method for set properties of a driver");
   addActionDescritionInstance<AbstractControlUnit>(this, &AbstractControlUnit::_getDriverProperties, ControlUnitNodeDomainAndActionRPC::CONTROL_UNIT_DRV_GET_PROPERTIES, "method for get properties of a driver");
+  addActionDescritionInstance<AbstractControlUnit>(this, &AbstractControlUnit::clrAlarm, NodeDomainAndActionRPC::ACTION_NODE_CLRALRM, "method for clear alarm");
 
   addActionDescritionInstance<AbstractControlUnit>(this, &AbstractControlUnit::setAlarm, ControlUnitNodeDomainAndActionRPC::CONTROL_UNIT_SET_ALARM, "method for set alarms and  masks");
 
@@ -484,7 +485,15 @@ void AbstractControlUnit::setAlarmMask(const std::string& name, uint32_t mask) {
     alarmv->setMask(mask);
   }
 }
-
+chaos::common::data::CDWUniquePtr AbstractControlUnit::clrAlarm(chaos::common::data::CDWUniquePtr data) {
+  if (data.get()) {
+    if (!data->hasKey("value")) {
+      data->addInt32Value("value", 0);
+    }
+    return setAlarm(MOVE(data));
+  }
+  return data;
+}
 chaos::common::data::CDWUniquePtr AbstractControlUnit::setAlarm(chaos::common::data::CDWUniquePtr data) {
   if (data.get()) {
     bool              mod           = false;
@@ -504,14 +513,14 @@ chaos::common::data::CDWUniquePtr AbstractControlUnit::setAlarm(chaos::common::d
         ACULERR_ << "Alarm \"" << data->getStringValue("name") << " NOT FOUND";
         return chaos::common::data::CDWUniquePtr();
       }
-      if (data->hasKey("mask")) {
+      if (data->hasKey("mask") && data->isInt32Value("mask")) {
         uint32_t m = data->getInt32Value("mask");
         //  ACULDBG_ << "Set mask "<< data->getStringValue("name")<<" to :" << m;
 
         alarm->setMask(m);
         mod = true;
       }
-      if (data->hasKey("value")) {
+      if (data->hasKey("value") && data->isInt32Value("value")) {
         alarm->setCurrentSeverity(data->getInt32Value("value"));
         mod = true;
       }
@@ -526,9 +535,9 @@ chaos::common::data::CDWUniquePtr AbstractControlUnit::setAlarm(chaos::common::d
         catalogcu.setAllAlarmSeverity(val);
         catalogdev.setAllAlarmSeverity(val);
       }
-      if (data->hasKey("mask")) {
+      if (data->hasKey("mask") && data->isInt32Value("mask")) {
         uint32_t val = data->getInt32Value("mask");
-
+        mod=true;
         ACULDBG_ << "Set mask of all Alarms to :" << val;
         catalogcu.setAllAlarmMask(val);
         catalogdev.setAllAlarmMask(val);
@@ -542,6 +551,16 @@ chaos::common::data::CDWUniquePtr AbstractControlUnit::setAlarm(chaos::common::d
       AttributeCache& output_cache = attribute_value_shared_cache->getSharedDomain(DOMAIN_SYSTEM);
 
       output_cache.getValueSettingByName(stateVariableEnumToName(variable_type))->setValue(CDataVariant(catalog.maxLevel()));
+      pushDevAlarmDataset();
+      pushCUAlarmDataset();
+      HealtManager::getInstance()->addNodeMetricValue(control_unit_id,
+                                                  ControlUnitHealtDefinitionValue::CU_HEALT_OUTPUT_ALARM_LEVEL,
+                                                  std::max(catalogcu.maxLevel(), catalogdev.maxLevel()));
+
+      HealtManager::getInstance()->addNodeMetricValue(control_unit_id,
+                                                  ControlUnitHealtDefinitionValue::CU_HEALT_OUTPUT_ALARM_MASKED,
+                                                  catalogcu.countMask()+ catalogdev.countMask());
+
     }
   }
 
@@ -1032,6 +1051,64 @@ void         AbstractControlUnit::doInitRpCheckList() {
   DataManager::getInstance()->getDataLiveDriverNewInstance()->subscribe(command_queue);
   DataManager::getInstance()->getDataLiveDriverNewInstance()->addHandler(command_queue, boost::bind(&AbstractControlUnit::consumerHandler, this, _1));
 }
+std::string AbstractControlUnit::dsDefaultValue(const std::string& inputds) {
+  chaos::common::data::RangeValueInfo attr_info;
+  DatasetDB::getAttributeRangeValueInfo(inputds, attr_info);
+  return attr_info.defaultValue;
+}
+
+void AbstractControlUnit::dsInitSetFromReadout() {
+  for (int cnt = 0; cnt < cache_input_attribute_vector.size(); cnt++) {
+    chaos::common::data::RangeValueInfo attr_info;
+    std::string                         name = cache_input_attribute_vector[cnt]->name;
+    DatasetDB::getAttributeRangeValueInfo(name, attr_info);
+    if (attr_info.dir == chaos::DataType::Bidirectional) {
+      if (attr_info.defaultValue.size() == 0) {
+        for (int cntt = 0; cntt < cache_output_attribute_vector.size(); cntt++) {
+          if (cache_output_attribute_vector[cntt]->name == name) {
+            switch (attr_info.valueType) {
+              case DataType::TYPE_BOOLEAN: {
+                bool val = *cache_output_attribute_vector[cntt]->getValuePtr<bool>();
+                ACULDBG_<< "Input '"<< name << "' Init TYPE_BOOLEAN to:" << val;
+
+                cache_input_attribute_vector[cnt]->setValue(cache_output_attribute_vector[cntt]->value_buffer,cache_output_attribute_vector[cntt]->size);
+
+                break;
+              }
+              case DataType::TYPE_DOUBLE: {
+                double val = *cache_output_attribute_vector[cntt]->getValuePtr<double>();
+                ACULDBG_<< "Input '"<< name << "' Init TYPE_DOUBLE to:" << val;
+                cache_input_attribute_vector[cnt]->setValue(cache_output_attribute_vector[cntt]->value_buffer,cache_output_attribute_vector[cntt]->size);
+
+                break;
+              }
+              case DataType::TYPE_INT32: {
+                int32_t val = *cache_output_attribute_vector[cntt]->getValuePtr<int32_t>();
+                ACULDBG_<< "Input '"<< name << "' Init TYPE_INT32 to:" << val;
+                cache_input_attribute_vector[cnt]->setValue(cache_output_attribute_vector[cntt]->value_buffer,cache_output_attribute_vector[cntt]->size);
+
+                break;
+              }
+              case DataType::TYPE_INT64: {
+                int64_t val = *cache_output_attribute_vector[cntt]->getValuePtr<int64_t>();
+                ACULDBG_<< "Input '"<< name << "' Init TYPE_INT64 to:" << val;
+                cache_input_attribute_vector[cnt]->setValue(cache_output_attribute_vector[cntt]->value_buffer,cache_output_attribute_vector[cntt]->size);
+
+                break;
+              }
+
+              default:
+                ACULERR_ << name << " skipping initialization of complex type " << attr_info.valueType;
+
+                break;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
 void AbstractControlUnit::doInitSMCheckList() {
   //rpc initialize service
   CHAOS_CHECK_LIST_START_SCAN_TO_DO(check_list_sub_service, "init") {
@@ -2380,7 +2457,7 @@ void AbstractControlUnit::_updatePushRateMetric() {
 
   HealtManager::getInstance()->addNodeMetricValue(control_unit_id,
                                                   ControlUnitHealtDefinitionValue::CU_HEALT_OUTPUT_ALARM_MASKED,
-                                                  std::max(map_variable_catalog[StateVariableTypeAlarmCU].countMask(), map_variable_catalog[StateVariableTypeAlarmDEV].countMask()));
+                                                  map_variable_catalog[StateVariableTypeAlarmCU].countMask()+ map_variable_catalog[StateVariableTypeAlarmDEV].countMask());
 
   HealtManager::getInstance()->addNodeMetricValue(control_unit_id,
                                                   ControlUnitHealtDefinitionValue::CU_HEALT_OUTPUT_DATASET_TSOFF,
@@ -2758,6 +2835,9 @@ int AbstractControlUnit::pushOutputDataset() {
 
       return err;
     }
+  }
+  if(push_dataset_counter==1){
+    dsInitSetFromReadout();
   }
   last_push                           = tscor;
   CDWShrdPtr output_attribute_dataset = key_data_storage->getNewDataPackForDomain(KeyDataStorageDomainOutput);

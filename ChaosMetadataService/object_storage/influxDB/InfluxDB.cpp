@@ -111,11 +111,12 @@ int InfluxDB::pushObject(const std::string&                       key,
 
   ChaosStringVector contained_key;
   stored_object.getAllKey(contained_key);
-  // boost::mutex::scoped_lock ll(iolock);
   if (nmeas >= MAX_MEASURES) {
       ERR<<" reached max number of measurements sending "<<nmeas<< " measurements";
       return -1;
   }
+  boost::mutex::scoped_lock ll(iolock);
+
   measurements << stored_object.getStringValue(chaos::DataPackCommonKey::DPCK_DEVICE_ID);
   if ((meta_tags.get())&&(meta_tags->size() > 0)) {
     //tag=std::accumulate(meta_tags->begin(),meta_tags->end(),std::string("_"));

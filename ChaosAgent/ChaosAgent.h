@@ -53,6 +53,7 @@ namespace chaos {
             ChaosSharedPtr <utility::ProcRestUtil> getProcessManager();
 
 #endif
+
         private:
                 std::string scriptWorkingDir(std::string scriptname,std::string uid);
                  std::string writeScript(const std::string& working_dir,const std::string& name,const std::string&content);
@@ -61,7 +62,7 @@ namespace chaos {
             ChaosAgent();
             ~ChaosAgent();
         public:
-                    static void signalHanlder(int signal_number);
+            static void signalHanlder(int signal_number);
 
             ChaosAgentSettings settings;
             void init(int argc, const char* argv[]);

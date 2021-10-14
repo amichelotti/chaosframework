@@ -563,6 +563,8 @@ static const char* const ACTION_GET_BUILD_INFO = "getBuildInfo";
 static const char* const ACTION_GET_PROCESS_INFO = "getProcessInfo";
 //! shutdown chaos process
 static const char* const ACTION_NODE_SHUTDOWN = "nodeShutDown";
+//! clear Alarms chaos 
+static const char* const ACTION_NODE_CLRALRM = "nodeclralrm";
 }  // namespace NodeDomainAndActionRPC
 /** @} */  // end of NodeDomainAndActionRPC
 
