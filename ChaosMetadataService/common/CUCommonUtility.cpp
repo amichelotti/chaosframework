@@ -219,6 +219,7 @@ void CUCommonUtility::addDataServicePack(ChaosUniquePtr<chaos::common::data::CDa
   if (now >= nu_cache_ts ||
       data_services.size() == 0) {
     data_services.clear();
+    nu_cache_ts = now + chaos::common::constants::RefreshEndpointMSec;
 
     if ((err = ds_da->getBestNDataService(ha_zone_name,
                                           data_services,
@@ -226,7 +227,6 @@ void CUCommonUtility::addDataServicePack(ChaosUniquePtr<chaos::common::data::CDa
       throw CException(err, "Error fetching best available data service", __PRETTY_FUNCTION__);
     }
     //update cache on first call after ten seconds
-    nu_cache_ts = now + chaos::common::constants::RefreshEndpointMSec;
   }
   std::string msgbroker = GlobalConfiguration::getInstance()->getOption<std::string>(InitOption::OPT_MSG_BROKER_SERVER);
   if (msgbroker.size()) {
