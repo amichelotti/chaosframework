@@ -136,6 +136,7 @@ AbstractControlUnit::AbstractControlUnit(const std::string& _control_unit_type,
     , standard_logging_channel()
     , alarm_logging_channel()
     , push_dataset_counter(0)
+    , aligned_ex_done(false)
     , push_dataset_size(0)
     , push_tot_size(0)
     , last_push_rate_grap_ts(0)
@@ -180,6 +181,7 @@ AbstractControlUnit::AbstractControlUnit(const std::string&           _control_u
     , standard_logging_channel()
     , alarm_logging_channel()
     , push_dataset_counter(0)
+    , aligned_ex_done(false)
     , push_errors(0)
     , packet_lost(0)
     , last_push_rate_grap_ts(0)
@@ -1125,7 +1127,7 @@ void AbstractControlUnit::doInitSMCheckList() {
       //initialize key data storage for device id
       //ACULDBG_ << "Create KeyDataStorage device:" << DatasetDB::getDeviceID();
       key_data_storage.reset(DataManager::getInstance()->getKeyDataStorageNewInstanceForKey(DatasetDB::getDeviceID()));
-
+      aligned_ex_done=false;
       ACULDBG_ << "Call KeyDataStorage init implementation for deviceID:" << DatasetDB::getDeviceID() << " init:" << ((init_configuration.get()) ? init_configuration->getJSONString() : "NULL CONFIG");
       key_data_storage->init(init_configuration.get());
       break;
@@ -2836,8 +2838,9 @@ int AbstractControlUnit::pushOutputDataset() {
       return err;
     }
   }
-  if(push_dataset_counter==1){
+  if((aligned_ex_done==false)&&(push_dataset_counter==1)){
     dsInitSetFromReadout();
+    aligned_ex_done=true;
   }
   last_push                           = tscor;
   CDWShrdPtr output_attribute_dataset = key_data_storage->getNewDataPackForDomain(KeyDataStorageDomainOutput);
