@@ -65,7 +65,7 @@ namespace chaos {
                                  const std::vector<std::string>& multitoken_param);
             //inherited by chaos::common::async_central::TimerHandler
             void timeout();
-            
+            bool is_present;// check if exists the entry
         public:
             static uint64_t timePrecisionMask;
             static  std::string mdsName;

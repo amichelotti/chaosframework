@@ -63,6 +63,7 @@ uint64_t ChaosMetadataService::timePrecisionMask=0xFFFFFFFFFFFFFFF0ULL;
 #define LCND_LERR   ERR_LOG(ChaosMetadataService)
 #define log(x) LCND_LDBG<<x
 ChaosMetadataService::ChaosMetadataService(){ingore_unreg_po = true;
+is_present=false;
 };
 ChaosMetadataService::~ChaosMetadataService(){}
 
@@ -71,6 +72,7 @@ ChaosMetadataService::~ChaosMetadataService(){}
  Specialized option for startup c and cpp program main options parameter
  */
 void ChaosMetadataService::init(int argc, const char* argv[])  {
+    is_present=false;
     ChaosCommon<ChaosMetadataService>::init(argc, argv);
 }
 //!stringbuffer parser
@@ -78,6 +80,7 @@ void ChaosMetadataService::init(int argc, const char* argv[])  {
  specialized option for string stream buffer with boost semantics
  */
 void ChaosMetadataService::init(istringstream &initStringStream)  {
+   is_present=false;
     ChaosCommon<ChaosMetadataService>::init(initStringStream);
 }
 
@@ -135,6 +138,7 @@ void ChaosMetadataService::init(void *init_data)  {
         }
         uint64_t tmp=pow(2,(uint32_t)log2(timeError_opt));
         timePrecisionMask=~(tmp-1);
+        is_present=false;
         if(getGlobalConfigurationInstance()->hasOption(OPT_CACHE_DRIVER_KVP)) {
             GlobalConfiguration::fillKVParameter(setting.cache_driver_setting.key_value_custom_param,
                                                                 getGlobalConfigurationInstance()->getOption< std::vector<std::string> >(OPT_CACHE_DRIVER_KVP), "");
@@ -277,24 +281,27 @@ void ChaosMetadataService::start()  {
 
 void ChaosMetadataService::timeout() {
     int err = 0;
-    bool presence = false;
     HealthStat service_proc_stat;
     const std::string ds_uid = NetworkBroker::getInstance()->getRPCUrl();
     persistence::data_access::DataServiceDataAccess *ds_da = DriverPoolManager::getInstance()->getPersistenceDataAccess<persistence::data_access::DataServiceDataAccess>();
     persistence::data_access::NodeDataAccess *n_da = DriverPoolManager::getInstance()->getPersistenceDataAccess<persistence::data_access::NodeDataAccess>();
     service_proc_stat.mds_received_timestamp = TimingUtil::getTimeStamp();
-    if(n_da->checkNodePresence(presence, ds_uid) != 0) {
-        LCND_LERR << CHAOS_FORMAT("Error check if this mds [%1%] description is registered", %NetworkBroker::getInstance()->getRPCUrl());
-        return;
-    }
+    if(is_present==false){
+        bool presence=false;
+        if(n_da->checkNodePresence(presence, ds_uid) != 0) {
+            LCND_LERR << CHAOS_FORMAT("Error check if this mds [%1%] description is registered", %NetworkBroker::getInstance()->getRPCUrl());
+            //return;
+        }
 
-    if(presence == false) {
-        //reinsert mds
-        ds_da->registerNode(setting.ha_zone_name,
-                            NetworkBroker::getInstance()->getRPCUrl(),
-                            NetworkBroker::getInstance()->getDirectIOUrl(),
-                            0,
-                            getBuildInfo(chaos::common::data::CDWUniquePtr()));
+        if(presence == false) {
+            //reinsert mds
+            ds_da->registerNode(setting.ha_zone_name,
+                                NetworkBroker::getInstance()->getRPCUrl(),
+                                NetworkBroker::getInstance()->getDirectIOUrl(),
+                                0,
+                                getBuildInfo(chaos::common::data::CDWUniquePtr()));
+        }
+        is_present=presence;
     }
 
     //update proc stat

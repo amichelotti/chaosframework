@@ -56,7 +56,7 @@ chaos::common::metric::CounterUniquePtr PosixFile::counter_read_data_uptr;
 chaos::common::metric::GaugeUniquePtr   PosixFile::gauge_insert_time_uptr;
 chaos::common::metric::GaugeUniquePtr   PosixFile::gauge_query_time_uptr;
 #endif
-boost::lockfree::queue<PosixFile::dirpath_t*, boost::lockfree::fixed_sized<true> > PosixFile::file_to_finalize(MAXDIROPENED);
+//boost::lockfree::queue<PosixFile::dirpath_t*, boost::lockfree::fixed_sized<true> > PosixFile::file_to_finalize(MAXDIROPENED);
 #ifdef CERN_ROOT
 GenerateRootJob PosixFile::rootGenJob;
 #endif
@@ -555,7 +555,7 @@ PosixFile::PosixFile(const std::string& name)
 
 #endif
   DBG << " BASED DIR:" << name;
-  AsyncCentralManager::getInstance()->addTimer(this, 2000, 2000);
+ // AsyncCentralManager::getInstance()->addTimer(this, 2000, 2000);
   finalize_th = boost::thread(&PosixFile::finalizeJob, this);
 #ifdef CERN_ROOT
   rootGenJob.init(1);
@@ -566,25 +566,9 @@ void PosixFile::finalizeJob() {
 
   exitFinalizeJob = false;
   do {
-    boost::mutex::scoped_lock lock(mutex_io);
-
-    wait_data.wait(lock);
-    dirpath_t* ele;
-
-    while (file_to_finalize.pop(ele)) {
-      DBG << "processing dir :" << ele->dir << " name:" << ele->name;
-      if (createFinal(ele->dir, ele->name, true) >= 0) {
-      // DBG << " CREATE FINAL: " << fpath;
-#ifdef CERN_ROOT
-        if (PosixFile::generateRoot) {
-          std::string                                                     fpath = ele->dir + "/" + ele->name + ((PosixFile::compress) ? ".lz4" : "");
-          chaos::CObjectProcessingQueue<std::string>::QueueElementShrdPtr a(new std::string(fpath));
-          rootGenJob.push(a);
-        }
-#endif
-
-        delete ele;
-      }
+    
+    if(!process_dirs()){
+      sleep(PROCESS_DIR_FREQ_SEC);
     }
 
   } while (!exitFinalizeJob);
@@ -594,7 +578,7 @@ void PosixFile::finalizeJob() {
 PosixFile::~PosixFile() {
   exitFinalizeJob = true;
 
-  AsyncCentralManager::getInstance()->removeTimer(this);
+ // AsyncCentralManager::getInstance()->removeTimer(this);
 #ifdef CERN_ROOT
   rootGenJob.deinit();
 #endif
@@ -1419,8 +1403,8 @@ int PosixFile::getObjectByIndex(const chaos::common::data::CDWShrdPtr& index,
   return 0;
 }
 
-void PosixFile::timeout() {
-
+bool PosixFile::process_dirs() {
+  bool work_done=false;
   // remove directory write cache
   for (write_path_t::iterator id = s_lastWriteDir.begin(); id != s_lastWriteDir.end(); ) {
     uint64_t ts = chaos::common::utility::TimingUtil::getTimeStamp();
@@ -1450,19 +1434,21 @@ void PosixFile::timeout() {
       }
       int ret;
       if ((ret = makeOrdered(id->second)) > 0) {
-        dirpath_t* ele = new dirpath_t();
-        ele->dir       = dstdir;
-        ele->name      = POSIX_FINAL_DATA_NAME;
-        DBG << "TO Process" << dstdir;
+        
+        DBG << "processing dir :" << dstdir << " name:" << POSIX_FINAL_DATA_NAME;
+        if (createFinal(dstdir, POSIX_FINAL_DATA_NAME, true) >= 0) {
+        // DBG << " CREATE FINAL: " << fpath;
+      #ifdef CERN_ROOT
+              if (PosixFile::generateRoot) {
+                std::string                                                     fpath = ele->dir + "/" + ele->name + ((PosixFile::compress) ? ".lz4" : "");
+                chaos::CObjectProcessingQueue<std::string>::QueueElementShrdPtr a(new std::string(fpath));
+                rootGenJob.push(a);
+              }
+      #endif
 
-        file_to_finalize.push(ele);
-        wait_data.notify_all();
+        }
+        work_done=true;
 
-        /*if (createFinal(dstdir, POSIX_FINAL_DATA_NAME) >= 0) {
-
-          DBG << " CREATE FINAL: " <<dstdir + "/"+POSIX_FINAL_DATA_NAME;
-          
-        }*/
       } else if (ret < 0) {
         DBG << "remove resource:" << dstdir;
 
@@ -1504,6 +1490,7 @@ void PosixFile::timeout() {
       id++;
     }
   }*/
+  return work_done;
 }
 
 //!return the number of object for a determinated key that are store for a time range

@@ -38,6 +38,7 @@
 #endif //CHAOS_PROMETHEUS
 // 3Khz
 #define MAX_NUM_OF_FILE_PER_MINUTE 60*3000
+#define PROCESS_DIR_FREQ_SEC 2
 #include "FileLock.h"
 
 namespace chaos {
@@ -165,7 +166,7 @@ namespace chaos {
                     int getData(abstraction::VectorObject& data,int maxData,const uint64_t timestamp_from,const uint64_t timestamp_to,chaos::common::direct_io::channel::opcode_headers::SearchSequence&,int timeout=5000);
                     ~SearchWorker();
             };
-            class PosixFile:public metadata_service::object_storage::abstraction::ObjectStorageDataAccess,public chaos::common::async_central::TimerHandler {
+            class PosixFile:public metadata_service::object_storage::abstraction::ObjectStorageDataAccess{
 
 
                     friend  SearchWorker;
@@ -235,8 +236,8 @@ public:
                 typedef std::map<std::string,read_path_t> cacheRead_t; 
                 static boost::mutex last_access_mutex,cache_mutex;
                 static cacheRead_t s_lastAccessedDir;
-                // return number of items, or negative if error
-                void timeout();
+                // something to process
+                bool process_dirs();
            #ifdef CERN_ROOT
      
                 
@@ -256,7 +257,7 @@ public:
                 boost::thread finalize_th;
                 boost::condition_variable wait_data;
                 boost::mutex mutex_io;
-                static boost::lockfree::queue<dirpath_t*, boost::lockfree::fixed_sized<true> > file_to_finalize; 
+             //   static boost::lockfree::queue<dirpath_t*, boost::lockfree::fixed_sized<true> > file_to_finalize; 
 
                 bool exitFinalizeJob;
 
