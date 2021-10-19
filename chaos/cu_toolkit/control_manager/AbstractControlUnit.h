@@ -335,7 +335,7 @@ class AbstractControlUnit : public DeclareAction,
   AttributeSharedCacheWrapper* attribute_shared_cache_wrapper;
 
   //! fast access for acquisition timestamp
-  bool            use_custom_high_resolution_timestamp;
+  bool            use_custom_high_resolution_timestamp,aligned_ex_done;
   AttributeValue* timestamp_acq_cached_value;
   AttributeValue* timestamp_hw_acq_cached_value;
 
