@@ -92,12 +92,23 @@ void PosixFileObjectStorageDriver::init(void *init_data) throw (chaos::CExceptio
     const std::string database = ChaosMetadataService::getInstance()->setting.fsobject_storage_setting.key_value_custom_param["db"];
     MapKVP& obj_stoarge_kvp = metadata_service::ChaosMetadataService::getInstance()->setting.fsobject_storage_setting.key_value_custom_param;
   */
-  if ((boost::filesystem::exists(basedatapath) == false) &&
-            (boost::filesystem::create_directories(basedatapath) == false)) {
-         ERR<<"cannot create directory:"<<basedatapath;
-        throw chaos::CException(-1,__PRETTY_FUNCTION__,"cannot create directory:"+basedatapath);
+  
+    if ((boost::filesystem::exists(basedatapath) == false)){
+        bool ret=false;
+        try {
+            ret=boost::filesystem::create_directories(basedatapath);
+        }  catch(boost::filesystem::filesystem_error& e){
+            throw chaos::CException(-1,__PRETTY_FUNCTION__,"cannot create directory:"+basedatapath+ " err:"+e.what());
+        }
+          if( ret == false) {
+            ERR<<"cannot create directory:"<<basedatapath;
+            throw chaos::CException(-2,__PRETTY_FUNCTION__,"cannot create directory:"+basedatapath);
 
-  }
+            }
+    }
+    
+        
+
     PosixFile::removeTemp=removeTemp;
     PosixFile::generateRoot=genroot;
     PosixFile::compress=compressed;

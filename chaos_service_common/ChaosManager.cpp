@@ -197,7 +197,7 @@ int ChaosManager::init(const chaos::common::data::CDataWrapper& best_available_d
     InizializableService::initImplementation(DriverPoolManager::getInstance(), NULL, "DriverPoolManager", __PRETTY_FUNCTION__);
     
     } catch(...){
-            DBGETERR << "Error Initializing";
+            DBGETERR << "Error Initializing alla drivers";
 
     }
 
