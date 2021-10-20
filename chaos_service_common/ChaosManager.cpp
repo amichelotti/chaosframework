@@ -218,19 +218,30 @@ int ChaosManager::init(const chaos::common::data::CDataWrapper& best_available_d
     }
     StartableService::initImplementation(MDSBatchExecutor::getInstance(), NULL, "MDSBatchExecutor", __PRETTY_FUNCTION__);
     StartableService::startImplementation(MDSBatchExecutor::getInstance(), "MDSBatchExecutor", __PRETTY_FUNCTION__);
-    storage_driver = DriverPoolManager::getInstance()->getObjectStorageDrvPtr();
+    try {
+      storage_driver = NULL;
+      storage_driver = DriverPoolManager::getInstance()->getObjectStorageDrvPtr();
+    } catch(chaos::CException& e){
+            DBGETERR << "Exception during initialization of storage driver:"<<e.what();
+    } catch(...){
+          DBGETERR << "Undefined Exception during initialization of storage driver:";
+
+    }
     if (storage_driver == NULL) {
       DBGETERR << "Cannot use direct storage driver";
-      return -2;
-
     } else {
       DBGET << "Using direct storage driver";
     }
-
+  try{
     log_driver = DriverPoolManager::getInstance()->getLogDrvPtr();
+  } catch(chaos::CException& e){
+            DBGETERR << "Exception during initialization of log driver:"<<e.what();
+    } catch(...){
+          DBGETERR << "Undefined Exception during initialization of log driver:";
+
+    }
     if (log_driver == NULL) {
       DBGETERR << "Cannot use log direct driver";
-      return -2;
 
     } else {
       DBGET << "Using log direct driver";
