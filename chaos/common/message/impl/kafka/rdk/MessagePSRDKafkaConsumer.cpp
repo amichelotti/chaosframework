@@ -145,7 +145,10 @@ int MessagePSRDKafkaConsumer::applyConfiguration() {
 }
 
 int MessagePSRDKafkaConsumer::subscribe(const std::string& key) {
-  MessagePSConsumer::subscribe(key);
+  int ret=MessagePSConsumer::subscribe(key);
+  if(ret!=0){
+    return ret;
+  }
   if (rk == NULL) {
     errstr = "apply configuration first!";
     MRDERR_ << errstr;

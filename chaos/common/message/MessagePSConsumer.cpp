@@ -69,6 +69,10 @@ ele_uptr_t MessagePSConsumer::getMsg(int timeo) {
 
 int MessagePSConsumer::subscribe(const std::string& key) {
   std::string topic = key;
+  if(key.size()==0){
+      MRDERR_ << " empty subscription name";
+      return -1;
+  }
   std::replace(topic.begin(), topic.end(), '/', '.');
   std::replace(topic.begin(), topic.end(), ':', '.');
 
