@@ -23,7 +23,7 @@
 #include "chaos_agent_constants.h"
 #include <chaos/common/utility/FSUtility.h>
 #include <chaos/common/metadata_logging/metadata_logging.h>
-
+//#include <chaos_service_common/health_system/HealtManagerDirect.h>
 #include <chaos/common/healt_system/HealtManager.h>
 #include <chaos/common/io/SharedManagedDirecIoDataDriver.h>
 #include <chaos/common/configuration/GlobalConfiguration.h>
@@ -81,6 +81,8 @@ void ChaosAgent::init(void *init_data)  {
     InizializableService::initImplementation(chaos::common::metadata_logging::MetadataLoggingManager::getInstance(), NULL, "MetadataLoggingManager", __PRETTY_FUNCTION__);
 
     StartableService::initImplementation(HealtManager::getInstance(), NULL, "HealthManager", __PRETTY_FUNCTION__);
+   // StartableService::initImplementation(HealtManagerDirect::getInstance(), NULL, "HealtManagerDirect", __PRETTY_FUNCTION__);
+
     agent_register.reset(new AgentRegister(), "AgentRegister");
     CHECK_ASSERTION_THROW_AND_LOG((agent_register.get() != NULL), ERROR, -1, "AgentRegister instantiation failed");
     agent_register.init(NULL, __PRETTY_FUNCTION__);
