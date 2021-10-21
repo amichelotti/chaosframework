@@ -11,11 +11,10 @@ namespace chaos{
                 std::string clientid;
                 void *mgr;
                 const uint32_t timeo;
-                int counter;
                 std::map<std::string,uint64_t> off_line;
                 const uint32_t retry_offline_ms;
                 public:
-                HttpPost(const std::string& id="Chaos HttpPost",uint32_t timeout_ms=1000,uint32_t _retry_offline_ms=10000);
+                HttpPost(const std::string& id="Chaos HttpPost",uint32_t timeout_ms=500,uint32_t _retry_offline_ms=10000);
                 ~HttpPost();
 
                 /**
