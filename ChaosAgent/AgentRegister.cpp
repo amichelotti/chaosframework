@@ -134,6 +134,7 @@ CDWUniquePtr AgentRegister::registrationACK(CDWUniquePtr  ack_pack) {
                 if(ack_pack->hasKey("agent_description") &&
                    ack_pack->isCDataWrapperValue("agent_description")) {
                     ChaosUniquePtr<chaos::common::data::CDataWrapper> aget_desc_ser(ack_pack->getCSDataValue("agent_description"));
+                    DBG<<"AGENT DESC:"<<aget_desc_ser->getJSONString();
                     agent_instance_sd_wrapper.deserialize(aget_desc_ser.get());
                 }
                 break;
@@ -246,9 +247,11 @@ void AgentRegister::timeout() {
                     end = agent_instance_sd_wrapper().node_associated.end();
                     it != end;
                     it++) {
+                        DBG<<"Association:"<<it->associated_node_uid;
                        chaos::common::data::CDWUniquePtr param=ChaosAgent::getInstance()->checkAndPrepareScript(*it);
+
                     ///
-                    if(param.get()&&it->auto_start) {
+                    if(it->auto_start) {
                         INFO << CHAOS_FORMAT("Autostart node %1%", %it->associated_node_uid);
                         LAUNCH_PROCESS(*it,param);
                         if(it->keep_alive) {

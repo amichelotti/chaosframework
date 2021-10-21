@@ -126,10 +126,6 @@ void ChaosAgent::start() {
     StartableService::startImplementation(HealtManager::getInstance(), "HealthManager", __PRETTY_FUNCTION__);
     ChaosCommon<ChaosAgent>::start();
     agent_register.start(__PRETTY_FUNCTION__);
-#ifndef OLD_PROCESS_MANAGEMENT
-
-    procRestUtil->start(true); // start in background
-#endif
 
  if (signal((int) SIGINT, ChaosAgent::signalHanlder) == SIG_ERR) {
         throw CException(-1, "Error registering SIGINT signal", __PRETTY_FUNCTION__);
@@ -142,6 +138,14 @@ void ChaosAgent::start() {
     if (signal((int) SIGTERM, ChaosAgent::signalHanlder) == SIG_ERR) {
         throw CException(-3, "Error registering SIGTERM signal", __PRETTY_FUNCTION__);
     }
+
+#ifndef OLD_PROCESS_MANAGEMENT
+    DBG << " STARTING REST SERVER ON PORT:" << ChaosAgent::getInstance()->settings.restport;
+
+    sleep(chaos::common::constants::HBTimersTimeoutinMSec/1000);
+    procRestUtil->start(true); // start in background
+#endif
+
     wait_close_semaphore.waitRaw();
     
     #ifndef OLD_PROCESS_MANAGEMENT

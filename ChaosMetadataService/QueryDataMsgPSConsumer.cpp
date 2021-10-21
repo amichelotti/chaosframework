@@ -180,14 +180,16 @@ while(attempt--){
   DBG <<"] Found " << nodes.size()<< " to subscribe";
 
   for(std::vector<std::string>::iterator i=nodes.begin();i!=nodes.end();i++){
-    DBG <<"] Subscribing to:" << *i;
+    if(i->size()){
+      DBG <<"] Subscribing to:" << *i;
 
-    if (cons->subscribe(*i) != 0) {
-        ERR <<" cannot subscribe to :" << *i<<" err:"<<cons->getLastError();
-                
-    } else {
-        DBG <<"] Subscribed to:" << *i;
-        
+      if (cons->subscribe(*i) != 0) {
+          ERR <<" cannot subscribe to :" << *i<<" err:"<<cons->getLastError();
+                  
+      } else {
+          DBG <<"] Subscribed to:" << *i;
+          
+      }
     }  
   }
 }
