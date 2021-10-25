@@ -90,10 +90,27 @@ void NetworkBroker::init(void *initData) {
     
     
     if(!globalConfiguration) {
-        throw CException(-1, "No global configuraiton found", __PRETTY_FUNCTION__);
+        throw CException(-1, "No global configuration found", __PRETTY_FUNCTION__);
     }
     MB_LAPP << "Configuration:"<<globalConfiguration->getCompliantJSONString();
-    
+    if (GlobalConfiguration::getInstance()->getConfiguration()->hasKey(InitOption::OPT_MSG_BROKER_SERVER)) {
+        std::string msgbrokerdrv = "kafka-rdk";
+        msgbrokerdrv = GlobalConfiguration::getInstance()->getOption<std::string>(InitOption::OPT_MSG_BROKER_DRIVER);
+
+        std::string msgbroker = GlobalConfiguration::getInstance()->getConfiguration()->getStringValue(InitOption::OPT_MSG_BROKER_SERVER);
+        MB_LAPP << "Initializing producer/consumer based on "<<msgbroker;
+
+        prod=chaos::common::message::MessagePSDriver::getNewProducerDriver(msgbrokerdrv);
+        prod->addServer(msgbroker);
+
+        if (prod->applyConfiguration() != 0) {
+        throw chaos::CException(-1, "cannot initialize Publish Subscribe Producer:" + prod->getLastError(), __PRETTY_FUNCTION__);
+        }
+        prod->start();
+        cons=chaos::common::message::MessagePSDriver::getNewConsumerDriver(msgbrokerdrv,"");
+        cons->addServer(msgbroker);
+
+  }
     //---------------------------- D I R E C T I/O ----------------------------
     if(globalConfiguration->hasKey(common::direct_io::DirectIOConfigurationKey::DIRECT_IO_IMPL_TYPE)) {
         MB_LAPP  << "Setup DirectIO sublayer";
@@ -101,7 +118,7 @@ void NetworkBroker::init(void *initData) {
         //construct the rpc server and client name
         string direct_io_server_impl = direct_io_impl+"DirectIOServer";
         direct_io_client_impl = direct_io_impl + "DirectIOClient";
-        MB_LAPP  << "Trying to initilize DirectIO Server: " << direct_io_server_impl;
+        MB_LAPP  << "Trying to initialize DirectIO Server: " << direct_io_server_impl;
         direct_io_server = ObjectFactoryRegister<common::direct_io::DirectIOServer>::getInstance()->getNewInstanceByName(direct_io_server_impl);
         if(!direct_io_server) throw CException(-2, "Error creating direct io server implementation:"+direct_io_server_impl, __PRETTY_FUNCTION__);
         
