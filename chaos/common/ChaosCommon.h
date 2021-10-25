@@ -67,6 +67,8 @@ namespace chaos {
         chaos::common::data::CDWUniquePtr _registrationAck(chaos::common::data::CDWUniquePtr data);
 
     public:
+    
+        std::string nodeuid;
         //! Constructor Method
         /*!
          This method call the \ref GlobalConfiguration::preParseStartupParameters method, starting the

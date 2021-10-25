@@ -96,6 +96,7 @@ namespace chaos {
             std::vector<bool> areNodeAlive(const ChaosStringVector& uids);
             bool isNodeAlive(const std::string& uid);
 
+
             /**
              * @brief remove storage data to from
              * 

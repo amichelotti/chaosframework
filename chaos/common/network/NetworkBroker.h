@@ -31,6 +31,7 @@
 //#include <chaos/common/network/PerformanceManagment.h>
 #include <chaos/common/utility/StartableService.h>
 #include <chaos/common/network/CNodeNetworkAddress.h>
+#include <chaos/common/message/MessagePSDriver.h>
 
 namespace chaos {
 	
@@ -120,6 +121,10 @@ namespace chaos {
 				//! Rpc server for message listening
                 chaos::RpcServer *rpc_server;
                 
+				// publish subscribe
+				chaos::common::message::producer_uptr_t prod;
+              	chaos::common::message::consumer_uptr_t cons;
+
 				//rpc action dispatcher
 				AbstractCommandDispatcher *rpc_dispatcher;
 				

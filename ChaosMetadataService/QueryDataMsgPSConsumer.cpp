@@ -253,7 +253,7 @@ int QueryDataMsgPSConsumer::consumeHealthDataEvent(const std::string&           
     }
   }*/
   if(channel_data.get()==NULL || channel_data->data()==NULL){
-    DBG<<"Empty health for:\""<<key<<"\" registration pack";
+   // DBG<<"Empty health for:\""<<key<<"\" registration pack";
     if(alive_map.find(key)==alive_map.end()){
         if (cons->subscribe(key) != 0) {
               ERR <<"] cannot subscribe to :" << key<<" err:"<<cons->getLastError();
