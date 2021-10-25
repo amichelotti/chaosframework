@@ -89,7 +89,7 @@ void QueryDataMsgPSConsumer::messageHandler(const chaos::common::message::ele_t&
 
     } else if(pktype==DataPackCommonKey::DPCK_DATASET_TYPE_HEALTH) {
       uint64_t ts=0;
-
+    //  ChaosMetadataService::getInstance()->alive_cache[data.cd->getStringValue(NodeDefinitionKey::NODE_UNIQUE_ID)]=TimingUtil::getTimeStamp();
       if(data.cd->hasKey(DataPackCommonKey::DPCK_TIMESTAMP)){
         ts=data.cd->getInt64Value(DataPackCommonKey::DPCK_TIMESTAMP);
         if((TimingUtil::getTimeStamp()-ts)>(chaos::common::constants::HBTimersTimeoutinMSec*2)){

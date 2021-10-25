@@ -5,6 +5,7 @@
  * Created on 21/04/2021
  */
 #include "ChaosManager.h"
+#include <ChaosMetadataService/ChaosMetadataService.h>
 #include <chaos/common/message/MDSMessageChannel.h>
 #include <ChaosMetadataService/api/node/ClearCommandQueue.h>
 #include <ChaosMetadataService/api/node/CommandTemplateSubmit.h>
@@ -93,7 +94,9 @@ using namespace chaos::metadata_service::api::service;
 CDWShrdPtr ChaosManager::getLiveChannel(const std::string& key) {
   ChaosSharedPtr<chaos::common::data::CDataWrapper> ret;
   if (cache_driver) {
-    return cache_driver->getData(key);
+    ret=cache_driver->getData(key);
+    context->updateLiveCache(ret.get());
+    return ret;
   }
   return ret;
 }
@@ -103,7 +106,9 @@ CDWShrdPtr ChaosManager::getLiveChannel(const std::string& key, int domain) {
   std::string                                       lkey = key + chaos::datasetTypeToPostfix(domain);
   char*                                             value;
   if (cache_driver) {
-    return cache_driver->getData(key);
+    ret=cache_driver->getData(key);
+    context->updateLiveCache(ret.get());
+    return ret;
   }
   return ret;
 }
@@ -112,10 +117,14 @@ ChaosManager::ChaosManager(const chaos::common::data::CDataWrapper& conf)
   if (init(conf) != 0) {
     throw chaos::CException(-1, "Cannot initialize ", __PRETTY_FUNCTION__);
   }
+  context= chaos::metadata_service::ChaosMetadataService::getInstance();
+
 }
 ChaosManager::ChaosManager()
     : cache_driver(NULL), persistence_driver(NULL),storage_driver(NULL) {
   chaos::common::message::MDSMessageChannel* mdsChannel = chaos::common::network::NetworkBroker::getInstance()->getMetadataserverMessageChannel();
+  context= chaos::metadata_service::ChaosMetadataService::getInstance();
+
   if (mdsChannel) {
     CDWUniquePtr best_available_da_ptr;
     if (!mdsChannel->getDataDriverBestConfiguration(best_available_da_ptr, 5000)) {
@@ -298,6 +307,9 @@ chaos::common::data::VectorCDWShrdPtr ChaosManager::getLiveChannel(const std::ve
   chaos::common::data::VectorCDWShrdPtr results;
   if (cache_driver) {
     results = cache_driver->getData(channels);
+    for(int cnt=0;cnt<results.size();cnt++){
+      context->updateLiveCache(results[cnt].get());
+    }
     return results;
   }
   return results;
@@ -1098,6 +1110,15 @@ CDWUniquePtr ChaosManager::cuGetFullDescription(const std::string& uid) {
     CALC_EXEC_END
   }
   return res;
+}
+int ChaosManager::enableLiveCaching(const std::string key,int32_t duration_ms){
+  if (cache_driver) {
+    cache_driver->enableCache(key,duration_ms);
+
+    return 0;
+  }
+  return -1;
+  
 }
 int ChaosManager::nodeSearch(const std::string&              unique_id_filter,
                              chaos::NodeType::NodeSearchType node_type_filter,
