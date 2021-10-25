@@ -16,6 +16,8 @@ class MessagePSDriver {
     static std::map<std::string,consumer_uptr_t> consumer_drv_m;
 
     public:
+    static producer_uptr_t getNewProducerDriver(const std::string&drvname,const std::string& k="");
+    static consumer_uptr_t getNewConsumerDriver(const std::string&drvname,const std::string& gid,const std::string& k="");
     static producer_uptr_t getProducerDriver(const std::string&drvname,const std::string& k="");
     static consumer_uptr_t getConsumerDriver(const std::string&drvname,const std::string& gid,const std::string& k="");
 
