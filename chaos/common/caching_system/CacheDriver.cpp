@@ -25,7 +25,10 @@
 using namespace chaos::common::cache_system;
 
 CacheDriver::CacheDriver(std::string alias)
-    : NamedService(alias) {}
+    : NamedService(alias) {
+        enable_cache_for_ms.clear();
+        first_level_cache.clear();
+    }
 
 CacheDriver::~CacheDriver() {}
 
@@ -39,10 +42,15 @@ void CacheDriver::init(void* init_data) {
   if (init_data != NULL) {
     cache_settings = *static_cast<CacheDriverSetting*>(init_data);
   }
+  enable_cache_for_ms.clear();
+  first_level_cache.clear();
 }
 
 //! deinit
-void                            CacheDriver::deinit() {}
+void                            CacheDriver::deinit() {
+  enable_cache_for_ms.clear();
+  first_level_cache.clear();
+}
 chaos::common::data::CDWShrdPtr CacheDriver::getData(const std::string& key) {
   
   if (enable_cache_for_ms.count(key) && first_level_cache.count(key)) {
@@ -125,6 +133,8 @@ std::vector<chaos::common::data::CDWShrdPtr> CacheDriver::getData(const ChaosStr
         ret.push_back(first_level_cache[*it].second);
       }
     }
+  } else {
+      LERR_<<__PRETTY_FUNCTION__<<" Error getting data from cache, ret:"<<res;
   }
   return ret;
 }
