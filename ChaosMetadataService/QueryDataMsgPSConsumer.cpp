@@ -75,38 +75,62 @@ void QueryDataMsgPSConsumer::messageHandler(const chaos::common::message::ele_t&
   //std::replace(kp.begin(), kp.end(), '.', '/');
   //DBG<<"data from:"<<kp<<" size:"<<data.cd->getBSONRawSize();
   if(data.cd->hasKey(DataPackCommonKey::DPCK_DATASET_TYPE)&&data.cd->hasKey(NodeDefinitionKey::NODE_UNIQUE_ID)){
-    int pktype=data.cd->getInt32Value(DataPackCommonKey::DPCK_DATASET_TYPE);
-    kp=data.cd->getStringValue(NodeDefinitionKey::NODE_UNIQUE_ID)+datasetTypeToPostfix(pktype);
-     uint32_t                st=(uint32_t)DataServiceNodeDefinitionType::DSStorageTypeLive;
-    if(pktype==DataPackCommonKey::DPCK_DATASET_TYPE_LOG){
-    //  DBG<<"Queue:"<<CObjectProcessingPriorityQueue<CDataWrapper>::queueSize()<<" LOG:"<<data.cd->getJSONString();
-      if(CObjectProcessingPriorityQueue<CDataWrapper>::queueSize()<MAX_LOG_QUEUE){
-        CObjectProcessingPriorityQueue<CDataWrapper>::push(data.cd,0);
-      } else {
-        ERR<<kp<<"] too many logs on queue for DB:"<<CObjectProcessingPriorityQueue<CDataWrapper>::queueSize();
-        return;
-      }
+    uint64_t now = TimingUtil::getTimeStamp();
 
-    } else if(pktype==DataPackCommonKey::DPCK_DATASET_TYPE_HEALTH) {
-      uint64_t ts=0;
-    //  ChaosMetadataService::getInstance()->alive_cache[data.cd->getStringValue(NodeDefinitionKey::NODE_UNIQUE_ID)]=TimingUtil::getTimeStamp();
-      if(data.cd->hasKey(DataPackCommonKey::DPCK_TIMESTAMP)){
-        ts=data.cd->getInt64Value(DataPackCommonKey::DPCK_TIMESTAMP);
-        if((TimingUtil::getTimeStamp()-ts)>(chaos::common::constants::HBTimersTimeoutinMSec*2)){
-          // skip healt too old
+    int pktype=data.cd->getInt32Value(DataPackCommonKey::DPCK_DATASET_TYPE);
+    int64_t ts=0;
+    uint32_t                st=(uint32_t)DataServiceNodeDefinitionType::DSStorageTypeLive;
+    if(data.cd->hasKey(DataServiceNodeDefinitionKey::DS_STORAGE_TYPE)){
+      st=data.cd->getInt32Value(DataServiceNodeDefinitionKey::DS_STORAGE_TYPE);
+      if(pktype!=DataPackCommonKey::DPCK_DATASET_TYPE_OUTPUT){
+          st|=(uint32_t)DataServiceNodeDefinitionType::DSStorageTypeLive;
+      }
+    }
+    kp=data.cd->getStringValue(NodeDefinitionKey::NODE_UNIQUE_ID)+datasetTypeToPostfix(pktype);
+    int32_t lat=0;
+    if(pktype==DataPackCommonKey::DPCK_DATASET_TYPE_LOG){
+        if(data.cd->hasKey(MetadataServerLoggingDefinitionKeyRPC::PARAM_NODE_LOGGING_LOG_TIMESTAMP)){
+          ts=data.cd->getInt64Value(MetadataServerLoggingDefinitionKeyRPC::PARAM_NODE_LOGGING_LOG_TIMESTAMP);
+          lat=now-ts;
+          if(lat>SKIP_OLDER_THAN){
+              ERR<<kp<<" log too old: "<<lat<< " ms, skipping...";
+              return ;
+          }
+          data.cd->addInt32Value(DataPackCommonKey::NODE_MDS_TIMEDIFF,lat );
+
+        }
+    //  DBG<<"Queue:"<<CObjectProcessingPriorityQueue<CDataWrapper>::queueSize()<<" LOG:"<<data.cd->getJSONString();
+        if(CObjectProcessingPriorityQueue<CDataWrapper>::queueSize()<MAX_LOG_QUEUE){
+          CObjectProcessingPriorityQueue<CDataWrapper>::push(data.cd,0);
+        } else {
+          ERR<<kp<<"] too many logs on queue for DB:"<<CObjectProcessingPriorityQueue<CDataWrapper>::queueSize();
           return;
         }
-      }
-     // alive_map[kp]=TimingUtil::getTimeStamp();
-    } else {
-        st = data.cd->getInt32Value(DataServiceNodeDefinitionKey::DS_STORAGE_TYPE);
-        if(pktype!=DataPackCommonKey::DPCK_DATASET_TYPE_OUTPUT){
-          st|=(uint32_t)DataServiceNodeDefinitionType::DSStorageTypeLive;
-        }
-
-    }
+    } else if(data.cd->hasKey(DataPackCommonKey::DPCK_TIMESTAMP)){
+        ts=data.cd->getInt64Value(DataPackCommonKey::DPCK_TIMESTAMP);
+        lat=(now-ts);
+        data.cd->addInt32Value(DataPackCommonKey::NODE_MDS_TIMEDIFF,lat );
+        if((pktype==DataPackCommonKey::DPCK_DATASET_TYPE_HEALTH)){
+          if(lat>(chaos::common::constants::HBTimersTimeoutinMSec*2)){
+         // health too old
+            return;
+          }
+        } else if((pktype==DataPackCommonKey::DPCK_DATASET_TYPE_OUTPUT)||(pktype==DataPackCommonKey::DPCK_DATASET_TYPE_INPUT)){
+              if(((st==0) || (st==DataServiceNodeDefinitionType::DSStorageTypeLive))){
+              if(lat>SKIP_OLDER_THAN){
+                 ERR<<kp<<" too old: "<<lat<< " ms, skipping...";
+              // output too old
+                return;
+              }
+          data.cd->removeKey(DataServiceNodeDefinitionKey::DS_STORAGE_TYPE);
+          data.cd->removeKey(DataPackCommonKey::DPCK_DATASET_TYPE);
+          
+        } 
+       
+   
+      }}
+      
     QueryDataConsumer::consumePutEvent(kp, (uint8_t)st, meta_tag_set, *(data.cd.get()));
-    
   }
   } catch(const chaos::CException& e ){
     ERR<<"Chaos Exception caught processing key:"<<data.key<<" ("<<data.off<<","<<data.par<<") error:"<<e.what();
