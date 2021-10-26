@@ -511,7 +511,7 @@ void AbstractControlUnit::setAlarmMask(const std::string& name, uint32_t mask) {
       }
     ss<<"/"+keyname;
     std::ofstream fs;
-    fs.open(ss.str());
+    fs.open(ss.str().c_str());
     if(!fs.is_open()){
         ACULERR_ << " cannot create " << ss.str();
         return -5;
@@ -535,7 +535,7 @@ void AbstractControlUnit::setAlarmMask(const std::string& name, uint32_t mask) {
     std::stringstream ss;
     ss << "/tmp/"<<fname<<"/"+keyname;
     std::ifstream fs;
-    fs.open(ss.str());
+    fs.open(ss.str().c_str());
     if(fs.is_open()){
       std::stringstream buffer;
       buffer << fs.rdbuf();
