@@ -49,7 +49,7 @@ void AttributeCache::addAttribute(const string& name,
                                   chaos::DataType::DataType type,
                                   const std::vector<chaos::DataType::BinarySubtype>& sub_type) {
     if(mapAttributeNameIndex.count(name))  {
-        LERR_<<__PRETTY_FUNCTION__<<" Attribute name '"<<name<<"' exists";
+      //  LERR_<<__PRETTY_FUNCTION__<<" Attribute name '"<<name<<"' exists";
         return;
     }
     

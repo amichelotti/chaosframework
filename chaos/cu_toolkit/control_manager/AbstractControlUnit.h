@@ -409,6 +409,7 @@ class AbstractControlUnit : public DeclareAction,
 
   // Startable Service method
   void deinit();
+  
 
   //! State machine is gone into recoverable error
   void recoverableErrorFromState(int last_state, chaos::CException& ex);
@@ -922,7 +923,22 @@ class AbstractControlUnit : public DeclareAction,
   void addAttributesToDataSet(chaos::common::data::CDataWrapper&cd,chaos::DataType::DataSetAttributeIOAttribute io=chaos::DataType::Output);
   void updateDataSet(chaos::common::data::CDataWrapper&cd,chaos::DataType::DataSetAttributeIOAttribute io=chaos::DataType::Output);
   
-
+/**
+   * @brief Save custom (configuration) Data as keyname
+   * 
+   * @param keyname 
+   * @param d data
+   * @return int 0 on success;
+   */
+  int saveData(const std::string& keyname,const chaos::common::data::CDataWrapper& d);
+  /**
+   * @brief Load  custom (configuration) Data 
+   * 
+   * @param keyname 
+   * @param d data
+   * @return int 0 on success;
+   */
+  chaos::common::data::CDWUniquePtr loadData(const std::string& keyname);
   CUStateKey::ControlUnitState getState();
   bool                         removeHandlerOnAttributeName(const std::string& attribute_name) {
     return dataset_attribute_manager.removeHandlerOnAttributeName(attribute_name);
