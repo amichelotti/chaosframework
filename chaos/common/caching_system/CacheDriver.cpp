@@ -56,7 +56,7 @@ chaos::common::data::CDWShrdPtr CacheDriver::getData(const std::string& key) {
   if (enable_cache_for_ms.count(key) && first_level_cache.count(key)) {
     uint64_t now = chaos::common::utility::TimingUtil::getTimeStamp();
     if ((now - first_level_cache[key].first) < enable_cache_for_ms[key]) {
-     // LDBG_ << "retrive from caching:" << key;
+      LDBG_ << "retrive from caching:" << key;
 
       return first_level_cache[key].second;
     }
@@ -69,7 +69,7 @@ chaos::common::data::CDWShrdPtr CacheDriver::getData(const std::string& key) {
       ret.reset(tmp);
       if (enable_cache_for_ms.count(key)) {
         uint64_t now = chaos::common::utility::TimingUtil::getTimeStamp();
-     //   LDBG_ << "mupdate caching:" << key;
+        LDBG_ << "mupdate caching:" << key;
 
         first_level_cache[key] = {now, ret};
       }
@@ -114,7 +114,7 @@ std::vector<chaos::common::data::CDWShrdPtr> CacheDriver::getData(const ChaosStr
                                         end = keys.end();
          it != end;
          it++) {
-      if ((is_cached.size() == 0) || (is_cached[*it] == false)) {
+      if (((is_cached.size() == 0) || (is_cached[*it] == false))) {
         const CacheData& cached_element = multi_cached_data[*it];
         if ((cached_element.get() == NULL) || (cached_element->size() == 0)) {
           ret.push_back(chaos::common::data::CDWShrdPtr());
@@ -122,13 +122,13 @@ std::vector<chaos::common::data::CDWShrdPtr> CacheDriver::getData(const ChaosStr
           chaos::common::data::CDWShrdPtr r = chaos::common::data::CDWShrdPtr(new chaos::common::data::CDataWrapper(cached_element->data(), cached_element->size()));
           ret.push_back(r);
           if (enable_cache_for_ms[*it] > 0) {
-           // LDBG_ << "mupdate caching:" << *it;
+            LDBG_ << "mupdate caching:" << *it;
 
             first_level_cache[*it] = {now, r};
           }
         }
       } else {
-      //  LDBG_ << "mretrive from caching:" << *it;
+       LDBG_ << "mretrive from caching:" << *it;
 
         ret.push_back(first_level_cache[*it].second);
       }
