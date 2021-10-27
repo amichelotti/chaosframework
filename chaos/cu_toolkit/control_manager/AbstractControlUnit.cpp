@@ -522,7 +522,8 @@ void AbstractControlUnit::setAlarmMask(const std::string& name, uint32_t mask) {
     ACULDBG_ << keyname<<" wrote " <<ss.str()<<" size:"<<d.getJSONString().size();
     getAttributeCache()->addCustomAttribute(keyname, d);
     getAttributeCache()->setCustomAttributeValue(keyname, d);
-
+    fillCachedValueVector(attribute_value_shared_cache->getSharedDomain(DOMAIN_CUSTOM),
+                                  cache_custom_attribute_vector);
     getAttributeCache()->setCustomDomainAsChanged();
     pushCustomDataset();
     return 0;
