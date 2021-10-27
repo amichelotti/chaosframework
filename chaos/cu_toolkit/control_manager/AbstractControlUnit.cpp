@@ -461,9 +461,20 @@ void AbstractControlUnit::_defineActionAndDataset(CDataWrapper& setup_configurat
   PropertyCollector::fillDescription("property", setup_configuration);
 }
 chaos::common::data::CDWUniquePtr AbstractControlUnit::getProperty(chaos::common::data::CDWUniquePtr data) {
-  chaos::common::data::CDWUniquePtr ret = getProperties();
-  ACULDBG_ << "get CU properties:" << ((ret.get()) ? ret->getJSONString() : "");
+  bool sync=true;
+   chaos::common::data::CDWUniquePtr ret ;
+  if(data.get()&&data->hasKey("sync")){
+    sync=data->getBoolValue("sync");
+  }
+  if(data.get()&&data->hasKey("name")){
+    std::string name=data->getStringValue("name");
+    ret=syncRead(name);
+    ACULDBG_ << "get CU property :" <<name<<" ="<< ((ret.get()) ? ret->getJSONString() : "");
 
+    return ret;
+  }
+  ret= getProperties(sync);
+  ACULDBG_ << "get CU properties:" << ((ret.get()) ? ret->getJSONString() : "");
   return ret;
 }
 chaos::common::data::CDWUniquePtr AbstractControlUnit::setProperty(chaos::common::data::CDWUniquePtr data) {
