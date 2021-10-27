@@ -26,9 +26,9 @@ using namespace chaos::common::cache_system;
 
 CacheDriver::CacheDriver(std::string alias)
     : NamedService(alias) {
-        enable_cache_for_ms.clear();
-        first_level_cache.clear();
-    }
+  enable_cache_for_ms.clear();
+  first_level_cache.clear();
+}
 
 CacheDriver::~CacheDriver() {}
 
@@ -47,16 +47,15 @@ void CacheDriver::init(void* init_data) {
 }
 
 //! deinit
-void                            CacheDriver::deinit() {
+void CacheDriver::deinit() {
   enable_cache_for_ms.clear();
   first_level_cache.clear();
 }
 chaos::common::data::CDWShrdPtr CacheDriver::getData(const std::string& key) {
-  
   if ((enable_cache_for_ms.count(key)) && (first_level_cache.count(key))) {
     uint64_t now = chaos::common::utility::TimingUtil::getTimeStamp();
     if ((now - first_level_cache[key].first) < enable_cache_for_ms[key]) {
-    //  LDBG_ << "retrive from caching:" << key;
+      //  LDBG_ << "retrive from caching:" << key;
 
       return first_level_cache[key].second;
     }
@@ -69,8 +68,7 @@ chaos::common::data::CDWShrdPtr CacheDriver::getData(const std::string& key) {
       ret.reset(tmp);
       if (enable_cache_for_ms.count(key)) {
         uint64_t now = chaos::common::utility::TimingUtil::getTimeStamp();
-       // LDBG_ << "mupdate caching:" << key;
-
+        // LDBG_ << "mupdate caching:" << key;
         first_level_cache[key] = {now, ret};
       }
     }
@@ -100,17 +98,17 @@ std::vector<chaos::common::data::CDWShrdPtr> CacheDriver::getData(const ChaosStr
   } else {
     ChaosStringVector nocached;
     for (ChaosStringVector::const_iterator i = keys.begin(); i != keys.end(); i++) {
-      if ((enable_cache_for_ms.count(*i)) && (first_level_cache.count(*i))){
-        if((now - first_level_cache[*i].first) < enable_cache_for_ms[*i]) {
+      if ((enable_cache_for_ms.count(*i)) && (first_level_cache.count(*i))) {
+        if ((now - first_level_cache[*i].first) < enable_cache_for_ms[*i]) {
           is_cached[*i] = true;
         } else {
           nocached.push_back(*i);
           is_cached[*i] = false;
-      }
-    } else {
+        }
+      } else {
         nocached.push_back(*i);
         is_cached[*i] = false;
-
+      }
     }
     res = getData(nocached, multi_cached_data);
   }
@@ -126,22 +124,21 @@ std::vector<chaos::common::data::CDWShrdPtr> CacheDriver::getData(const ChaosStr
         } else {
           chaos::common::data::CDWShrdPtr r = chaos::common::data::CDWShrdPtr(new chaos::common::data::CDataWrapper(cached_element->data(), cached_element->size()));
           ret.push_back(r);
-          if (enable_cache_for_ms.count(*it)){
-            if(enable_cache_for_ms[*it] > 0) {
-     //       LDBG_ << "mupdate caching:" << *it;
-
-            first_level_cache[*it] = {now, r};
-          }
+          if (enable_cache_for_ms.count(*it)) {
+            if (enable_cache_for_ms[*it] > 0) {
+              //       LDBG_ << "mupdate caching:" << *it;
+              first_level_cache[*it] = {now, r};
+            }
           }
         }
       } else {
-   //    LDBG_ << "mretrive from caching:" << *it;
+        //    LDBG_ << "mretrive from caching:" << *it;
 
         ret.push_back(first_level_cache[*it].second);
       }
     }
   } else {
-      LERR_<<__PRETTY_FUNCTION__<<" Error getting data from cache, ret:"<<res;
+    LERR_ << __PRETTY_FUNCTION__ << " Error getting data from cache, ret:" << res;
   }
   return ret;
 }
