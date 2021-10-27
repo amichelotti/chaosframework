@@ -128,7 +128,8 @@ void QueryDataMsgPSConsumer::messageHandler(const chaos::common::message::ele_t&
         } 
        
    
-      }}
+      }
+    }
       
     QueryDataConsumer::consumePutEvent(kp, (uint8_t)st, meta_tag_set, *(data.cd.get()));
   }
