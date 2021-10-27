@@ -54,7 +54,15 @@ namespace chaos {
 				CacheDriver(std::string alias);
             public:
                 CacheDriverSetting cache_settings;
-
+                static std::map<std::string,std::pair<int64_t,chaos::common::data::CDWShrdPtr> > first_level_cache;
+                static std::map<std::string,int32_t> enable_cache_for_ms;
+                /**
+                 * @brief enable cache for key
+                 * 
+                 * 
+                 * @param validity_ms =0 means disable
+                 */
+                void enableCache(const std::string&key,int32_t validity_ms);
 				virtual ~CacheDriver();
 				
                 virtual int putData(const std::string& key,

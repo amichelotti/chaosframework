@@ -49,7 +49,7 @@ void AttributeCache::addAttribute(const string& name,
                                   chaos::DataType::DataType type,
                                   const std::vector<chaos::DataType::BinarySubtype>& sub_type) {
     if(mapAttributeNameIndex.count(name))  {
-        LERR_<<__PRETTY_FUNCTION__<<" Attribute name '"<<name<<"' exists";
+        LDBG_<<__PRETTY_FUNCTION__<<" Attribute name '"<<name<<"' exists";
         return;
     }
     
@@ -88,7 +88,7 @@ void AttributeCache::addAttribute(const string& name,
 void AttributeCache::addAttribute(const std::string& name,
                                   const chaos::common::data::CDataVariant& value) {
     if(mapAttributeNameIndex.count(name)) {
-        LERR_<<__PRETTY_FUNCTION__<<" Attribute name '"<<name<<"' exists";
+        LDBG_<<__PRETTY_FUNCTION__<<" Attribute name '"<<name<<"' exists";
         return;
     }
     uint32_t size;

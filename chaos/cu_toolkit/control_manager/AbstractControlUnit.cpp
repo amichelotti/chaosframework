@@ -34,6 +34,7 @@
 #include <boost/uuid/uuid.hpp>             // uuid class
 #include <boost/uuid/uuid_generators.hpp>  // generators
 #include <boost/uuid/uuid_io.hpp>          // streaming operators etc.
+#include <boost/filesystem.hpp>
 
 #include "../windowsCompliant.h"
 using namespace boost::uuids;
@@ -460,9 +461,20 @@ void AbstractControlUnit::_defineActionAndDataset(CDataWrapper& setup_configurat
   PropertyCollector::fillDescription("property", setup_configuration);
 }
 chaos::common::data::CDWUniquePtr AbstractControlUnit::getProperty(chaos::common::data::CDWUniquePtr data) {
-  chaos::common::data::CDWUniquePtr ret = getProperties();
-  ACULDBG_ << "get CU properties:" << ((ret.get()) ? ret->getJSONString() : "");
+  bool sync=true;
+   chaos::common::data::CDWUniquePtr ret ;
+  if(data.get()&&data->hasKey("sync")){
+    sync=data->getBoolValue("sync");
+  }
+  if(data.get()&&data->hasKey("name")){
+    std::string name=data->getStringValue("name");
+    ret=syncRead(name);
+    ACULDBG_ << "get CU property :" <<name<<" ="<< ((ret.get()) ? ret->getJSONString() : "");
 
+    return ret;
+  }
+  ret= getProperties(sync);
+  ACULDBG_ << "get CU properties:" << ((ret.get()) ? ret->getJSONString() : "");
   return ret;
 }
 chaos::common::data::CDWUniquePtr AbstractControlUnit::setProperty(chaos::common::data::CDWUniquePtr data) {
@@ -487,6 +499,78 @@ void AbstractControlUnit::setAlarmMask(const std::string& name, uint32_t mask) {
     alarmv->setMask(mask);
   }
 }
+
+  int AbstractControlUnit::saveData(const std::string& keyname,const chaos::common::data::CDataWrapper& d){
+    std::string fname = control_unit_id;
+    replace(fname.begin(), fname.end(), '/', '_');
+    std::stringstream ss;
+    ss << "/tmp/"<<fname;
+    boost::filesystem::path p(ss.str());
+    if ((boost::filesystem::exists(p) == false)) {
+          try {
+            if ((boost::filesystem::create_directories(p) == false) && ((boost::filesystem::exists(p) == false))) {
+              ACULERR_ << "cannot create directory:" << p ;
+              return -3;
+            } else {
+              ACULDBG_ << " CREATED DIR:" << p;
+            }
+          } catch (boost::filesystem::filesystem_error& e) {
+            ACULERR_ << " Exception creating directory:" << e.what();
+            return -1;
+          }
+          //
+      }
+    ss<<"/"+keyname;
+    std::ofstream fs;
+    fs.open(ss.str().c_str());
+    if(!fs.is_open()){
+        ACULERR_ << " cannot create " << ss.str();
+        return -5;
+    }
+    fs<<d.getJSONString();
+
+    fs.close();
+    ACULDBG_ << keyname<<" wrote " <<ss.str()<<" size:"<<d.getJSONString().size();
+    getAttributeCache()->addCustomAttribute(keyname, d);
+    getAttributeCache()->setCustomAttributeValue(keyname, d);
+    fillCachedValueVector(attribute_value_shared_cache->getSharedDomain(DOMAIN_CUSTOM),
+                                  cache_custom_attribute_vector);
+    getAttributeCache()->setCustomDomainAsChanged();
+    pushCustomDataset();
+    return 0;
+  }
+  
+  chaos::common::data::CDWUniquePtr AbstractControlUnit::loadData(const std::string& keyname){
+    chaos::common::data::CDWUniquePtr ret;
+    std::string fname = control_unit_id;
+    replace(fname.begin(), fname.end(), '/', '_');
+    std::stringstream ss;
+    ss << "/tmp/"<<fname<<"/"+keyname;
+    std::ifstream fs;
+    fs.open(ss.str().c_str());
+    if(fs.is_open()){
+      std::stringstream buffer;
+      buffer << fs.rdbuf();
+      chaos::common::data::CDataWrapper*w=new chaos::common::data::CDataWrapper();
+      if(w){
+        try {
+          w->setSerializedJsonData(buffer.str().c_str());
+          ret.reset(w);
+        /*  getAttributeCache()->addCustomAttribute(keyname, *w);
+          getAttributeCache()->setCustomAttributeValue(keyname, *w);
+
+          getAttributeCache()->setCustomDomainAsChanged();
+          pushCustomDataset();*/
+          ACULDBG_ << keyname<<" read: " <<ss.str()<<" size:"<<buffer.str().size();
+        } catch(...){
+            ACULERR_ << " parsing JSON " << buffer.str();
+
+        }
+      }
+
+    }
+    return ret;
+  }
 chaos::common::data::CDWUniquePtr AbstractControlUnit::clrAlarm(chaos::common::data::CDWUniquePtr data) {
   if (data.get()) {
     if (!data->hasKey("value")) {

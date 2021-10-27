@@ -82,6 +82,10 @@ inline bool skipDefault(const std::string& name){
   if(name==chaos::DataPackCommonKey::DPCK_DEVICE_ID) return true;
   if(name==chaos::DataServiceNodeDefinitionKey::DS_STORAGE_TYPE) return true;
   if(name==chaos::DataPackCommonKey::NODE_MDS_TIMEDIFF) return true;
+  if(name==chaos::ControlUnitDatapackCommonKey::RUN_ID) return true;
+  if(name==chaos::DataPackCommonKey::DPCK_DEVICE_ID) return true;  
+  if(name==chaos::NodeHealtDefinitionKey::NODE_HEALT_MDS_TIMESTAMP) return true;
+
 
 
 return false;

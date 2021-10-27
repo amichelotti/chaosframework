@@ -28,6 +28,7 @@
 
 namespace chaos {
 namespace metadata_service {
+#define SKIP_OLDER_THAN 5*60000
 
 class QueryDataMsgPSConsumer : public QueryDataConsumer,protected chaos::common::pqueue::CObjectProcessingPriorityQueue<chaos::common::data::CDataWrapper>  {
   std::string                             msgbrokerdrv;

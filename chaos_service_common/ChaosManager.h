@@ -17,6 +17,9 @@
 #include <chaos/common/batch_command/BatchCommandTypes.h>
 #define DEFAULT_TIMEOUT_FOR_CONTROLLER 10000000
 namespace chaos {
+  namespace metadata_service{
+    class ChaosMetadataService;
+  }
 namespace common {
 namespace cache_system {
 class CacheDriver;
@@ -38,7 +41,7 @@ class ChaosManager : public chaos::common::utility::SingletonCW<ChaosManager>{
   chaos::service_common::persistence::data_access::AbstractPersistenceDriver* storage_driver;
     chaos::service_common::persistence::data_access::AbstractPersistenceDriver* log_driver;
 
-
+  chaos::metadata_service::ChaosMetadataService* context;
   //  ::common::misc::data::DBbase* db;
   // NetworkBroker *broker;
   //chaos::common::message::MDSMessageChannel *mdsChannel;
@@ -125,6 +128,7 @@ chaos::common::data::CDWUniquePtr checkAgentHostedProcess(const std::string&name
 
 chaos::common::data::CDWUniquePtr clearCommandQueue(const std::string&name);
 chaos::common::data::CDWUniquePtr killCurrentCommand(const std::string&name);
+int enableLiveCaching(const std::string key,int32_t duration_ms);
 
 };
 }  // namespace service_common

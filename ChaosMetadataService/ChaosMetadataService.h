@@ -95,6 +95,18 @@ namespace chaos {
              */
             std::vector<bool> areNodeAlive(const ChaosStringVector& uids);
             bool isNodeAlive(const std::string& uid);
+            std::map <std::string,int64_t> alive_cache;
+            /**
+             * @brief update alive_cache if dataset timestamp is newwer
+             * 
+             */
+            void updateLiveCache(const chaos::common::data::CDataWrapper*);
+
+            /**
+             * @brief update alive_cache if ts is newer
+             * 
+             */
+            void updateLiveCache(const std::string& name,int64_t te);
 
             /**
              * @brief remove storage data to from
