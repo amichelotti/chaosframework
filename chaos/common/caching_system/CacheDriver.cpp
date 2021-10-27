@@ -52,10 +52,10 @@ void CacheDriver::deinit() {
   first_level_cache.clear();
 }
 chaos::common::data::CDWShrdPtr CacheDriver::getData(const std::string& key) {
-  if ((enable_cache_for_ms.find(key)!=enable_cache_for_ms.end()) && (first_level_cache.find(key)!=first_level_cache.end())) {
+  if ((enable_cache_for_ms.count(key)) && (first_level_cache.count(key))) {
     uint64_t now = chaos::common::utility::TimingUtil::getTimeStamp();
     if ((now - first_level_cache[key].first) < enable_cache_for_ms[key]) {
-      LDBG_ << "retrive from caching:" << key;
+      //  LDBG_ << "retrive from caching:" << key;
 
       return first_level_cache[key].second;
     }
@@ -66,9 +66,9 @@ chaos::common::data::CDWShrdPtr CacheDriver::getData(const std::string& key) {
     if (d.get() && d->size()) {
       chaos::common::data::CDataWrapper* tmp = new chaos::common::data::CDataWrapper(d->data(), d->size());
       ret.reset(tmp);
-      if (enable_cache_for_ms.find(key)!=enable_cache_for_ms.end()) {
+      if (enable_cache_for_ms.count(key)) {
         uint64_t now = chaos::common::utility::TimingUtil::getTimeStamp();
-        LDBG_ << "mupdate caching:" << key;
+        // LDBG_ << "mupdate caching:" << key;
         first_level_cache[key] = {now, ret};
       }
     }
@@ -98,7 +98,7 @@ std::vector<chaos::common::data::CDWShrdPtr> CacheDriver::getData(const ChaosStr
   } else {
     ChaosStringVector nocached;
     for (ChaosStringVector::const_iterator i = keys.begin(); i != keys.end(); i++) {
-      if ((enable_cache_for_ms.find(*i)!=enable_cache_for_ms.end()) && (first_level_cache.find(*i)!=first_level_cache.end())) {
+      if ((enable_cache_for_ms.count(*i)) && (first_level_cache.count(*i))) {
         if ((now - first_level_cache[*i].first) < enable_cache_for_ms[*i]) {
           is_cached[*i] = true;
         } else {
@@ -124,9 +124,9 @@ std::vector<chaos::common::data::CDWShrdPtr> CacheDriver::getData(const ChaosStr
         } else {
           chaos::common::data::CDWShrdPtr r = chaos::common::data::CDWShrdPtr(new chaos::common::data::CDataWrapper(cached_element->data(), cached_element->size()));
           ret.push_back(r);
-          if (enable_cache_for_ms.find(*it)!=enable_cache_for_ms.end()) {
+          if (enable_cache_for_ms.count(*it)) {
             if (enable_cache_for_ms[*it] > 0) {
-              LDBG_ << "mupdate caching:" << *it;
+              //       LDBG_ << "mupdate caching:" << *it;
               first_level_cache[*it] = {now, r};
             }
           }

@@ -78,6 +78,7 @@ void QueryDataMsgPSConsumer::messageHandler(const chaos::common::message::ele_t&
     uint64_t now = TimingUtil::getTimeStamp();
 
     int pktype=data.cd->getInt32Value(DataPackCommonKey::DPCK_DATASET_TYPE);
+    
     int64_t ts=0;
     uint32_t                st=(uint32_t)DataServiceNodeDefinitionType::DSStorageTypeLive;
     if(data.cd->hasKey(DataServiceNodeDefinitionKey::DS_STORAGE_TYPE)){
@@ -86,6 +87,7 @@ void QueryDataMsgPSConsumer::messageHandler(const chaos::common::message::ele_t&
           st|=(uint32_t)DataServiceNodeDefinitionType::DSStorageTypeLive;
       }
     }
+    
     kp=data.cd->getStringValue(NodeDefinitionKey::NODE_UNIQUE_ID)+datasetTypeToPostfix(pktype);
     int32_t lat=0;
     if(pktype==DataPackCommonKey::DPCK_DATASET_TYPE_LOG){
@@ -130,7 +132,7 @@ void QueryDataMsgPSConsumer::messageHandler(const chaos::common::message::ele_t&
    
       }
     }
-      
+    
     QueryDataConsumer::consumePutEvent(kp, (uint8_t)st, meta_tag_set, *(data.cd.get()));
   }
   } catch(const chaos::CException& e ){
