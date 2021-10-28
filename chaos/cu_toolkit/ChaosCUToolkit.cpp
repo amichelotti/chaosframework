@@ -133,8 +133,8 @@ void ChaosCUToolkit::init(void* init_data) {
 
     if (GlobalConfiguration::getInstance()->hasOption(InitOption::OPT_LOG_ON_MDS) &&
         GlobalConfiguration::getInstance()->hasOption(InitOption::CONTROL_MANAGER_UNIT_SERVER_ALIAS)) {
-      chaos::common::log::LogManager::getInstance()->addMDSLoggingBackend(GlobalConfiguration::getInstance()->getOption<std::string>(InitOption::CONTROL_MANAGER_UNIT_SERVER_ALIAS));
-      nodeuid=GlobalConfiguration::getInstance()->getOption<std::string>(InitOption::CONTROL_MANAGER_UNIT_SERVER_ALIAS);
+        nodeuid=GlobalConfiguration::getInstance()->getNodeUID();
+      chaos::common::log::LogManager::getInstance()->addMDSLoggingBackend(nodeuid);
     }
 
     //force first allocation of metadata logging

@@ -215,7 +215,7 @@ void MessagePSRDKafkaConsumer::poll() {
       d.key = rd_kafka_topic_name(rkm->rkt);
       d.off = rkm->offset;
       d.par = rkm->partition;
-      d.cd  = chaos::common::data::CDWShrdPtr(new chaos::common::data::CDataWrapper());
+      d.cd  = chaos::common::data::CDWUniquePtr(new chaos::common::data::CDataWrapper());
       d.cd->addStringValue("msg", errstr);
       d.cd->addInt32Value("err", rkm->err);
       handlers[ONERROR](d);
@@ -243,7 +243,7 @@ void MessagePSRDKafkaConsumer::poll() {
       d.off = rkm->offset;
       d.par = rkm->partition;
       try {
-        d.cd = chaos::common::data::CDWShrdPtr(new chaos::common::data::CDataWrapper((const char*)rkm->payload, rkm->len));
+        d.cd = chaos::common::data::CDWUniquePtr(new chaos::common::data::CDataWrapper((const char*)rkm->payload, rkm->len));
       } catch (chaos::CException& e) {
         stats.errs++;
         std::stringstream ss;
@@ -256,7 +256,7 @@ void MessagePSRDKafkaConsumer::poll() {
           d.off = rkm->offset;
           d.par = rkm->partition;
 
-          d.cd  = chaos::common::data::CDWShrdPtr(new chaos::common::data::CDataWrapper());
+          d.cd  = chaos::common::data::CDWUniquePtr(new chaos::common::data::CDataWrapper());
           d.cd->addStringValue("msg",ss.str());
           d.cd->addInt32Value("err",-1);
 
@@ -274,7 +274,7 @@ void MessagePSRDKafkaConsumer::poll() {
       ele->par   = rkm->partition;
 
       try {
-        ele->cd = chaos::common::data::CDWShrdPtr(new chaos::common::data::CDataWrapper((const char*)rkm->payload, rkm->len));
+        ele->cd = chaos::common::data::CDWUniquePtr(new chaos::common::data::CDataWrapper((const char*)rkm->payload, rkm->len));
       } catch (chaos::CException& e) {
         stats.errs++;
          std::stringstream ss;
@@ -286,7 +286,7 @@ void MessagePSRDKafkaConsumer::poll() {
           d.key = rd_kafka_topic_name(rkm->rkt);
           d.off = rkm->offset;
           d.par = rkm->partition;
-          d.cd  = chaos::common::data::CDWShrdPtr(new chaos::common::data::CDataWrapper());
+          d.cd  = chaos::common::data::CDWUniquePtr(new chaos::common::data::CDataWrapper());
           d.cd->addStringValue("msg",ss.str());
           d.cd->addInt32Value("err",-1);
 
