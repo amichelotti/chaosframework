@@ -60,7 +60,7 @@ QueryDataMsgPSConsumer::QueryDataMsgPSConsumer(const std::string& id)
 
   cons = chaos::common::message::MessagePSDriver::getConsumerDriver(msgbrokerdrv, groupid);
 }
-void QueryDataMsgPSConsumer::messageHandler(const chaos::common::message::ele_t& data) {
+void QueryDataMsgPSConsumer::messageHandler( chaos::common::message::ele_t& data) {
   try {
   ChaosStringSetConstSPtr meta_tag_set;
 
@@ -103,7 +103,8 @@ void QueryDataMsgPSConsumer::messageHandler(const chaos::common::message::ele_t&
         }
     //  DBG<<"Queue:"<<CObjectProcessingPriorityQueue<CDataWrapper>::queueSize()<<" LOG:"<<data.cd->getJSONString();
         if(CObjectProcessingPriorityQueue<CDataWrapper>::queueSize()<MAX_LOG_QUEUE){
-          CObjectProcessingPriorityQueue<CDataWrapper>::push(data.cd,0);
+          CDWShrdPtr ptr(data.cd.release());
+          CObjectProcessingPriorityQueue<CDataWrapper>::push(ptr,0);
         } else {
           ERR<<kp<<"] too many logs on queue for DB:"<<CObjectProcessingPriorityQueue<CDataWrapper>::queueSize();
           return;
@@ -150,7 +151,7 @@ void QueryDataMsgPSConsumer::messageHandler(const chaos::common::message::ele_t&
       
   }
 
-void QueryDataMsgPSConsumer::messageError(const chaos::common::message::ele_t& data) {
+void QueryDataMsgPSConsumer::messageError( chaos::common::message::ele_t& data) {
   ChaosStringSetConstSPtr meta_tag_set;
       boost::mutex::scoped_lock ll(map_m);
     std::string path=data.key;

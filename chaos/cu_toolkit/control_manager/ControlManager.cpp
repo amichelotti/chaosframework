@@ -58,7 +58,7 @@ using namespace std;
  Constructor
  */
 ControlManager::ControlManager()
-    : publishing_counter_delay(0), use_unit_server(false), use_execution_pools(false), thread_run(false), mds_channel(NULL) {
+    : publishing_counter_delay(0), use_execution_pools(false), thread_run(false), mds_channel(NULL) {
   //! register default control unit
   registerControlUnit<chaos::cu::control_manager::ProxyControlUnit>();
   registerControlUnit<chaos::cu::control_manager::script::ScriptableExecutionUnit>();
@@ -77,9 +77,6 @@ void ControlManager::init(void* initParameter) {
   //control manager action initialization
   AbstActionDescShrPtr actionDescription;
 
-  //check if we need to start the unit server
-  use_unit_server = GlobalConfiguration::getInstance()->hasOption(InitOption::CONTROL_MANAGER_UNIT_SERVER_ALIAS);
-
   //check for execution pools
   use_execution_pools = GlobalConfiguration::getInstance()->hasOption(CONTROL_MANAGER_EXECUTION_POOLS);
 
@@ -90,11 +87,11 @@ void ControlManager::init(void* initParameter) {
   else
     throw CException(-2, "Error allcoating metadata server channel", __PRETTY_FUNCTION__);
 
-  if (use_unit_server) {
+  {
     LCMAPP_ << "Enable unit server";
 
     if (!GlobalConfiguration::getInstance()->hasOption(InitOption::CONTROL_MANAGER_UNIT_SERVER_ALIAS)) {
-      throw CException(-1, "No server alias param found", __PRETTY_FUNCTION__);
+      throw CException(-1, "No required "+std::string(InitOption::CONTROL_MANAGER_UNIT_SERVER_ALIAS)+" option given", __PRETTY_FUNCTION__);
     }
 
     if (GlobalConfiguration::getInstance()->hasOption(CONTROL_MANAGER_UNIT_SERVER_KEY)) {
@@ -115,7 +112,7 @@ void ControlManager::init(void* initParameter) {
       }
     }
 
-    unit_server_alias = GlobalConfiguration::getInstance()->getOption<std::string>(InitOption::CONTROL_MANAGER_UNIT_SERVER_ALIAS);
+    unit_server_alias = GlobalConfiguration::getInstance()->getNodeUID();
 
     //init CU action
     actionDescription = DeclareAction::addActionDescritionInstance<ControlManager>(this,
@@ -179,14 +176,11 @@ void ControlManager::init(void* initParameter) {
 void ControlManager::start() {
   LCMAPP_ << "Start cu scan timer";
   int err = 0;
-  if (use_unit_server) {
     //add unit server registration managment timer
-    if ((err = chaos_async::AsyncCentralManager::getInstance()->addTimer(this, 0, GlobalConfiguration::getInstance()->getOption<uint64_t>(CONTROL_MANAGER_UNIT_SERVER_REGISTRATION_RETRY_MSEC)))) {
-      throw chaos::CException(-1, "Error registering the Control managet timer", __PRETTY_FUNCTION__);
-    }
-  } else {
-    startControlUnitSMThread();
+  if ((err = chaos_async::AsyncCentralManager::getInstance()->addTimer(this, 0, GlobalConfiguration::getInstance()->getOption<uint64_t>(CONTROL_MANAGER_UNIT_SERVER_REGISTRATION_RETRY_MSEC)))) {
+    throw chaos::CException(-1, "Error registering the Control managet timer", __PRETTY_FUNCTION__);
   }
+
 }
 
 // start control units state machine thread
@@ -688,17 +682,13 @@ void ControlManager::timeout() {
       //Unpublished
     case 0:
       LCMAPP_ << "[Unpublished] Send first registration pack to mds";
-      if (use_unit_server) {
-        if (unit_server_sm.process_event(unit_server_state_machine::UnitServerEventType::UnitServerEventTypePublishing()) == boost::msm::back::HANDLED_TRUE) {
-          //gone to publishing
-          sendUnitServerRegistration();
-        } else {
-          LCMERR_ << "[Unpublished] i can't be here";
-        }
+      if (unit_server_sm.process_event(unit_server_state_machine::UnitServerEventType::UnitServerEventTypePublishing()) == boost::msm::back::HANDLED_TRUE) {
+        //gone to publishing
+        sendUnitServerRegistration();
       } else {
-        LCMDBG_ << "[Publishing] Unit server registration not sucessfull, turn off the timer";
-        TimerHandler::stopMe();
+        LCMERR_ << "[Unpublished] i can't be here";
       }
+     
       break;
       //Publishing
     case 1:
@@ -720,7 +710,6 @@ void ControlManager::timeout() {
     case 3:
       LCMAPP_ << "[Published failed] Perform Unpublishing state";
       TimerHandler::stopMe();
-      use_unit_server = false;
       break;
   }
 }

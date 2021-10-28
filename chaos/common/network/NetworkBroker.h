@@ -121,10 +121,6 @@ namespace chaos {
 				//! Rpc server for message listening
                 chaos::RpcServer *rpc_server;
                 
-				// publish subscribe
-				chaos::common::message::producer_uptr_t prod;
-              	chaos::common::message::consumer_uptr_t cons;
-
 				//rpc action dispatcher
 				AbstractCommandDispatcher *rpc_dispatcher;
 				
@@ -160,7 +156,7 @@ namespace chaos {
                                                                                             
 			public:
 				
-				
+				bool usepsbroker;
 				//! Basic Destructor
 				virtual ~NetworkBroker();
 				

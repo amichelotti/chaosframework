@@ -496,7 +496,10 @@ SET(common_lib_src ${common_lib_src}
                     rpc/RpcClient.cpp
                     rpc/RpcServer.cpp
                     rpc/zmq/ZMQClient.cpp
-                    rpc/zmq/ZMQServer.cpp)
+                    rpc/zmq/ZMQServer.cpp
+                    rpc/psm/PSMClient.cpp
+                    rpc/psm/PSMServer.cpp
+                    )
 SET(common_lib_src ${common_lib_src}
                     utility/NamedService.cpp
                     utility/StartableService.cpp

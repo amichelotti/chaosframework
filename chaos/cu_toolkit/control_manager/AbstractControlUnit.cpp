@@ -2331,7 +2331,7 @@ void AbstractControlUnit::completeInputAttribute() {
 AbstractSharedDomainCache* AbstractControlUnit::_getAttributeCache() {
   return attribute_value_shared_cache;
 }
-int AbstractControlUnit::incomingMessage(const std::string& key, const chaos::common::data::CDWShrdPtr& data) {
+int AbstractControlUnit::incomingMessage(const std::string& key,  chaos::common::data::CDWUniquePtr& data) {
   ACULDBG_ << "message from :" << key << " data:" << (data.get() ? data->getJSONString() : "NONE");
   return 0;
 }
@@ -3447,7 +3447,7 @@ void AbstractControlUnit::metadataLogging(const StandardLoggingChannel::LogLevel
                   message);
 }
 
-void AbstractControlUnit::consumerHandler(const chaos::common::message::ele_t& data) {
+void AbstractControlUnit::consumerHandler( chaos::common::message::ele_t& data) {
   incomingMessage(data.key, data.cd);
 }
 void AbstractControlUnit::updateDataSet(chaos::common::data::CDataWrapper& cd, chaos::DataType::DataSetAttributeIOAttribute io) {

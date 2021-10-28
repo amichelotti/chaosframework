@@ -235,6 +235,12 @@ void GlobalConfiguration::parseParameter(const po::basic_parsed_options<char>& o
     //check the default option
     checkDefaultOption();
 }
+#define CHECK_AND_DEFINE_CONFIG_OPTION(t,y)\
+{t x;\
+if(hasOption(y)){\
+x = getOption<t>(y);\
+configuration->append(y,x);}}
+
 void GlobalConfiguration::checkDefaultOption()  {
     configuration.reset(new CDataWrapper());
     //now we can fill the gloabl configuration
@@ -257,9 +263,6 @@ void GlobalConfiguration::checkDefaultOption()  {
     CHECK_AND_DEFINE_OPTION(string, logFilePath, InitOption::OPT_LOG_FILE);
     configuration->addStringValue(InitOption::OPT_LOG_FILE, logFilePath);
     
-    CHECK_AND_DEFINE_OPTION(string, nodeDesc, InitOption::OPT_NODE_DESC);
-    configuration->addStringValue(InitOption::OPT_NODE_DESC, nodeDesc);
-
     CHECK_AND_DEFINE_OPTION(string, logLevel, InitOption::OPT_LOG_LEVEL)
     configuration->addInt32Value(InitOption::OPT_LOG_LEVEL, filterLogLevel(logLevel));
     
@@ -283,7 +286,11 @@ void GlobalConfiguration::checkDefaultOption()  {
     
     CHECK_AND_DEFINE_OPTION(string, rpcImpl, InitOption::OPT_RPC_IMPLEMENTATION)
     configuration->addStringValue(InitOption::OPT_RPC_IMPLEMENTATION, rpcImpl);
-    
+
+    CHECK_AND_DEFINE_CONFIG_OPTION(std::string,InitOption::OPT_MSG_BROKER_SERVER);
+    CHECK_AND_DEFINE_CONFIG_OPTION(std::string,InitOption::OPT_NODE_DESC);
+    CHECK_AND_DEFINE_CONFIG_OPTION(std::string,chaos::InitOption::CONTROL_MANAGER_UNIT_SERVER_ALIAS);
+    CHECK_AND_DEFINE_CONFIG_OPTION(std::string,InitOption::OPT_MSG_BROKER_DRIVER);
     CHECK_AND_DEFINE_OPTION(bool, OPT_RPC_SYNC_ENABLE, InitOption::OPT_RPC_SYNC_ENABLE)
     else{
         OPT_RPC_SYNC_ENABLE = false;
@@ -536,6 +543,10 @@ string GlobalConfiguration::getLocalServerAddress() {
 
 std::string GlobalConfiguration::getDesc(){
     return configuration->getStringValue(chaos::InitOption::OPT_NODE_DESC);
+
+}
+std::string GlobalConfiguration::getNodeUID(){
+    return configuration->getStringValue(chaos::InitOption::CONTROL_MANAGER_UNIT_SERVER_ALIAS);
 
 }
 
