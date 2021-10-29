@@ -70,7 +70,10 @@ void PSMServer::init(void *init_data) {
         gname=cfg->getStringValue(InitOption::OPT_GROUP_NAME);
         PSMS_LAPP << "belong to group:\""<<gname<<"\"";
 
+    } else {
+        gname=nodeuid;
     }
+
     cons = chaos::common::message::MessagePSDriver::getNewConsumerDriver(msgbrokerdrv, gname);
     prod = chaos::common::message::MessagePSDriver::getProducerDriver(msgbrokerdrv);
 
