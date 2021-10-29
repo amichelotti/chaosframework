@@ -35,12 +35,13 @@ namespace chaos {
 			struct CNetworkAddress {
 				//the ip and port for the host that run the control unit
 				std::string ip_port;
+                bool isatopic;
                 CNetworkAddress(){};
                 CNetworkAddress(const CNetworkAddress& cna):
                 ip_port(cna.ip_port){};
                 
-                CNetworkAddress(const std::string& _ip_port):
-                ip_port(_ip_port){};
+                CNetworkAddress(const std::string& _ip_port,bool _isatopic=false):
+                ip_port(_ip_port),isatopic(_isatopic){};
 			};
 			
 			//! Represent the abstraction of chaos node id of the chaos virtual node

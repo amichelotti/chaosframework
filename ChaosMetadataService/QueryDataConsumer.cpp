@@ -66,7 +66,11 @@ QueryDataConsumer::~QueryDataConsumer() {}
 void QueryDataConsumer::init(void* init_data) {
   //get new chaos direct io endpoint
   server_endpoint = NetworkBroker::getInstance()->getDirectIOServerEndpoint();
-  if (!server_endpoint) throw chaos::CException(-2, "Invalid server endpoint", __FUNCTION__);
+  if(server_endpoint==NULL){
+      INFO << "DirectIO disabled";
+      return;
+  }
+//  if (!server_endpoint) throw chaos::CException(-2, "Invalid server endpoint", __FUNCTION__);
   INFO << "QueryDataConsumer initialized with endpoint " << server_endpoint->getRouteIndex();
 
   INFO << "Allocating DirectIODeviceServerChannel";

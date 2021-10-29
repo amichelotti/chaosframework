@@ -38,6 +38,7 @@
 #include <chaos/common/thread/WaitSemaphore.h>
 #include <chaos/common/utility/StartableService.h>
 #include <chaos/common/utility/ProcStat.h>
+#define CDS_GROUP_NAME "cds"
 namespace chaos {
     namespace metadata_service {
         //! Chaos Node Directory base class

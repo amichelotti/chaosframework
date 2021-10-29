@@ -119,6 +119,7 @@ int main(int argc, const char * argv[]) {
                                                                                                          "Specify the check time (in seconds ) for ageing management (default is one day of delay)",
                                                                                                          86400,
                                                                                                          &ChaosMetadataService::getInstance()->setting.cron_job_ageing_management_repeat_time);
+
         ChaosMetadataService::getInstance()->init(argc, argv);
         
         ChaosMetadataService::getInstance()->start();

@@ -287,7 +287,11 @@ void ChaosAbstractCommon::init(void *init_data) {
             //initialize the plugin manager
             chaos::common::utility::InizializableService::initImplementation(chaos::common::plugin::PluginManager::getInstance(), NULL, "PluginManager", __PRETTY_FUNCTION__);
         }
-        
+         if (GlobalConfiguration::getInstance()->hasOption(InitOption::CONTROL_MANAGER_UNIT_SERVER_ALIAS)) {
+             nodeuid=GlobalConfiguration::getInstance()->getConfiguration()->getStringValue(InitOption::CONTROL_MANAGER_UNIT_SERVER_ALIAS);
+         } else {
+             nodeuid=NetworkBroker::getInstance()->getRPCUrl();
+         }
         //finally we can register the system rpc api for common uses
         AbstActionDescShrPtr
         action_description = addActionDescritionInstance<ChaosAbstractCommon>(this,

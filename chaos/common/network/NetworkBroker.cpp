@@ -45,6 +45,7 @@
 #endif
 
 #define MB_LAPP LAPP_ << "[NetworkBroker]- "
+#define MB_LERR LERR_ << __PRETTY_FUNCTION__<<"- ## [NetworkBroker]- "
 
 #define INIT_STEP 0
 #define DEINIT_STEP 1
@@ -95,8 +96,9 @@ void NetworkBroker::init(void *initData) {
   
     //---------------------------- D I R E C T I/O ----------------------------
     if (globalConfiguration->hasKey(common::direct_io::DirectIOConfigurationKey::DIRECT_IO_IMPL_TYPE)) {
-      MB_LAPP << "Setup DirectIO sublayer";
       string direct_io_impl = globalConfiguration->getStringValue(common::direct_io::DirectIOConfigurationKey::DIRECT_IO_IMPL_TYPE);
+      MB_LAPP << "Setup DirectIO sublayer "<<direct_io_impl;
+
       //construct the rpc server and client name
       string direct_io_server_impl = direct_io_impl + "DirectIOServer";
       direct_io_client_impl        = direct_io_impl + "DirectIOClient";
@@ -231,12 +233,15 @@ void NetworkBroker::deinit() {
   //remove global request domain before delete all, it use internally NetworBroker singleton
   global_request_domain.reset();
     //---------------------------- D I R E C T I/O ----------------------------
-    CHAOS_NOT_THROW(InizializableService::deinitImplementation(direct_io_client, direct_io_client->getName(), __PRETTY_FUNCTION__);)
-    DELETE_OBJ_POINTER(direct_io_client);
+    if(direct_io_client){
+      CHAOS_NOT_THROW(InizializableService::deinitImplementation(direct_io_client, direct_io_client->getName(), __PRETTY_FUNCTION__);)
+      DELETE_OBJ_POINTER(direct_io_client);
+    }
+    if(direct_io_server){
+      CHAOS_NOT_THROW(StartableService::deinitImplementation(direct_io_server, direct_io_server->getName(), "NetworkBroker::deinit");)
 
-    CHAOS_NOT_THROW(StartableService::deinitImplementation(direct_io_server, direct_io_server->getName(), "NetworkBroker::deinit");)
-
-    DELETE_OBJ_POINTER(direct_io_server);
+      DELETE_OBJ_POINTER(direct_io_server);
+    }
     //---------------------------- D I R E C T I/O ----------------------------
 
     //---------------------------- E V E N T ----------------------------
@@ -303,7 +308,9 @@ void NetworkBroker::deinit() {
  * all part are started
  */
 void NetworkBroker::start() {
-    StartableService::startImplementation(direct_io_server, direct_io_server->getName(), __PRETTY_FUNCTION__);
+    if(direct_io_server){
+      StartableService::startImplementation(direct_io_server, direct_io_server->getName(), __PRETTY_FUNCTION__);
+    }
     if (!GlobalConfiguration::getInstance()->getOption<bool>(InitOption::OPT_EVENT_DISABLE)) {
       StartableService::startImplementation(event_dispatcher, "DefaultEventDispatcher", __PRETTY_FUNCTION__);
       StartableService::startImplementation(event_server, event_server->getName(), __PRETTY_FUNCTION__);
@@ -329,7 +336,9 @@ void NetworkBroker::stop() {
       CHAOS_NOT_THROW(StartableService::stopImplementation(event_server, event_server->getName(), __PRETTY_FUNCTION__);)
       CHAOS_NOT_THROW(StartableService::stopImplementation(event_dispatcher, "DefaultEventDispatcher", __PRETTY_FUNCTION__);)
     }
-    CHAOS_NOT_THROW(StartableService::stopImplementation(direct_io_server, direct_io_server->getName(), __PRETTY_FUNCTION__);)
+    if(direct_io_server){
+      CHAOS_NOT_THROW(StartableService::stopImplementation(direct_io_server, direct_io_server->getName(), __PRETTY_FUNCTION__);)
+    }
   
 }
 
@@ -347,9 +356,14 @@ int NetworkBroker::getPublishedPort() {
  */
 void NetworkBroker::getPublishedHostAndPort(string &hostAndPort) {
   CHAOS_ASSERT(rpc_server);
-  hostAndPort = GlobalConfiguration::getInstance()->getLocalServerAddress();
-  hostAndPort.append(":");
-  hostAndPort.append(lexical_cast<string>(rpc_server->getPublishedPort()));
+  if(rpc_server->isps()){
+    hostAndPort = rpc_server->getPublishedEndpoint();
+  } else {
+    hostAndPort = GlobalConfiguration::getInstance()->getLocalServerAddress();
+    hostAndPort.append(":");
+    hostAndPort.append(lexical_cast<string>(rpc_server->getPublishedPort()));
+  }
+
 }
 
 std::string NetworkBroker::getRPCUrl() {
@@ -359,7 +373,11 @@ std::string NetworkBroker::getRPCUrl() {
 }
 
 std::string NetworkBroker::getDirectIOUrl() {
-  CHAOS_ASSERT(rpc_server);
+  if(direct_io_server==NULL){
+    if(rpc_server->isps()){
+    return "topic:"+rpc_server->getPublishedEndpoint();
+  } 
+  }
   return direct_io_server->getUrl();
 }
 
@@ -607,7 +625,15 @@ MessageChannel *NetworkBroker::getNewMessageChannelForRemoteHost(CNetworkAddress
  Performe the creation of metadata server
  */
 MDSMessageChannel *NetworkBroker::getMetadataserverMessageChannel(MessageRequestDomainSHRDPtr shared_request_domain) {
-  MDSMessageChannel *channel = (shared_request_domain.get() == NULL) ? (new MDSMessageChannel(this, GlobalConfiguration::getInstance()->getMetadataServerAddressList(), global_request_domain)) : (new MDSMessageChannel(this, GlobalConfiguration::getInstance()->getMetadataServerAddressList(), shared_request_domain));
+   chaos::common::network::VectorNetworkAddress mds;
+   if(rpc_client->isps()){
+     chaos::common::network::CNetworkAddress m(common::constants::CHAOS_ADMIN_ADMIN_TOPIC,true);
+     mds.push_back(m);
+   } else {
+     mds=GlobalConfiguration::getInstance()->getMetadataServerAddressList();
+   }
+
+  MDSMessageChannel *channel = (shared_request_domain.get() == NULL) ? (new MDSMessageChannel(this,mds , global_request_domain)) : (new MDSMessageChannel(this, mds, shared_request_domain));
   if (channel) {
     channel->init();
     boost::mutex::scoped_lock lock(mutex_map_rpc_channel_acces);
@@ -737,7 +763,10 @@ void NetworkBroker::disposeMessageChannel(chaos::common::message::MDSMessageChan
 
 //Allocate a new endpoint in the direct io server
 chaos_direct_io::DirectIOServerEndpoint *NetworkBroker::getDirectIOServerEndpoint() {
-  CHAOS_ASSERT(direct_io_dispatcher)
+  if(direct_io_dispatcher==NULL){
+    MB_LERR<<"DirectIO server disabled";
+    return NULL;
+  }
   chaos_direct_io::DirectIOServerEndpoint *result_endpoint = direct_io_dispatcher->getNewEndpoint();
   return result_endpoint;
 }
@@ -747,6 +776,10 @@ void NetworkBroker::releaseDirectIOServerEndpoint(chaos_direct_io::DirectIOServe
 }
 //Return a new direct io client instance
 chaos_direct_io::DirectIOClient *NetworkBroker::getSharedDirectIOClientInstance() {
+  if(direct_io_client==NULL){
+    MB_LERR<<"DirectIO client disabled";
+  }
+
   return direct_io_client;
 }
 

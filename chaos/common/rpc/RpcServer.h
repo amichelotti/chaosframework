@@ -54,6 +54,8 @@ namespace chaos {
 	public common::utility::NamedService {
 		friend class chaos::common::network::NetworkBroker;
     protected:
+        bool is_psm; // is publish subscribe
+
         //! port where server has been published
         int port_number;
         
@@ -83,6 +85,11 @@ namespace chaos {
          Return the published port
          */
         virtual int getPublishedPort();
+
+        /*!
+         Return the published endpoint
+         */
+        virtual std::string getPublishedEndpoint();
         
         /*
          set the command dispatcher associated to the instance of rpc adapter
@@ -96,6 +103,8 @@ namespace chaos {
          of internal queue message
          */
         virtual uint64_t getMessageQueueSize();
+        bool isps()const {return is_psm;}
+
     };
 }
 #endif

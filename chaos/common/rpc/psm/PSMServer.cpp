@@ -38,6 +38,7 @@ using namespace chaos::common::data;
 DEFINE_CLASS_FACTORY(PSMServer, RpcServer);
 PSMServer::PSMServer(const string& alias):
 RpcServer(alias){
+    is_psm=true;
     
 }
 
@@ -64,16 +65,30 @@ void PSMServer::init(void *init_data) {
     }
     
     std::string msgbroker = cfg->getStringValue(InitOption::OPT_MSG_BROKER_SERVER);
+    std::string gname;
+    if(cfg->hasKey(InitOption::OPT_GROUP_NAME)){
+        gname=cfg->getStringValue(InitOption::OPT_GROUP_NAME);
+        PSMS_LAPP << "belong to group:\""<<gname<<"\"";
 
-    cons = chaos::common::message::MessagePSDriver::getNewConsumerDriver(msgbrokerdrv, "");
+    }
+    cons = chaos::common::message::MessagePSDriver::getNewConsumerDriver(msgbrokerdrv, gname);
+    prod = chaos::common::message::MessagePSDriver::getProducerDriver(msgbrokerdrv);
+
     if (cons.get() == 0) {
       throw chaos::CException(-3, "cannot initialize Publish Subscribe Consumer of topic:" + nodeuid + "_cmd", __PRETTY_FUNCTION__);
     }
     cons->addServer(msgbroker);
+    prod->addServer(msgbroker);
     // subscribe to the queue of commands
     cons->addHandler(chaos::common::message::MessagePublishSubscribeBase::ONARRIVE, boost::bind(&PSMServer::messageHandler, this, _1));
     cons->addHandler(chaos::common::message::MessagePublishSubscribeBase::ONERROR, boost::bind(&PSMServer::messageError, this, _1));
-
+    if (cons->applyConfiguration() != 0) {
+        throw chaos::CException(-1, "cannot initialize Publish Subscribe:" + cons->getLastError(), __PRETTY_FUNCTION__);
+    }
+    if(cfg->hasKey("ismds")){
+        PSMS_LAPP << "Subscribing to " <<chaos::common::constants::CHAOS_ADMIN_ADMIN_TOPIC+ std::string(chaos::DataPackPrefixID::COMMAND_DATASET_POSTFIX);
+        cons->subscribe(chaos::common::constants::CHAOS_ADMIN_ADMIN_TOPIC+  std::string(chaos::DataPackPrefixID::COMMAND_DATASET_POSTFIX));
+    }
     } catch (std::exception& e) {
         throw CException(-2, e.what(), "PSMServer::init");
     } catch (...) {
@@ -87,8 +102,8 @@ void PSMServer::messageHandler( chaos::common::message::ele_t& data) {
     if(data.cd->hasKey(RPC_SEQ_KEY)){
         seq_id=data.cd->getInt64Value(RPC_SEQ_KEY);
     }
-    if(data.cd->hasKey(RPC_SRC_UID)){
-        src=data.cd->getInt64Value(RPC_SRC_UID);
+    if(data.cd->hasKey(RpcActionDefinitionKey::CS_CMDM_ANSWER_HOST_IP)){
+        src=data.cd->getStringValue(RPC_SRC_UID);
     }
     PSMS_LDBG << "Message Received from node:"<<src<<" seq_id:"<<seq_id << " desc:"<<data.cd->getJSONString();
     CDWShrdPtr result_data_pack;
@@ -100,9 +115,10 @@ void PSMServer::messageHandler( chaos::common::message::ele_t& data) {
     } else {
         result_data_pack = command_handler->dispatchCommand(MOVE(data.cd));
     }
-    if(result_data_pack.get()){
+
+    if(result_data_pack.get() && src.size()){
         PSMS_LDBG << "Something to send back:"<<seq_id << "to node:"<<src<<" desc:"<<result_data_pack->getJSONString();
-  
+        prod->pushMsgAsync(*result_data_pack.get(),src+chaos::DataPackPrefixID::COMMAND_DATASET_POSTFIX);
     }
                     
 }
@@ -110,11 +126,17 @@ void PSMServer::messageError( chaos::common::message::ele_t& data) {
         PSMS_LERR  << "ERROR:";
 
 }
-
+ std::string PSMServer::getPublishedEndpoint(){
+    
+    return nodeuid + chaos::DataPackPrefixID::COMMAND_DATASET_POSTFIX;
+}
 //start the rpc adapter
 void PSMServer::start() {
+  
     PSMS_LAPP << "Subscribing to " << nodeuid + chaos::DataPackPrefixID::COMMAND_DATASET_POSTFIX;
     cons->subscribe(nodeuid + chaos::DataPackPrefixID::COMMAND_DATASET_POSTFIX);
+    cons->start();
+    prod->start();
 }
 
 //start the rpc adapter
