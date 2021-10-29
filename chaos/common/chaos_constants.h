@@ -133,6 +133,7 @@ static const char* const OPT_MSG_BROKER_DRIVER = "msg-broker-driver";
 
 static const char* const OPT_HA_ZONE_NAME                  = "ha-zone-name";
 static const char* const CONTROL_MANAGER_UNIT_SERVER_ALIAS = "unit-server-alias";
+static const char* OPT_GROUP_NAME                          ="group-name";
 
 #if ENABLE_ZMQ_MONITOR
 static const char* const OPT_ENABLE_ZMQ_MONITOR = "zmq-monitor";
@@ -179,6 +180,7 @@ static const unsigned int GlobalDirectIOTimeoutinMSec = 5000;
 }  // namespace common
 namespace common {
 namespace constants {
+static const char* CHAOS_ADMIN_ADMIN_TOPIC = "CHAOS_ADMIN";
 // hearth beat timers
 static const unsigned int HBTimersTimeoutinMSec                 = 5000;
 static const unsigned int AgentTimersTimeoutinMSec              = 5000;

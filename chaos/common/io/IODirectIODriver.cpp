@@ -88,7 +88,12 @@ void IODirectIODriver::init(void *_init_parameter) {
     //if(!init_parameter.client_instance) throw CException(-1, "No client configured", __PRETTY_FUNCTION__);
     
     init_parameter.endpoint_instance = NetworkBroker::getInstance()->getDirectIOServerEndpoint();
-    if(!init_parameter.endpoint_instance) throw CException(-1, "No endpoint configured", __PRETTY_FUNCTION__);
+    if(!init_parameter.endpoint_instance){
+        IODirectIODriver_LINFO_<<"No Directio Endpoint configured";
+        return;
+        //throw CException(-1, "No endpoint configured", __PRETTY_FUNCTION__);
+
+    } 
     
     //initialize client
     //InizializableService::initImplementation(init_parameter.client_instance, _init_parameter, init_parameter.client_instance->getName(), __PRETTY_FUNCTION__);

@@ -49,6 +49,7 @@ DEFINE_CLASS_FACTORY(PSMClient, RpcClient);
 PSMClient::PSMClient(const string& alias):
 RpcClient(alias){    
     seq_id=0;
+    is_psm=true;
 
 }
 
@@ -80,7 +81,7 @@ void PSMClient::init(void *init_data) {
     
     std::string msgbroker = cfg->getStringValue(InitOption::OPT_MSG_BROKER_SERVER);
 
-    prod = chaos::common::message::MessagePSDriver::getNewProducerDriver(msgbrokerdrv);
+    prod = chaos::common::message::MessagePSDriver::getProducerDriver(msgbrokerdrv);
         PSMC_LAPP << "Initializing producer based on " << msgbroker<<" ("+msgbrokerdrv+")";
 
     prod->addServer(msgbroker);
@@ -132,13 +133,16 @@ bool PSMClient::submitMessage(NFISharedPtr forwardInfo,
             throw CException(0, "No destination in message description", __PRETTY_FUNCTION__);
         if(!forwardInfo->hasMessage())
             throw CException(0, "No message in description", __PRETTY_FUNCTION__);
-        
+        if(forwardInfo->message->hasKey(RpcActionDefinitionKey::CS_CMDM_ANSWER_HOST_IP)){
+            forwardInfo->message->removeKey(RpcActionDefinitionKey::CS_CMDM_ANSWER_HOST_IP);
+            forwardInfo->message->addStringValue(RpcActionDefinitionKey::CS_CMDM_ANSWER_HOST_IP,nodeuid);
+        }
         forwardInfo->message->addBoolValue(RPC_SYNC_KEY, RpcClient::syncrhonous_call);
         forwardInfo->message->addInt64Value(RPC_SEQ_KEY, (++seq_id));
-        forwardInfo->message->addStringValue(RPC_SRC_UID, nodeuid);
+      
         std::string key=forwardInfo->destinationAddr+ chaos::DataPackPrefixID::COMMAND_DATASET_POSTFIX;
-        PSMC_LDBG<<"Sending message to:"<<key<<" msg:"<<forwardInfo->message->getJSONString();
-        prod->pushMsg(*forwardInfo->message.get(),key);
+        PSMC_LDBG<<"Sending message to:"<<forwardInfo->destinationAddr<<" ("<<key<<") msg:"<<forwardInfo->message->getJSONString();
+        prod->pushMsgAsync(*forwardInfo->message.get(),key);
 
     } catch(CException& ex){
         //in this case i need to delete the memory

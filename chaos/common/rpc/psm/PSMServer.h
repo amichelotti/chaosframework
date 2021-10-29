@@ -39,6 +39,8 @@ namespace chaos {
         REGISTER_AND_DEFINE_DERIVED_CLASS_FACTORY_HELPER(PSMServer)
         // publish subscribe
 		chaos::common::message::consumer_uptr_t cons;
+        chaos::common::message::producer_uptr_t prod;
+
         std::string nodeuid;
         PSMServer(const std::string& alias);
         virtual ~PSMServer();
@@ -46,15 +48,6 @@ namespace chaos {
         void messageHandler( chaos::common::message::ele_t& data);
         void messageError( chaos::common::message::ele_t& data);
 
-        int sendMessage(void *socket,
-                        void *message_data,
-                        size_t message_size,
-                        bool more_to_send);
-        
-        int readMessage(void *socket,
-                        std::string& buffer,
-                        bool& has_next,
-                        std::string *peer_ip = NULL);
     public:
         
         /*
@@ -78,8 +71,8 @@ namespace chaos {
         /*!
          Thread where data is received and managed
          */
-        void executeOnThread();
-    };
+        std::string getPublishedEndpoint();
+            };
     
 }
 #endif
