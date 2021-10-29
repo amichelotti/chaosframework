@@ -113,7 +113,7 @@ int MessagePSRDKafkaConsumer::applyConfiguration() {
     }*/
     if (rk == NULL) {
       MRDDBG_ << "Consumer apply configuration, groupid:" << groupid;
-      if (groupid != "") {
+      if (groupid.size()) {
         if (setOption("group.id", groupid.c_str()) != 0) {
           return -2;
         }
