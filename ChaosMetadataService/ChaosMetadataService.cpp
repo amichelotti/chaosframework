@@ -251,12 +251,14 @@ void ChaosMetadataService::start() {
     // register this process on persistence database
     persistence::data_access::DataServiceDataAccess* ds_da      = DriverPoolManager::getInstance()->getPersistenceDataAccess<persistence::data_access::DataServiceDataAccess>();
     LCND_LDBG << "-----REGISTERING "<<nodeuid;
-
+    chaos::common::data::CDWUniquePtr info=getBuildInfo(chaos::common::data::CDWUniquePtr());
+    info->addStringValue(NodeDefinitionKey::NODE_IP_ADDR,
+                           chaos::GlobalConfiguration::getInstance()->getLocalServerAddressAnBasePort());
     ds_da->registerNode(setting.ha_zone_name,
                         nodeuid,
                         NetworkBroker::getInstance()->getDirectIOUrl(),
                         0,
-                        getBuildInfo(chaos::common::data::CDWUniquePtr()));
+                        MOVE(info));
 
     // at this point i must with for end signal
     chaos::common::async_central::AsyncCentralManager::getInstance()->addTimer(this,

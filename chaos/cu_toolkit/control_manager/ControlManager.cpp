@@ -90,8 +90,8 @@ void ControlManager::init(void* initParameter) {
   {
     LCMAPP_ << "Enable unit server";
 
-    if (!GlobalConfiguration::getInstance()->hasOption(InitOption::CONTROL_MANAGER_UNIT_SERVER_ALIAS)) {
-      throw CException(-1, "No required "+std::string(InitOption::CONTROL_MANAGER_UNIT_SERVER_ALIAS)+" option given", __PRETTY_FUNCTION__);
+    if (!GlobalConfiguration::getInstance()->hasOption(InitOption::OPT_NODEUID)) {
+      throw CException(-1, "No required "+std::string(InitOption::OPT_NODEUID)+" option given", __PRETTY_FUNCTION__);
     }
 
     if (GlobalConfiguration::getInstance()->hasOption(CONTROL_MANAGER_UNIT_SERVER_KEY)) {

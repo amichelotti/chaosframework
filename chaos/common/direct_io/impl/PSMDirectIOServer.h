@@ -26,9 +26,8 @@
 #include <chaos/common/direct_io/DirectIOServer.h>
 #include <chaos/common/utility/ObjectFactoryRegister.h>
 
-#include <boost/thread.hpp>
+#include <chaos/common/message/MessagePSDriver.h>
 
-#include <zmq.h>
 
 namespace chaos {
     namespace common {
@@ -43,21 +42,12 @@ namespace chaos {
                 DECLARE_CLASS_FACTORY(PSMDirectIOServer, DirectIOServer),
                 private PSMBaseClass {
                     REGISTER_AND_DEFINE_DERIVED_CLASS_FACTORY_HELPER(PSMDirectIOServer)
-                    void *zmq_context;
-                    unsigned int direct_io_thread_number;
-                    boost::thread_group server_threads_group;
                     
-                    bool run_server;
-                    
-                    std::string priority_socket_bind_str;
-                    
-                    std::string service_socket_bind_str;
-                    
-                    void poller(const std::string& public_url,
-                                const std::string& inproc_url);
-                    void worker(unsigned int w_type,
-                                DirectIOHandlerPtr delegate);
-                    
+                    chaos::common::message::consumer_uptr_t cons;
+                    chaos::common::message::producer_uptr_t prod;
+                    void messageHandler( chaos::common::message::ele_t& data);
+                    void messageError( chaos::common::message::ele_t& data);
+
                     
                     PSMDirectIOServer(std::string alias);
                     ~PSMDirectIOServer();
