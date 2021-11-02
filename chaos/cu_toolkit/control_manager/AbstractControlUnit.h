@@ -335,7 +335,7 @@ class AbstractControlUnit : public DeclareAction,
   AttributeSharedCacheWrapper* attribute_shared_cache_wrapper;
 
   //! fast access for acquisition timestamp
-  bool            use_custom_high_resolution_timestamp;
+  bool            use_custom_high_resolution_timestamp,aligned_ex_done;
   AttributeValue* timestamp_acq_cached_value;
   AttributeValue* timestamp_hw_acq_cached_value;
 
@@ -409,6 +409,7 @@ class AbstractControlUnit : public DeclareAction,
 
   // Startable Service method
   void deinit();
+  
 
   //! State machine is gone into recoverable error
   void recoverableErrorFromState(int last_state, chaos::CException& ex);
@@ -561,7 +562,7 @@ class AbstractControlUnit : public DeclareAction,
   void _setBypassState(bool bypass_stage,
                        bool high_priority = false);
 
-  virtual void consumerHandler(const chaos::common::message::ele_t& data);
+  virtual void consumerHandler( chaos::common::message::ele_t& data);
 
   template <typename T>
   bool _setDrvProp(const std::string& name, const T& value, uint32_t size,bool bi) {
@@ -727,7 +728,7 @@ class AbstractControlUnit : public DeclareAction,
    * @param data pack
    * @return int return 0 if succefully handled
    */
-  virtual int incomingMessage(const std::string& key, const chaos::common::data::CDWShrdPtr& data);
+  virtual int incomingMessage(const std::string& key,  chaos::common::data::CDWUniquePtr& data);
 
   //!callback for put a veto on property value change request
   virtual bool propertyChangeHandler(const std::string&                       group_name,
@@ -922,7 +923,22 @@ class AbstractControlUnit : public DeclareAction,
   void addAttributesToDataSet(chaos::common::data::CDataWrapper&cd,chaos::DataType::DataSetAttributeIOAttribute io=chaos::DataType::Output);
   void updateDataSet(chaos::common::data::CDataWrapper&cd,chaos::DataType::DataSetAttributeIOAttribute io=chaos::DataType::Output);
   
-
+/**
+   * @brief Save custom (configuration) Data as keyname
+   * 
+   * @param keyname 
+   * @param d data
+   * @return int 0 on success;
+   */
+  int saveData(const std::string& keyname,const chaos::common::data::CDataWrapper& d);
+  /**
+   * @brief Load  custom (configuration) Data 
+   * 
+   * @param keyname 
+   * @param d data
+   * @return int 0 on success;
+   */
+  chaos::common::data::CDWUniquePtr loadData(const std::string& keyname);
   CUStateKey::ControlUnitState getState();
   bool                         removeHandlerOnAttributeName(const std::string& attribute_name) {
     return dataset_attribute_manager.removeHandlerOnAttributeName(attribute_name);

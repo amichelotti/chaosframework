@@ -38,6 +38,7 @@
 #include <chaos/common/thread/WaitSemaphore.h>
 #include <chaos/common/utility/StartableService.h>
 #include <chaos/common/utility/ProcStat.h>
+#define CDS_GROUP_NAME "cds"
 namespace chaos {
     namespace metadata_service {
         //! Chaos Node Directory base class
@@ -65,7 +66,7 @@ namespace chaos {
                                  const std::vector<std::string>& multitoken_param);
             //inherited by chaos::common::async_central::TimerHandler
             void timeout();
-            
+            bool is_present;// check if exists the entry
         public:
             static uint64_t timePrecisionMask;
             static  std::string mdsName;
@@ -95,6 +96,20 @@ namespace chaos {
              */
             std::vector<bool> areNodeAlive(const ChaosStringVector& uids);
             bool isNodeAlive(const std::string& uid);
+            std::map <std::string,int64_t> alive_cache;
+            /**
+             * @brief update alive_cache if dataset timestamp is newwer
+             * 
+             */
+            void updateLiveCache(const chaos::common::data::CDataWrapper*);
+
+            /**
+             * @brief update alive_cache if ts is newer
+             * 
+             */
+            void updateLiveCache(const std::string& name,int64_t te);
+
+
 
             /**
              * @brief remove storage data to from

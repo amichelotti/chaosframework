@@ -23,7 +23,7 @@
 #include "chaos_agent_constants.h"
 #include <chaos/common/utility/FSUtility.h>
 #include <chaos/common/metadata_logging/metadata_logging.h>
-
+//#include <chaos_service_common/health_system/HealtManagerDirect.h>
 #include <chaos/common/healt_system/HealtManager.h>
 #include <chaos/common/io/SharedManagedDirecIoDataDriver.h>
 #include <chaos/common/configuration/GlobalConfiguration.h>
@@ -74,13 +74,15 @@ void ChaosAgent::init(void *init_data)  {
         settings.working_directory = FSUtility::getExecutablePath();
     }
     
-    
+    ChaosAgent::getInstance()->settings.agent_uid=nodeuid;
     //settings.agent_uid = CHAOS_FORMAT("ChaosAgent_%1%",%chaos::GlobalConfiguration::getInstance()->getLocalServerAddressAnBasePort());
     
     InizializableService::initImplementation(SharedManagedDirecIoDataDriver::getInstance(), NULL, "SharedManagedDirecIoDataDriver", __PRETTY_FUNCTION__);
     InizializableService::initImplementation(chaos::common::metadata_logging::MetadataLoggingManager::getInstance(), NULL, "MetadataLoggingManager", __PRETTY_FUNCTION__);
 
     StartableService::initImplementation(HealtManager::getInstance(), NULL, "HealthManager", __PRETTY_FUNCTION__);
+   // StartableService::initImplementation(HealtManagerDirect::getInstance(), NULL, "HealtManagerDirect", __PRETTY_FUNCTION__);
+
     agent_register.reset(new AgentRegister(), "AgentRegister");
     CHECK_ASSERTION_THROW_AND_LOG((agent_register.get() != NULL), ERROR, -1, "AgentRegister instantiation failed");
     agent_register.init(NULL, __PRETTY_FUNCTION__);
@@ -96,7 +98,7 @@ void ChaosAgent::init(void *init_data)  {
     }
 
     
-    std::string script_path=getGlobalConfigurationInstance()->getOption< std::string >(OPT_SCRIPT_DIR) +"/"+ ChaosAgent::getInstance()->settings.agent_uid;
+    std::string script_path=getGlobalConfigurationInstance()->getOption< std::string >(OPT_SCRIPT_DIR) +"/"+ nodeuid;
     boost::filesystem::path p(script_path);
     ChaosAgent::getInstance()->settings.script_dir=script_path;
     ChaosAgent::getInstance()->settings.restport=restport;
@@ -112,7 +114,7 @@ void ChaosAgent::init(void *init_data)  {
         } catch(boost::filesystem::filesystem_error& e){
             std::stringstream ss;
             ss<< " Exception creating directory:"<<p<<" error:"<< e.what();
-            logError(ChaosAgent::getInstance()->settings.agent_uid,ss.str(),__PRETTY_FUNCTION__);
+            logError(nodeuid,ss.str(),__PRETTY_FUNCTION__);
             
             ERROR<<ss.str();
       }
@@ -126,10 +128,6 @@ void ChaosAgent::start() {
     StartableService::startImplementation(HealtManager::getInstance(), "HealthManager", __PRETTY_FUNCTION__);
     ChaosCommon<ChaosAgent>::start();
     agent_register.start(__PRETTY_FUNCTION__);
-#ifndef OLD_PROCESS_MANAGEMENT
-
-    procRestUtil->start(true); // start in background
-#endif
 
  if (signal((int) SIGINT, ChaosAgent::signalHanlder) == SIG_ERR) {
         throw CException(-1, "Error registering SIGINT signal", __PRETTY_FUNCTION__);
@@ -142,6 +140,14 @@ void ChaosAgent::start() {
     if (signal((int) SIGTERM, ChaosAgent::signalHanlder) == SIG_ERR) {
         throw CException(-3, "Error registering SIGTERM signal", __PRETTY_FUNCTION__);
     }
+
+#ifndef OLD_PROCESS_MANAGEMENT
+    DBG << " STARTING REST SERVER ON PORT:" << ChaosAgent::getInstance()->settings.restport;
+
+    sleep(chaos::common::constants::HBTimersTimeoutinMSec/1000);
+    procRestUtil->start(true); // start in background
+#endif
+
     wait_close_semaphore.waitRaw();
     
     #ifndef OLD_PROCESS_MANAGEMENT
@@ -210,7 +216,7 @@ std::string ChaosAgent::scriptWorkingDir(std::string scriptname,std::string uid)
             (boost::filesystem::create_directories(working_dir) == false)) {
             std::stringstream ss;
             ss<<"cannot create directory:\""<<working_dir<<"\"";
-            logError(ChaosAgent::getInstance()->settings.agent_uid,ss.str(),__PRETTY_FUNCTION__);
+            logError(nodeuid,ss.str(),__PRETTY_FUNCTION__);
 
          ERROR<<ss.str();
          return std::string();
@@ -218,13 +224,13 @@ std::string ChaosAgent::scriptWorkingDir(std::string scriptname,std::string uid)
   } catch(boost::filesystem::filesystem_error& e){
             std::stringstream ss;
             ss<< " Filesystem Exception creating directory:"<<working_dir<<" error:"<< e.what();
-            logError(ChaosAgent::getInstance()->settings.agent_uid,ss.str(),__PRETTY_FUNCTION__);
+            logError(nodeuid,ss.str(),__PRETTY_FUNCTION__);
 
     } catch(...){
         std::stringstream ss;
 
          ss<<"Exception cannot create directory:\""<<working_dir<<"\"";
-        logError(ChaosAgent::getInstance()->settings.agent_uid,ss.str(),__PRETTY_FUNCTION__);
+        logError(nodeuid,ss.str(),__PRETTY_FUNCTION__);
 
         ERROR<<ss.str();
                                                     
@@ -251,7 +257,7 @@ std::string ChaosAgent::scriptWorkingDir(std::string scriptname,std::string uid)
   } else {
       std::stringstream ss;
       ss<<"cannot write file \""<<fname<<"\" of "<<towrite->getBufferSize()<<" bytes, error:"<< strerror(errno);
-    logError(ChaosAgent::getInstance()->settings.agent_uid,ss.str(),__PRETTY_FUNCTION__);
+    logError(nodeuid,ss.str(),__PRETTY_FUNCTION__);
 
 //throw CException(-10, ss.str(), __PRETTY_FUNCTION__);
 

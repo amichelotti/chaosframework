@@ -51,10 +51,6 @@ int main(int argc, const char * argv[]) {
                                                                                               "/tmp/script_dir",
                                                                                               &ChaosAgent::getInstance()->settings.script_dir);
         //data worker
-        ChaosAgent::getInstance()->getGlobalConfigurationInstance()->addOption< std::string >(OPT_NODE_UID,
-                                                                                              "Node Unique Name",
-                                                                                              ChaosAgent::getInstance()->settings.agent_uid,
-                                                                                              &ChaosAgent::getInstance()->settings.agent_uid);
          ChaosAgent::getInstance()->getGlobalConfigurationInstance()->addOption< std::string >(OPT_WORKING_DIR,
                                                                                               "Working directory for agent",
                                                                                               "",

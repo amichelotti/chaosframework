@@ -132,8 +132,9 @@ void ChaosCUToolkit::init(void* init_data) {
     InizializableService::initImplementation(SharedManagedDirecIoDataDriver::getInstance(), NULL, "SharedManagedDirecIoDataDriver", __PRETTY_FUNCTION__);
 
     if (GlobalConfiguration::getInstance()->hasOption(InitOption::OPT_LOG_ON_MDS) &&
-        GlobalConfiguration::getInstance()->hasOption(InitOption::CONTROL_MANAGER_UNIT_SERVER_ALIAS)) {
-      chaos::common::log::LogManager::getInstance()->addMDSLoggingBackend(GlobalConfiguration::getInstance()->getOption<std::string>(InitOption::CONTROL_MANAGER_UNIT_SERVER_ALIAS));
+        GlobalConfiguration::getInstance()->hasOption(InitOption::OPT_NODEUID)) {
+        nodeuid=GlobalConfiguration::getInstance()->getNodeUID();
+      chaos::common::log::LogManager::getInstance()->addMDSLoggingBackend(nodeuid);
     }
 
     //force first allocation of metadata logging
@@ -179,7 +180,7 @@ void ChaosCUToolkit::start() {
     StartableService::startImplementation(ControlManager::getInstance(), "ControlManager", "ChaosCUToolkit::start");
     LAPP_ << "-----------------------------------------";
     LAPP_ << "!CHAOS Control Unit System Started";
-    LAPP_ << "RPC Server address: " << CommandManager::getInstance()->broker->getRPCUrl();
+    LAPP_ << "Server Endpoint: " << CommandManager::getInstance()->broker->getRPCUrl();
     LAPP_ << "DirectIO Server address: " << CommandManager::getInstance()->broker->getDirectIOUrl();
     LAPP_ << "-----------------------------------------";
     //at this point i must with for end signal

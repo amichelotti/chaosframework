@@ -37,6 +37,7 @@ namespace chaos {
 			typedef struct NetworkForwardInfo {
                 bool is_request;
                 bool is_synchronous_request;
+                bool is_psm;//is publish subscribe
 				//!Define the information ip:port used to reach a remote chaos network broker
 				std::string destinationAddr;
 				//! the message data
@@ -55,6 +56,7 @@ namespace chaos {
                 destinationAddr(),
                 message(),
                 tag(0),
+                is_psm(false),
                 sender_node_id(),
                 sender_request_id(0){}
 

@@ -49,10 +49,8 @@ IODirectIOPSMsgDriver::IODirectIOPSMsgDriver(const std::string& alias)
   msgbrokerdrv = GlobalConfiguration::getInstance()->getOption<std::string>(InitOption::OPT_MSG_BROKER_DRIVER);
 
   prod = chaos::common::message::MessagePSDriver::getProducerDriver(msgbrokerdrv);
-  std::string gid;
-  if (GlobalConfiguration::getInstance()->hasOption(InitOption::CONTROL_MANAGER_UNIT_SERVER_ALIAS)) {
-    gid = GlobalConfiguration::getInstance()->getOption<std::string>(InitOption::CONTROL_MANAGER_UNIT_SERVER_ALIAS);
-  }
+  std::string gid=GlobalConfiguration::getInstance()->getNodeUID();
+  
   if (gid == "") {
     gid = "IODirectIODriver";
   }
@@ -84,7 +82,7 @@ void IODirectIOPSMsgDriver::init(void* _init_parameter) {
     prod->start();
   }
 }
-void IODirectIOPSMsgDriver::defaultHandler(const chaos::common::message::ele_t& data) {
+void IODirectIOPSMsgDriver::defaultHandler( chaos::common::message::ele_t& data) {
   std::map<std::string, chaos::common::message::msgHandler>::iterator i, end;
   {
     boost::mutex::scoped_lock ll(hmutex);

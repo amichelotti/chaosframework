@@ -68,7 +68,7 @@ namespace chaos {
         //! handler to the dispatcher to forward error on data forwarding
         chaos::common::rpc::RpcServerHandler *server_handler;
     protected:
-        
+        bool is_psm; // is publish subscribe
         bool syncrhonous_call;
         
         void forwadSubmissionResult(NFISharedPtr message_info,
@@ -105,6 +105,7 @@ namespace chaos {
         //! Set dinamically the synchronousRpcFeautres
         void setSynchronousRPCState(bool _syncrhonous_call);
         bool getynchronousRPCState()const;
+        bool isps()const {return is_psm;}
     };
 }
 #endif

@@ -24,6 +24,7 @@ using namespace chaos;
 
 RpcServer::RpcServer(const std::string& alias):
 NamedService(alias),
+is_psm(false),
 port_number(0),
 command_handler(NULL){}
 
@@ -36,6 +37,11 @@ void RpcServer::setAlternatePortAddress(int new_port_address) {
  */
 int RpcServer::getPublishedPort() {
     return port_number;
+}
+std::string RpcServer::getPublishedEndpoint(){
+    std::stringstream ss;
+    ss<<":"<<port_number;
+    return ss.str();
 }
 
 /*

@@ -79,8 +79,16 @@ int MongoDBSnapshotDataAccess::snapshotCreateNewWithName(const std::string& snap
                                       check_unique_q))) {//check existence
             MDBDSDA_ERR << CHAOS_FORMAT("Error %1% checking existence snapshot %2%", %err%snapshot_name);
         } else if(check_result.isEmpty() == false) {//if false means that a document has been found
-            MDBDSDA_ERR << CHAOS_FORMAT("A snapshot for name %1% already exists", %snapshot_name);
-            err = -1;
+            MDBDSDA_DBG << CHAOS_FORMAT("A snapshot for name %1% already exists, updating ", %snapshot_name);
+
+            if((err = connection->update(MONGO_DB_COLLECTION_NAME(MONGO_DB_COLLECTION_SNAPSHOT),
+                                     check_unique_q,
+                                     q,
+                                     true,
+                                     false,
+                                     &mongo::WriteConcern::acknowledged))) {
+                MDBDSDA_ERR << CHAOS_FORMAT("Error %1% updating snapshot %w%", %err%snapshot_name);
+            }
         } else if((err = connection->insert(MONGO_DB_COLLECTION_NAME(MONGO_DB_COLLECTION_SNAPSHOT), q))) {//we can proceeed to insert the new snapshot
             MDBDSDA_ERR << CHAOS_FORMAT("Error %1% creating snapshot %2%", %err%snapshot_name);
         }
