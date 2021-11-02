@@ -54,10 +54,10 @@ void PSMServer::init(void *init_data) {
     if(!cfg->hasKey(InitOption::OPT_MSG_BROKER_SERVER)){
         throw chaos::CException(-1, "a not empty broker must be given", __PRETTY_FUNCTION__);
     }
-    if(!cfg->hasKey(chaos::InitOption::CONTROL_MANAGER_UNIT_SERVER_ALIAS)){
+    if(!cfg->hasKey(chaos::InitOption::OPT_NODEUID)){
       throw chaos::CException(-1, "a not empty and unique id must be given", __PRETTY_FUNCTION__);
     }
-    nodeuid      = cfg->getStringValue(chaos::InitOption::CONTROL_MANAGER_UNIT_SERVER_ALIAS);
+    nodeuid      = cfg->getStringValue(chaos::InitOption::OPT_NODEUID);
     std::string msgbrokerdrv = "kafka-rdk";
     if(cfg->hasKey(InitOption::OPT_MSG_BROKER_DRIVER)){
         msgbrokerdrv     = cfg->getStringValue(chaos::InitOption::OPT_MSG_BROKER_DRIVER);
@@ -89,8 +89,8 @@ void PSMServer::init(void *init_data) {
         throw chaos::CException(-1, "cannot initialize Publish Subscribe:" + cons->getLastError(), __PRETTY_FUNCTION__);
     }
     if(cfg->hasKey("ismds")){
-        PSMS_LAPP << "Subscribing to " <<chaos::common::constants::CHAOS_ADMIN_ADMIN_TOPIC+ std::string(chaos::DataPackPrefixID::COMMAND_DATASET_POSTFIX);
-        cons->subscribe(chaos::common::constants::CHAOS_ADMIN_ADMIN_TOPIC+  std::string(chaos::DataPackPrefixID::COMMAND_DATASET_POSTFIX));
+        PSMS_LAPP << "Subscribing to " <<chaos::common::constants::CHAOS_ADMIN_ADMIN_TOPIC;
+        cons->subscribe(chaos::common::constants::CHAOS_ADMIN_ADMIN_TOPIC);
     }
     } catch (std::exception& e) {
         throw CException(-2, e.what(), "PSMServer::init");
@@ -121,7 +121,7 @@ void PSMServer::messageHandler( chaos::common::message::ele_t& data) {
 
     if(result_data_pack.get() && src.size()){
         PSMS_LDBG << "Something to send back:"<<seq_id << "to node:"<<src<<" desc:"<<result_data_pack->getJSONString();
-        prod->pushMsgAsync(*result_data_pack.get(),src+chaos::DataPackPrefixID::COMMAND_DATASET_POSTFIX);
+        prod->pushMsgAsync(*result_data_pack.get(),src);
     }
                     
 }

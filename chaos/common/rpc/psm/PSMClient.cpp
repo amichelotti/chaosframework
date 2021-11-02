@@ -69,10 +69,10 @@ void PSMClient::init(void *init_data) {
     if(!cfg->hasKey(InitOption::OPT_MSG_BROKER_SERVER)){
         throw chaos::CException(-1, "a not empty broker must be given", __PRETTY_FUNCTION__);
     }
-    if(!cfg->hasKey(chaos::InitOption::CONTROL_MANAGER_UNIT_SERVER_ALIAS)){
+    if(!cfg->hasKey(chaos::InitOption::OPT_NODEUID)){
       throw chaos::CException(-1, "a not empty and unique id must be given", __PRETTY_FUNCTION__);
     }
-    nodeuid      = cfg->getStringValue(chaos::InitOption::CONTROL_MANAGER_UNIT_SERVER_ALIAS);
+    nodeuid      = cfg->getStringValue(chaos::InitOption::OPT_NODEUID);
     std::string msgbrokerdrv = "kafka-rdk";
     if(cfg->hasKey(InitOption::OPT_MSG_BROKER_DRIVER)){
         msgbrokerdrv     = cfg->getStringValue(chaos::InitOption::OPT_MSG_BROKER_DRIVER);
@@ -135,12 +135,12 @@ bool PSMClient::submitMessage(NFISharedPtr forwardInfo,
             throw CException(0, "No message in description", __PRETTY_FUNCTION__);
         if(forwardInfo->message->hasKey(RpcActionDefinitionKey::CS_CMDM_ANSWER_HOST_IP)){
             forwardInfo->message->removeKey(RpcActionDefinitionKey::CS_CMDM_ANSWER_HOST_IP);
-            forwardInfo->message->addStringValue(RpcActionDefinitionKey::CS_CMDM_ANSWER_HOST_IP,nodeuid);
+            forwardInfo->message->addStringValue(RpcActionDefinitionKey::CS_CMDM_ANSWER_HOST_IP,nodeuid+chaos::DataPackPrefixID::COMMAND_DATASET_POSTFIX);
         }
         forwardInfo->message->addBoolValue(RPC_SYNC_KEY, RpcClient::syncrhonous_call);
         forwardInfo->message->addInt64Value(RPC_SEQ_KEY, (++seq_id));
       
-        std::string key=forwardInfo->destinationAddr+ chaos::DataPackPrefixID::COMMAND_DATASET_POSTFIX;
+        std::string key=forwardInfo->destinationAddr;
         PSMC_LDBG<<"Sending message to:"<<forwardInfo->destinationAddr<<" ("<<key<<") msg:"<<forwardInfo->message->getJSONString();
         prod->pushMsgAsync(*forwardInfo->message.get(),key);
 
