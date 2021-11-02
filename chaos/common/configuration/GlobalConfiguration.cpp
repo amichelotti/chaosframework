@@ -120,7 +120,7 @@ void GlobalConfiguration::preParseStartupParameters()  {
         addOption(InitOption::OPT_MSG_BROKER_DRIVER, po::value< std::string >()->default_value(std::string("kafka-rdk")), "Message broker driver");
         addOption(InitOption::OPT_GROUP_NAME, po::value< std::string >()->default_value(std::string("")), "Group Name");
 
-        addOption(InitOption::CONTROL_MANAGER_UNIT_SERVER_ALIAS, po::value< std::string >()/*->default_value(std::string("NONAME"))*/,"UID of the node");
+        addOption(InitOption::OPT_NODEUID, po::value< std::string >()/*->default_value(std::string("NONAME"))*/,"UID of the node");
 
 
 #
@@ -291,8 +291,12 @@ void GlobalConfiguration::checkDefaultOption()  {
 
     CHECK_AND_DEFINE_CONFIG_OPTION(std::string,InitOption::OPT_MSG_BROKER_SERVER);
     CHECK_AND_DEFINE_CONFIG_OPTION(std::string,InitOption::OPT_NODE_DESC);
-    CHECK_AND_DEFINE_CONFIG_OPTION(std::string,chaos::InitOption::CONTROL_MANAGER_UNIT_SERVER_ALIAS);
+    CHECK_AND_DEFINE_CONFIG_OPTION(std::string,chaos::InitOption::OPT_NODEUID);
     CHECK_AND_DEFINE_CONFIG_OPTION(std::string,InitOption::OPT_MSG_BROKER_DRIVER);
+    #if defined(KAFKA_RDK_ENABLE) || defined(KAFKA_ASIO_ENABLE)
+    CHECK_AND_DEFINE_CONFIG_OPTION(std::vector<std::string>,InitOption::OPT_MSG_PRODUCER_KVP);
+    CHECK_AND_DEFINE_CONFIG_OPTION(std::vector<std::string>,InitOption::OPT_MSG_CONSUMER_KVP);
+    #endif
     CHECK_AND_DEFINE_OPTION(bool, OPT_RPC_SYNC_ENABLE, InitOption::OPT_RPC_SYNC_ENABLE)
     else{
         OPT_RPC_SYNC_ENABLE = false;
@@ -550,7 +554,7 @@ std::string GlobalConfiguration::getDesc(){
 
 }
 std::string GlobalConfiguration::getNodeUID(){
-    return configuration->getStringValue(chaos::InitOption::CONTROL_MANAGER_UNIT_SERVER_ALIAS);
+    return configuration->getStringValue(chaos::InitOption::OPT_NODEUID);
 
 }
 

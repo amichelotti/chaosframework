@@ -287,8 +287,8 @@ void ChaosAbstractCommon::init(void *init_data) {
             //initialize the plugin manager
             chaos::common::utility::InizializableService::initImplementation(chaos::common::plugin::PluginManager::getInstance(), NULL, "PluginManager", __PRETTY_FUNCTION__);
         }
-         if (GlobalConfiguration::getInstance()->hasOption(InitOption::CONTROL_MANAGER_UNIT_SERVER_ALIAS)) {
-             nodeuid=GlobalConfiguration::getInstance()->getConfiguration()->getStringValue(InitOption::CONTROL_MANAGER_UNIT_SERVER_ALIAS);
+         if (GlobalConfiguration::getInstance()->hasOption(InitOption::OPT_NODEUID)) {
+             nodeuid=GlobalConfiguration::getInstance()->getConfiguration()->getStringValue(InitOption::OPT_NODEUID);
          } else {
              nodeuid=NetworkBroker::getInstance()->getRPCUrl();
          }

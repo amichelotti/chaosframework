@@ -113,11 +113,10 @@ static const char* const OPT_SCRIPT_VM_KV_PARAM = "script-vm-kvp";
 static const char* const OPT_REST_POLL_TIME_US = "rest-poll-us";
 //!data directory for storage and checkpoint of nodes
 static const char* const OPT_DATA_DIR = "data-dir";
-#if defined(KAFKA_RDK_ENABLE) || defined(KAFKA_ASIO_ENABLE)
+
 static const char* const OPT_MSG_PRODUCER_KVP = "msgopt-producer-kvp";
 static const char* const OPT_MSG_CONSUMER_KVP = "msgopt-consumer-kvp";
 
-#endif
 
 #if CHAOS_PROMETHEUS
 //! config file parameter
@@ -132,7 +131,7 @@ static const char* const OPT_MSG_BROKER_SERVER = "msg-broker-server";
 static const char* const OPT_MSG_BROKER_DRIVER = "msg-broker-driver";
 
 static const char* const OPT_HA_ZONE_NAME                  = "ha-zone-name";
-static const char* const CONTROL_MANAGER_UNIT_SERVER_ALIAS = "unit-server-alias";
+static const char* const OPT_NODEUID = "node-uid";
 static const char* OPT_GROUP_NAME                          ="group-name";
 
 #if ENABLE_ZMQ_MONITOR
@@ -247,6 +246,8 @@ static const char* const NODE_SUB_TYPE = "ndk_sub_type";
          that is given by the network broker where the node si attacched.
          */
 static const char* const NODE_RPC_ADDR = "ndk_rpc_addr";
+static const char* const NODE_IP_ADDR = "ndk_ip_addr";
+
 
 //! identify the node rest port if any
 /*!
