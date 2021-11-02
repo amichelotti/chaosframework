@@ -1720,6 +1720,8 @@ static const char* const DEFAULT_INC = "ds_value_inc";
 //! Namespace for the domain for the unique identification key
 namespace DataPackPrefixID {
 static const char* const COMMAND_DATASET_POSTFIX = "_cmd";
+static const char* const COMMAND_IO_POSTFIX = "_io";
+
 static const char* const LOG_DATASET_POSTFIX     = "_log";
 
 static const char* const OUTPUT_DATASET_POSTFIX    = "_o";

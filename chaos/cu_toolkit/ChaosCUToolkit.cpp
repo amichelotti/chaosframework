@@ -132,7 +132,7 @@ void ChaosCUToolkit::init(void* init_data) {
     InizializableService::initImplementation(SharedManagedDirecIoDataDriver::getInstance(), NULL, "SharedManagedDirecIoDataDriver", __PRETTY_FUNCTION__);
 
     if (GlobalConfiguration::getInstance()->hasOption(InitOption::OPT_LOG_ON_MDS) &&
-        GlobalConfiguration::getInstance()->hasOption(InitOption::CONTROL_MANAGER_UNIT_SERVER_ALIAS)) {
+        GlobalConfiguration::getInstance()->hasOption(InitOption::OPT_NODEUID)) {
         nodeuid=GlobalConfiguration::getInstance()->getNodeUID();
       chaos::common::log::LogManager::getInstance()->addMDSLoggingBackend(nodeuid);
     }

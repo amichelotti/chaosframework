@@ -152,12 +152,15 @@ CDWUniquePtr AgentRegister::registrationACK(CDWUniquePtr  ack_pack) {
 ChaosUniquePtr<chaos::common::data::CDataWrapper> AgentRegister::getAgentRegistrationPack() {
     ChaosUniquePtr<chaos::common::data::CDataWrapper> result(new CDataWrapper());
     if(result.get() == NULL) return result;
+    std::string hostport;
+     NetworkBroker::getInstance()->getPublishedHostAndPort(hostport);
     result->addStringValue(NodeDefinitionKey::NODE_UNIQUE_ID,
                            ChaosAgent::getInstance()->settings.agent_uid);
     result->addStringValue(chaos::NodeDefinitionKey::NODE_TYPE,
                            chaos::NodeType::NODE_TYPE_AGENT);
     result->addStringValue(NodeDefinitionKey::NODE_RPC_ADDR,
-                           chaos::GlobalConfiguration::getInstance()->getLocalServerAddressAnBasePort());
+                            hostport
+                           /*chaos::GlobalConfiguration::getInstance()->getLocalServerAddressAnBasePort()*/);
     result->addStringValue(NodeDefinitionKey::NODE_HOST_NAME,
                            chaos::GlobalConfiguration::getInstance()->getHostname());
     if(chaos::GlobalConfiguration::getInstance()->getDesc()!=""){
