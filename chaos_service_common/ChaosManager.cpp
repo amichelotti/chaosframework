@@ -41,7 +41,8 @@
 #include <ChaosMetadataService/api/service/GetSnapshotForNode.h>
 #include <ChaosMetadataService/api/service/RestoreSnapshot.h>
 #include <ChaosMetadataService/api/service/SetSnapshotDatasetsForNode.h>
-
+#include <ChaosMetadataService/api/service/QueryDataCloud.h>
+#include <ChaosMetadataService/api/service/DeleteDataCloud.h>
 #include <ChaosMetadataService/api/control_unit/Delete.h>
 #include <ChaosMetadataService/api/control_unit/DeleteInstance.h>
 #include <ChaosMetadataService/api/control_unit/GetFullDescription.h>
@@ -260,6 +261,52 @@ int ChaosManager::init(const chaos::common::data::CDataWrapper& best_available_d
   }
 
   return 0;
+}
+int ChaosManager::deleteDataCloud(const std::string& key,const uint64_t start_ts,const uint64_t end_ts,int32_t millisec_to_wait){
+
+  if(storage_driver){
+    chaos::metadata_service::api::service::DeleteDataCloud node;
+    chaos::common::data::CDWUniquePtr  res=node.execute(key,start_ts,end_ts);
+    if(res.get()&&res->hasKey("error")){
+      return res->getInt32Value("error");
+    }
+    
+  } else {
+      chaos::common::message::MDSMessageChannel* mdsChannel = chaos::common::network::NetworkBroker::getInstance()->getMetadataserverMessageChannel();
+      return mdsChannel->deleteDataCloud(key,start_ts,end_ts,millisec_to_wait);
+
+  }
+
+  return 0;
+}
+
+int ChaosManager::queryDataCloud(const std::string& key,
+                                       const ChaosStringSet& meta_tags,
+                                       const ChaosStringSet& projection_keys,
+                                       const uint64_t start_ts,
+                                       const uint64_t end_ts,
+                                       const uint32_t page_dimension,
+                                       chaos::common::direct_io::channel::opcode_headers::SearchSequence& last_sequence,
+                                       chaos::common::direct_io::channel::opcode_headers::QueryResultPage& found_element_page,
+                                       int32_t millisec_to_wait){
+  if(storage_driver){
+    chaos::metadata_service::api::service::QueryDataCloud node;
+    return node.execute(key,meta_tags,projection_keys,start_ts,end_ts,page_dimension,last_sequence,found_element_page);
+  } 
+      chaos::common::message::MDSMessageChannel* mdsChannel = chaos::common::network::NetworkBroker::getInstance()->getMetadataserverMessageChannel();
+      return mdsChannel->queryDataCloud(key,
+                                       meta_tags,
+                                       projection_keys,
+                                       start_ts,
+                                       end_ts,
+                                       page_dimension,
+                                       last_sequence,
+                                      found_element_page,
+                                      millisec_to_wait);
+
+  
+
+
 }
 std::map<uint64_t, std::string> ChaosManager::getAllSnapshot(const std::string& query_filter) {
   std::map<uint64_t, std::string> snapshot_found;
@@ -1166,3 +1213,4 @@ int ChaosManager::nodeSearch(const std::string&              unique_id_filter,
   }
   return -1;
 }
+

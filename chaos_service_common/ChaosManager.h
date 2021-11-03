@@ -129,6 +129,19 @@ chaos::common::data::CDWUniquePtr checkAgentHostedProcess(const std::string&name
 chaos::common::data::CDWUniquePtr clearCommandQueue(const std::string&name);
 chaos::common::data::CDWUniquePtr killCurrentCommand(const std::string&name);
 int enableLiveCaching(const std::string key,int32_t duration_ms);
+int queryDataCloud(const std::string& key,
+                                       const ChaosStringSet& meta_tags,
+                                       const ChaosStringSet& projection_keys,
+                                       const uint64_t start_ts,
+                                       const uint64_t end_ts,
+                                       const uint32_t page_dimension,
+                                       chaos::common::direct_io::channel::opcode_headers::SearchSequence& last_sequence,
+                                       chaos::common::direct_io::channel::opcode_headers::QueryResultPage& found_element_page,
+                                       int32_t millisec_to_wait=10000);
+int deleteDataCloud(const std::string& key,
+                                       const uint64_t start_ts,
+                                       const uint64_t end_ts,int32_t millisec_to_wait=10000);
+
 
 };
 }  // namespace service_common

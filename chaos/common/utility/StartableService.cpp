@@ -82,7 +82,7 @@ bool StartableService::initImplementation(StartableService *impl, void *initData
 			DEBUG_CODE(SS_LDBG << "Service cant flow to next state and current is ->" << impl->state_machine.current_state()[0];)
             throw CException(0, "Service can't be initialized", domainString);
         }
-        SS_LDBG  << implName << "Initialized";
+        SS_LDBG  << implName << " Initialized";
     } catch (CException& ex) {
         SS_LAPP  << "Error initializing " << implName;
         throw;
@@ -107,7 +107,7 @@ bool StartableService::deinitImplementation(StartableService *impl, const string
 			DEBUG_CODE(SS_LDBG << "Service cant flow to next state and current is ->" << impl->state_machine.current_state()[0];)
             throw CException(0, "Service cant be deinitialize", domainString);
         }
-        SS_LDBG  << implName << "Deinitialized";
+        SS_LDBG  << implName << " Deinitialized";
     } catch (CException& ex) {
         SS_LERR  << "Error Deinitializing " << implName;
         throw;

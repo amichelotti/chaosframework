@@ -83,7 +83,7 @@ bool InizializableService::initImplementation(InizializableService *impl, void *
         } else {
            throw CException(-2, "Service can't be initialized", domainString);
         }
-        IS_LDBG  << implName << "Initialized";
+        IS_LDBG  << implName << " Initialized";
     } catch (CException& ex) {
         IS_LERR  << "Error Initializing";
         DECODE_CHAOS_EXCEPTION_ON_LOG(IS_LERR, ex);
@@ -109,7 +109,7 @@ bool InizializableService::deinitImplementation(InizializableService *impl, cons
             throw CException(-2, "Service can't be deinitialized", domainString);
         }
         impl->serviceState = impl->state_machine.current_state()[0];//service_state_machine::InizializableServiceType::IS_DEINTIATED;
-        IS_LDBG  << implName << "Deinitialized";
+        IS_LDBG  << implName << " Deinitialized";
     } catch (CException& ex) {
         IS_LERR  << "Error Deinitializing";
         DECODE_CHAOS_EXCEPTION_ON_LOG(IS_LERR, ex);

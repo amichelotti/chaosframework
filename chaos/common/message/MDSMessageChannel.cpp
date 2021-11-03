@@ -24,7 +24,6 @@
 #include <chaos/common/network/NetworkBroker.h>
 #include <chaos/common/utility/InetUtility.h>
 #include <chaos/common/utility/TimingUtil.h>
-
 using namespace chaos::common::data;
 using namespace chaos::common::utility;
 using namespace chaos::common::message;
@@ -371,7 +370,7 @@ int  MDSMessageChannel::loadSnapshotNodeDataset(const std::string& snapname,
                 }
             }
         } else {
-            err = -1;
+            err = ErrorCode::EC_TIMEOUT;
         }
     }
     return err;
@@ -465,7 +464,7 @@ int MDSMessageChannel::getDataDriverBestConfiguration(CDWUniquePtr& device_defin
             if(device_definition.get() == NULL) {throw chaos::CException(-1, "Empty result", __PRETTY_FUNCTION__);}
         }
     } else {
-        err = -1001;
+        err = ErrorCode::EC_TIMEOUT;
     }
     return err;
 }
@@ -491,7 +490,7 @@ int MDSMessageChannel::createNewSnapshot(const std::string& snapshot_name,
     if(request_future->wait()) {
         err = request_future->getError();
     } else {
-        err = -1;
+        err = ErrorCode::EC_TIMEOUT;
     }
     return err;
 }
@@ -508,7 +507,7 @@ int MDSMessageChannel::restoreSnapshot(const std::string& snapshot_name,
     if(request_future->wait()) {
         err = request_future->getError();
     } else {
-        err = -1;
+        err = ErrorCode::EC_TIMEOUT;
     }
     return err;
 }
@@ -525,7 +524,7 @@ int MDSMessageChannel::deleteSnapshot(const std::string& snapshot_name,
     if(request_future->wait()) {
         err = request_future->getError();
     } else {
-        err = -1;
+        err = ErrorCode::EC_TIMEOUT;
     }
     return err;
 }
@@ -570,7 +569,7 @@ int MDSMessageChannel::searchSnapshot(const std::string& query_filter,
             }
         }
     } else {
-        err = -1;
+        err = ErrorCode::EC_TIMEOUT;
     }
     return err;
 }
@@ -620,7 +619,7 @@ int MDSMessageChannel::searchNodeForSnapshot(const std::string& snapshot_name,
             }
         }
     } else {
-        err = -1;
+        err = ErrorCode::EC_TIMEOUT;
     }
     return err;
 }
@@ -653,7 +652,7 @@ int MDSMessageChannel::searchSnapshotForNode(const std::string& node_uid,
             }
         }
     } else {
-        err = -1;
+        err = ErrorCode::EC_TIMEOUT;
     }
     return err;
 }
@@ -675,7 +674,7 @@ int MDSMessageChannel::setVariable(const std::string& variable_name,
         DECODE_ERROR(request_future)
         err = request_future->getError();
     } else {
-        err = -1;
+        err = ErrorCode::EC_TIMEOUT;
     }
     return err;
 }
@@ -711,7 +710,7 @@ int MDSMessageChannel::searchVariable(const std::string& variable_name,ChaosStri
             }
         }
     } else {
-        err = -1;
+        err = ErrorCode::EC_TIMEOUT;
     }
     return err;
 }
@@ -732,7 +731,7 @@ int MDSMessageChannel::getVariable(const std::string& variable_name,
         err = request_future->getError();
         variable_value = request_future->detachResult();
     } else {
-        err = -1;
+        err = ErrorCode::EC_TIMEOUT;
     }
     return err;
 }
@@ -751,7 +750,7 @@ int MDSMessageChannel::removeVariable(const std::string& variable_name,
         DECODE_ERROR(request_future)
         err = request_future->getError();
     } else {
-        err = -1;
+        err = ErrorCode::EC_TIMEOUT;
     }
     return err;
 }
@@ -794,7 +793,7 @@ int MDSMessageChannel::searchNodeInt(const std::string& unique_id_filter,
 
                                ChaosStringVector& node_found,
                                uint32_t millisec_to_wait,const std::string& impl){
-int err = ErrorCode::EC_NO_ERROR;
+    int err = ErrorCode::EC_NO_ERROR;
     ChaosUniquePtr<chaos::common::data::CDataWrapper> message(new CDataWrapper());
     message->addStringValue("unique_id_filter", unique_id_filter);
     if(impl.size()>0)
@@ -831,7 +830,7 @@ int err = ErrorCode::EC_NO_ERROR;
             }
         }
     } else {
-        err = -1;
+        err = ErrorCode::EC_TIMEOUT;
     }
     return err;
                                }
@@ -866,7 +865,109 @@ void MDSMessageChannel::sendMessage(const std::string& action_domain,
                                                    action_name,
                                                    MOVE(request_pack));
 }
+int MDSMessageChannel::deleteDataCloud(const std::string& key,
+                                        uint64_t start_ts,
+                                        uint64_t end_ts,int32_t millisec_to_wait){
+    int err = ErrorCode::EC_NO_ERROR;
+    ChaosUniquePtr<chaos::common::data::CDataWrapper> message(new CDataWrapper());
+    message->addStringValue("key", key);
+    message->addInt64Value("start_ts", start_ts);
+    message->addInt64Value("end_ts", end_ts);
+    ChaosUniquePtr<MultiAddressMessageRequestFuture> request_future = sendRequestWithFuture("service",
+                                                                                            "deleteDataCloud",
+                                                                                            MOVE(message));
+    request_future->setTimeout(millisec_to_wait);
+    if(request_future->wait()) {
+        DECODE_ERROR(request_future);
+        err = request_future->getError();
+        if((err = request_future->getError()) == ErrorCode::EC_NO_ERROR) {
+            if(request_future->getResult()->hasKey("error")){
+                err=request_future->getResult()->getInt32Value("error");
+            }
+        }
 
+    } else {
+        err= ErrorCode::EC_TIMEOUT;
+    }
+    return err;
+}
+int MDSMessageChannel::queryDataCloud(const std::string& key,
+                                       const ChaosStringSet& meta_tags,
+                                       const ChaosStringSet& projection_keys,
+                                       const uint64_t start_ts,
+                                       const uint64_t end_ts,
+                                       const uint32_t page_dimension,
+                                       chaos::common::direct_io::channel::opcode_headers::SearchSequence& last_sequence,
+                                       chaos::common::direct_io::channel::opcode_headers::QueryResultPage& found_element_page,
+                                       bool only_index,int32_t millisec_to_wait){
+                                           int err = ErrorCode::EC_NO_ERROR;
+    ChaosUniquePtr<chaos::common::data::CDataWrapper> message(new CDataWrapper());
+    message->addStringValue(NodeDefinitionKey::NODE_UNIQUE_ID, key);
+    {
+        std::vector<std::string> v,pv;
+        for(ChaosStringSet::iterator i=meta_tags.begin();i!=meta_tags.end();i++){
+            v.push_back(*i);
+        }
+         for(ChaosStringSet::iterator i=projection_keys.begin();i!=projection_keys.end();i++){
+            pv.push_back(*i);
+        }
+        if(v.size()){
+            message->append("tags", v);
+
+        }
+        if(pv.size()){
+            message->append("prj", pv);
+
+        }
+    }
+
+    message->addInt64Value("start_ts", start_ts);
+    message->addInt64Value("end_ts", end_ts);
+    message->addInt32Value("page", page_dimension);
+    message->addInt64Value("runid", last_sequence.run_id);
+    message->addInt64Value("seq", last_sequence.datapack_counter);
+    message->addInt64Value("ts", last_sequence.ts);
+
+    ChaosUniquePtr<MultiAddressMessageRequestFuture> request_future = sendRequestWithFuture("service",
+                                                                                            "queryDataCloud",
+                                                                                            MOVE(message));
+    request_future->setTimeout(millisec_to_wait);
+    if(request_future->wait()) {
+        DECODE_ERROR(request_future);
+        if((err = request_future->getError()) == ErrorCode::EC_NO_ERROR) {
+            if(request_future->getResult()){
+                chaos::common::data::CDataWrapper *res=request_future->getResult();
+                if(res->hasKey("runid")){
+                    last_sequence.run_id=res->getInt64Value("runid");
+                }
+                if(res->hasKey("seq")){
+                    last_sequence.datapack_counter=res->getInt64Value("seq");
+                }
+                if(res->hasKey("ts")){
+                    last_sequence.ts=res->getInt64Value("ts");
+                }
+                MSG_DBG<<"DATA:"<<res->getJSONString();
+                if(res->hasKey("data")&&res->isVectorValue("data")){
+                    CMultiTypeDataArrayWrapperSPtr d = res->getVectorValue("data");
+                    for(int idx = 0;
+                        idx < d->size();
+                        idx++) {
+                       chaos::common::data::CDWUniquePtr  element(d->getCDataWrapperElementAtIndex(idx));
+                        if(element.get()){
+                             ChaosSharedPtr<chaos::common::data::CDataWrapper> sh(element.release());
+                            found_element_page.push_back(sh);
+                        }
+                    
+                }
+                }  
+            }
+        }
+    } else {
+        err = ErrorCode::EC_TIMEOUT;
+    }
+    return err;
+
+}
 void MDSMessageChannel::callMethod(const std::string& action_domain,
                                    const std::string& action_name) {
     return MultiAddressMessageChannel::sendMessage(action_domain,

@@ -21,6 +21,9 @@
 
 #include "IODirectIOPSMsgDriver.h"
 #include <chaos/common/configuration/GlobalConfiguration.h>
+#include <chaos/common/io/QueryCursorRPC.h>
+#include <chaos/common/message/MDSMessageChannel.h>
+
 #define IODirectIOPSMsgDriver_LINFO_ INFO_LOG(IODirectIOPSMsgDriver)
 #define IODirectIOPSMsgDriver_DLDBG_ DBG_LOG(IODirectIOPSMsgDriver)
 #define IODirectIOPSMsgDriver_LERR_ ERR_LOG(IODirectIOPSMsgDriver)
@@ -216,3 +219,73 @@ chaos::common::data::CDataWrapper* IODirectIOPSMsgDriver::updateConfiguration(ch
 
   return ret;
 }
+
+
+
+
+
+int IODirectIOPSMsgDriver::removeData(const std::string& key,
+                                 uint64_t start_ts,
+                                 uint64_t end_ts) {
+    return chaos::common::network::NetworkBroker::getInstance()->getMetadataserverMessageChannel()->deleteDataCloud(key,start_ts,end_ts);
+}
+
+int IODirectIOPSMsgDriver::loadDatasetTypeFromSnapshotTag(const std::string& restore_point_tag_name,
+                                                     const std::string& key,
+                                                     uint32_t dataset_type,
+                                                     chaos_data::CDWShrdPtr& cdw_shrd_ptr) {
+    int err = -1;
+    
+    return err;
+}
+
+QueryCursor *IODirectIOPSMsgDriver::performQuery(const std::string& key,
+                                            const uint64_t start_ts,
+                                            const uint64_t end_ts,
+                                            const ChaosStringSet& meta_tags,
+                                            const ChaosStringSet& projection_keys,
+                                            const uint32_t page_len) {
+    QueryCursor *q = new QueryCursorRPC(UUIDUtil::generateUUID(),
+                                                key,
+                                                start_ts,
+                                                end_ts,
+                                                meta_tags,
+                                                projection_keys,
+                                                page_len);
+    if(q) {
+        //add query to map
+        ChaosWriteLock wmap_loc(map_query_future_mutex);
+        map_query_future.insert(make_pair(q->queryID(), q));
+    } else {
+        releaseQuery(q);
+    }
+    return q;
+}
+
+QueryCursor *IODirectIOPSMsgDriver::performQuery(const std::string& key,
+                                            const uint64_t start_ts,
+                                            const uint64_t end_ts,
+                                            const uint64_t sequid,
+                                            const uint64_t runid,
+                                            const ChaosStringSet& meta_tags,
+                                            const ChaosStringSet& projection_keys,
+                                            uint32_t page_len) {
+    QueryCursor *q = new QueryCursorRPC(UUIDUtil::generateUUID(),
+                                     key,
+                                     start_ts,
+                                     end_ts,
+                                     sequid,
+                                     runid,
+                                     meta_tags,
+                                     projection_keys,
+                                     page_len);
+    if(q) {
+        //add query to map
+        ChaosWriteLock wmap_loc(map_query_future_mutex);
+        map_query_future.insert(make_pair(q->queryID(), q));
+    } else {
+        releaseQuery(q);
+    }
+    return q;
+}
+

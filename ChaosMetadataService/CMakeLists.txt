@@ -240,7 +240,7 @@ SET(cnd_src  ${cnd_src}	common/CUCommonUtility.cpp
                         common/LogUtility.cpp)
 
   
-SET(api_src  	api/ApiManagment.cpp
+SET(api_src  	api/ApiManagement.cpp
                         api/AbstractApi.cpp
                         api/AbstractApiGroup.cpp)
 
@@ -270,7 +270,9 @@ SET(api_src  ${api_src}	api/service/ServiceApiGroup.cpp
                         api/service/GetSnapshotForNode.cpp
                         api/service/SetVariable.cpp
                         api/service/RemoveVariable.cpp
-                        api/service/GetVariable.cpp)
+                        api/service/GetVariable.cpp
+                        api/service/QueryDataCloud.cpp
+                        api/service/DeleteDataCloud.cpp)
 
 SET(api_src  ${api_src}	api/healt/HealtApiGroup.cpp
                         api/healt/ProcessHello.cpp

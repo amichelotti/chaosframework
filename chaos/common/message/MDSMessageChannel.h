@@ -23,6 +23,7 @@
 #define CHAOSFramework_MDSMessageChannel_h
 
 #include <chaos/common/message/MultiAddressMessageChannel.h>
+#include <chaos/common/direct_io/channel/DirectIODeviceChannelGlobal.h>
 
 #include <set>
 #include <vector>
@@ -344,6 +345,40 @@ namespace chaos {
 
                int getScriptDesc(const std::string& scriptID,chaos::common::data::CDWUniquePtr& res,
                                uint32_t millisec_to_wait=5000); 
+
+                //! Performs query on a key
+                    /*!
+                     Perform a query on a data cloud key(aka device id)
+                     \param key to search
+                     \param meta_tags filter the query result the dataset tages with set values
+                     \param projection_keys return per each dataset only the fileds identify by the keys in the set
+                     \param start_ts start of timestamp to search
+                     \param end_ts end of the timestamp where limit the search
+                     \param last_sequence is an input-outpu field that permit to give sequence of the last found
+                     element and will be filled with last element's sequencefo the current found page
+                     \param found_element_page the page that contins the found data
+                     \return error
+                     */
+                    int queryDataCloud(const std::string& key,
+                                       const ChaosStringSet& meta_tags,
+                                       const ChaosStringSet& projection_keys,
+                                       const uint64_t start_ts,
+                                       const uint64_t end_ts,
+                                       const uint32_t page_dimension,
+                                       chaos::common::direct_io::channel::opcode_headers::SearchSequence& last_sequence,
+                                       chaos::common::direct_io::channel::opcode_headers::QueryResultPage& found_element_page,
+                                       bool only_index = false,int32_t millisec_to_wait=10000);
+                    //! Perform a  data delete operation on a key
+                    /*!
+                     \param key to search
+                     \param start_ts start of timestamp to search
+                     \param end_ts end of the timestamp where limit the search
+                     \return error
+                     */
+                    int deleteDataCloud(const std::string& key,
+                                        uint64_t start_ts,
+                                        uint64_t end_ts,int32_t millisec_to_wait=10000);
+                               
             };
         }
     }

@@ -185,7 +185,7 @@ void ChaosMetadataService::init(void* init_data) {
     StartableService::initImplementation(MDSBatchExecutor::getInstance(), NULL, "MDSBatchExecutor", __PRETTY_FUNCTION__);
 
     // api system
-    api_managment_service.reset(new ApiManagment(), "ApiManagment");
+    api_managment_service.reset(new ApiManagement(), "ApiManagment");
     api_managment_service.init(NULL, __PRETTY_FUNCTION__);
 #if defined(KAFKA_RDK_ENABLE) || defined(KAFKA_ASIO_ENABLE)
 #warning "CDS NEEDS KAFKA"

@@ -25,7 +25,7 @@
 
 #include "mds_constants.h"
 #include "mds_types.h"
-#include "api/ApiManagment.h"
+#include "api/ApiManagement.h"
 #include "cron_job/MDSCronusManager.h"
 #include "QueryDataConsumer.h"
 
@@ -49,7 +49,7 @@ namespace chaos {
              
             static WaitSemaphore waitCloseSemaphore;
             //!persistence driver instance
-            chaos::common::utility::InizializableServiceContainer<api::ApiManagment> api_managment_service;
+            chaos::common::utility::InizializableServiceContainer<api::ApiManagement> api_managment_service;
             //! CDS data consumer that respond to data api
             chaos::common::utility::StartableServiceContainer<QueryDataConsumer> data_consumer,message_consumer;
             

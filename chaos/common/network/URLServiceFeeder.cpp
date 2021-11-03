@@ -51,7 +51,7 @@ handler(_handler),
 feed_mode(URLServiceFeeder::URLServiceFeedModeRoundRobin),
 set_urls_pos_index(boost::multi_index::get<position_index>(set_urls_online)),
 set_urls_rb_pos_index(boost::multi_index::get<rb_pos_index>(set_urls_online)){
-    CHAOS_ASSERT(handler)
+    //CHAOS_ASSERT(handler)
 }
 
 URLServiceFeeder::~URLServiceFeeder() {
@@ -113,7 +113,9 @@ void URLServiceFeeder::clear(bool dispose_service) {
 		//allocate space for new url service
         if(service_list[idx] && service_list[idx]->service &&
            dispose_service) {
-			handler->disposeService(service_list[idx]->service);
+            if(handler){
+			    handler->disposeService(service_list[idx]->service);
+            }
 		}
 		service_list[idx]->priority = 0;
 		service_list[idx]->service = NULL;
@@ -149,9 +151,12 @@ uint32_t URLServiceFeeder::addURL(const URL& new_url,
         //expand memory for contain new service description
 	grow();
 
-	std::set<uint32_t>::iterator new_index = available_url.begin();
+	std::set<uint32_t>::iterator new_index = available_url.begin(); 
+    if(handler==NULL){
+         {throw CException(-1 , "Handler not defined!", __PRETTY_FUNCTION__);}
+    }
     void *tmp_srv_ptr = handler->serviceForURL(new_url, (service_index = *new_index));
-    if(tmp_srv_ptr == NULL) {throw CException(-1 , "Error allocating service!", __PRETTY_FUNCTION__);}
+    if(tmp_srv_ptr == NULL) {throw CException(-2 , "Error allocating service!", __PRETTY_FUNCTION__);}
     URLServiceFeeder_LDBG << "Add URL :"<<new_url.getURL()<<" prio:"<<priority<< " index:"<<(1+last_round_robin_index);
 
     //service has been succesfully allocated
@@ -252,7 +257,7 @@ void URLServiceFeeder::removeURL(uint32_t idx, bool dispose_service) {
 		return;
 	}
 	//delete service instance
-    if(dispose_service) {
+    if(dispose_service&&handler) {
         handler->disposeService(service_list[idx]->service);
     }
 	removeFromOnlineQueue(idx);

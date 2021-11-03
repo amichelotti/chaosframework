@@ -74,7 +74,7 @@ bool SWEService::initImplementation(SWEService *impl,
         SWE_LDBG  << "Initializing " << impl_name;
         if((result = (impl->SWEService::state_machine.process_event(service_state_machine::EventType::init()) == boost::msm::back::HANDLED_TRUE))) {
             impl->serviceState = impl->state_machine.current_state()[0];
-            SWE_LDBG  << impl_name << "Initialized";
+            SWE_LDBG  << impl_name << " Initialized";
             result = true;
         }
     } catch(boost::exception_detail::clone_impl<boost::exception_detail::error_info_injector<boost::bad_function_call> >& ex){
@@ -95,7 +95,7 @@ bool SWEService::deinitImplementation(SWEService *impl,
         SWE_LDBG  << "Deinitializing " << impl_name;
         if((result = (impl->SWEService::state_machine.process_event(service_state_machine::EventType::deinit()) == boost::msm::back::HANDLED_TRUE))) {
             impl->serviceState = impl->state_machine.current_state()[0];
-            SWE_LDBG  << impl_name << "Deinitialized";
+            SWE_LDBG  << impl_name << " Deinitialized";
         }
        
     } catch(boost::exception_detail::clone_impl<boost::exception_detail::error_info_injector<boost::bad_function_call> >& ex){
