@@ -366,7 +366,7 @@ namespace chaos {
                                        const uint64_t end_ts,
                                        const uint32_t page_dimension,
                                        chaos::common::direct_io::channel::opcode_headers::SearchSequence& last_sequence,
-                                       chaos::common::direct_io::channel::opcode_headers::QueryResultPage& found_element_page,
+                                       chaos::common::data::VectorCDWShrdPtr& found_element_page,
                                        bool only_index = false,int32_t millisec_to_wait=10000);
                     //! Perform a  data delete operation on a key
                     /*!

@@ -898,7 +898,7 @@ int MDSMessageChannel::queryDataCloud(const std::string& key,
                                        const uint64_t end_ts,
                                        const uint32_t page_dimension,
                                        chaos::common::direct_io::channel::opcode_headers::SearchSequence& last_sequence,
-                                       chaos::common::direct_io::channel::opcode_headers::QueryResultPage& found_element_page,
+                                       chaos::common::data::VectorCDWShrdPtr& found_element_page,
                                        bool only_index,int32_t millisec_to_wait){
                                            int err = ErrorCode::EC_NO_ERROR;
     ChaosUniquePtr<chaos::common::data::CDataWrapper> message(new CDataWrapper());
