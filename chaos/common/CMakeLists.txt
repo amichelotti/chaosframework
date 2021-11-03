@@ -469,7 +469,10 @@ SET(common_lib_src ${common_lib_src}
 		   message/MessagePublishSubscribeBase.cpp
                     message/MessagePSProducer.cpp
                     message/MessagePSConsumer.cpp
-                    message/MessagePSDriver.cpp)
+                    message/MessagePSDriver.cpp
+                    rpc/psm/PSMClient.cpp
+                    rpc/psm/PSMServer.cpp
+                    )
 ENDIF()
 IF(KAFKA_ASIO_ENABLE)
 SET(CMAKE_CXX_STANDARD 11)
@@ -498,8 +501,7 @@ SET(common_lib_src ${common_lib_src}
                     rpc/RpcServer.cpp
                     rpc/zmq/ZMQClient.cpp
                     rpc/zmq/ZMQServer.cpp
-                    rpc/psm/PSMClient.cpp
-                    rpc/psm/PSMServer.cpp
+                    
                     )
 SET(common_lib_src ${common_lib_src}
                     utility/NamedService.cpp
