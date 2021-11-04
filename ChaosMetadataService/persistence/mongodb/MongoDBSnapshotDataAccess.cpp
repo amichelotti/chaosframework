@@ -211,7 +211,7 @@ int MongoDBSnapshotDataAccess::snapshotGetDatasetForProducerKey(const std::strin
         
         mongo::BSONObj q = search_snapshot.obj();
         DEBUG_CODE(MDBDSDA_DBG<<log_message("snapshotGetDatasetForProducerKey",
-                                            "finedOne",
+                                            "findOne",
                                             DATA_ACCESS_LOG_1_ENTRY("Query",
                                                                     q.jsonString()));)
         
@@ -384,7 +384,7 @@ int MongoDBSnapshotDataAccess::getSnapshotWorkingState(const std::string& snapsh
             MDBDSDA_ERR << "Error getting snapsho description with code:" << err;
         } else if(snapshot_info.isEmpty()) {
             err = - 10000;
-            MDBDSDA_ERR << "Snapshto description has not been found" << err;
+            MDBDSDA_ERR << "Snapshot description has not been found" << err;
         } else {
             //we have snapshot description
             if(snapshot_info.hasField("job_concurency")) {

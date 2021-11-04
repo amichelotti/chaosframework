@@ -96,9 +96,14 @@ CDWShrdPtr ChaosManager::getLiveChannel(const std::string& key) {
   ChaosSharedPtr<chaos::common::data::CDataWrapper> ret;
   if (cache_driver) {
     ret=cache_driver->getData(key);
-    context->updateLiveCache(ret.get());
-    return ret;
+  } else {
+      chaos::common::message::MDSMessageChannel* mdsChannel = chaos::common::network::NetworkBroker::getInstance()->getMetadataserverMessageChannel();
+      ret= mdsChannel->retrieveData(key);  
   }
+    if(ret.get()){
+      context->updateLiveCache(ret.get());
+    }
+
   return ret;
 }
 CDWShrdPtr ChaosManager::getLiveChannel(const std::string& key, int domain) {
@@ -110,6 +115,10 @@ CDWShrdPtr ChaosManager::getLiveChannel(const std::string& key, int domain) {
     ret=cache_driver->getData(key);
     context->updateLiveCache(ret.get());
     return ret;
+  } else {
+    chaos::common::message::MDSMessageChannel* mdsChannel = chaos::common::network::NetworkBroker::getInstance()->getMetadataserverMessageChannel();
+      return mdsChannel->retrieveData(key);
+
   }
   return ret;
 }
@@ -354,10 +363,14 @@ chaos::common::data::VectorCDWShrdPtr ChaosManager::getLiveChannel(const std::ve
   chaos::common::data::VectorCDWShrdPtr results;
   if (cache_driver) {
     results = cache_driver->getData(channels);
-    for(int cnt=0;cnt<results.size();cnt++){
+    
+  } else {
+      chaos::common::message::MDSMessageChannel* mdsChannel = chaos::common::network::NetworkBroker::getInstance()->getMetadataserverMessageChannel();
+      mdsChannel->retriveMultipleData(channels,results);
+
+  }
+  for(int cnt=0;cnt<results.size();cnt++){
       context->updateLiveCache(results[cnt].get());
-    }
-    return results;
   }
   return results;
 }

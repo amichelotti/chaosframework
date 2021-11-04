@@ -979,11 +979,9 @@ int CUController::fetchAllDataset() {
 ChaosSharedPtr<chaos::common::data::CDataWrapper>  CUController::fetchCurrentDatatasetFromDomain(DatasetDomain domain) {
     //  ChaosReadLock lock(trackMutext);
     size_t value_len = 0;
-    char *value = ioLiveDataDriver->retriveRawData(channel_keys[domain],(size_t*)&value_len);
-    if(value){
-        chaos::common::data::CDataWrapper *tmp = new CDataWrapper(value);
-        current_dataset[domain].reset(tmp);
-        delete [] value;
+    CDWUniquePtr value = ioLiveDataDriver->retrieveData(channel_keys[domain]);
+    if(value.get()){
+        current_dataset[domain].reset(value.release());
         return current_dataset[domain];
     }
     return current_dataset[domain];

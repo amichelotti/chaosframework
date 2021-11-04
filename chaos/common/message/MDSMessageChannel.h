@@ -378,6 +378,14 @@ namespace chaos {
                     int deleteDataCloud(const std::string& key,
                                         uint64_t start_ts,
                                         uint64_t end_ts,int32_t millisec_to_wait=10000);
+                    /*!
+                 * This method retrive the cached object by CSDawrapperUsed as query key and
+                 * return a pointer to the class ArrayPointer of CDataWrapper type
+                 */
+                    chaos::common::data::CDWUniquePtr retrieveData(const std::string& key,int32_t millisec_to_wait=10000);
+                
+                    int retriveMultipleData(const ChaosStringVector& key,
+                                        chaos::common::data::VectorCDWShrdPtr& result,int32_t millisec_to_wait=10000);
                                
             };
         }

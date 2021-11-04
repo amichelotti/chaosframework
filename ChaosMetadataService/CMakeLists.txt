@@ -271,6 +271,7 @@ SET(api_src  ${api_src}	api/service/ServiceApiGroup.cpp
                         api/service/SetVariable.cpp
                         api/service/RemoveVariable.cpp
                         api/service/GetVariable.cpp
+                        api/service/RetrieveMultipleData.cpp
                         api/service/QueryDataCloud.cpp
                         api/service/DeleteDataCloud.cpp)
 

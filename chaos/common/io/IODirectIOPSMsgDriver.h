@@ -90,8 +90,18 @@ namespace chaos{
                 int removeData(const std::string& key,
                                uint64_t start_ts,
                                uint64_t end_ts);
+                 /**
+                 *
+                 */
+                int retriveMultipleData(const ChaosStringVector& key,
+                                        chaos::common::data::VectorCDWShrdPtr& result);
                 
-                 //! restore from a tag a dataset associated to a key
+                /*
+                 * retrieveRawData
+                 */
+                chaos::common::data::CDWUniquePtr retrieveData(const std::string& key);
+                
+                //! restore from a tag a dataset associated to a key
                 int loadDatasetTypeFromSnapshotTag(const std::string& restore_point_tag_name,
                                                    const std::string& key,
                                                    uint32_t dataset_type,

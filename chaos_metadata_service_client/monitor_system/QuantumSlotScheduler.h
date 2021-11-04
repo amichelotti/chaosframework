@@ -232,7 +232,7 @@ mutex_ ## queue_name.unlock();
                 
                 void dispath_new_value_async(const boost::system::error_code& error,
                                              QuantumSlot *cur_slot,
-                                             char *data_found);
+                                             chaos::common::data::CDWUniquePtr& data_found);
                 //! manage the registration in internal layer for new consumer
                 void _addKeyConsumer(SlotConsumerInfo *ci);
                 //!manage in the internal layer the request for remove the consumer

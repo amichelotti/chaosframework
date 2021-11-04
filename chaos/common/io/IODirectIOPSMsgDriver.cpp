@@ -229,13 +229,46 @@ int IODirectIOPSMsgDriver::removeData(const std::string& key,
                                  uint64_t end_ts) {
     return chaos::common::network::NetworkBroker::getInstance()->getMetadataserverMessageChannel()->deleteDataCloud(key,start_ts,end_ts);
 }
+ /**
+                 *
+                 */
+int IODirectIOPSMsgDriver::retriveMultipleData(const ChaosStringVector& key,
+                                        chaos::common::data::VectorCDWShrdPtr& result){
+    return chaos::common::network::NetworkBroker::getInstance()->getMetadataserverMessageChannel()->retriveMultipleData(key,result);
 
+  }
+                
+                /*
+                 * retrieveRawData
+                 */
+  CDWUniquePtr IODirectIOPSMsgDriver::retrieveData(const std::string& key){
+    return chaos::common::network::NetworkBroker::getInstance()->getMetadataserverMessageChannel()->retrieveData(key);
+
+   }
+                
+                
 int IODirectIOPSMsgDriver::loadDatasetTypeFromSnapshotTag(const std::string& restore_point_tag_name,
                                                      const std::string& key,
                                                      uint32_t dataset_type,
                                                      chaos_data::CDWShrdPtr& cdw_shrd_ptr) {
-    int err = -1;
-    
+     //return IODirectIODriver::loadDatasetTypeFromSnapshotTag(restore_point_tag_name,key,dataset_type,cdw_shrd_ptr);                                                  
+    chaos::common::data::CDataWrapper data_set;
+    int err = chaos::common::network::NetworkBroker::getInstance()->getMetadataserverMessageChannel()->loadSnapshotNodeDataset(restore_point_tag_name,key,data_set);
+   // IODirectIOPSMsgDriver_DLDBG_<<"SNAPSHOT:"<<data_set.getJSONString();
+    if((dataset_type==chaos::DataType::DatasetType::DatasetTypeInput)&&data_set.hasKey(DataPackID::INPUT_DATASET_ID)&&data_set.isCDataWrapperValue(DataPackID::INPUT_DATASET_ID)){
+      cdw_shrd_ptr.reset(data_set.getCSDataValue(DataPackID::INPUT_DATASET_ID).release());
+
+    } else if((dataset_type==chaos::DataType::DatasetType::DatasetTypeOutput)&&data_set.hasKey(DataPackID::OUTPUT_DATASET_ID)&&data_set.isCDataWrapperValue(DataPackID::OUTPUT_DATASET_ID)){
+            cdw_shrd_ptr.reset(data_set.getCSDataValue(DataPackID::OUTPUT_DATASET_ID).release());
+
+    } else {
+        IODirectIOPSMsgDriver_LERR_<<" NOR INPUT OR OUTPUT snapshot selected "<<data_set.getJSONString();
+      //  cdw_shrd_ptr.reset(data_set.clone().release());
+
+    }
+    if(cdw_shrd_ptr.get()){
+      IODirectIOPSMsgDriver_DLDBG_<<"SNAPSHOT type:"<<dataset_type<<" VAL:"<<cdw_shrd_ptr->getJSONString();
+    }
     return err;
 }
 

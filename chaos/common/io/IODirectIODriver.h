@@ -152,10 +152,9 @@ namespace chaos{
                                         chaos::common::data::VectorCDWShrdPtr& result);
                 
                 /*
-                 * retriveRawData
+                 * retrieveRawData
                  */
-                char * retriveRawData(const std::string& key,
-                                      size_t *dim=NULL);
+                chaos::common::data::CDWUniquePtr retrieveData(const std::string& key);
                 
                 //! restore from a tag a dataset associated to a key
                 int loadDatasetTypeFromSnapshotTag(const std::string& restore_point_tag_name,

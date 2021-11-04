@@ -35,6 +35,7 @@
 #include "RemoveVariable.h"
 #include "QueryDataCloud.h"
 #include "DeleteDataCloud.h"
+#include "RetrieveMultipleData.h"
 
 using namespace chaos::metadata_service::api::service;
 
@@ -54,6 +55,7 @@ AbstractApiGroup("service"){
     addApi<GetSnapshotDatasetsForNode>();
     addApi<QueryDataCloud>();
     addApi<DeleteDataCloud>();
+    addApi<RetrieveMultipleData>();
 
     addApi<SetVariable>();
     addApi<GetVariable>();

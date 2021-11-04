@@ -205,20 +205,20 @@ int IODirectIODriver::storeHealthData(const std::string& key,
 }
 
 
-char* IODirectIODriver::retriveRawData(const std::string& key, size_t *dim)  {
-    char* result = NULL;
-    
+CDWUniquePtr IODirectIODriver::retrieveData(const std::string& key)  {
+    CDWUniquePtr result;
+    char*ptr;
     boost::shared_lock<boost::shared_mutex> rl(mutext_feeder);
     
     IODirectIODriverClientChannels	*next_client = static_cast<IODirectIODriverClientChannels*>(connectionFeeder.getService());
     if(!next_client) return NULL;
     
     uint32_t size =0;
-    int err = (int)next_client->device_client_channel->requestLastOutputData(key, &result, size);
+    int err = (int)next_client->device_client_channel->requestLastOutputData(key, &ptr, size);
     if(err) {
         IODirectIODriver_LERR_ << "Error retriving data from data service "<<next_client->connection->getServerDescription()<< " with code:" << err;
     } else {
-        *dim = (size_t)size;
+        result.reset((CDataWrapper*)ptr);
     }
     return result;
 }
@@ -272,6 +272,8 @@ int IODirectIODriver::loadDatasetTypeFromSnapshotTag(const std::string& restore_
             //we have the dataaset
             try {
                 cdw_shrd_ptr = snapshot_result.channel_data;
+                IODirectIODriver_DLDBG_<<"SNAPSHOT type:"<<dataset_type<<" VAL:"<<cdw_shrd_ptr->getJSONString();
+
                 IODirectIODriver_DLDBG_ << "Got dataset type:"<<dataset_type<< " for key:" << key << " from snapshot tag:" <<restore_point_tag_name;
             } catch (std::exception& ex) {
                 IODirectIODriver_LERR_ << "Error deserializing the dataset type:"<<dataset_type<< " for key:" << key << " from snapshot tag:" <<restore_point_tag_name << " with error:" << ex.what();

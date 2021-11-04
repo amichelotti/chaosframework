@@ -103,8 +103,7 @@ namespace chaos{
                  * This method retrive the cached object by CSDawrapperUsed as query key and
                  * return a pointer to the class ArrayPointer of CDataWrapper type
                  */
-                virtual char * retriveRawData(const std::string& key,
-                                              size_t* dataDim=NULL)  = 0;
+                virtual chaos::common::data::CDWUniquePtr retrieveData(const std::string& key)  = 0;
                 
                 
                 virtual int retriveMultipleData(const ChaosStringVector& key,
@@ -122,6 +121,16 @@ namespace chaos{
                                                            const std::string& key,
                                                            uint32_t dataset_type,
                                                            chaos_data::CDWShrdPtr& cdw_shrd_ptr) = 0;
+                //! restore from a tag a dataset associated to a key
+                /*!
+                 try to load a dataset from snapshot identified by the tag
+                 \param snapshot_tag_name the name of the tag that identify the snapshot
+                 \param key is the unique key of the producer
+                 \param cdatawrapper_handler handler for the found dataset(the deallocation need to be managed by caller)
+                 */
+                int loadDatasetFromSnapshot(const std::string& restore_point_tag_name,
+                                                           const std::string& key,
+                                                           chaos_data::CDWShrdPtr& cdw_shrd_ptr);
                 /*!
                  Update the driver configuration
                  */
