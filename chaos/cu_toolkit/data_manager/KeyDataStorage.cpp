@@ -291,16 +291,20 @@ int KeyDataStorage::loadRestorePoint(const std::string& restore_point_tag) {
     }
     if(dataset.get()){
         if(dataset->hasKey(DataPackID::INPUT_DATASET_ID)&&dataset->isCDataWrapperValue(DataPackID::INPUT_DATASET_ID)){
-            restore_point_map[restore_point_tag].insert(make_pair(input_key, MOVE(dataset->getCSDataValue(DataPackID::INPUT_DATASET_ID))));
+            CDWShrdPtr p(dataset->getCSDataValue(DataPackID::INPUT_DATASET_ID).release());
+            restore_point_map[restore_point_tag].insert(make_pair(input_key, p));
         }
         if(dataset->hasKey(DataPackID::OUTPUT_DATASET_ID)&&dataset->isCDataWrapperValue(DataPackID::OUTPUT_DATASET_ID)){
-            restore_point_map[restore_point_tag].insert(make_pair(output_key, MOVE(dataset->getCSDataValue(DataPackID::OUTPUT_DATASET_ID))));
+            CDWShrdPtr p(dataset->getCSDataValue(DataPackID::OUTPUT_DATASET_ID).release());
+            restore_point_map[restore_point_tag].insert(make_pair(output_key,p));
         }
         if(dataset->hasKey(DataPackID::SYSTEM_DATASETID)&&dataset->isCDataWrapperValue(DataPackID::SYSTEM_DATASETID)){
-            restore_point_map[restore_point_tag].insert(make_pair(system_key, MOVE(dataset->getCSDataValue(DataPackID::SYSTEM_DATASETID))));
+            CDWShrdPtr p(dataset->getCSDataValue(DataPackID::SYSTEM_DATASETID).release());
+            restore_point_map[restore_point_tag].insert(make_pair(system_key,p));
         }
         if(dataset->hasKey(DataPackID::CUSTOM_DATASET_ID)&&dataset->isCDataWrapperValue(DataPackID::CUSTOM_DATASET_ID)){
-            restore_point_map[restore_point_tag].insert(make_pair(custom_key, MOVE(dataset->getCSDataValue(DataPackID::CUSTOM_DATASET_ID))));
+            CDWShrdPtr p(dataset->getCSDataValue(DataPackID::CUSTOM_DATASET_ID).release());
+            restore_point_map[restore_point_tag].insert(make_pair(custom_key,p));
         }
     }
   #if 0 
