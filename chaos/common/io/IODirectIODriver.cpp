@@ -211,7 +211,7 @@ CDWUniquePtr IODirectIODriver::retrieveData(const std::string& key)  {
     boost::shared_lock<boost::shared_mutex> rl(mutext_feeder);
     
     IODirectIODriverClientChannels	*next_client = static_cast<IODirectIODriverClientChannels*>(connectionFeeder.getService());
-    if(!next_client) return NULL;
+    if(!next_client) return result;
     
     uint32_t size =0;
     int err = (int)next_client->device_client_channel->requestLastOutputData(key, &ptr, size);
