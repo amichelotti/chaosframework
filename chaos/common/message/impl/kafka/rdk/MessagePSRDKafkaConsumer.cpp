@@ -244,6 +244,10 @@ void MessagePSRDKafkaConsumer::poll() {
       d.par = rkm->partition;
       try {
         d.cd = chaos::common::data::CDWUniquePtr(new chaos::common::data::CDataWrapper((const char*)rkm->payload, rkm->len));
+        if(d.cd.get()==NULL){
+          MRDERR_<<" invalid bson "<<d.key;
+          return;
+        }
       } catch (chaos::CException& e) {
         stats.errs++;
         std::stringstream ss;
