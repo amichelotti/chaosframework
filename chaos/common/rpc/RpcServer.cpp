@@ -19,6 +19,7 @@
  * permissions and limitations under the Licence.
  */
 #include <chaos/common/rpc/RpcServer.h>
+#include <chaos/common/data/CDataWrapper.h>
 
 using namespace chaos;
 
@@ -27,7 +28,19 @@ NamedService(alias),
 is_psm(false),
 port_number(0),
 command_handler(NULL){}
+void RpcServer::init(void* c) {
+    try{
+        if(c){
+            chaos::common::data::CDataWrapper *cc = static_cast<chaos::common::data::CDataWrapper*>(c);
+            cfg=cc->clone();
+            if(cfg.get()==NULL){
+              throw chaos::CException(-1, "a valid configuration must be given", __PRETTY_FUNCTION__);
+            }
+        }
+    } catch(...){
 
+    }
+ }
 void RpcServer::setAlternatePortAddress(int new_port_address) {
     port_number = new_port_address;
 }

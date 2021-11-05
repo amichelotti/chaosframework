@@ -194,18 +194,19 @@ void ChaosMetadataService::init(void* init_data) {
 
     InizializableService::initImplementation(DriverPoolManager::getInstance(), NULL, "DriverPoolManager", __PRETTY_FUNCTION__);
 
-    //! batch system
-    StartableService::initImplementation(MDSBatchExecutor::getInstance(), NULL, "MDSBatchExecutor", __PRETTY_FUNCTION__);
-
-    // api system
-    api_managment_service.reset(new ApiManagement(), "ApiManagment");
-    api_managment_service.init(NULL, __PRETTY_FUNCTION__);
 #if defined(KAFKA_RDK_ENABLE) || defined(KAFKA_ASIO_ENABLE)
 #warning "CDS NEEDS KAFKA"
     message_consumer.reset(new QueryDataMsgPSConsumer(CDS_GROUP_NAME), "QueryDataMsgPSConsumer");
     if (!message_consumer.get()) throw chaos::CException(-7, "Error instantiating message data consumer", __PRETTY_FUNCTION__);
     message_consumer.init(NULL, __PRETTY_FUNCTION__);
 #endif
+
+    //! batch system
+    StartableService::initImplementation(MDSBatchExecutor::getInstance(), NULL, "MDSBatchExecutor", __PRETTY_FUNCTION__);
+
+    // api system
+    api_managment_service.reset(new ApiManagment(), "ApiManagment");
+    api_managment_service.init(NULL, __PRETTY_FUNCTION__);
     data_consumer.reset(new QueryDataConsumer(), "QueryDataConsumer");
 
     if (!data_consumer.get()) throw chaos::CException(-7, "Error instantiating data consumer", __PRETTY_FUNCTION__);
@@ -217,7 +218,7 @@ void ChaosMetadataService::init(void* init_data) {
                                              "MDSConousManager",
                                              __PRETTY_FUNCTION__);
 
-    InizializableService::initImplementation(SharedManagedDirecIoDataDriver::getInstance(), NULL, "SharedManagedDirecIoDataDriver", __PRETTY_FUNCTION__);
+   // InizializableService::initImplementation(SharedManagedDirecIoDataDriver::getInstance(), NULL, "SharedManagedDirecIoDataDriver", __PRETTY_FUNCTION__);
 
     StartableService::initImplementation(HealtManagerDirect::getInstance(), NULL, "HealtManagerDirect", __PRETTY_FUNCTION__);
 
@@ -228,9 +229,33 @@ void ChaosMetadataService::init(void* init_data) {
   // start data manager
 }
 
-int ChaosMetadataService::notifyNewNode(const std::string& nodeuid) {
-  LCND_LDBG << " NEW NODE:" << nodeuid;
-  return message_consumer->consumeHealthDataEvent(nodeuid, 0, ChaosStringSetConstSPtr(), ChaosMakeSharedPtr<Buffer>());
+int ChaosMetadataService::notifyNewNode(const std::string& nod) {
+  if(nod==nodeuid){
+      LCND_LDBG << " NEW NODE ITS ME" << nod;
+      return 0;
+
+  } else {
+      LCND_LDBG << " NEW NODE:" << nod;
+  }
+  {
+    int retry=10;
+  while((message_consumer.get()==NULL)&&(retry>0)){
+      LCND_LDBG << " not still ready to process request from :"<<nod;
+      sleep(1);
+      retry--;
+
+  }
+  if(retry==0){
+      LCND_LERR << "INTERNAL ERROR:  consumer not started exiting";
+      exit(1);
+
+  }
+  }
+  if(message_consumer.get()==NULL){
+      LCND_LERR << " not yet ready to process... request from :"<<nod;
+      return -1;
+  }
+  return message_consumer->consumeHealthDataEvent(nod, 0, ChaosStringSetConstSPtr(), ChaosMakeSharedPtr<Buffer>());
 }
 
 /*

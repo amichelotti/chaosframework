@@ -26,17 +26,14 @@
 #include <string>
 #include <chaos/common/utility/StartableService.h>
 #include <chaos/common/utility/NamedService.h>
-/*
 #include <chaos/common/data/CDataWrapper.h>
-#include <chaos/common/exception/exception.h>
-#include <chaos/common/event/EventHandler.h>
 
-*/
 namespace chaos {
     using namespace std;
 	
 	//forward declaration
 	namespace common {
+        
 		namespace network {
 			class NetworkBroker;
 
@@ -58,13 +55,13 @@ namespace chaos {
 
         //! port where server has been published
         int port_number;
-        
+        chaos::common::data::CDWUniquePtr cfg;
         chaos::common::rpc::RpcServerHandler *command_handler;
         
         /*
          init the rpc adapter
          */
-        virtual void init(void*) = 0;
+        virtual void init(void*) ;
         
         /*
          start the rpc adapter

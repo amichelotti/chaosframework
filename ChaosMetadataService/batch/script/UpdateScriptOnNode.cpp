@@ -20,8 +20,6 @@
  */
 
 #include "UpdateScriptOnNode.h"
-
-#include "../control_unit/IDSTControlUnitBatchCommand.h"
 #include "../../common/CUCommonUtility.h"
 #include "../../ChaosMetadataService.h"
 

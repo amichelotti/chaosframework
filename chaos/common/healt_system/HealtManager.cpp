@@ -22,8 +22,6 @@
 #include <chaos/common/io/IODirectIODriver.h>
 #include <chaos/common/healt_system/HealtManager.h>
 #include <chaos/common/configuration/GlobalConfiguration.h>
-#include <chaos/cu_toolkit/data_manager/DataManager.h>
-
 #include <chaos/common/io/SharedManagedDirecIoDataDriver.h>
 
 #include <boost/format.hpp>
@@ -36,7 +34,6 @@ using namespace chaos::common::message;
 using namespace chaos::common::network;
 using namespace chaos::common::healt_system;
 using namespace chaos::common::async_central;
-using namespace chaos::cu::data_manager;
 
 #define HM_INFO INFO_LOG(HealtManagerBase)
 #define HM_DBG DBG_LOG(HealtManagerBase)

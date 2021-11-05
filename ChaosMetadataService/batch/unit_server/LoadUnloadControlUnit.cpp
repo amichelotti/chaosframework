@@ -20,8 +20,6 @@
  */
 
 #include "LoadUnloadControlUnit.h"
-
-#include "../control_unit/IDSTControlUnitBatchCommand.h"
 #include "../../common/CUCommonUtility.h"
 #include <chaos_service_common/data/data.h>
 using namespace chaos::common::data;

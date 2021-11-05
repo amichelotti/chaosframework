@@ -37,7 +37,7 @@ namespace chaos {
 
                     chaos::common::network::CNetworkAddress * control_unit_address;
                     ChaosUniquePtr<RequestInfo> request;
-
+                    bool is_root;
                     std::string cu_id;
                     std::string unit_server_addr;
                     int32_t     reg_result;
