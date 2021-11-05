@@ -47,7 +47,6 @@ namespace chaos {
         //worker that process request in a separate thread
         void messageHandler( chaos::common::message::ele_t& data);
         void messageError( chaos::common::message::ele_t& data);
-
     public:
         
         /*

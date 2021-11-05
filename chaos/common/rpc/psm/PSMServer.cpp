@@ -48,7 +48,7 @@ PSMServer::~PSMServer() {
 
 //init the server getting the configuration value
 void PSMServer::init(void *init_data) {
-    CDataWrapper *cfg = reinterpret_cast<CDataWrapper*>(init_data);
+    RpcServer::init(init_data);
     PSMS_LAPP << "initialization";
    try{
     if(!cfg->hasKey(InitOption::OPT_MSG_BROKER_SERVER)){
@@ -88,10 +88,8 @@ void PSMServer::init(void *init_data) {
     if (cons->applyConfiguration() != 0) {
         throw chaos::CException(-1, "cannot initialize Publish Subscribe:" + cons->getLastError(), __PRETTY_FUNCTION__);
     }
-    if(cfg->hasKey("ismds")){
-        PSMS_LAPP << "Subscribing to " <<chaos::common::constants::CHAOS_ADMIN_ADMIN_TOPIC;
-        cons->subscribe(chaos::common::constants::CHAOS_ADMIN_ADMIN_TOPIC);
-    }
+
+  
     } catch (std::exception& e) {
         throw CException(-2, e.what(), "PSMServer::init");
     } catch (...) {
@@ -135,7 +133,10 @@ void PSMServer::messageError( chaos::common::message::ele_t& data) {
 }
 //start the rpc adapter
 void PSMServer::start() {
-  
+    if(cfg->hasKey("ismds")){
+        PSMS_LAPP << "Subscribing to " <<chaos::common::constants::CHAOS_ADMIN_ADMIN_TOPIC;
+        cons->subscribe(chaos::common::constants::CHAOS_ADMIN_ADMIN_TOPIC);
+    }
     PSMS_LAPP << "Subscribing to " << nodeuid + chaos::DataPackPrefixID::COMMAND_DATASET_POSTFIX;
     cons->subscribe(nodeuid + chaos::DataPackPrefixID::COMMAND_DATASET_POSTFIX);
     cons->start();

@@ -63,44 +63,44 @@ QueryDataMsgPSConsumer::QueryDataMsgPSConsumer(const std::string& id)
 void QueryDataMsgPSConsumer::messageHandler(chaos::common::message::ele_t& data) {
   
   try {
-    
+    chaos::common::data::CDataWrapper* cd=data.cd.get();
 
-    if (data.cd.get()&&data.cd->hasKey(DataPackCommonKey::DPCK_DATASET_TYPE) && data.cd->hasKey(NodeDefinitionKey::NODE_UNIQUE_ID)) {
+    if (cd&&cd->hasKey(DataPackCommonKey::DPCK_DATASET_TYPE) && cd->hasKey(NodeDefinitionKey::NODE_UNIQUE_ID)) {
       uint64_t now = TimingUtil::getTimeStamp();
 
-      int pktype = data.cd->getInt32Value(DataPackCommonKey::DPCK_DATASET_TYPE);
+      int pktype = cd->getInt32Value(DataPackCommonKey::DPCK_DATASET_TYPE);
 
       int64_t  ts = 0;
       uint32_t st = (uint32_t)DataServiceNodeDefinitionType::DSStorageTypeLive;
-      if (data.cd->hasKey(DataServiceNodeDefinitionKey::DS_STORAGE_TYPE)) {
-        st = data.cd->getInt32Value(DataServiceNodeDefinitionKey::DS_STORAGE_TYPE);
+      if (cd->hasKey(DataServiceNodeDefinitionKey::DS_STORAGE_TYPE)) {
+        st = cd->getInt32Value(DataServiceNodeDefinitionKey::DS_STORAGE_TYPE);
         if (pktype != DataPackCommonKey::DPCK_DATASET_TYPE_OUTPUT) {
           st |= (uint32_t)DataServiceNodeDefinitionType::DSStorageTypeLive;
         }
       }
 
-    //  kp          = data.cd->getStringValue(NodeDefinitionKey::NODE_UNIQUE_ID) + datasetTypeToPostfix(pktype);
+    //  kp          = cd->getStringValue(NodeDefinitionKey::NODE_UNIQUE_ID) + datasetTypeToPostfix(pktype);
       int32_t lat = 0;
       if (pktype == DataPackCommonKey::DPCK_DATASET_TYPE_LOG) {
-        if (data.cd->hasKey(MetadataServerLoggingDefinitionKeyRPC::PARAM_NODE_LOGGING_LOG_TIMESTAMP)) {
-          ts  = data.cd->getInt64Value(MetadataServerLoggingDefinitionKeyRPC::PARAM_NODE_LOGGING_LOG_TIMESTAMP);
+        if (cd->hasKey(MetadataServerLoggingDefinitionKeyRPC::PARAM_NODE_LOGGING_LOG_TIMESTAMP)) {
+          ts  = cd->getInt64Value(MetadataServerLoggingDefinitionKeyRPC::PARAM_NODE_LOGGING_LOG_TIMESTAMP);
           lat = now - ts;
-          if (lat > SKIP_OLDER_THAN) {
-            ERR <<  data.key << " log too old: " << lat << " ms, skipping...";
+          if (lat > chaos::common::constants::SkipDatasetOlderThan) {
+            ERR <<  data.key << " log too old: " << lat/1000.0 << " s, skipping...";
             return;
           }
-          data.cd->addInt32Value(DataPackCommonKey::NODE_MDS_TIMEDIFF, lat);
+          cd->addInt32Value(DataPackCommonKey::NODE_MDS_TIMEDIFF, lat);
         }
-        //  DBG<<"Queue:"<<CObjectProcessingPriorityQueue<CDataWrapper>::queueSize()<<" LOG:"<<data.cd->getJSONString();
+        //  DBG<<"Queue:"<<CObjectProcessingPriorityQueue<CDataWrapper>::queueSize()<<" LOG:"<<cd->getJSONString();
         if (CObjectProcessingPriorityQueue<CDataWrapper>::queueSize() < MAX_LOG_QUEUE) {
-          CDWShrdPtr ptr(data.cd.release());
+          CDWShrdPtr ptr(cd->clone().release());
           CObjectProcessingPriorityQueue<CDataWrapper>::push(ptr, 0);
         } else {
           ERR <<  data.key << "] too many logs on queue for DB:" << CObjectProcessingPriorityQueue<CDataWrapper>::queueSize();
           return;
         }
-      } else if (data.cd->hasKey(DataPackCommonKey::DPCK_TIMESTAMP)) {
-        ts  = data.cd->getInt64Value(DataPackCommonKey::DPCK_TIMESTAMP);
+      } else if (cd->hasKey(DataPackCommonKey::DPCK_TIMESTAMP)) {
+        ts  = cd->getInt64Value(DataPackCommonKey::DPCK_TIMESTAMP);
         lat = (now - ts);
         if ((pktype == DataPackCommonKey::DPCK_DATASET_TYPE_HEALTH)) {
           if (lat > (chaos::common::constants::HBTimersTimeoutinMSec * 2)) {
@@ -109,25 +109,25 @@ void QueryDataMsgPSConsumer::messageHandler(chaos::common::message::ele_t& data)
           }
         } else if ((pktype == DataPackCommonKey::DPCK_DATASET_TYPE_OUTPUT) || (pktype == DataPackCommonKey::DPCK_DATASET_TYPE_INPUT)) {
           if (((st == 0) || (st == DataServiceNodeDefinitionType::DSStorageTypeLive))) {
-            if (lat > SKIP_OLDER_THAN) {
-              ERR <<  data.key << " too old: " << lat << " ms, skipping...";
+            if (lat > chaos::common::constants::SkipDatasetOlderThan) {
+              ERR <<  data.key << " too old: " << lat/1000.0 << " s, skipping...";
               // output too old
               return;
             }
-            data.cd->removeKey(DataServiceNodeDefinitionKey::DS_STORAGE_TYPE);
-            data.cd->removeKey(DataPackCommonKey::DPCK_DATASET_TYPE);
+            cd->removeKey(DataServiceNodeDefinitionKey::DS_STORAGE_TYPE);
+            cd->removeKey(DataPackCommonKey::DPCK_DATASET_TYPE);
           }
         }
-        data.cd->addInt32Value(DataPackCommonKey::NODE_MDS_TIMEDIFF, lat);
+        cd->addInt32Value(DataPackCommonKey::NODE_MDS_TIMEDIFF, lat);
       }
       ChaosStringSetConstSPtr meta_tag_set;
 
-      if (data.cd->hasKey(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_TAG)) {
+      if (cd->hasKey(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_TAG)) {
         ChaosStringSet* tag = new ChaosStringSet();
-        tag->insert(data.cd->getStringValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_TAG));
+        tag->insert(cd->getStringValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_TAG));
         meta_tag_set.reset(tag);
       }
-      QueryDataConsumer::consumePutEvent(data.cd->getStringValue(NodeDefinitionKey::NODE_UNIQUE_ID) + datasetTypeToPostfix(pktype), (uint8_t)st, meta_tag_set, *(data.cd.get()));
+      QueryDataConsumer::consumePutEvent(cd->getStringValue(NodeDefinitionKey::NODE_UNIQUE_ID) + datasetTypeToPostfix(pktype), (uint8_t)st, meta_tag_set, *cd);
     }
   } catch (const chaos::CException& e) {
     ERR << "Chaos Exception caught processing key:" << data.key << " (" << data.off << "," << data.par << ") error:" << e.what();

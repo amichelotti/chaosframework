@@ -61,21 +61,22 @@ ZMQServer::~ZMQServer() {
 //init the server getting the configuration value
 void ZMQServer::init(void *init_data) {
     //get portnumber and thread number
-    CDataWrapper *adapterConfiguration = reinterpret_cast<CDataWrapper*>(init_data);
+    RpcServer::init(init_data);
+
     ZMQS_LAPP << "initialization";
     try {
         run_server = true;
         
         if(!port_number) {
             //no one has set alternate port number so use the default
-            port_number = adapterConfiguration->getInt32Value(InitOption::OPT_RPC_SERVER_PORT);
+            port_number = cfg->getInt32Value(InitOption::OPT_RPC_SERVER_PORT);
         }
         
-        thread_number = adapterConfiguration->getInt32Value(InitOption::OPT_RPC_SERVER_THREAD_NUMBER);
+        thread_number = cfg->getInt32Value(InitOption::OPT_RPC_SERVER_THREAD_NUMBER);
         
         //bad patch OPT_RPC_DOMAIN_QUEUE_THREAD need to be removed
-        if(thread_number  < adapterConfiguration->getUInt32Value(InitOption::OPT_RPC_DOMAIN_QUEUE_THREAD)) {
-            thread_number = adapterConfiguration->getUInt32Value(InitOption::OPT_RPC_DOMAIN_QUEUE_THREAD);
+        if(thread_number  < cfg->getUInt32Value(InitOption::OPT_RPC_DOMAIN_QUEUE_THREAD)) {
+            thread_number = cfg->getUInt32Value(InitOption::OPT_RPC_DOMAIN_QUEUE_THREAD);
         }
         ZMQS_LAPP << "port number:" << port_number;
         ZMQS_LAPP << "worker thread number:" << thread_number;

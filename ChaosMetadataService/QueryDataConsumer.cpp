@@ -203,11 +203,12 @@ int QueryDataConsumer::consumeHealthDataEvent(const std::string&            key,
   CDataWrapper health_data_pack((char*)channel_data->data());
   health_data_pack.addInt64Value(NodeHealtDefinitionKey::NODE_HEALT_MDS_TIMESTAMP, TimingUtil::getTimeStamp());
 
-  NodeDataAccess* s_da = DriverPoolManager::getInstance()->getPersistenceDataAccess<NodeDataAccess>();
 
+  
+#ifdef HEALTH_ON_DB
+  NodeDataAccess* s_da = DriverPoolManager::getInstance()->getPersistenceDataAccess<NodeDataAccess>();
   HealthStatSDWrapper attribute_reference_wrapper;
   attribute_reference_wrapper.deserialize(&health_data_pack);
-#ifdef HEALTH_ON_DB
   // WE HAVE ALREADY HEALTH INFO IN CACHE
   if ((err = s_da->setNodeHealthStatus(attribute_reference_wrapper().node_uid,
                                        attribute_reference_wrapper()))) {

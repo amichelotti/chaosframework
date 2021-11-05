@@ -308,6 +308,7 @@ void NetworkBroker::deinit() {
  * all part are started
  */
 void NetworkBroker::start() {
+   MB_LAPP << "Starting..";
     if(direct_io_server){
       StartableService::startImplementation(direct_io_server, direct_io_server->getName(), __PRETTY_FUNCTION__);
     }
