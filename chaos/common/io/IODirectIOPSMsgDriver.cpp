@@ -33,7 +33,7 @@ using namespace chaos::common::io;
 using namespace chaos::common::data;
 using namespace chaos::common::utility;
 using namespace chaos::common::network;
-
+using namespace chaos::DataType;
 using namespace std;
 using namespace boost;
 
@@ -255,10 +255,10 @@ int IODirectIOPSMsgDriver::loadDatasetTypeFromSnapshotTag(const std::string& res
     chaos::common::data::CDataWrapper data_set;
     int err = chaos::common::network::NetworkBroker::getInstance()->getMetadataserverMessageChannel()->loadSnapshotNodeDataset(restore_point_tag_name,key,data_set);
    // IODirectIOPSMsgDriver_DLDBG_<<"SNAPSHOT:"<<data_set.getJSONString();
-    if((dataset_type==chaos::DataType::DatasetType::DatasetTypeInput)&&data_set.hasKey(DataPackID::INPUT_DATASET_ID)&&data_set.isCDataWrapperValue(DataPackID::INPUT_DATASET_ID)){
+    if((dataset_type==DatasetTypeInput)&&data_set.hasKey(DataPackID::INPUT_DATASET_ID)&&data_set.isCDataWrapperValue(DataPackID::INPUT_DATASET_ID)){
       cdw_shrd_ptr.reset(data_set.getCSDataValue(DataPackID::INPUT_DATASET_ID).release());
 
-    } else if((dataset_type==chaos::DataType::DatasetType::DatasetTypeOutput)&&data_set.hasKey(DataPackID::OUTPUT_DATASET_ID)&&data_set.isCDataWrapperValue(DataPackID::OUTPUT_DATASET_ID)){
+    } else if((dataset_type==DatasetTypeOutput)&&data_set.hasKey(DataPackID::OUTPUT_DATASET_ID)&&data_set.isCDataWrapperValue(DataPackID::OUTPUT_DATASET_ID)){
             cdw_shrd_ptr.reset(data_set.getCSDataValue(DataPackID::OUTPUT_DATASET_ID).release());
 
     } else {
