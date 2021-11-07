@@ -67,7 +67,6 @@ ChaosMetadataService::ChaosMetadataService() {
   is_present      = false;
 };
 ChaosMetadataService::~ChaosMetadataService() {}
-
 //! C and C++ attribute parser
 /*!
  Specialized option for startup c and cpp program main options parameter
@@ -205,7 +204,7 @@ void ChaosMetadataService::init(void* init_data) {
     StartableService::initImplementation(MDSBatchExecutor::getInstance(), NULL, "MDSBatchExecutor", __PRETTY_FUNCTION__);
 
     // api system
-    api_managment_service.reset(new ApiManagment(), "ApiManagment");
+    api_managment_service.reset(new ApiManagement(), "ApiManagement");
     api_managment_service.init(NULL, __PRETTY_FUNCTION__);
     data_consumer.reset(new QueryDataConsumer(), "QueryDataConsumer");
 
