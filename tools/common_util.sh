@@ -944,7 +944,7 @@ launch_us_cu(){
 
 	FILE_NAME=`echo $REAL_ALIAS|$SED 's/\//_/g'`
 #	echo "$CHAOS_PREFIX/bin/$USNAME $CHAOS_OVERALL_OPT --log-on-file 1 $CHAOS_TEST_DEBUG --log-file $CHAOS_PREFIX/log/$USNAME-$FILE_NAME.log --unit-server-alias $REAL_ALIAS $META"  > $CHAOS_PREFIX/log/$USNAME-$FILE_NAME-$us.stdout
-	if run_proc "$CHAOS_SERVICE_ENV $CHAOS_PREFIX/bin/$USNAME --conf-file $CHAOS_PREFIX/etc/cu.cfg --log-on-file 1 $CHAOS_TEST_DEBUG $CHAOS_OVERALL_OPT --log-file $CHAOS_PREFIX/log/$USNAME-$FILE_NAME.$MYPID.log --unit-server-alias $REAL_ALIAS $META >> $CHAOS_PREFIX/log/$USNAME-$FILE_NAME-$us.$MYPID.stdout 2>&1 &" "$USNAME"; then
+	if run_proc "$CHAOS_SERVICE_ENV $CHAOS_PREFIX/bin/$USNAME --conf-file $CHAOS_PREFIX/etc/cu.cfg --log-on-file 1 $CHAOS_TEST_DEBUG $CHAOS_OVERALL_OPT --log-file $CHAOS_PREFIX/log/$USNAME-$FILE_NAME.$MYPID.log --node-uid $REAL_ALIAS $META >> $CHAOS_PREFIX/log/$USNAME-$FILE_NAME-$us.$MYPID.stdout 2>&1 &" "$USNAME"; then
 	    ok_mesg "$USNAME \"$REAL_ALIAS\" ($proc_pid) started"
 	    us_proc+=($proc_pid)
 	else
