@@ -141,7 +141,7 @@ bool PSMClient::submitMessage(NFISharedPtr forwardInfo,
         forwardInfo->message->addInt64Value(RPC_SEQ_KEY, (++seq_id));
       
         std::string key=forwardInfo->destinationAddr;
-        PSMC_LDBG<<"Sending message to:"<<forwardInfo->destinationAddr<<" ("<<key<<") msg:"<<forwardInfo->message->getJSONString();
+        //PSMC_LDBG<<"Sending message to:"<<forwardInfo->destinationAddr<<" ("<<key<<") msg:"<<forwardInfo->message->getJSONString();
         prod->pushMsgAsync(*forwardInfo->message.get(),key);
 
     } catch(CException& ex){

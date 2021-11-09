@@ -277,7 +277,7 @@ QueryCursor *IODirectIOPSMsgDriver::performQuery(const std::string& key,
                                             const ChaosStringSet& meta_tags,
                                             const ChaosStringSet& projection_keys,
                                             const uint32_t page_len) {
-    IODirectIOPSMsgDriver_DLDBG_<<"query "<<key<<" start:"<<start_ts<<" end:"<<end_ts;
+   // IODirectIOPSMsgDriver_DLDBG_<<"query "<<key<<" start:"<<start_ts<<" end:"<<end_ts;
     QueryCursor *q = new QueryCursorRPC(UUIDUtil::generateUUID(),
                                                 key,
                                                 start_ts,
@@ -303,7 +303,7 @@ QueryCursor *IODirectIOPSMsgDriver::performQuery(const std::string& key,
                                             const ChaosStringSet& meta_tags,
                                             const ChaosStringSet& projection_keys,
                                             uint32_t page_len) {
-    IODirectIOPSMsgDriver_DLDBG_<<"query "<<key<<" start:"<<start_ts<<" end:"<<end_ts;
+  //  IODirectIOPSMsgDriver_DLDBG_<<"query "<<key<<" start:"<<start_ts<<" end:"<<end_ts;
 
     QueryCursor *q = new QueryCursorRPC(UUIDUtil::generateUUID(),
                                      key,
