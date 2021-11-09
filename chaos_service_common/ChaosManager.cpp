@@ -632,7 +632,7 @@ chaos::common::data::CDWUniquePtr ChaosManager::getSnapshotDatasetForNode(const 
 }
 chaos::common::data::CDWUniquePtr ChaosManager::setSnapshotDatasetsForNode(const std::string& snapshot_name,const std::string& uid,chaos::common::data::VectorCDWShrdPtr& datasets_value_vec){
   CDWUniquePtr res;
-
+    boost::lock_guard<boost::mutex> l(iomutex);
     CDWUniquePtr message(new CDataWrapper());
     message->addStringValue(chaos::NodeDefinitionKey::NODE_UNIQUE_ID, uid);
     message->addStringValue("snapshot_name", snapshot_name);

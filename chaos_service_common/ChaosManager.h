@@ -40,6 +40,7 @@ class ChaosManager : public chaos::common::utility::SingletonCW<ChaosManager>{
   chaos::service_common::persistence::data_access::AbstractPersistenceDriver* persistence_driver;
   chaos::service_common::persistence::data_access::AbstractPersistenceDriver* storage_driver;
     chaos::service_common::persistence::data_access::AbstractPersistenceDriver* log_driver;
+  boost::mutex iomutex;
 
   chaos::metadata_service::ChaosMetadataService* context;
   //  ::common::misc::data::DBbase* db;

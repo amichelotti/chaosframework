@@ -70,7 +70,7 @@ int MongoDBSnapshotDataAccess::snapshotCreateNewWithName(const std::string& snap
         new_snapshot_start << MONGO_DB_FIELD_JOB_WORK_UNIQUE_CODE << working_job_unique_id;
         mongo::BSONObj q = new_snapshot_start.obj();
         DEBUG_CODE(MDBDSDA_DBG<<log_message("snapshotCreateNewWithName",
-                                            "insert",
+                                            "find/update",
                                             DATA_ACCESS_LOG_1_ENTRY("Query",
                                                                     q.jsonString()));)
         
