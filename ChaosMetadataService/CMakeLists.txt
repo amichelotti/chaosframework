@@ -230,7 +230,8 @@ SET(service_src  ${service_src} ../chaos_service_common/persistence/mongodb/mong
 
 SET(service_src  ${service_src} ../chaos_service_common/persistence/data_access/AbstractDataAccess.cpp
 						../chaos_service_common/persistence/data_access/AbstractPersistenceDriver.cpp
-            ../chaos_service_common/ChaosManager.cpp)
+            ../chaos_service_common/ChaosManager.cpp
+            ../chaos_service_common/ChaosServiceToolkit.cpp)
 
 SET(cnd_src  ${cnd_src}	cron_job/MDSCronusManager.cpp
                         cron_job/MDSCronJob.cpp

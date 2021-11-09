@@ -48,6 +48,7 @@ DEFINE_CLASS_FACTORY(IODirectIOPSMsgDriver, IODataDriver);
 //using namespace memcache;
 IODirectIOPSMsgDriver::IODirectIOPSMsgDriver(const std::string& alias)
     : IODirectIODriver(alias) {
+  IODirectIOPSMsgDriver_DLDBG_<<"Instantiate:"<<alias;
   msgbrokerdrv = "kafka-rdk";
   msgbrokerdrv = GlobalConfiguration::getInstance()->getOption<std::string>(InitOption::OPT_MSG_BROKER_DRIVER);
 
@@ -276,6 +277,7 @@ QueryCursor *IODirectIOPSMsgDriver::performQuery(const std::string& key,
                                             const ChaosStringSet& meta_tags,
                                             const ChaosStringSet& projection_keys,
                                             const uint32_t page_len) {
+    IODirectIOPSMsgDriver_DLDBG_<<"query "<<key<<" start:"<<start_ts<<" end:"<<end_ts;
     QueryCursor *q = new QueryCursorRPC(UUIDUtil::generateUUID(),
                                                 key,
                                                 start_ts,
@@ -301,6 +303,8 @@ QueryCursor *IODirectIOPSMsgDriver::performQuery(const std::string& key,
                                             const ChaosStringSet& meta_tags,
                                             const ChaosStringSet& projection_keys,
                                             uint32_t page_len) {
+    IODirectIOPSMsgDriver_DLDBG_<<"query "<<key<<" start:"<<start_ts<<" end:"<<end_ts;
+
     QueryCursor *q = new QueryCursorRPC(UUIDUtil::generateUUID(),
                                      key,
                                      start_ts,

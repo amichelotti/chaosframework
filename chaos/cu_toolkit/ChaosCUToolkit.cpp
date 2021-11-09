@@ -45,7 +45,7 @@ using namespace chaos::common::metadata_logging;
 //boost::mutex ChaosCUToolkit::monitor;
 //boost::condition ChaosCUToolkit::endWaithCondition;
 chaos::WaitSemaphore ChaosCUToolkit::waitCloseSemaphore;
-void crit_err_hdlr(int sig_num, siginfo_t *info, void *ucontext);
+ void crit_err_hdlr(int sig_num, siginfo_t *info, void *ucontext);
 
 ChaosCUToolkit::ChaosCUToolkit() {
   GlobalConfiguration::getInstance()->addOption<bool>(CU_OPT_IN_MEMORY_DATABASE,

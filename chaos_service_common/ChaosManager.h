@@ -122,7 +122,9 @@ chaos::common::data::CDWUniquePtr getSnapshotDatasetForNode(const std::string& s
 
 chaos::common::data::CDWUniquePtr agentNodeOperation(const std::string& node,int32_t op);
 chaos::common::data::CDWUniquePtr saveNodeAssociation(const std::string&name,const chaos::common::data::CDataWrapper& value);
-chaos::common::data::CDWUniquePtr loadNodeAssociation(const std::string&name,const std::string&parent);
+chaos::common::data::CDWUniquePtr loadNodeAssociation(const std::string&name,const std::string&association);
+chaos::common::data::CDWUniquePtr removeNodeAssociation(const std::string&name,const std::string&association);
+
 chaos::common::data::CDWUniquePtr listNodeForAgent(const std::string&name);
 chaos::common::data::CDWUniquePtr loadAgentDescription(const std::string&name,bool loaddata=true);
 chaos::common::data::CDWUniquePtr checkAgentHostedProcess(const std::string&name);
