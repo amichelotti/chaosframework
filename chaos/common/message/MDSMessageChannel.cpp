@@ -993,7 +993,7 @@ int MDSMessageChannel::queryDataCloud(const std::string&                        
         if (res->hasKey("ts")) {
           last_sequence.ts = res->getInt64Value("ts");
         }
-        MSG_DBG << "DATA:" << res->getJSONString();
+        //MSG_DBG << "DATA:" << res->getJSONString();
         if (res->hasKey("data") && res->isVectorValue("data")) {
           CMultiTypeDataArrayWrapperSPtr d = res->getVectorValue("data");
           for (int idx = 0;

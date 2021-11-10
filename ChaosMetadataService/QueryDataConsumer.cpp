@@ -127,23 +127,24 @@ int QueryDataConsumer::consumePutEvent(const std::string&                 key,
                                        chaos::common::data::CDataWrapper& data_pack) {
   int err = 0;
 
-  //data_pack.addInt64Value(NodeHealtDefinitionKey::NODE_HEALT_MDS_TIMESTAMP, now);
-  chaos::common::data::BufferUPtr ptr = data_pack.getBSONDataBuffer();
-  if (ptr.get() == NULL) {
-    ERR << key << " empty packet";
-    return -1;
-  }
-  BufferSPtr channel_data_injected(ptr.release());
-
+  
   DataServiceNodeDefinitionType::DSStorageType storage_type = static_cast<DataServiceNodeDefinitionType::DSStorageType>(hst_tag);
   //! if tag is == 1 the datapack is in liveonly
 
-  if (storage_type & DataServiceNodeDefinitionType::DSStorageTypeLive && channel_data_injected.get()) {
+  if (storage_type & DataServiceNodeDefinitionType::DSStorageTypeLive) {
+    chaos::common::data::BufferUPtr ptr = data_pack.getBSONDataBuffer();
+    BufferSPtr channel_data_injected(ptr.release());
+    if(channel_data_injected.get()==NULL){
+      ERR<<"Invalid packet";
+      return -1;
+    }
     //protected access to cached driver
     CacheDriver& cache_slot = DriverPoolManager::getInstance()->getCacheDrv();
     err                     = cache_slot.putData(key,
                              channel_data_injected);
   }
+  data_pack.removeKey(DataPackCommonKey::DPCK_DATASET_TYPE);
+
   if (storage_type & DataServiceNodeDefinitionType::DSStorageLogHisto) {
     //protected access to cached driver
     ObjectStorageDataAccess* log_slot = DriverPoolManager::getInstance()->getLogDrv().getDataAccess<ObjectStorageDataAccess>();
@@ -160,7 +161,14 @@ int QueryDataConsumer::consumePutEvent(const std::string&                 key,
     //compute the index to use for the data worker
     uint32_t index_to_use;
     index_to_use = device_data_worker_index++ % archive_workers;
-    CHAOS_ASSERT(device_data_worker[index_to_use].get())
+    CHAOS_ASSERT(device_data_worker[index_to_use].get());
+    chaos::common::data::BufferUPtr ptr = data_pack.getBSONDataBuffer();
+    BufferSPtr channel_data_injected(ptr.release());
+    if(channel_data_injected.get()==NULL){
+      ERR<<"Invalid packet";
+      return -2;
+    }
+
     //create storage job information
     auto job       = ChaosMakeSharedPtr<DeviceSharedWorkerJob>();
     job->key       = key;

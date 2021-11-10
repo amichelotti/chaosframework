@@ -115,7 +115,6 @@ void QueryDataMsgPSConsumer::messageHandler(chaos::common::message::ele_t& data)
               return;
             }
             cd->removeKey(DataServiceNodeDefinitionKey::DS_STORAGE_TYPE);
-            cd->removeKey(DataPackCommonKey::DPCK_DATASET_TYPE);
           }
         }
         cd->addInt32Value(DataPackCommonKey::NODE_MDS_TIMEDIFF, lat);

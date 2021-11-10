@@ -732,7 +732,7 @@ void AbstractControlUnit::unitDefineCustomAttribute() {
     cnt++;
   }
 
-  if (cnt) {
+ /* if (cnt) {
     //        drv.finalizeArrayForKey(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_INFO);
     ACULDBG_ << " Adding driver properties to custom dataset " << chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_INFO << ":" << drv.getJSONString();
 
@@ -742,7 +742,7 @@ void AbstractControlUnit::unitDefineCustomAttribute() {
     ACULDBG_ << " Adding driver info to custom dataset " << chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_CU_INFO << ":" << drv_info->getJSONString();
     getAttributeCache()->addCustomAttribute(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_CU_INFO, *drv_info.get());
     getAttributeCache()->setCustomAttributeValue(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_CU_INFO, *drv_info.get());
-  }
+  }*/
 }
 
 void AbstractControlUnit::_undefineActionAndDataset() {
@@ -809,17 +809,20 @@ void         AbstractControlUnit::doInitRpCheckList() {
     CHAOS_CHECK_LIST_DONE(check_list_sub_service, "_init", INIT_RPC_PHASE_CALL_UNIT_DEFINE_ATTRIBUTE) {
       std::string cu_load_param = getCUParam();
 
-      if (isCUParamInJson()) {
+    /* if (isCUParamInJson()) {
         getAttributeCache()->addCustomAttribute(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_LOAD_PARAM, cu_load_param.size() + 1, chaos::DataType::TYPE_CLUSTER);
       } else {
         getAttributeCache()->addCustomAttribute(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_LOAD_PARAM, cu_load_param.size() + 1, chaos::DataType::TYPE_STRING);
       }
       getAttributeCache()->setCustomAttributeValue(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_LOAD_PARAM, (void*)cu_load_param.c_str(), cu_load_param.size() + 1);
-
+*/
       //define the implementations custom variable
       AbstractControlUnit::unitDefineCustomAttribute();
       unitDefineCustomAttribute();
-
+      getAttributeCache()->setCustomDomainAsChanged();
+      fillCachedValueVector(attribute_value_shared_cache->getSharedDomain(DOMAIN_CUSTOM),
+                                  cache_custom_attribute_vector);
+      pushCustomDataset();
       break;
     }
     CHAOS_CHECK_LIST_DONE(check_list_sub_service, "_init", INIT_RPC_PHASE_CREATE_FAST_ACCESS_CASCHE_VECTOR) {
@@ -930,7 +933,7 @@ void         AbstractControlUnit::doInitRpCheckList() {
             }
           }
 
-          if (cu_ds_init.get()) {
+         /* if (cu_ds_init.get()) {
             ACULDBG_ << "INIT ATTRIBUTES:" << cu_ds_init->getJSONString();
 
             getAttributeCache()->addCustomAttribute(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_INITIALIZATION, *(cu_ds_init.get()));
@@ -938,7 +941,7 @@ void         AbstractControlUnit::doInitRpCheckList() {
 
             fillCachedValueVector(attribute_value_shared_cache->getSharedDomain(DOMAIN_CUSTOM),
                                   cache_custom_attribute_vector);
-          }
+          }*/
           CDWUniquePtr res = setDatasetAttribute(MOVE(cdw_unique_ptr));
         }
       }
