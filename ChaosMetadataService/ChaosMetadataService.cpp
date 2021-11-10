@@ -199,7 +199,9 @@ void ChaosMetadataService::init(void* init_data) {
     if (!message_consumer.get()) throw chaos::CException(-7, "Error instantiating message data consumer", __PRETTY_FUNCTION__);
     message_consumer.init(NULL, __PRETTY_FUNCTION__);
 #endif
-
+  if(nodeuid.size()==0){
+        nodeuid="cds_"+chaos::GlobalConfiguration::getInstance()->getHostname();
+    }
     //! batch system
     StartableService::initImplementation(MDSBatchExecutor::getInstance(), NULL, "MDSBatchExecutor", __PRETTY_FUNCTION__);
 

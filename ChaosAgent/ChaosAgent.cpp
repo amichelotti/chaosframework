@@ -73,7 +73,9 @@ void ChaosAgent::init(void *init_data)  {
     if(settings.working_directory.size() == 0) {
         settings.working_directory = FSUtility::getExecutablePath();
     }
-    
+    if(nodeuid.size()==0){
+        nodeuid="agent_"+chaos::GlobalConfiguration::getInstance()->getHostname();
+    }
     ChaosAgent::getInstance()->settings.agent_uid=nodeuid;
     //settings.agent_uid = CHAOS_FORMAT("ChaosAgent_%1%",%chaos::GlobalConfiguration::getInstance()->getLocalServerAddressAnBasePort());
     

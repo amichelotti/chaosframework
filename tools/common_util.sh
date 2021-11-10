@@ -25,11 +25,11 @@ if [ -n "$CHAOS_INTERFACE" ];then
     CHAOS_OVERALL_OPT="$CHAOS_OVERALL_OPT --publishing-interface $CHAOS_INTERFACE"
 fi
 if [ -z "$CHAOS_MDS" ];then
-    export CHAOS_MDS=localhost:5000
+    export CHAOS_MDS=localhost:9092
 else
     export CHAOS_EXTERNAL_MDS=$CHAOS_MDS
 fi
-CHAOS_OVERALL_OPT="$CHAOS_OVERALL_OPT --metadata-server $CHAOS_MDS"
+CHAOS_OVERALL_OPT="$CHAOS_OVERALL_OPT --msg-broker-server $CHAOS_MDS"
 if [ -n "$CHAOS_IP" ];then
     CHAOS_OVERALL_OPT="$CHAOS_OVERALL_OPT --publishing-ip $CHAOS_IP"
 fi
@@ -328,8 +328,8 @@ function chaos_configure(){
     
     path=`echo $PREFIX/vfs|$SED 's/\//\\\\\//g'`
     logpath=`echo $PREFIX/log/cds.log|$SED 's/\//\\\\\//g'`
-    echo -e "metadata-server=localhost:5000\nlog-level=debug\nevent-disable=1\n" > $PREFIX/etc/cu-localhost.cfg
-    echo -e "metadata-server=localhost:5000\nlog-level=debug\nserver_port=8081\nevent-disable=1\n" > $PREFIX/etc/cuiserver-localhost.cfg
+    echo -e "msg-broker-server=localhost:9092\nlog-level=debug\nevent-disable=1\n" > $PREFIX/etc/cu-localhost.cfg
+    echo -e "msg-broker-server=localhost:9092\nlog-level=debug\nserver_port=8081\nevent-disable=1\n" > $PREFIX/etc/cuiserver-localhost.cfg
 
     cp -r $CHAOS_BUNDLE/chaosframework/Documentation/html $PREFIX/doc/ >& /dev/null
     cp -r $CHAOS_BUNDLE/service/webgui/w3chaos/public_html/* $PREFIX/www/html
@@ -735,12 +735,12 @@ chaos_cli_cmd(){
     if [ "$CHAOS_RUNTYPE" == "callgrind" ]; then
 	timeout=$((timeout * 10))
     fi
-    cli_cmd=`$CHAOS_PREFIX/bin/ChaosCLI --log-on-file 1 $CHAOS_TEST_DEBUG --log-file $CHAOS_PREFIX/log/ChaosCLI.log --metadata-server $meta --device-id $cuname --timeout $timeout $param 2>&1`
+    cli_cmd=`$CHAOS_PREFIX/bin/ChaosCLI --log-on-file 1 $CHAOS_TEST_DEBUG --log-file $CHAOS_PREFIX/log/ChaosCLI.log --msg-broker-server $meta --device-id $cuname --timeout $timeout $param 2>&1`
 
     if [ $? -eq 0 ]; then
 	return 0
     fi
-    error_mesg "Error \"$CHAOS_PREFIX/bin/ChaosCLI --metadata-server $meta --device-id $cuname --timeout $timeout $param \" returned:$cli_cmd"
+    error_mesg "Error \"$CHAOS_PREFIX/bin/ChaosCLI --msg-broker-server $meta --device-id $cuname --timeout $timeout $param \" returned:$cli_cmd"
     return 1
 
 }
@@ -806,7 +806,7 @@ get_hdataset_cu(){
     local end_time="$4"
     local filename="$5"
     info_mesg "dumping historical data for cu $cuname interval " "$end_time-$st_time"
-    if ! $CHAOS_PREFIX/bin/ChaosDataExport --metadata-server $meta --device-id $cuname --start-time $st_time --end-time $end_time --dest-file $filename --dest-type 1 > $CHAOS_PREFIX/log/ChaosDataExport.log 2>&1 ;then
+    if ! $CHAOS_PREFIX/bin/ChaosDataExport --msg-broker-server $meta --device-id $cuname --start-time $st_time --end-time $end_time --dest-file $filename --dest-type 1 > $CHAOS_PREFIX/log/ChaosDataExport.log 2>&1 ;then
 	return 1
     fi
     return 0
@@ -897,7 +897,7 @@ launch_us_cu(){
     local USNAME=UnitServer
     local NUS=2
     local NCU=5
-    local META="localhost:5000"
+    local META="localhost:9092"
     local ALIAS="TEST_UNIT"
     if [ -n "$1" ];then
 	NUS=$1
