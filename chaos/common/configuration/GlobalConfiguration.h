@@ -303,6 +303,9 @@ x = hasOption(y);
         
         //!return the nodeuid
         std::string getNodeUID();
+
+        //!return the nodeuid
+        void setNodeUID(const std::string& uid);
         /*
          return the address of metadataserver
          */

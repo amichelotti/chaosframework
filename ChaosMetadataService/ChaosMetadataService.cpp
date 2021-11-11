@@ -101,6 +101,14 @@ void ChaosMetadataService::init(void* init_data) {
    } else {
      getGlobalConfigurationInstance()->getConfiguration()->addStringValue(InitOption::OPT_GROUP_NAME,CDS_GROUP_NAME);
    }
+
+   if((!GlobalConfiguration::getInstance()->hasOption(InitOption::OPT_NODEUID))||(GlobalConfiguration::getInstance()->getConfiguration()->getStringValue(InitOption::OPT_NODEUID).size()==0)){
+			// change before NetworkBroker Initialization
+        	nodeuid="cds_"+chaos::GlobalConfiguration::getInstance()->getHostname();
+			LCND_LDBG << "'"<<InitOption::OPT_NODEUID <<"' not specified, setting uid to:"<<nodeuid;
+		
+			GlobalConfiguration::getInstance()->setNodeUID(nodeuid);
+    	}
     ChaosCommon<ChaosMetadataService>::init(init_data);
 
     if (signal((int)SIGINT, ChaosMetadataService::signalHanlder) == SIG_ERR) {
@@ -199,9 +207,7 @@ void ChaosMetadataService::init(void* init_data) {
     if (!message_consumer.get()) throw chaos::CException(-7, "Error instantiating message data consumer", __PRETTY_FUNCTION__);
     message_consumer.init(NULL, __PRETTY_FUNCTION__);
 #endif
-  if(nodeuid.size()==0){
-        nodeuid="cds_"+chaos::GlobalConfiguration::getInstance()->getHostname();
-    }
+  
     //! batch system
     StartableService::initImplementation(MDSBatchExecutor::getInstance(), NULL, "MDSBatchExecutor", __PRETTY_FUNCTION__);
 

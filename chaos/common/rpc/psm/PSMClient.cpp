@@ -118,6 +118,7 @@ void PSMClient::stop() {
 void PSMClient::deinit() {
    
     PSMC_LAPP << "PSM Destroyed";
+
 }
 
 /*
@@ -141,7 +142,7 @@ bool PSMClient::submitMessage(NFISharedPtr forwardInfo,
         forwardInfo->message->addInt64Value(RPC_SEQ_KEY, (++seq_id));
       
         std::string key=forwardInfo->destinationAddr;
-        //PSMC_LDBG<<"Sending message to:"<<forwardInfo->destinationAddr<<" ("<<key<<") msg:"<<forwardInfo->message->getJSONString();
+        PSMC_LDBG<<seq_id<<"] Reqid:"<<forwardInfo->sender_request_id<<" "<<forwardInfo->sender_node_id<<" Sends message to:"<<forwardInfo->destinationAddr<<" size:"<<forwardInfo->message->getBSONRawSize();
         prod->pushMsgAsync(*forwardInfo->message.get(),key);
 
     } catch(CException& ex){

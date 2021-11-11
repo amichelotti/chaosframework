@@ -61,6 +61,8 @@ void MessagePSRDKafkaConsumer::HandleRequest(const Connection::ErrorCodeType& er
 
 MessagePSRDKafkaConsumer::~MessagePSRDKafkaConsumer() {
   MRDDBG_ << " DESTROY CONSUMER";
+  MessagePublishSubscribeBase::stop();
+
   if (rk) {
     rd_kafka_consumer_close(rk);
 

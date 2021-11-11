@@ -562,6 +562,17 @@ std::string GlobalConfiguration::getNodeUID(){
     return configuration->getStringValue(chaos::InitOption::OPT_NODEUID);
 
 }
+void GlobalConfiguration::setNodeUID(const std::string& uid){
+    if(uid.size()==0){
+        return;
+    }
+    if(configuration->hasKey(chaos::InitOption::OPT_NODEUID)){
+        configuration->removeKey(chaos::InitOption::OPT_NODEUID);
+        
+    }
+    configuration->addStringValue(chaos::InitOption::OPT_NODEUID,uid);
+
+}
 
 /*
  return the address of metadataserver

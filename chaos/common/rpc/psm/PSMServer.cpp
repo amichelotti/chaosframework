@@ -106,7 +106,13 @@ void PSMServer::messageHandler( chaos::common::message::ele_t& data) {
     if(data.cd->hasKey(RpcActionDefinitionKey::CS_CMDM_ANSWER_HOST_IP)){
         src=data.cd->getStringValue(RPC_SRC_UID);
     }
-    PSMS_LDBG << "Message Received from node:"<<src<<" seq_id:"<<seq_id;// << " desc:"<<data.cd->getJSONString();
+    if(data.cd->hasKey(RpcActionDefinitionKey::CS_CMDM_MESSAGE_ID)){
+        PSMS_LDBG << data.cd->getInt32Value(RpcActionDefinitionKey::CS_CMDM_MESSAGE_ID)<<" - Message Received from node:"<<src<<" seq_id:"<<seq_id;// << " desc:"<<data.cd->getJSONString();
+
+    } else {
+        PSMS_LDBG << "Message Received from node:"<<src<<" seq_id:"<<seq_id;// << " desc:"<<data.cd->getJSONString();
+
+    }
     CDWShrdPtr result_data_pack;
 
     if(data.cd->hasKey(RPC_SYNC_KEY) &&
@@ -118,7 +124,7 @@ void PSMServer::messageHandler( chaos::common::message::ele_t& data) {
     }
 
     if(result_data_pack.get() && src.size()){
-       // PSMS_LDBG << "Something to send back:"<<seq_id << "to node:"<<src<<" desc:"<<result_data_pack->getJSONString();
+     //   PSMS_LDBG << "Something to send back:"<<seq_id << "to node:"<<src;
         prod->pushMsgAsync(*result_data_pack.get(),src);
     }
                     
@@ -146,6 +152,7 @@ void PSMServer::start() {
 //start the rpc adapter
 void PSMServer::stop() {
     cons->stop();
+    prod->stop();
     
 }
 
