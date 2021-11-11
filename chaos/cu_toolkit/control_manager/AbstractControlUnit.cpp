@@ -2100,6 +2100,7 @@ int AbstractControlUnit::checkFn(double sval, double rval, const chaos::common::
   //  checkLimFn(rval,i);
 
   double res = fabs(sval - rval);
+ // ACULAPP_ << i.name << " CHECK :" << rval << " setpoint :" << sval << " threshold:" << atof(i.errorThreshold.c_str()) << " res:" << res;
 
   if (i.errorThreshold.size()) {
     if (i.errorThreshold.c_str() == "0") {
@@ -2134,6 +2135,8 @@ int AbstractControlUnit::checkFn(double sval, double rval, const chaos::common::
       return err;
     }
   }
+  //ACULAPP_ << i.name << " CLEAR CHECK :" << rval << " setpoint :" << sval << " threshold:" << atof(i.errorThreshold.c_str()) << " res:" << res;
+
   setStateVariableSeverity(StateVariableTypeAlarmCU, alrm, chaos::common::alarm::MultiSeverityAlarmLevelClear);
 
   return err;
@@ -3362,7 +3365,7 @@ void AbstractControlUnit::alarmChanged(const std::string& state_variable_tag,
   //update alarm log
   if ((log_maxupdate_ms == 0) ||
       (alarm_logging_channel && (log_maxupdate_ms > 0) && ((alarm->getLastUpdateTimestamp() - alarm_ms->last_log_ms) > log_maxupdate_ms))) {
-    // ACULDBG_ << "State "<<state_variable_name<<" last modified:"<<( alarm->getLastUpdateTimestamp() -alarm_ms->last_log_ms)<<" ms freq:"<<alarm_ms->max_freq_log_ms;
+    ACULDBG_ << "Log State "<<state_variable_name<<" severity:"<<(int32_t)state_variable_severity<<" last modified:"<<( alarm->getLastUpdateTimestamp() -alarm_ms->last_log_ms)<<" ms freq:"<<alarm_ms->max_freq_log_ms;
 
     alarm_logging_channel->logAlarm(getCUID(),
                                     "AbstractControlUnit",
