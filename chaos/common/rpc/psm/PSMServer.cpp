@@ -85,6 +85,7 @@ void PSMServer::init(void *init_data) {
     // subscribe to the queue of commands
     cons->addHandler(chaos::common::message::MessagePublishSubscribeBase::ONARRIVE, boost::bind(&PSMServer::messageHandler, this, _1));
     cons->addHandler(chaos::common::message::MessagePublishSubscribeBase::ONERROR, boost::bind(&PSMServer::messageError, this, _1));
+    cons->setOption("allow.auto.create.topics","true");
     if (cons->applyConfiguration() != 0) {
         throw chaos::CException(-1, "cannot initialize Publish Subscribe:" + cons->getLastError(), __PRETTY_FUNCTION__);
     }
