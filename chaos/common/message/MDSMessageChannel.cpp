@@ -911,7 +911,7 @@ int MDSMessageChannel::retriveMultipleData(const ChaosStringVector& keys, chaos:
   message->finalizeArrayForKey("nodes");
 
   ChaosUniquePtr<MultiAddressMessageRequestFuture> request_future = sendRequestWithFuture("service",
-                                                                                          "retriveMultipleData",
+                                                                                          "retrieveMultipleData",
                                                                                           MOVE(message));
   request_future->setTimeout(millisec_to_wait);
   if (request_future->wait()) {

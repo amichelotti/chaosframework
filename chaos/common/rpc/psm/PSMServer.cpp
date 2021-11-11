@@ -108,10 +108,10 @@ void PSMServer::messageHandler( chaos::common::message::ele_t& data) {
         src=data.cd->getStringValue(RPC_SRC_UID);
     }
     if(data.cd->hasKey(RpcActionDefinitionKey::CS_CMDM_MESSAGE_ID)){
-        PSMS_LDBG << data.cd->getInt32Value(RpcActionDefinitionKey::CS_CMDM_MESSAGE_ID)<<" - Message Received from node:"<<src<<" seq_id:"<<seq_id;// << " desc:"<<data.cd->getJSONString();
+        PSMS_LDBG << data.cd->getInt32Value(RpcActionDefinitionKey::CS_CMDM_MESSAGE_ID)<<" - Message Received from node:"<<src<<" seq_id:"<<seq_id ;//<< " desc:"<<data.cd->getJSONString();
 
     } else {
-        PSMS_LDBG << "Message Received from node:"<<src<<" seq_id:"<<seq_id;// << " desc:"<<data.cd->getJSONString();
+        PSMS_LDBG << "Message Received from node:"<<src<<" seq_id:"<<seq_id;//<< " desc:"<<data.cd->getJSONString();
 
     }
     CDWShrdPtr result_data_pack;
