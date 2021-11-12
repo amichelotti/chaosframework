@@ -81,12 +81,11 @@ usage(){
     info_mesg "Usage :$0 {start|stop|status| config| start agent| start mds | start webui| start us |start devel | stop webui|stop mds| stop us}"
 }
 start_mds(){
-    if [ -n "$CHAOS_MDS" ];then
-        if ! [[ "$CHAOS_MDS" =~ localhost ]];then
-            echo "* Using $CHAOS_MDS"
-            return 1
-        fi
-    fi
+#    if [ -n "$CHAOS_MDS" ];then
+#        if ! [[ "$CHAOS_MDS" =~ localhost ]];then
+#            echo "* Using $CHAOS_MDS"
+#            return 1
+#        fi
     backend_checks;
     mds_checks;
     if check_proc "$CHAOS_PREFIX/bin/$MDS_EXEC";then

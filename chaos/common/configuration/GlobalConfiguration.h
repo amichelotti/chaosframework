@@ -72,6 +72,8 @@ t x;\
 if(hasOption(y)){\
 x = getOption<t>(y);\
 }
+
+
     
 #define CHECK_AND_DEFINE_BOOL_ZERO_TOKEN_OPTION(x,y)\
 bool x;\
@@ -299,6 +301,11 @@ x = hasOption(y);
         //!return the optional description of the node
         std::string getDesc();
         
+        //!return the nodeuid
+        std::string getNodeUID();
+
+        //!return the nodeuid
+        void setNodeUID(const std::string& uid);
         /*
          return the address of metadataserver
          */

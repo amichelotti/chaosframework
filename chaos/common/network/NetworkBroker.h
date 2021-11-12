@@ -31,6 +31,7 @@
 //#include <chaos/common/network/PerformanceManagment.h>
 #include <chaos/common/utility/StartableService.h>
 #include <chaos/common/network/CNodeNetworkAddress.h>
+#include <chaos/common/message/MessagePSDriver.h>
 
 namespace chaos {
 	
@@ -155,7 +156,7 @@ namespace chaos {
                                                                                             
 			public:
 				
-				
+				bool usepsbroker;
 				//! Basic Destructor
 				virtual ~NetworkBroker();
 				

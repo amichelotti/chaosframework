@@ -60,6 +60,7 @@ URLServiceFeeder::~URLServiceFeeder() {
         return;
     for(int idx = 0; idx < (list_size/sizeof(URLServiceFeeder::URLService)); idx++) {
 		//element with the list ar object and are allocated with with new
+        if(service_list[idx])
             delete(service_list[idx]);
 
     }
@@ -107,8 +108,9 @@ void URLServiceFeeder::removeFromOnlineQueue(uint32_t url_index) {
  Remove all url and service
  */
 void URLServiceFeeder::clear(bool dispose_service) {
-	URLServiceFeeder_LDBG << "Remove all URL and service form multi-index";
-	
+    if(service_list==NULL){
+        return;
+    }
 	for(int idx = 0; idx < (list_size/sizeof(URLServiceFeeder::URLService)); idx++) {
 		//allocate space for new url service
         if(service_list[idx] && service_list[idx]->service &&

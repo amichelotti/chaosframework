@@ -44,15 +44,15 @@ AlarmDescription(alarm_tag,
                  alarm_description){
     addState(MultiSeverityAlarmLevelClear,
              "clear",
-             "Alarm is in a regular state",
+             "Alarm Clear",
              StateFlagServerityRegular);
     addState(MultiSeverityAlarmLevelWarning,
              "Warning",
-             "Low probability that something will fails, attention is needed",
+             "Alarm Warning",
              StateFlagServerityWarning);
     addState(MultiSeverityAlarmLevelHigh,
              "High",
-             "High probability that something is going to fails",
+             "Alarm High",
              StateFlagServerityHigh);
     
 }

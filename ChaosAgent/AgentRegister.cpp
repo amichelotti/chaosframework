@@ -152,12 +152,15 @@ CDWUniquePtr AgentRegister::registrationACK(CDWUniquePtr  ack_pack) {
 ChaosUniquePtr<chaos::common::data::CDataWrapper> AgentRegister::getAgentRegistrationPack() {
     ChaosUniquePtr<chaos::common::data::CDataWrapper> result(new CDataWrapper());
     if(result.get() == NULL) return result;
+    std::string hostport;
+     NetworkBroker::getInstance()->getPublishedHostAndPort(hostport);
     result->addStringValue(NodeDefinitionKey::NODE_UNIQUE_ID,
                            ChaosAgent::getInstance()->settings.agent_uid);
     result->addStringValue(chaos::NodeDefinitionKey::NODE_TYPE,
                            chaos::NodeType::NODE_TYPE_AGENT);
     result->addStringValue(NodeDefinitionKey::NODE_RPC_ADDR,
-                           chaos::GlobalConfiguration::getInstance()->getLocalServerAddressAnBasePort());
+                            hostport
+                           /*chaos::GlobalConfiguration::getInstance()->getLocalServerAddressAnBasePort()*/);
     result->addStringValue(NodeDefinitionKey::NODE_HOST_NAME,
                            chaos::GlobalConfiguration::getInstance()->getHostname());
     if(chaos::GlobalConfiguration::getInstance()->getDesc()!=""){
@@ -200,7 +203,7 @@ void AgentRegister::timeout() {
         case AgentRegisterStateUnregistered:
             HealtManager::getInstance()->addNodeMetricValue(ChaosAgent::getInstance()->settings.agent_uid,
                                                             NodeHealtDefinitionKey::NODE_HEALT_STATUS,
-                                                            NodeHealtDefinitionValue::NODE_HEALT_STATUS_UNLOAD);
+                                                            NodeHealtDefinitionValue::NODE_HEALT_STATUS_UNLOAD,true);
             TimerHandler::stopMe();
             HealtManager::getInstance()->removeNode(ChaosAgent::getInstance()->settings.agent_uid);
             break;
@@ -217,17 +220,18 @@ void AgentRegister::timeout() {
                 HealtManager::getInstance()->addNewNode(agent_uid);
                 HealtManager::getInstance()->addNodeMetricValue(agent_uid,
                                                                 NodeHealtDefinitionKey::NODE_HEALT_STATUS,
-                                                                NodeHealtDefinitionValue::NODE_HEALT_STATUS_LOADING);
+                                                                NodeHealtDefinitionValue::NODE_HEALT_STATUS_LOADING,true);
             }
             break;
         }
         case AgentRegisterStateRegistered: {
             HealtManager::getInstance()->addNodeMetricValue(agent_uid,
                                                             NodeHealtDefinitionKey::NODE_HEALT_STATUS,
-                                                            NodeHealtDefinitionValue::NODE_HEALT_STATUS_START);
+                                                            NodeHealtDefinitionValue::NODE_HEALT_STATUS_START,true);
             //stop timer
             TimerHandler::stopMe();
-            
+            HealtManager::getInstance()->publishNodeHealt(agent_uid);
+
             //register all action
             try{
                 for(MapWorkerIterator iter = map_worker.begin();
@@ -243,6 +247,8 @@ void AgentRegister::timeout() {
                 //perform autstart
                 WorkerSharedPtr pw_ptr = map_worker["ProcessWorker"];
                 WorkerSharedPtr lw_ptr = map_worker["LogWorker"];
+                   //stop timer
+         
                 for(VectorAgentAssociationIterator it = agent_instance_sd_wrapper().node_associated.begin(),
                     end = agent_instance_sd_wrapper().node_associated.end();
                     it != end;
@@ -295,5 +301,4 @@ void AgentRegister::timeout() {
                                                             NodeHealtDefinitionValue::NODE_HEALT_STATUS_FERROR);
             break;
     }
-    HealtManager::getInstance()->publishNodeHealt(agent_uid);
 }

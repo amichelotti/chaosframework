@@ -269,7 +269,9 @@ void ChaosAbstractCommon::init(void *init_data) {
 #if CHAOS_PROMETHEUS
         common::utility::InizializableService::initImplementation(chaos::common::metric::MetricManager::getInstance(), init_data, "MetricManager", __PRETTY_FUNCTION__);
 #endif
-        
+        if (GlobalConfiguration::getInstance()->hasOption(InitOption::OPT_NODEUID)) {
+             nodeuid=GlobalConfiguration::getInstance()->getConfiguration()->getStringValue(InitOption::OPT_NODEUID);
+         } 
         //Starting Async central
         common::utility::InizializableService::initImplementation(AsyncCentralManager::getInstance(), init_data, "AsyncCentralManager", __PRETTY_FUNCTION__);
         common::utility::StartableService::initImplementation(NetworkBroker::getInstance(), init_data, "NetworkBroker", __PRETTY_FUNCTION__);
@@ -287,7 +289,7 @@ void ChaosAbstractCommon::init(void *init_data) {
             //initialize the plugin manager
             chaos::common::utility::InizializableService::initImplementation(chaos::common::plugin::PluginManager::getInstance(), NULL, "PluginManager", __PRETTY_FUNCTION__);
         }
-        
+         
         //finally we can register the system rpc api for common uses
         AbstActionDescShrPtr
         action_description = addActionDescritionInstance<ChaosAbstractCommon>(this,

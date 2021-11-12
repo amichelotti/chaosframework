@@ -45,6 +45,7 @@ MessagePSKafkaProducer::~MessagePSKafkaProducer() {
 
   MessagePublishSubscribeBase::stop();
   flush(60*1000);
+
   /* If the output queue is still not empty there is an issue
          * with producing messages to the clusters. */
     rd_kafka_abort_transaction(rk,60*1000);
@@ -55,6 +56,7 @@ MessagePSKafkaProducer::~MessagePSKafkaProducer() {
    setOption("internal.termination.signal",tmp);
 */
   rd_kafka_destroy(rk);
+
 }
 int MessagePSKafkaProducer::flush(const int timeo){
   MRDDBG_ << "Flushing... ";

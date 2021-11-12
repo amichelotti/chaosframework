@@ -562,7 +562,7 @@ class AbstractControlUnit : public DeclareAction,
   void _setBypassState(bool bypass_stage,
                        bool high_priority = false);
 
-  virtual void consumerHandler(const chaos::common::message::ele_t& data);
+  virtual void consumerHandler( chaos::common::message::ele_t& data);
 
   template <typename T>
   bool _setDrvProp(const std::string& name, const T& value, uint32_t size,bool bi) {
@@ -728,7 +728,7 @@ class AbstractControlUnit : public DeclareAction,
    * @param data pack
    * @return int return 0 if succefully handled
    */
-  virtual int incomingMessage(const std::string& key, const chaos::common::data::CDWShrdPtr& data);
+  virtual int incomingMessage(const std::string& key,  chaos::common::data::CDWUniquePtr& data);
 
   //!callback for put a veto on property value change request
   virtual bool propertyChangeHandler(const std::string&                       group_name,

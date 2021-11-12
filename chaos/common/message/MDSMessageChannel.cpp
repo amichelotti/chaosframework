@@ -911,7 +911,7 @@ int MDSMessageChannel::retriveMultipleData(const ChaosStringVector& keys, chaos:
   message->finalizeArrayForKey("nodes");
 
   ChaosUniquePtr<MultiAddressMessageRequestFuture> request_future = sendRequestWithFuture("service",
-                                                                                          "retriveMultipleData",
+                                                                                          "retrieveMultipleData",
                                                                                           MOVE(message));
   request_future->setTimeout(millisec_to_wait);
   if (request_future->wait()) {
@@ -993,7 +993,7 @@ int MDSMessageChannel::queryDataCloud(const std::string&                        
         if (res->hasKey("ts")) {
           last_sequence.ts = res->getInt64Value("ts");
         }
-        MSG_DBG << "DATA:" << res->getJSONString();
+        //MSG_DBG << "DATA:" << res->getJSONString();
         if (res->hasKey("data") && res->isVectorValue("data")) {
           CMultiTypeDataArrayWrapperSPtr d = res->getVectorValue("data");
           for (int idx = 0;

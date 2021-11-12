@@ -59,7 +59,7 @@ CDWUniquePtr NodeRegister::execute(CDWUniquePtr api_data){
     const std::string node_type = api_data->getStringValue(NodeDefinitionKey::NODE_TYPE);
     if(node_type.compare(NodeType::NODE_TYPE_UNIT_SERVER) == 0) {
         result = unitServerRegistration(MOVE(api_data));
-    } else if(boost::starts_with(node_type, NodeType::NODE_TYPE_CONTROL_UNIT)) {
+    } else if(boost::starts_with(node_type, NodeType::NODE_TYPE_CONTROL_UNIT)||boost::starts_with(node_type, NodeType::NODE_TYPE_ROOT)) {
         result = controlUnitRegistration(MOVE(api_data));
     } else if(boost::starts_with(node_type, NodeType::NODE_TYPE_AGENT)) {
         result = agentRegistration(MOVE(api_data));
@@ -78,6 +78,13 @@ CDWUniquePtr NodeRegister::agentRegistration(CDWUniquePtr api_data) {
     const std::string agent_uid = api_data->getStringValue(NodeDefinitionKey::NODE_UNIQUE_ID);
     //fetch the unit server data access
     GET_DATA_ACCESS(AgentDataAccess, a_da, -1)
+    if(api_data->hasKey(chaos::NodeDefinitionKey::NODE_TIMESTAMP)){
+        uint32_t lat=( chaos::common::utility::TimingUtil::getTimeStamp()-api_data->getInt64Value(chaos::NodeDefinitionKey::NODE_TIMESTAMP));
+        if(lat>chaos::common::constants::SkipDatasetOlderThan){
+            USRA_ERR << "Registration timestamp too old " << agent_uid<<" "<<lat/1000.0<<" sec old";
+            return CDWUniquePtr();
+        }
+    }
     ChaosMetadataService::getInstance()->notifyNewNode(agent_uid); 
 
     try {
@@ -125,7 +132,13 @@ CDWUniquePtr NodeRegister::simpleRegistration(CDWUniquePtr api_data) {
     alive=ChaosMetadataService::getInstance()->isNodeAlive(node_uid);
 #endif
     
-  
+  if(api_data->hasKey(chaos::NodeDefinitionKey::NODE_TIMESTAMP)){
+        uint32_t lat=( chaos::common::utility::TimingUtil::getTimeStamp()-api_data->getInt64Value(chaos::NodeDefinitionKey::NODE_TIMESTAMP));
+        if(lat>chaos::common::constants::SkipDatasetOlderThan){
+            USRA_ERR << "Registration timestamp too old " << node_uid<<" "<<lat/1000.0<<" sec old";
+            return CDWUniquePtr();
+        }
+    }
     //we can porceed with uniserver registration
     USRA_INFO << "Registering NODE: " << node_uid;
     std::string ttype;
@@ -239,6 +252,13 @@ CDWUniquePtr NodeRegister::unitServerRegistration(CDWUniquePtr api_data) {
     }
     //we can porceed with uniserver registration
     const std::string unit_server_alias = api_data->getStringValue(NodeDefinitionKey::NODE_UNIQUE_ID);
+    if(api_data->hasKey(chaos::NodeDefinitionKey::NODE_TIMESTAMP)){
+        uint32_t lat=( chaos::common::utility::TimingUtil::getTimeStamp()-api_data->getInt64Value(chaos::NodeDefinitionKey::NODE_TIMESTAMP));
+        if(lat>chaos::common::constants::SkipDatasetOlderThan){
+            USRA_ERR << "Registration timestamp too old " << unit_server_alias<<" "<<lat/1000.0<<" sec old";
+            return CDWUniquePtr();
+        }
+    }
     USRA_INFO << "Register unit server " << unit_server_alias;
     ChaosMetadataService::getInstance()->notifyNewNode(unit_server_alias); 
 
@@ -324,7 +344,13 @@ CDWUniquePtr NodeRegister::controlUnitRegistration(CDWUniquePtr api_data) {
     //allocate datapack for batch command
     ChaosUniquePtr<chaos::common::data::CDataWrapper> ack_command(new CDataWrapper());
     const std::string cu_uid = api_data->getStringValue(NodeDefinitionKey::NODE_UNIQUE_ID);
-    
+    if(api_data->hasKey(chaos::NodeDefinitionKey::NODE_TIMESTAMP)){
+        uint32_t lat=( chaos::common::utility::TimingUtil::getTimeStamp()-api_data->getInt64Value(chaos::NodeDefinitionKey::NODE_TIMESTAMP));
+        if(lat>chaos::common::constants::SkipDatasetOlderThan){
+            USRA_ERR << "Registration timestamp too old " << cu_uid<<" "<<lat/1000.0<<" sec old";
+            return CDWUniquePtr();
+        }
+    }
     USRA_INFO << "Register control unit " << cu_uid;
     ChaosMetadataService::getInstance()->notifyNewNode(cu_uid); 
     //set cu id to the batch command datapack
@@ -345,7 +371,7 @@ CDWUniquePtr NodeRegister::controlUnitRegistration(CDWUniquePtr api_data) {
         }
         
         //check if the cu has a parent
-        //we need to check if the control unit is assocaite to an unit server
+        //we need to check if the control unit is associated to an unit server
         if((err = us_da->getUnitserverForControlUnitID(cu_uid,
                                                        us_host))){
             LOG_AND_TROW_FORMATTED(USRA_ERR, -6, "Error searching unit server for control unit %1% with code %2%",%cu_uid%err);

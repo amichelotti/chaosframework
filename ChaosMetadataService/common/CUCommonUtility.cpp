@@ -273,6 +273,7 @@ void CUCommonUtility::addDataServicePack(ChaosUniquePtr<chaos::common::data::CDa
   //result.reset(new CDataWrapper());
   if (data_services.size() == 0) {
     /// something wrong returning my self
+    
     result->appendStringToArray(boost::str(boost::format("%1%|0") % NetworkBroker::getInstance()->getDirectIOUrl()));
     result->finalizeArrayForKey(chaos::DataServiceNodeDefinitionKey::DS_DIRECT_IO_FULL_ADDRESS_LIST);
 

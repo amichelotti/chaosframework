@@ -732,7 +732,7 @@ void AbstractControlUnit::unitDefineCustomAttribute() {
     cnt++;
   }
 
-  if (cnt) {
+ /* if (cnt) {
     //        drv.finalizeArrayForKey(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_INFO);
     ACULDBG_ << " Adding driver properties to custom dataset " << chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_INFO << ":" << drv.getJSONString();
 
@@ -742,7 +742,7 @@ void AbstractControlUnit::unitDefineCustomAttribute() {
     ACULDBG_ << " Adding driver info to custom dataset " << chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_CU_INFO << ":" << drv_info->getJSONString();
     getAttributeCache()->addCustomAttribute(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_CU_INFO, *drv_info.get());
     getAttributeCache()->setCustomAttributeValue(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_CU_INFO, *drv_info.get());
-  }
+  }*/
 }
 
 void AbstractControlUnit::_undefineActionAndDataset() {
@@ -809,17 +809,20 @@ void         AbstractControlUnit::doInitRpCheckList() {
     CHAOS_CHECK_LIST_DONE(check_list_sub_service, "_init", INIT_RPC_PHASE_CALL_UNIT_DEFINE_ATTRIBUTE) {
       std::string cu_load_param = getCUParam();
 
-      if (isCUParamInJson()) {
+    /* if (isCUParamInJson()) {
         getAttributeCache()->addCustomAttribute(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_LOAD_PARAM, cu_load_param.size() + 1, chaos::DataType::TYPE_CLUSTER);
       } else {
         getAttributeCache()->addCustomAttribute(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_LOAD_PARAM, cu_load_param.size() + 1, chaos::DataType::TYPE_STRING);
       }
       getAttributeCache()->setCustomAttributeValue(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_LOAD_PARAM, (void*)cu_load_param.c_str(), cu_load_param.size() + 1);
-
+*/
       //define the implementations custom variable
       AbstractControlUnit::unitDefineCustomAttribute();
       unitDefineCustomAttribute();
-
+      getAttributeCache()->setCustomDomainAsChanged();
+      fillCachedValueVector(attribute_value_shared_cache->getSharedDomain(DOMAIN_CUSTOM),
+                                  cache_custom_attribute_vector);
+      pushCustomDataset();
       break;
     }
     CHAOS_CHECK_LIST_DONE(check_list_sub_service, "_init", INIT_RPC_PHASE_CREATE_FAST_ACCESS_CASCHE_VECTOR) {
@@ -930,7 +933,7 @@ void         AbstractControlUnit::doInitRpCheckList() {
             }
           }
 
-          if (cu_ds_init.get()) {
+         /* if (cu_ds_init.get()) {
             ACULDBG_ << "INIT ATTRIBUTES:" << cu_ds_init->getJSONString();
 
             getAttributeCache()->addCustomAttribute(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_INITIALIZATION, *(cu_ds_init.get()));
@@ -938,7 +941,7 @@ void         AbstractControlUnit::doInitRpCheckList() {
 
             fillCachedValueVector(attribute_value_shared_cache->getSharedDomain(DOMAIN_CUSTOM),
                                   cache_custom_attribute_vector);
-          }
+          }*/
           CDWUniquePtr res = setDatasetAttribute(MOVE(cdw_unique_ptr));
         }
       }
@@ -2097,6 +2100,7 @@ int AbstractControlUnit::checkFn(double sval, double rval, const chaos::common::
   //  checkLimFn(rval,i);
 
   double res = fabs(sval - rval);
+ // ACULAPP_ << i.name << " CHECK :" << rval << " setpoint :" << sval << " threshold:" << atof(i.errorThreshold.c_str()) << " res:" << res;
 
   if (i.errorThreshold.size()) {
     if (i.errorThreshold.c_str() == "0") {
@@ -2131,6 +2135,8 @@ int AbstractControlUnit::checkFn(double sval, double rval, const chaos::common::
       return err;
     }
   }
+  //ACULAPP_ << i.name << " CLEAR CHECK :" << rval << " setpoint :" << sval << " threshold:" << atof(i.errorThreshold.c_str()) << " res:" << res;
+
   setStateVariableSeverity(StateVariableTypeAlarmCU, alrm, chaos::common::alarm::MultiSeverityAlarmLevelClear);
 
   return err;
@@ -2331,7 +2337,7 @@ void AbstractControlUnit::completeInputAttribute() {
 AbstractSharedDomainCache* AbstractControlUnit::_getAttributeCache() {
   return attribute_value_shared_cache;
 }
-int AbstractControlUnit::incomingMessage(const std::string& key, const chaos::common::data::CDWShrdPtr& data) {
+int AbstractControlUnit::incomingMessage(const std::string& key,  chaos::common::data::CDWUniquePtr& data) {
   ACULDBG_ << "message from :" << key << " data:" << (data.get() ? data->getJSONString() : "NONE");
   return 0;
 }
@@ -3359,7 +3365,7 @@ void AbstractControlUnit::alarmChanged(const std::string& state_variable_tag,
   //update alarm log
   if ((log_maxupdate_ms == 0) ||
       (alarm_logging_channel && (log_maxupdate_ms > 0) && ((alarm->getLastUpdateTimestamp() - alarm_ms->last_log_ms) > log_maxupdate_ms))) {
-    // ACULDBG_ << "State "<<state_variable_name<<" last modified:"<<( alarm->getLastUpdateTimestamp() -alarm_ms->last_log_ms)<<" ms freq:"<<alarm_ms->max_freq_log_ms;
+    ACULDBG_ << "Log State "<<state_variable_name<<" severity:"<<(int32_t)state_variable_severity<<" last modified:"<<( alarm->getLastUpdateTimestamp() -alarm_ms->last_log_ms)<<" ms freq:"<<alarm_ms->max_freq_log_ms;
 
     alarm_logging_channel->logAlarm(getCUID(),
                                     "AbstractControlUnit",
@@ -3447,7 +3453,7 @@ void AbstractControlUnit::metadataLogging(const StandardLoggingChannel::LogLevel
                   message);
 }
 
-void AbstractControlUnit::consumerHandler(const chaos::common::message::ele_t& data) {
+void AbstractControlUnit::consumerHandler( chaos::common::message::ele_t& data) {
   incomingMessage(data.key, data.cd);
 }
 void AbstractControlUnit::updateDataSet(chaos::common::data::CDataWrapper& cd, chaos::DataType::DataSetAttributeIOAttribute io) {

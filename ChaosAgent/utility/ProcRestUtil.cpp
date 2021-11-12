@@ -95,7 +95,7 @@ void ProcRestUtil::launchProcess(const chaos::service_common::data::agent::Agent
             //init_file_stream << CHAOS_FORMAT("%1%=",%InitOption::OPT_LOG_ON_MDS) << std::endl;
        // }
         
-        init_file_stream << CHAOS_FORMAT("unit-server-alias=%1%",%node_association_info.associated_node_uid) << std::endl;
+        init_file_stream << CHAOS_FORMAT( "%1%=%2%",%std::string(InitOption::OPT_NODEUID)%node_association_info.associated_node_uid) << std::endl;
         
         //append metadata server from agent configuration
         VectorNetworkAddress mds_vec = GlobalConfiguration::getInstance()->getMetadataServerAddressList();
@@ -104,6 +104,36 @@ void ProcRestUtil::launchProcess(const chaos::service_common::data::agent::Agent
             mds_it != end;
             mds_it++) {
             init_file_stream << CHAOS_FORMAT("metadata-server=%1%",%mds_it->ip_port) << std::endl;
+        }
+chaos::common::data::CDataWrapper* conf=GlobalConfiguration::getInstance()->getConfiguration();
+
+        if(conf->hasKey(InitOption::OPT_MSG_BROKER_SERVER)){
+            init_file_stream <<CHAOS_FORMAT("%1%=%2%",%std::string(InitOption::OPT_MSG_BROKER_SERVER)%conf->getStringValue(InitOption::OPT_MSG_BROKER_SERVER)) << std::endl;
+        }
+
+        if(conf->hasKey(InitOption::OPT_MSG_BROKER_DRIVER)){
+            init_file_stream <<CHAOS_FORMAT("%1%=%2%",%std::string(InitOption::OPT_MSG_BROKER_DRIVER)%conf->getStringValue(InitOption::OPT_MSG_BROKER_DRIVER)) << std::endl;
+        }
+        std::vector<std::string> prod_opt,cons_opt;
+        if(conf->hasKey(InitOption::OPT_MSG_PRODUCER_KVP)){
+            chaos::common::data::CMultiTypeDataArrayWrapperSPtr r=conf->getVectorValue(InitOption::OPT_MSG_PRODUCER_KVP);
+            if(r.get()){
+                prod_opt=*r;
+            }
+        }
+        for(std::vector<std::string>::iterator it = prod_opt.begin();it != prod_opt.end();
+            it++) {
+            init_file_stream <<CHAOS_FORMAT("%1%=%2%",%std::string(InitOption::OPT_MSG_PRODUCER_KVP)%*it) << std::endl;
+        }
+        if(conf->hasKey(InitOption::OPT_MSG_CONSUMER_KVP)){
+            chaos::common::data::CMultiTypeDataArrayWrapperSPtr r=conf->getVectorValue(InitOption::OPT_MSG_CONSUMER_KVP);
+            if(r.get()){
+                cons_opt=*r;
+            }
+        }
+        for(std::vector<std::string>::iterator it = cons_opt.begin();it != cons_opt.end();
+            it++) {
+            init_file_stream <<CHAOS_FORMAT("%1%=%2%",%std::string(InitOption::OPT_MSG_CONSUMER_KVP)%*it) << std::endl;
         }
 
         //append user defined paramenter

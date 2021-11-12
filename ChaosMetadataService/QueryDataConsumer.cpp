@@ -59,29 +59,36 @@ using namespace chaos::common::direct_io::channel;
 
 //constructor
 QueryDataConsumer::QueryDataConsumer()
-    : server_endpoint(NULL), device_channel(NULL), system_api_channel(NULL), device_data_worker_index(0), storage_queue_push_timeout(ChaosMetadataService::getInstance()->setting.worker_setting.queue_push_timeout) {}
+    : server_endpoint(NULL), device_channel(NULL), system_api_channel(NULL), archive_workers(0),device_data_worker_index(0), storage_queue_push_timeout(ChaosMetadataService::getInstance()->setting.worker_setting.queue_push_timeout) {}
 
 QueryDataConsumer::~QueryDataConsumer() {}
 
 void QueryDataConsumer::init(void* init_data) {
   //get new chaos direct io endpoint
   server_endpoint = NetworkBroker::getInstance()->getDirectIOServerEndpoint();
-  if (!server_endpoint) throw chaos::CException(-2, "Invalid server endpoint", __FUNCTION__);
-  INFO << "QueryDataConsumer initialized with endpoint " << server_endpoint->getRouteIndex();
+  archive_workers=ChaosMetadataService::getInstance()->setting.worker_setting.instances;
 
-  INFO << "Allocating DirectIODeviceServerChannel";
-  device_channel = (DirectIODeviceServerChannel*)server_endpoint->getNewChannelInstance("DirectIODeviceServerChannel");
-  if (!device_channel) throw chaos::CException(-3, "Error allocating device server channel", __FUNCTION__);
-  device_channel->setHandler(this);
+  if (server_endpoint != NULL) {
+    //  if (!server_endpoint) throw chaos::CException(-2, "Invalid server endpoint", __FUNCTION__);
+    INFO << "QueryDataConsumer initialized with endpoint " << server_endpoint->getRouteIndex();
 
-  INFO << "Allocating DirectIOSystemAPIServerChannel";
-  system_api_channel = (DirectIOSystemAPIServerChannel*)server_endpoint->getNewChannelInstance("DirectIOSystemAPIServerChannel");
-  if (!system_api_channel) throw chaos::CException(-4, "Error allocating system api server channel", __FUNCTION__);
-  system_api_channel->setHandler(this);
+    INFO << "Allocating DirectIODeviceServerChannel";
+    device_channel = (DirectIODeviceServerChannel*)server_endpoint->getNewChannelInstance("DirectIODeviceServerChannel");
+    if (!device_channel) throw chaos::CException(-3, "Error allocating device server channel", __FUNCTION__);
+    device_channel->setHandler(this);
+
+    INFO << "Allocating DirectIOSystemAPIServerChannel";
+    system_api_channel = (DirectIOSystemAPIServerChannel*)server_endpoint->getNewChannelInstance("DirectIOSystemAPIServerChannel");
+    if (!system_api_channel) throw chaos::CException(-4, "Error allocating system api server channel", __FUNCTION__);
+    system_api_channel->setHandler(this);
+  } else {
+    INFO << "DirectIO disabled";
+  }
+  INFO << "Archive workers:"<<archive_workers;
 
   //device data worker instances
   for (int idx = 0;
-       idx < ChaosMetadataService::getInstance()->setting.worker_setting.instances;
+       idx < archive_workers;
        idx++) {
     DataWorkerSharedPtr tmp;
 #if CHAOS_PROMETHEUS
@@ -107,7 +114,7 @@ void QueryDataConsumer::deinit() {
   }
 
   INFO << "Deallocating device push data worker list";
-  for (int idx = 0; idx < ChaosMetadataService::getInstance()->setting.worker_setting.instances; idx++) {
+  for (int idx = 0; idx <archive_workers; idx++) {
     INFO << "Release device worker " << idx;
     device_data_worker[idx]->stop();
     device_data_worker[idx]->deinit();
@@ -118,22 +125,26 @@ int QueryDataConsumer::consumePutEvent(const std::string&                 key,
                                        const uint8_t                      hst_tag,
                                        const ChaosStringSetConstSPtr      meta_tag_set,
                                        chaos::common::data::CDataWrapper& data_pack) {
-  int      err = 0;
-
+  int err = 0;
 
   
-  //data_pack.addInt64Value(NodeHealtDefinitionKey::NODE_HEALT_MDS_TIMESTAMP, now);
-  BufferSPtr channel_data_injected(data_pack.getBSONDataBuffer().release());
-
   DataServiceNodeDefinitionType::DSStorageType storage_type = static_cast<DataServiceNodeDefinitionType::DSStorageType>(hst_tag);
   //! if tag is == 1 the datapack is in liveonly
 
   if (storage_type & DataServiceNodeDefinitionType::DSStorageTypeLive) {
+    chaos::common::data::BufferUPtr ptr = data_pack.getBSONDataBuffer();
+    BufferSPtr channel_data_injected(ptr.release());
+    if(channel_data_injected.get()==NULL){
+      ERR<<"Invalid packet";
+      return -1;
+    }
     //protected access to cached driver
     CacheDriver& cache_slot = DriverPoolManager::getInstance()->getCacheDrv();
     err                     = cache_slot.putData(key,
                              channel_data_injected);
   }
+  data_pack.removeKey(DataPackCommonKey::DPCK_DATASET_TYPE);
+
   if (storage_type & DataServiceNodeDefinitionType::DSStorageLogHisto) {
     //protected access to cached driver
     ObjectStorageDataAccess* log_slot = DriverPoolManager::getInstance()->getLogDrv().getDataAccess<ObjectStorageDataAccess>();
@@ -146,11 +157,18 @@ int QueryDataConsumer::consumePutEvent(const std::string&                 key,
       ERR << "Error pushing datapack into logstorage driver";
     }
   }
-  if (!err &&
-      (storage_type & (DataServiceNodeDefinitionType::DSStorageTypeHistory | DataServiceNodeDefinitionType::DSStorageTypeFile))) {
+  if (!err && (storage_type & (DataServiceNodeDefinitionType::DSStorageTypeHistory | DataServiceNodeDefinitionType::DSStorageTypeFile))) {
     //compute the index to use for the data worker
-    uint32_t index_to_use = device_data_worker_index++ % ChaosMetadataService::getInstance()->setting.worker_setting.instances;
-    CHAOS_ASSERT(device_data_worker[index_to_use].get())
+    uint32_t index_to_use;
+    index_to_use = device_data_worker_index++ % archive_workers;
+    CHAOS_ASSERT(device_data_worker[index_to_use].get());
+    chaos::common::data::BufferUPtr ptr = data_pack.getBSONDataBuffer();
+    BufferSPtr channel_data_injected(ptr.release());
+    if(channel_data_injected.get()==NULL){
+      ERR<<"Invalid packet";
+      return -2;
+    }
+
     //create storage job information
     auto job       = ChaosMakeSharedPtr<DeviceSharedWorkerJob>();
     job->key       = key;
@@ -193,11 +211,12 @@ int QueryDataConsumer::consumeHealthDataEvent(const std::string&            key,
   CDataWrapper health_data_pack((char*)channel_data->data());
   health_data_pack.addInt64Value(NodeHealtDefinitionKey::NODE_HEALT_MDS_TIMESTAMP, TimingUtil::getTimeStamp());
 
-  NodeDataAccess* s_da = DriverPoolManager::getInstance()->getPersistenceDataAccess<NodeDataAccess>();
 
+  
+#ifdef HEALTH_ON_DB
+  NodeDataAccess* s_da = DriverPoolManager::getInstance()->getPersistenceDataAccess<NodeDataAccess>();
   HealthStatSDWrapper attribute_reference_wrapper;
   attribute_reference_wrapper.deserialize(&health_data_pack);
-#ifdef HEALTH_ON_DB
   // WE HAVE ALREADY HEALTH INFO IN CACHE
   if ((err = s_da->setNodeHealthStatus(attribute_reference_wrapper().node_uid,
                                        attribute_reference_wrapper()))) {

@@ -290,6 +290,8 @@ int KeyDataStorage::loadRestorePoint(const std::string& restore_point_tag) {
         return err;
     }
     if(dataset.get()){
+       // KeyDataStorageLDBG<< "RESTORE PACK:" << restore_point_tag << " :" << dataset->getJSONString();
+
         if(dataset->hasKey(DataPackID::INPUT_DATASET_ID)&&dataset->isCDataWrapperValue(DataPackID::INPUT_DATASET_ID)){
             CDWShrdPtr p(dataset->getCSDataValue(DataPackID::INPUT_DATASET_ID).release());
             restore_point_map[restore_point_tag].insert(make_pair(input_key, p));
@@ -297,6 +299,7 @@ int KeyDataStorage::loadRestorePoint(const std::string& restore_point_tag) {
         if(dataset->hasKey(DataPackID::OUTPUT_DATASET_ID)&&dataset->isCDataWrapperValue(DataPackID::OUTPUT_DATASET_ID)){
             CDWShrdPtr p(dataset->getCSDataValue(DataPackID::OUTPUT_DATASET_ID).release());
             restore_point_map[restore_point_tag].insert(make_pair(output_key,p));
+
         }
         if(dataset->hasKey(DataPackID::SYSTEM_DATASETID)&&dataset->isCDataWrapperValue(DataPackID::SYSTEM_DATASETID)){
             CDWShrdPtr p(dataset->getCSDataValue(DataPackID::SYSTEM_DATASETID).release());

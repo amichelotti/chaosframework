@@ -52,7 +52,8 @@ CDWUniquePtr SetSnapshotDatasetsForNode::execute(CDWUniquePtr api_data) {
     if(s_da->isSnapshotPresent(snapshot_name,
                                snap_presence)){
         LOG_AND_TROW(ERR, err, CHAOS_FORMAT("Error checking snapshot %1% presences",%snapshot_name));
-    } if(snap_presence == false) {
+    } 
+    if(snap_presence == false) {
         if((err = s_da->snapshotCreateNewWithName(snapshot_name,
                                                   working_job_unique_id))){
             LOG_AND_TROW(ERR, err, CHAOS_FORMAT("Error creating snapshot %1%",%snapshot_name));

@@ -12,8 +12,7 @@
 namespace chaos {
     namespace common {
         namespace message {
-
-            typedef struct ele {std::string key;uint32_t off;uint32_t par;chaos::common::data::CDWShrdPtr cd;} ele_t;
+            typedef struct ele {std::string key;uint32_t off;uint32_t par;chaos::common::data::CDWUniquePtr cd;} ele_t;
             typedef boost::lockfree::queue<ele_t*> msg_queue_t;
             typedef ChaosUniquePtr<ele_t> ele_uptr_t;
             //typedef std::vector<chaos::common::data::CDWShrdPtr> msg_queue_t;
@@ -24,7 +23,7 @@ namespace chaos {
 
             };
 */
-            typedef  boost::function<void(const chaos::common::message::ele_t&)> msgHandler;
+            typedef  boost::function<void(chaos::common::message::ele_t&)> msgHandler;
 
             class MessagePublishSubscribeBase {
 

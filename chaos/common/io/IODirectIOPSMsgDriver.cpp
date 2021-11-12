@@ -48,14 +48,13 @@ DEFINE_CLASS_FACTORY(IODirectIOPSMsgDriver, IODataDriver);
 //using namespace memcache;
 IODirectIOPSMsgDriver::IODirectIOPSMsgDriver(const std::string& alias)
     : IODirectIODriver(alias) {
+  IODirectIOPSMsgDriver_DLDBG_<<"Instantiate:"<<alias;
   msgbrokerdrv = "kafka-rdk";
   msgbrokerdrv = GlobalConfiguration::getInstance()->getOption<std::string>(InitOption::OPT_MSG_BROKER_DRIVER);
 
   prod = chaos::common::message::MessagePSDriver::getProducerDriver(msgbrokerdrv);
-  std::string gid;
-  if (GlobalConfiguration::getInstance()->hasOption(InitOption::CONTROL_MANAGER_UNIT_SERVER_ALIAS)) {
-    gid = GlobalConfiguration::getInstance()->getOption<std::string>(InitOption::CONTROL_MANAGER_UNIT_SERVER_ALIAS);
-  }
+  std::string gid=GlobalConfiguration::getInstance()->getNodeUID();
+  
   if (gid == "") {
     gid = "IODirectIODriver";
   }
@@ -87,7 +86,7 @@ void IODirectIOPSMsgDriver::init(void* _init_parameter) {
     prod->start();
   }
 }
-void IODirectIOPSMsgDriver::defaultHandler(const chaos::common::message::ele_t& data) {
+void IODirectIOPSMsgDriver::defaultHandler( chaos::common::message::ele_t& data) {
   std::map<std::string, chaos::common::message::msgHandler>::iterator i, end;
   {
     boost::mutex::scoped_lock ll(hmutex);
@@ -278,6 +277,7 @@ QueryCursor *IODirectIOPSMsgDriver::performQuery(const std::string& key,
                                             const ChaosStringSet& meta_tags,
                                             const ChaosStringSet& projection_keys,
                                             const uint32_t page_len) {
+   // IODirectIOPSMsgDriver_DLDBG_<<"query "<<key<<" start:"<<start_ts<<" end:"<<end_ts;
     QueryCursor *q = new QueryCursorRPC(UUIDUtil::generateUUID(),
                                                 key,
                                                 start_ts,
@@ -303,6 +303,8 @@ QueryCursor *IODirectIOPSMsgDriver::performQuery(const std::string& key,
                                             const ChaosStringSet& meta_tags,
                                             const ChaosStringSet& projection_keys,
                                             uint32_t page_len) {
+  //  IODirectIOPSMsgDriver_DLDBG_<<"query "<<key<<" start:"<<start_ts<<" end:"<<end_ts;
+
     QueryCursor *q = new QueryCursorRPC(UUIDUtil::generateUUID(),
                                      key,
                                      start_ts,

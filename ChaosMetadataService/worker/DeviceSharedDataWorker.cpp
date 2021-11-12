@@ -83,7 +83,6 @@ int DeviceSharedDataWorker::executeJob(WorkerJobPtr job_info, void* cookie) {
            if(job.data_pack->data()){
             CDataWrapper data_pack((char *)job.data_pack->data());
             //push received datapack into object storage
-            
             if((err = obj_storage_da->pushObject(job.key,
                                                  MOVE(job.meta_tag),
                                                  data_pack))) {
