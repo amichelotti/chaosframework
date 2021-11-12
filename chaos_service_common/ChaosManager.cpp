@@ -19,6 +19,7 @@
 #include <ChaosMetadataService/api/unit_server/GetSetFullUnitServer.h>
 #include <ChaosMetadataService/api/unit_server/LoadUnloadControlUnit.h>
 #include <ChaosMetadataService/api/unit_server/ManageCUType.h>
+#include <ChaosMetadataService/api/unit_server/NewUS.h>
 
 #include <ChaosMetadataService/api/agent/CheckAgentHostedProcess.h>
 #include <ChaosMetadataService/api/agent/GetAgentForNode.h>
@@ -1070,6 +1071,22 @@ chaos::common::data::CDWUniquePtr ChaosManager::nodeDelete(const std::string& ui
     CALC_EXEC_END
   }
   return res;
+}
+chaos::common::data::CDWUniquePtr ChaosManager::newUS(const std::string& uid,const std::string&desc){
+CDWUniquePtr res;
+  if (persistence_driver) {
+    NewUS node;
+    CALC_EXEC_START;
+    ChaosUniquePtr<chaos::common::data::CDataWrapper> message(new CDataWrapper());
+    
+    message->addStringValue(chaos::NodeDefinitionKey::NODE_UNIQUE_ID, uid);
+    message->addStringValue(NodeDefinitionKey::NODE_DESC, desc);
+
+    res = node.execute(MOVE(message));
+    CALC_EXEC_END
+  }
+    return res;
+
 }
 
 chaos::common::data::CDWUniquePtr ChaosManager::nodeNew(const std::string& uid, const chaos::common::data::CDataWrapper& value, const std::string parent) {

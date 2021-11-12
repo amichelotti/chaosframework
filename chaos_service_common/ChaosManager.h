@@ -84,6 +84,8 @@ chaos::common::data::CDWUniquePtr setVariable(const std::string& uid,const chaos
 chaos::common::data::CDWUniquePtr removeVariable(const std::string& uid);
 chaos::common::data::CDWUniquePtr nodeDelete(const std::string& uid,const std::string parent="");
 chaos::common::data::CDWUniquePtr nodeNew(const std::string& uid,const chaos::common::data::CDataWrapper& value,const std::string parent="");
+chaos::common::data::CDWUniquePtr newUS(const std::string& uid,const std::string& desc="US");
+
 chaos::common::data::CDWUniquePtr getFullUnitServer(const std::string& uid);
 chaos::common::data::CDWUniquePtr setFullUnitServer(const std::string& uid,const chaos::common::data::CDataWrapper& value);
 chaos::common::data::CDWUniquePtr getAgentForNode(const std::string& uid);
@@ -91,6 +93,7 @@ chaos::common::data::CDWUniquePtr updateProperty(const std::string& uid,const ch
 chaos::common::data::CDWUniquePtr manageCUType(const std::string& uid,const std::string& implname,int op=0);
 chaos::common::data::CDWUniquePtr setInstanceDescription(const std::string& uid,const chaos::common::data::CDataWrapper& value);
 chaos::common::data::CDWUniquePtr deleteInstance(const std::string& uid,const std::string&parent);
+
 chaos::common::data::CDWUniquePtr getCUInstance(const std::string& uid);
 chaos::common::data::CDWUniquePtr startStop(const std::string& uid,bool start);
 chaos::common::data::CDWUniquePtr initDeinit(const std::string& uid,bool ini);

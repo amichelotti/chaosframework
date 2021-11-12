@@ -449,7 +449,7 @@ void GlobalConfiguration::fillKVParameter(std::map<std::string, std::string>& kv
         
         const std::string& kv_param_value = *it;
         
-        if(regex.size() &&
+        if(regex.size() &&kv_param_value.size()&&
            !boost::regex_match(kv_param_value,
                                boost::regex(regex))) {
                std::stringstream ss;
