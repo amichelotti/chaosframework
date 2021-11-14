@@ -55,6 +55,13 @@ void ChaosAgent::init(istringstream &initStringStream)  {
 }
 
 void ChaosAgent::init(void *init_data)  {
+    if((!GlobalConfiguration::getInstance()->hasOption(InitOption::OPT_NODEUID))||(GlobalConfiguration::getInstance()->getConfiguration()->getStringValue(InitOption::OPT_NODEUID).size()==0)){
+			// change before NetworkBroker Initialization
+        	nodeuid="ChaosAgent_"+chaos::GlobalConfiguration::getInstance()->getHostname();
+			DBG << "'"<<InitOption::OPT_NODEUID <<"' not specified, setting uid to:"<<nodeuid;
+		
+			GlobalConfiguration::getInstance()->setNodeUID(nodeuid);
+    	}
     ChaosCommon<ChaosAgent>::init(init_data);
     if (signal((int) SIGINT, ChaosAgent::signalHanlder) == SIG_ERR) {
         throw CException(-1, "Error registering SIGINT signal", __PRETTY_FUNCTION__);
@@ -73,9 +80,8 @@ void ChaosAgent::init(void *init_data)  {
     if(settings.working_directory.size() == 0) {
         settings.working_directory = FSUtility::getExecutablePath();
     }
-    if(nodeuid.size()==0){
-        nodeuid="agent_"+chaos::GlobalConfiguration::getInstance()->getHostname();
-    }
+    
+    
     ChaosAgent::getInstance()->settings.agent_uid=nodeuid;
     //settings.agent_uid = CHAOS_FORMAT("ChaosAgent_%1%",%chaos::GlobalConfiguration::getInstance()->getLocalServerAddressAnBasePort());
     
