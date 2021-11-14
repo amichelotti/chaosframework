@@ -48,8 +48,8 @@ ExecutionPoolManager::~ExecutionPoolManager() {}
 
 void ExecutionPoolManager::init(void *init_data)  {
     int err = 0;
-    if(GlobalConfiguration::getInstance()->hasOption(InitOption::CONTROL_MANAGER_UNIT_SERVER_ALIAS)){
-        unit_server_alias = GlobalConfiguration::getInstance()->getOption<std::string>(InitOption::CONTROL_MANAGER_UNIT_SERVER_ALIAS);
+    if(GlobalConfiguration::getInstance()->hasOption(InitOption::OPT_NODEUID)){
+        unit_server_alias = GlobalConfiguration::getInstance()->getNodeUID();
     }
     execution_pool_list = GlobalConfiguration::getInstance()->getOption< std::vector<std::string> >(CONTROL_MANAGER_EXECUTION_POOLS);
     

@@ -63,7 +63,7 @@ void DataManager::deinit() {
 void DataManager::start() {}
 
 CDataWrapper* DataManager::updateConfiguration(CDataWrapper *newConfiguration) {
-    LAPP_ << "Update Configuraiton for DataManager";
+    LAPP_ << "Update Configuration for DataManager";
     map<string, KeyDataStorage*>::iterator iter = deviceIDKeyDataStorageMap.begin();
     
     KeyDataStorage *tmpKDS = 0L;

@@ -263,7 +263,7 @@ void QuantumSlotScheduler::addNewfetcherThread() {
 
 void QuantumSlotScheduler::dispath_new_value_async(const boost::system::error_code& error,
                                                    QuantumSlot *cur_slot,
-                                                   char *data_found) {
+                                                   CDWUniquePtr& data_found) {
     std::string quantum_slot_key = CHAOS_QSS_COMPOSE_QUANTUM_SLOT_KEY(cur_slot->key, cur_slot->quantum_multiplier);
     boost::unique_lock<boost::mutex> lock_on_condition(mutex_condition_scan);
 
@@ -272,8 +272,8 @@ void QuantumSlotScheduler::dispath_new_value_async(const boost::system::error_co
         //slot has handler so we need to broadcast data to it in this case we unlock to permit other handler to be inserted
         lock_on_condition.unlock();
         try{
-            if(data_found) {
-                cur_slot->sendNewValueConsumer(KeyValue(new CDataWrapper(data_found)));
+            if(data_found.get()) {
+                cur_slot->sendNewValueConsumer(KeyValue(data_found.get()));
             } else {
                 cur_slot->sendNoValueToConsumer();
             }
@@ -297,7 +297,6 @@ void QuantumSlotScheduler::dispath_new_value_async(const boost::system::error_co
         //delete the slot
         set_slots_index_key_slot.erase(it);
     }
-    delete[](data_found);
 }
 
 void QuantumSlotScheduler::fetchValue(ChaosSharedPtr<IODataDriver> data_driver) {
@@ -308,8 +307,7 @@ void QuantumSlotScheduler::fetchValue(ChaosSharedPtr<IODataDriver> data_driver) 
     while(work_on_fetch) {
         if(queue_active_slot.pop(cur_slot)) {
             //we have slot available
-            size_t data_found_size;
-            char * data_found = data_driver->retriveRawData(cur_slot->key, &data_found_size);
+            CDWUniquePtr data_found = data_driver->retrieveData(cur_slot->key);
             
             //dispatch data
             dispath_new_value_async(error,

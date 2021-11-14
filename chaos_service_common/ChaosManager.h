@@ -40,6 +40,7 @@ class ChaosManager : public chaos::common::utility::SingletonCW<ChaosManager>{
   chaos::service_common::persistence::data_access::AbstractPersistenceDriver* persistence_driver;
   chaos::service_common::persistence::data_access::AbstractPersistenceDriver* storage_driver;
     chaos::service_common::persistence::data_access::AbstractPersistenceDriver* log_driver;
+  boost::mutex iomutex;
 
   chaos::metadata_service::ChaosMetadataService* context;
   //  ::common::misc::data::DBbase* db;
@@ -83,6 +84,8 @@ chaos::common::data::CDWUniquePtr setVariable(const std::string& uid,const chaos
 chaos::common::data::CDWUniquePtr removeVariable(const std::string& uid);
 chaos::common::data::CDWUniquePtr nodeDelete(const std::string& uid,const std::string parent="");
 chaos::common::data::CDWUniquePtr nodeNew(const std::string& uid,const chaos::common::data::CDataWrapper& value,const std::string parent="");
+chaos::common::data::CDWUniquePtr newUS(const std::string& uid,const std::string& desc="US");
+
 chaos::common::data::CDWUniquePtr getFullUnitServer(const std::string& uid);
 chaos::common::data::CDWUniquePtr setFullUnitServer(const std::string& uid,const chaos::common::data::CDataWrapper& value);
 chaos::common::data::CDWUniquePtr getAgentForNode(const std::string& uid);
@@ -90,6 +93,7 @@ chaos::common::data::CDWUniquePtr updateProperty(const std::string& uid,const ch
 chaos::common::data::CDWUniquePtr manageCUType(const std::string& uid,const std::string& implname,int op=0);
 chaos::common::data::CDWUniquePtr setInstanceDescription(const std::string& uid,const chaos::common::data::CDataWrapper& value);
 chaos::common::data::CDWUniquePtr deleteInstance(const std::string& uid,const std::string&parent);
+
 chaos::common::data::CDWUniquePtr getCUInstance(const std::string& uid);
 chaos::common::data::CDWUniquePtr startStop(const std::string& uid,bool start);
 chaos::common::data::CDWUniquePtr initDeinit(const std::string& uid,bool ini);
@@ -121,7 +125,9 @@ chaos::common::data::CDWUniquePtr getSnapshotDatasetForNode(const std::string& s
 
 chaos::common::data::CDWUniquePtr agentNodeOperation(const std::string& node,int32_t op);
 chaos::common::data::CDWUniquePtr saveNodeAssociation(const std::string&name,const chaos::common::data::CDataWrapper& value);
-chaos::common::data::CDWUniquePtr loadNodeAssociation(const std::string&name,const std::string&parent);
+chaos::common::data::CDWUniquePtr loadNodeAssociation(const std::string&name,const std::string&association);
+chaos::common::data::CDWUniquePtr removeNodeAssociation(const std::string&name,const std::string&association);
+
 chaos::common::data::CDWUniquePtr listNodeForAgent(const std::string&name);
 chaos::common::data::CDWUniquePtr loadAgentDescription(const std::string&name,bool loaddata=true);
 chaos::common::data::CDWUniquePtr checkAgentHostedProcess(const std::string&name);
@@ -129,6 +135,19 @@ chaos::common::data::CDWUniquePtr checkAgentHostedProcess(const std::string&name
 chaos::common::data::CDWUniquePtr clearCommandQueue(const std::string&name);
 chaos::common::data::CDWUniquePtr killCurrentCommand(const std::string&name);
 int enableLiveCaching(const std::string key,int32_t duration_ms);
+int queryDataCloud(const std::string& key,
+                                       const ChaosStringSet& meta_tags,
+                                       const ChaosStringSet& projection_keys,
+                                       const uint64_t start_ts,
+                                       const uint64_t end_ts,
+                                       const uint32_t page_dimension,
+                                       chaos::common::direct_io::channel::opcode_headers::SearchSequence& last_sequence,
+                                       chaos::common::data::VectorCDWShrdPtr& found_element_page,
+                                       int32_t millisec_to_wait=10000);
+int deleteDataCloud(const std::string& key,
+                                       const uint64_t start_ts,
+                                       const uint64_t end_ts,int32_t millisec_to_wait=10000);
+
 
 };
 }  // namespace service_common

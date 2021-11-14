@@ -25,7 +25,7 @@
 
 #include "mds_constants.h"
 #include "mds_types.h"
-#include "api/ApiManagment.h"
+#include "api/ApiManagement.h"
 #include "cron_job/MDSCronusManager.h"
 #include "QueryDataConsumer.h"
 
@@ -38,6 +38,7 @@
 #include <chaos/common/thread/WaitSemaphore.h>
 #include <chaos/common/utility/StartableService.h>
 #include <chaos/common/utility/ProcStat.h>
+#define CDS_GROUP_NAME "cds"
 namespace chaos {
     namespace metadata_service {
         //! Chaos Node Directory base class
@@ -49,7 +50,7 @@ namespace chaos {
              
             static WaitSemaphore waitCloseSemaphore;
             //!persistence driver instance
-            chaos::common::utility::InizializableServiceContainer<api::ApiManagment> api_managment_service;
+            chaos::common::utility::InizializableServiceContainer<api::ApiManagement> api_managment_service;
             //! CDS data consumer that respond to data api
             chaos::common::utility::StartableServiceContainer<QueryDataConsumer> data_consumer,message_consumer;
             
@@ -107,6 +108,8 @@ namespace chaos {
              * 
              */
             void updateLiveCache(const std::string& name,int64_t te);
+
+
 
             /**
              * @brief remove storage data to from

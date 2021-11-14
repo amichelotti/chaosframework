@@ -36,6 +36,7 @@ using namespace chaos::common::data;
  */
 RpcClient::RpcClient(const std::string& alias):
 NamedService(alias),
+is_psm(false),
 syncrhonous_call(GlobalConfiguration::getInstance()->getConfiguration()->getBoolValue(InitOption::OPT_RPC_SYNC_ENABLE)),
 server_handler(NULL){}
 

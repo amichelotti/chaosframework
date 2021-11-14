@@ -37,8 +37,8 @@ class QueryDataMsgPSConsumer : public QueryDataConsumer,protected chaos::common:
   static std::map<std::string, uint64_t>         alive_map;
   chaos::common::message::consumer_uptr_t cons;
   static boost::mutex                            map_m;
-  void                                    messageHandler(const chaos::common::message::ele_t& data);
-  void                                  messageError(const chaos::common::message::ele_t& data);
+  void                                    messageHandler( chaos::common::message::ele_t& data);
+  void                                  messageError( chaos::common::message::ele_t& data);
   int subscribe_retry;
   //---------------- DirectIODeviceServerChannelHandler -----------------------
   void processBufferElement(chaos::common::data::CDWShrdPtr log_entry);

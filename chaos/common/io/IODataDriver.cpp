@@ -8,6 +8,8 @@
 
 #include <chaos/common/global.h>
 #include <chaos/common/io/IODataDriver.h>
+#include <chaos/common/network/NetworkBroker.h>
+#include <chaos/common/message/MDSMessageChannel.h>
 
 #define IODataDriverLOG_HEAD "[IODataDriver] - "
 
@@ -59,13 +61,12 @@ ArrayPointer<CDataWrapper>* IODataDriver::retriveData(const std::string& key)  {
     
     ArrayPointer<CDataWrapper> *result = new ArrayPointer<CDataWrapper>();
     
-    char *value = retriveRawData(key);
-    if (value) {
+    CDWUniquePtr value=retrieveData(key);
+    if (value.get()) {
         //some value has been received
         //allocate the data wrapper object with serialization got from memcached
         //CDataWrapper *dataWrapper =
-        result->add(new CDataWrapper(value));
-        free(value);
+        result->add(value.release());
     }
     return result;
 }
@@ -90,4 +91,20 @@ int IODataDriver::addHandler(chaos::common::message::msgHandler cb){
     IODataDriverLERR << "Not implemented";
 
     return 0;
+}
+
+int IODataDriver::loadDatasetFromSnapshot(const std::string& restore_point_tag_name,
+                                                           const std::string& key,
+                                                           chaos_data::CDWShrdPtr& cdw_shrd_ptr){
+                                                                //return IODirectIODriver::loadDatasetTypeFromSnapshotTag(restore_point_tag_name,key,dataset_type,cdw_shrd_ptr);                                                  
+    chaos::common::data::CDataWrapper data_set;
+    int err = chaos::common::network::NetworkBroker::getInstance()->getMetadataserverMessageChannel()->loadSnapshotNodeDataset(restore_point_tag_name,key,data_set);
+   // IODirectIOPSMsgDriver_DLDBG_<<"SNAPSHOT:"<<data_set.getJSONString();
+    if((!err)){
+       cdw_shrd_ptr.reset(data_set.clone().release());
+
+    }
+    
+    return err;
+
 }

@@ -52,9 +52,11 @@ namespace chaos{
               std::string msgbrokerdrv;
               chaos::common::message::producer_uptr_t prod;
               chaos::common::message::consumer_uptr_t cons;
-              void defaultHandler(const chaos::common::message::ele_t& data);
+              void defaultHandler( chaos::common::message::ele_t& data);
                boost::mutex hmutex;
                std::map<std::string,chaos::common::message::msgHandler> handler_map;
+                ChaosSharedMutex                    map_query_future_mutex;
+                std::map<std::string, QueryCursor*>	map_query_future;
             public:
                 
                 IODirectIOPSMsgDriver(const std::string& alias);
@@ -85,11 +87,48 @@ namespace chaos{
                 /**
                  *
                  */
-              /*  int removeData(const std::string& key,
+                int removeData(const std::string& key,
                                uint64_t start_ts,
                                uint64_t end_ts);
+                 /**
+                 *
+                 */
+                int retriveMultipleData(const ChaosStringVector& key,
+                                        chaos::common::data::VectorCDWShrdPtr& result);
                 
-                */
+                /*
+                 * retrieveRawData
+                 */
+                chaos::common::data::CDWUniquePtr retrieveData(const std::string& key);
+                
+                //! restore from a tag a dataset associated to a key
+                int loadDatasetTypeFromSnapshotTag(const std::string& restore_point_tag_name,
+                                                   const std::string& key,
+                                                   uint32_t dataset_type,
+                                                   chaos_data::CDWShrdPtr& cdw_shrd_ptr);
+                
+                /**
+                 *
+                 */
+                
+
+                QueryCursor* performQuery(const std::string&    key,
+                                          uint64_t              start_ts,
+                                          uint64_t              end_ts,
+                                          const ChaosStringSet& meta_tags = ChaosStringSet(),
+                                          const ChaosStringSet& projection_keys = ChaosStringSet(),
+                                          uint32_t              page      = DEFAULT_PAGE_LEN);
+
+                QueryCursor* performQuery(const std::string&    key,
+                                          uint64_t              start_ts,
+                                          uint64_t              end_ts,
+                                          uint64_t              sequid,
+                                          uint64_t              runid,
+                                          const ChaosStringSet& meta_tags = ChaosStringSet(),
+                                          const ChaosStringSet& projection_keys = ChaosStringSet(),
+                                          uint32_t              page      = DEFAULT_PAGE_LEN);
+
+
                chaos::common::data::CDataWrapper* updateConfiguration(chaos::common::data::CDataWrapper* newConfigration);
                 int subscribe(const std::string&key);
   

@@ -19,7 +19,7 @@
  * permissions and limitations under the Licence.
  */
 
-#include "ApiManagment.h"
+#include "ApiManagement.h"
 
 #include <chaos/common/utility/ObjectFactoryRegister.h>
 
@@ -30,14 +30,14 @@ using namespace chaos::metadata_service;
 using namespace chaos::metadata_service::api;
 using namespace chaos::common::network;
 //! default consturctor
-ApiManagment::ApiManagment(){}
+ApiManagement::ApiManagement(){}
 
 //! default destructor
-ApiManagment::~ApiManagment() {
+ApiManagement::~ApiManagement() {
 	clearGroupList();
 }
 
-void ApiManagment::init(void* init_data)  {
+void ApiManagement::init(void* init_data)  {
     
 	//register all available api group
 	std::vector<std::string> all_registered_groups;
@@ -55,11 +55,11 @@ void ApiManagment::init(void* init_data)  {
 		addApiAgroup(instance);
 	}
 }
-void ApiManagment::deinit()  {
+void ApiManagement::deinit()  {
 	clearGroupList();
 }
 
-void ApiManagment::clearGroupList() {
+void ApiManagement::clearGroupList() {
 	for(ApiGroupListIterator it = installed_api_group_list.begin();
 		it != installed_api_group_list.end();
 		it++) {

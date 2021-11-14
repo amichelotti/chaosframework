@@ -133,7 +133,6 @@ namespace chaos {
 				//mutable boost::shared_mutex mutex_registration;
 				
 				//unit server state machine
-				bool					use_unit_server;
                 bool                    use_execution_pools;
                 unsigned int            publishing_counter_delay;
                 

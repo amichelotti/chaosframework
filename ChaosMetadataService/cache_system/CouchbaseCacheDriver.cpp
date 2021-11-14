@@ -388,11 +388,11 @@ lcb_t* CouchbaseDriverPool::allocateResource(const std::string& pool_identificat
         
     } catch(chaos::CException& ex) {
         CCDLERR_ << CHAOS_FORMAT("Error allocating new cache instance", %ex.what());
-        lcb_destroy(*new_instance);
+        //lcb_destroy(*new_instance);
         new_instance.reset();
     } catch(...) {
         CCDLERR_ << "Generic error allocating new cache instance";
-        lcb_destroy(*new_instance);
+       // lcb_destroy(*new_instance);
         new_instance.reset();
     }
     return new_instance.release();

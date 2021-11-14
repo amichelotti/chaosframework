@@ -57,6 +57,7 @@ option(CHAOS_DRIVER_CCALT "Driver CCALT" ON)
 option(CHAOS_DRIVER_LUMINOMETER "Driver Luminometer" OFF)
 option(CHAOS_ENABLE_ZMQ_MONITOR "Enable ZMQ Monitor" OFF)
 option(CHAOS_EPICS_SUPPORT "Enable EPICS SUPPORT/DRIVERS" OFF)
+option(KAFKA_RDK_ENABLE "Enable KAFKA" ON)
 
 option(GPUFIT "Fast Fitting libraries (needs CUDA toolkit)" OFF)
 
@@ -133,7 +134,7 @@ ENDIF()
 
 set (BOOST_CXX_ADDITIONAL_FLAGS "")
 IF(CHAOS_ENABLE_C11 AND NOT CHAOS_TARGET)
-  set (CHAOS_CXX_FLAGS "${CHAOS_CXX_FLAGS} -std=c++11")
+#    set (CHAOS_CXX_FLAGS "${CHAOS_CXX_FLAGS} -std=c++14")
 #    set (BOOST_CXX_ADDITIONAL_FLAGS "-fvisibility=default")
   ELSE()
 #   set (BOOST_CXX_ADDITIONAL_FLAGS "-fvisibility=default")

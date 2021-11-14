@@ -282,7 +282,35 @@ int KeyDataStorage::loadRestorePoint(const std::string& restore_point_tag) {
         //allocate map for the restore tag
         restore_point_map.insert(make_pair(restore_point_tag, std::map<std::string, ChaosSharedPtr<chaos_data::CDataWrapper> >()));
     }
-    
+    if((err = io_data_driver->loadDatasetFromSnapshot(restore_point_tag,
+                                                             key,
+                                                             dataset))) {
+        KeyDataStorageLERR << " Error loaading dataset of domain  from restore point:" << restore_point_tag << " for the key:" << key;
+        clearRestorePoint(restore_point_tag);
+        return err;
+    }
+    if(dataset.get()){
+       // KeyDataStorageLDBG<< "RESTORE PACK:" << restore_point_tag << " :" << dataset->getJSONString();
+
+        if(dataset->hasKey(DataPackID::INPUT_DATASET_ID)&&dataset->isCDataWrapperValue(DataPackID::INPUT_DATASET_ID)){
+            CDWShrdPtr p(dataset->getCSDataValue(DataPackID::INPUT_DATASET_ID).release());
+            restore_point_map[restore_point_tag].insert(make_pair(input_key, p));
+        }
+        if(dataset->hasKey(DataPackID::OUTPUT_DATASET_ID)&&dataset->isCDataWrapperValue(DataPackID::OUTPUT_DATASET_ID)){
+            CDWShrdPtr p(dataset->getCSDataValue(DataPackID::OUTPUT_DATASET_ID).release());
+            restore_point_map[restore_point_tag].insert(make_pair(output_key,p));
+
+        }
+        if(dataset->hasKey(DataPackID::SYSTEM_DATASETID)&&dataset->isCDataWrapperValue(DataPackID::SYSTEM_DATASETID)){
+            CDWShrdPtr p(dataset->getCSDataValue(DataPackID::SYSTEM_DATASETID).release());
+            restore_point_map[restore_point_tag].insert(make_pair(system_key,p));
+        }
+        if(dataset->hasKey(DataPackID::CUSTOM_DATASET_ID)&&dataset->isCDataWrapperValue(DataPackID::CUSTOM_DATASET_ID)){
+            CDWShrdPtr p(dataset->getCSDataValue(DataPackID::CUSTOM_DATASET_ID).release());
+            restore_point_map[restore_point_tag].insert(make_pair(custom_key,p));
+        }
+    }
+  #if 0 
     if((err = io_data_driver->loadDatasetTypeFromSnapshotTag(restore_point_tag,
                                                              key,
                                                              KeyDataStorageDomainOutput,
@@ -292,7 +320,8 @@ int KeyDataStorage::loadRestorePoint(const std::string& restore_point_tag) {
         return err;
     } else {
         if(dataset){
-            restore_point_map[restore_point_tag].insert(make_pair(output_key, MOVE(dataset)));dataset.reset();
+            restore_point_map[restore_point_tag].insert(make_pair(output_key, MOVE(dataset)));
+            dataset.reset();
         }
     }
     
@@ -335,7 +364,7 @@ int KeyDataStorage::loadRestorePoint(const std::string& restore_point_tag) {
             restore_point_map[restore_point_tag].insert(make_pair(system_key, MOVE(dataset)));dataset.reset();
         }
     }
-    
+    #endif 
     return err;
 }
 
@@ -438,11 +467,10 @@ int KeyDataStorage::performLiveFetch(const KeyDataStorageDomain dataset_domain,
     int err = 0;
     size_t size;
     std::string node_dataset = getDomainString(dataset_domain);
-    char * raw_data = io_data_driver->retriveRawData(node_dataset, &size);
-    if(raw_data) {
-        found_dataset.reset(new CDataWrapper(raw_data));
+    CDWUniquePtr raw_data = io_data_driver->retrieveData(node_dataset);
+    if(raw_data.get()) {
+        found_dataset.reset(raw_data.release());
     }
-    delete[](raw_data);
     return err;
 }
 

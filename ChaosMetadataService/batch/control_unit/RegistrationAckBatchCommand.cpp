@@ -21,8 +21,6 @@
 
 #include "RegistrationAckBatchCommand.h"
 
-#include "../control_unit/IDSTControlUnitBatchCommand.h"
-
 using namespace chaos::common::data;
 using namespace chaos::common::network;
 using namespace chaos::metadata_service::batch::control_unit;
@@ -47,13 +45,16 @@ RegistrationAckBatchCommand::~RegistrationAckBatchCommand() {}
 // inherited method
 void RegistrationAckBatchCommand::setHandler(CDataWrapper *data) {
     MDSBatchCommand::setHandler(data);
-    
+    is_root=false;
     //set cu id to the batch command datapack
     if(!data->hasKey(NodeDefinitionKey::NODE_UNIQUE_ID)) throw CException(-1, RegistrationAckBatchCommand_NO_UID, __PRETTY_FUNCTION__);
     if(!data->hasKey(NodeDefinitionKey::NODE_RPC_ADDR)) throw CException(-2, RegistrationAckBatchCommand_NO_RPC_ADDR, __PRETTY_FUNCTION__);
     if(!data->hasKey(NodeDefinitionKey::NODE_RPC_DOMAIN)) throw CException(-3, RegistrationAckBatchCommand_NO_RPC_DOM, __PRETTY_FUNCTION__);
     if(!data->hasKey(MetadataServerNodeDefinitionKeyRPC::PARAM_REGISTER_NODE_RESULT)) throw CException(-4, RegistrationAckBatchCommand_NO_RESULT_FOUND, __PRETTY_FUNCTION__);
-    
+    if(data->hasKey(NodeDefinitionKey::NODE_TYPE)&&data->getStringValue(NodeDefinitionKey::NODE_TYPE)==NodeType::NODE_TYPE_ROOT) {
+        is_root=true;
+    }
+
     cu_id = data->getStringValue(NodeDefinitionKey::NODE_UNIQUE_ID);
     unit_server_addr = data->getStringValue(NodeDefinitionKey::NODE_RPC_ADDR);
     reg_result = data->getInt32Value(MetadataServerNodeDefinitionKeyRPC::PARAM_REGISTER_NODE_RESULT);
@@ -88,9 +89,17 @@ void RegistrationAckBatchCommand::ccHandler() {
         case MESSAGE_PHASE_SENT: {
             manageRequestPhase(*request);
             break;
+           
+            
         }
             
         case MESSAGE_PHASE_COMPLETED:
+        if(is_root){
+               /* CUCommonUtility::prepareAutoInitAndStartInAutoLoadControlUnit(cu_id,
+                                                                          getDataAccess<mds_data_access::NodeDataAccess>(),
+                                                                          getDataAccess<mds_data_access::ControlUnitDataAccess>(),
+                 getDataAccess<mds_data_access::DataServiceDataAccess>())*/
+        }
         case MESSAGE_PHASE_TIMEOUT: {
             BC_END_RUNNING_PROPERTY
             break;

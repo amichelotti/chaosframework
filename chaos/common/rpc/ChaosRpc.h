@@ -22,4 +22,5 @@
 #define ChaosFramework_ChaosRpc_h
 #define RPC_SYNC_KEY "sync"
 #define RPC_SEQ_KEY "seq_id"
+#define RPC_SRC_UID "src_uid"
 #endif

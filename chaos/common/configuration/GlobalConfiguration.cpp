@@ -73,22 +73,27 @@ void GlobalConfiguration::preParseStartupParameters()  {
         addOption(InitOption::OPT_DATA_IO_IMPL, po::value< string >()->default_value(std::string("IODirectIOPSMsgDriver")), "Specify the data io implementation");
         addOption(InitOption::OPT_MSG_PRODUCER_KVP, po::value< std::vector<std::string> >(), "K:V message producer options");
         addOption(InitOption::OPT_MSG_CONSUMER_KVP, po::value< std::vector<std::string> >(), "K:V message consumer options");
+        //disable directio
+        addOption(InitOption::OPT_DIRECT_IO_IMPLEMENTATION, po::value< string >()->default_value(std::string("")), "Specify the direct io implementation");
+        addOption(InitOption::OPT_RPC_IMPLEMENTATION, po::value< string >()->default_value("PSM"), "Specify the rpc implementation");
 
         #else
         addOption(InitOption::OPT_DATA_IO_IMPL, po::value< string >()->default_value(std::string("IODirectIODriver")), "Specify the data io implementation");
+        addOption(InitOption::OPT_DIRECT_IO_IMPLEMENTATION, po::value< string >()->default_value(std::string("ZMQ")), "Specify the direct io implementation");
+        addOption(InitOption::OPT_RPC_IMPLEMENTATION, po::value< string >()->default_value("ZMQ"), "Specify the rpc implementation");
+
         #endif
         #if ENABLE_ZMQ_MONITOR
         addOption(InitOption::OPT_ENABLE_ZMQ_MONITOR, po::value< bool >()->default_value(true), "Monitor zmq connections");
 
         #endif
-        addOption(InitOption::OPT_DIRECT_IO_IMPLEMENTATION, po::value< string >()->default_value(std::string("ZMQ")), "Specify the direct io implementation");
         addOption(InitOption::OPT_DIRECT_IO_PRIORITY_SERVER_PORT, po::value<uint32_t>()->default_value(_DIRECT_IO_PRIORITY_PORT), "DirectIO priority server port");
         addOption(InitOption::OPT_DIRECT_IO_SERVICE_SERVER_PORT, po::value<uint32_t>()->default_value(_DIRECT_IO_SERVICE_PORT), "DirectIO service server port");
+    
         addOption(InitOption::OPT_DIRECT_IO_SERVER_THREAD_NUMBER, po::value<uint32_t>()->default_value(1),"DirectIO server thread number");
         addOption(InitOption::OPT_DIRECT_IO_SERVER_IMPL_KV_PARAM, po::value< std::vector<std::string> >(),"DirectIO implementation key value parameters[k:v]");
         addOption(InitOption::OPT_DIRECT_IO_CLIENT_IMPL_KV_PARAM, po::value< std::vector<std::string> >(),"DirectIO implementation key value parameters[k:v]");
         addOption(InitOption::OPT_RPC_SYNC_ENABLE, po::value< bool >()->default_value(false), "Enable the sync wrapper to rpc protocol");
-        addOption(InitOption::OPT_RPC_IMPLEMENTATION, po::value< string >()->default_value("ZMQ"), "Specify the rpc implementation");
         addOption(InitOption::OPT_RPC_SERVER_PORT, po::value<uint32_t>()->default_value(_RPC_PORT), "RPC server port");
         addOption(InitOption::OPT_RPC_SERVER_THREAD_NUMBER, po::value<uint32_t>()->default_value(2),"RPC server thread number");
         addOption(InitOption::OPT_RPC_IMPL_KV_PARAM, po::value< std::vector<std::string> >(),"RPC implementation key value parameter[k:v]");
@@ -118,7 +123,9 @@ void GlobalConfiguration::preParseStartupParameters()  {
 #endif
         addOption(InitOption::OPT_MSG_BROKER_SERVER, po::value< std::string >()->default_value(std::string("localhost:9092")), "Message broker");
         addOption(InitOption::OPT_MSG_BROKER_DRIVER, po::value< std::string >()->default_value(std::string("kafka-rdk")), "Message broker driver");
-        addOption(InitOption::CONTROL_MANAGER_UNIT_SERVER_ALIAS, po::value< std::string >()/*->default_value(std::string("NONAME"))*/,"UID of the node");
+        addOption(InitOption::OPT_GROUP_NAME, po::value< std::string >()->default_value(std::string("")), "Group Name");
+
+        addOption(InitOption::OPT_NODEUID, po::value< std::string >()/*->default_value(std::string("NONAME"))*/,"UID of the node");
 
 
 #
@@ -235,6 +242,12 @@ void GlobalConfiguration::parseParameter(const po::basic_parsed_options<char>& o
     //check the default option
     checkDefaultOption();
 }
+#define CHECK_AND_DEFINE_CONFIG_OPTION(t,y)\
+{t x;\
+if(hasOption(y)){\
+x = getOption<t>(y);\
+configuration->append(y,x);}}
+
 void GlobalConfiguration::checkDefaultOption()  {
     configuration.reset(new CDataWrapper());
     //now we can fill the gloabl configuration
@@ -257,9 +270,6 @@ void GlobalConfiguration::checkDefaultOption()  {
     CHECK_AND_DEFINE_OPTION(string, logFilePath, InitOption::OPT_LOG_FILE);
     configuration->addStringValue(InitOption::OPT_LOG_FILE, logFilePath);
     
-    CHECK_AND_DEFINE_OPTION(string, nodeDesc, InitOption::OPT_NODE_DESC);
-    configuration->addStringValue(InitOption::OPT_NODE_DESC, nodeDesc);
-
     CHECK_AND_DEFINE_OPTION(string, logLevel, InitOption::OPT_LOG_LEVEL)
     configuration->addInt32Value(InitOption::OPT_LOG_LEVEL, filterLogLevel(logLevel));
     
@@ -283,7 +293,15 @@ void GlobalConfiguration::checkDefaultOption()  {
     
     CHECK_AND_DEFINE_OPTION(string, rpcImpl, InitOption::OPT_RPC_IMPLEMENTATION)
     configuration->addStringValue(InitOption::OPT_RPC_IMPLEMENTATION, rpcImpl);
-    
+
+    CHECK_AND_DEFINE_CONFIG_OPTION(std::string,InitOption::OPT_MSG_BROKER_SERVER);
+    CHECK_AND_DEFINE_CONFIG_OPTION(std::string,InitOption::OPT_NODE_DESC);
+    CHECK_AND_DEFINE_CONFIG_OPTION(std::string,chaos::InitOption::OPT_NODEUID);
+    CHECK_AND_DEFINE_CONFIG_OPTION(std::string,InitOption::OPT_MSG_BROKER_DRIVER);
+    #if defined(KAFKA_RDK_ENABLE) || defined(KAFKA_ASIO_ENABLE)
+    CHECK_AND_DEFINE_CONFIG_OPTION(std::vector<std::string>,InitOption::OPT_MSG_PRODUCER_KVP);
+    CHECK_AND_DEFINE_CONFIG_OPTION(std::vector<std::string>,InitOption::OPT_MSG_CONSUMER_KVP);
+    #endif
     CHECK_AND_DEFINE_OPTION(bool, OPT_RPC_SYNC_ENABLE, InitOption::OPT_RPC_SYNC_ENABLE)
     else{
         OPT_RPC_SYNC_ENABLE = false;
@@ -320,7 +338,9 @@ void GlobalConfiguration::checkDefaultOption()  {
         fillKVParameter(map_kv_param_directio_clnt_impl, directio_clnt_impl_kv_param, "");
     }
     CHECK_AND_DEFINE_OPTION(string, direct_io_server_impl, InitOption::OPT_DIRECT_IO_IMPLEMENTATION)
-    configuration->addStringValue(common::direct_io::DirectIOConfigurationKey::DIRECT_IO_IMPL_TYPE, direct_io_server_impl);
+    if(direct_io_server_impl.size()){
+        configuration->addStringValue(common::direct_io::DirectIOConfigurationKey::DIRECT_IO_IMPL_TYPE, direct_io_server_impl);
+    }
     
     CHECK_AND_DEFINE_OPTION_WITH_DEFAULT(uint32_t, direct_io_priority_port, InitOption::OPT_DIRECT_IO_PRIORITY_SERVER_PORT, _DIRECT_IO_PRIORITY_PORT);
     freeFoundPort = InetUtility::scanForLocalFreePort(direct_io_priority_port);
@@ -429,7 +449,7 @@ void GlobalConfiguration::fillKVParameter(std::map<std::string, std::string>& kv
         
         const std::string& kv_param_value = *it;
         
-        if(regex.size() &&
+        if(regex.size() &&kv_param_value.size()&&
            !boost::regex_match(kv_param_value,
                                boost::regex(regex))) {
                std::stringstream ss;
@@ -536,6 +556,21 @@ string GlobalConfiguration::getLocalServerAddress() {
 
 std::string GlobalConfiguration::getDesc(){
     return configuration->getStringValue(chaos::InitOption::OPT_NODE_DESC);
+
+}
+std::string GlobalConfiguration::getNodeUID(){
+    return configuration->getStringValue(chaos::InitOption::OPT_NODEUID);
+
+}
+void GlobalConfiguration::setNodeUID(const std::string& uid){
+    if(uid.size()==0){
+        return;
+    }
+    if(configuration->hasKey(chaos::InitOption::OPT_NODEUID)){
+        configuration->removeKey(chaos::InitOption::OPT_NODEUID);
+        
+    }
+    configuration->addStringValue(chaos::InitOption::OPT_NODEUID,uid);
 
 }
 

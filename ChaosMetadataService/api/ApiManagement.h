@@ -18,8 +18,8 @@
  * See the Licence for the specific language governing
  * permissions and limitations under the Licence.
  */
-#ifndef __CHAOSFramework__ApiManagment__
-#define __CHAOSFramework__ApiManagment__
+#ifndef __CHAOSFramework__ApiManagement__
+#define __CHAOSFramework__ApiManagement__
 
 #include "AbstractApiGroup.h"
 #include "../mds_types.h"
@@ -38,7 +38,7 @@ namespace chaos {
 			typedef std::vector< ApiGroupListElement >           ApiGroupList;
 			typedef std::vector< ApiGroupListElement >::iterator ApiGroupListIterator;
 			
-			class ApiManagment:
+			class ApiManagement:
 			public chaos::common::utility::InizializableService {
                 
 				//! api group list
@@ -47,10 +47,10 @@ namespace chaos {
 				void clearGroupList();
 			public:
 				//! default consturctor
-				ApiManagment();
+				ApiManagement();
 				
 				//! default destructor
-				~ApiManagment();
+				~ApiManagement();
 				
 				//! install an instance of an api group
 				void addApiAgroup(AbstractApiGroup *instance) {
@@ -82,4 +82,4 @@ namespace chaos {
 	}
 }
 
-#endif /* defined(__CHAOSFramework__ApiManagment__) */
+#endif /* defined(__CHAOSFramework__ApiManagement__) */
