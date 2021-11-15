@@ -383,7 +383,7 @@ lcb_t* CouchbaseDriverPool::allocateResource(const std::string& pool_identificat
         lcb_cntl(*new_instance, LCB_CNTL_SET, LCB_CNTL_CONFERRTHRESH, &num_events);
         
         lcb_cntl(*new_instance, LCB_CNTL_GET, LCB_CNTL_CONFDELAY_THRESH, &num_events);
-        num_events = ChacheTimeoutinMSec;
+        num_events = CacheTimeoutinMSec;
         lcb_cntl(*new_instance, LCB_CNTL_SET, LCB_CNTL_CONFDELAY_THRESH, &num_events);
         
     } catch(chaos::CException& ex) {

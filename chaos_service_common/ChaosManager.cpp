@@ -1222,6 +1222,35 @@ int ChaosManager::enableLiveCaching(const std::string key,int32_t duration_ms){
   return -1;
   
 }
+CDWUniquePtr ChaosManager::updateProperty(const std::string& node_unique_id,
+                                       chaos::common::property::PropertyGroup& node_property_group) {
+    chaos::common::property::PropertyGroupVector group_vector;
+    group_vector.push_back(node_property_group);
+    return updateProperty(node_unique_id,
+                   group_vector);
+}
+
+CDWUniquePtr ChaosManager::updateProperty(const std::string& node_unique_id,
+                                       chaos::common::property::PropertyGroupVector& node_property_group_vector) {
+    CDWUniquePtr message(new CDataWrapper());
+    CDWUniquePtr res;
+
+    //add node uid
+    message->addStringValue(NodeDefinitionKey::NODE_UNIQUE_ID, node_unique_id);
+    chaos::common::property::PropertyGroupVectorSDWrapper pg_sdw(CHAOS_DATA_WRAPPER_REFERENCE_AUTO_PTR(chaos::common::property::PropertyGroupVector,node_property_group_vector));
+    pg_sdw.serialization_key = "property";
+    pg_sdw.serialize()->copyAllTo(*message);
+    //call api
+    if (persistence_driver) {
+    UpdateProperty node;
+    CALC_EXEC_START;
+
+    res = node.execute(MOVE(message));
+    CALC_EXEC_END
+  }
+    return res;
+}
+
 int ChaosManager::nodeSearch(const std::string&              unique_id_filter,
                              chaos::NodeType::NodeSearchType node_type_filter,
                              bool                            alive_only,

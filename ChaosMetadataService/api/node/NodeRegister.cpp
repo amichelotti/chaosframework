@@ -444,6 +444,17 @@ CDWUniquePtr NodeRegister::controlUnitRegistration(CDWUniquePtr api_data) {
                                                        0,
                                                        1000);
         USRA_INFO << "Sent ack for registration ok to the control unit " << cu_uid << " with commadn id:" <<command_id;
+      
+        
+        ///
+        if(api_data->hasKey(NodeDefinitionKey::NODE_TYPE)&&(api_data->getStringValue(NodeDefinitionKey::NODE_TYPE)==NodeType::NODE_TYPE_ROOT)){
+            CDWUniquePtr cmd=ack_command->clone();
+        cmd->addInt32Value("action", (int32_t)0);
+        getBatchExecutor()->submitCommand(GET_MDS_COMMAND_ALIAS(batch::control_unit::IDSTControlUnitBatchCommand),cmd.release(),0,1000);
+        }
+                                                   
+        ///
+
     } catch (chaos::CException& ex) {
         ack_command->addInt32Value(MetadataServerNodeDefinitionKeyRPC::PARAM_REGISTER_NODE_RESULT,
                                    ErrorCode::EC_MDS_NODE_REGISTRATION_FAILURE_INVALID_ALIAS);

@@ -25,6 +25,7 @@
 #include <chaos/common/exception/exception.h>
 #include <chaos/common/data/CDataWrapper.h>
 #include <chaos/common/rpc/RpcServerHandler.h>
+#include <chaos/common/utility/TimingUtil.h>
 #define PSMS_LAPP INFO_LOG(PSMServer)
 #define PSMS_LDBG DBG_LOG(PSMServer)
 #define PSMS_LERR ERR_LOG(PSMServer)
@@ -98,12 +99,21 @@ void PSMServer::init(void *init_data) {
     }
 }
 void PSMServer::messageHandler( chaos::common::message::ele_t& data) {
-    int64_t seq_id=-1;
+    int64_t seq_id=-1,ts=0;
+    uint64_t now=chaos::common::utility::TimingUtil::getTimeStamp();
     std::string src;
     //chaos::common::data::CDWUniquePtr data(d.cd.release());
     if(data.cd->hasKey(RPC_SEQ_KEY)){
         seq_id=data.cd->getInt64Value(RPC_SEQ_KEY);
     }
+    if(data.cd->hasKey(RPC_TS_KEY)){
+        ts=data.cd->getInt64Value(RPC_TS_KEY);
+        if((now-ts)>(2*chaos::common::constants::CUTimersTimeoutinMSec)){
+            PSMS_LERR << "discarding Message TOO OLD Received from node:"<<src<<" seq_id:"<<seq_id<<" sent:"<<(now-ts)<<" ms";//<< " desc:"<<data.cd->getJSONString();
+            return;
+        }   
+    }
+
     if(data.cd->hasKey(RpcActionDefinitionKey::CS_CMDM_ANSWER_HOST_IP)){
         src=data.cd->getStringValue(RPC_SRC_UID);
     }
@@ -111,9 +121,10 @@ void PSMServer::messageHandler( chaos::common::message::ele_t& data) {
         PSMS_LDBG << data.cd->getInt32Value(RpcActionDefinitionKey::CS_CMDM_MESSAGE_ID)<<" - Message Received from node:"<<src<<" seq_id:"<<seq_id ;//<< " desc:"<<data.cd->getJSONString();
 
     } else {
-        PSMS_LDBG << "Message Received from node:"<<src<<" seq_id:"<<seq_id;//<< " desc:"<<data.cd->getJSONString();
+        PSMS_LDBG << "Message Received from node:"<<src<<" seq_id:"<<seq_id<<" sent:"<<(now-ts)<<" ms";//<< " desc:"<<data.cd->getJSONString();
 
     }
+
     CDWShrdPtr result_data_pack;
 
     if(data.cd->hasKey(RPC_SYNC_KEY) &&

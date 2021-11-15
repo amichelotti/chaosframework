@@ -397,7 +397,12 @@ void ChaosAbstractCommon::deinit() {
 }
 
 void ChaosAbstractCommon::start() {}
-void ChaosAbstractCommon::stop() {}
+void ChaosAbstractCommon::stop() {
+     NetworkBroker::getInstance()->stop();
+    NetworkBroker::getInstance()->deinit();
+
+
+}
 
 GlobalConfiguration *ChaosAbstractCommon::getGlobalConfigurationInstance() {
     return GlobalConfiguration::getInstance();
@@ -427,7 +432,7 @@ static void clean_exit_th(int32_t sleeps,ChaosAbstractCommon*t){
 }
 
 static void exit_th(int32_t sleeps){
-    sleep(sleeps);
+    sleep(sleeps*2);
     LAPP_ << "FORCE EXIT!!!";
     exit(0);
 
@@ -437,9 +442,13 @@ CDWUniquePtr ChaosAbstractCommon::nodeShutDown(CHAOS_UNUSED CDWUniquePtr data) {
        data->isBoolValue("kill") &&
        data->getBoolValue("kill")) {
         int32_t timeout = CDW_GET_INT32_WITH_DEFAULT(data, "timeout", 5);
-        boost::thread th0(clean_exit_th,timeout,this);
+       
+       // boost::thread th0(clean_exit_th,timeout,this);
         boost::thread th1(exit_th,timeout);
         LAPP_ << "SHUTDOWN COMMAND:"<<data->getCompliantJSONString()<<" ABOUT TO EXIT IN:"<<timeout<< " seconds";
+
+        stop();
+        deinit();
         // in case something blocks the thread will kill the process.
        
     }
