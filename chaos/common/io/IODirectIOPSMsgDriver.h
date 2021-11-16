@@ -29,6 +29,7 @@
 #include "IODirectIODriver.h"
 #include <chaos/common/message/MessagePSProducer.h>
 #include <chaos/common/message/MessagePSDriver.h>
+#include <chaos/common/caching_system/CacheDriver.h>
 
 namespace chaos_data = chaos::common::data;
 namespace chaos_utility = chaos::common::utility;
@@ -57,6 +58,10 @@ namespace chaos{
                std::map<std::string,chaos::common::message::msgHandler> handler_map;
                 ChaosSharedMutex                    map_query_future_mutex;
                 std::map<std::string, QueryCursor*>	map_query_future;
+                chaos::common::utility::InizializableServiceContainer<chaos::common::cache_system::CacheDriver> cache_driver;
+                chaos::common::cache_system::CacheDriverSetting setpar;
+                int have_direct_cache;
+                void tryCacheInit();
             public:
                 
                 IODirectIOPSMsgDriver(const std::string& alias);

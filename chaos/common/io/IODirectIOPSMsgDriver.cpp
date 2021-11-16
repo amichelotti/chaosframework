@@ -23,7 +23,6 @@
 #include <chaos/common/configuration/GlobalConfiguration.h>
 #include <chaos/common/io/QueryCursorRPC.h>
 #include <chaos/common/message/MDSMessageChannel.h>
-
 #define IODirectIOPSMsgDriver_LINFO_ INFO_LOG(IODirectIOPSMsgDriver)
 #define IODirectIOPSMsgDriver_DLDBG_ DBG_LOG(IODirectIOPSMsgDriver)
 #define IODirectIOPSMsgDriver_LERR_ ERR_LOG(IODirectIOPSMsgDriver)
@@ -41,20 +40,20 @@ namespace chaos_data        = chaos::common::data;
 namespace chaos_dio         = chaos::common::direct_io;
 namespace chaos_dio_channel = chaos::common::direct_io::channel;
 
-//std::map<std::string,chaos::common::message::msgHandler> IODirectIOPSMsgDriver::handler_map;
-//boost::mutex IODirectIOPSMsgDriver::hmutex;
+// std::map<std::string,chaos::common::message::msgHandler> IODirectIOPSMsgDriver::handler_map;
+// boost::mutex IODirectIOPSMsgDriver::hmutex;
 DEFINE_CLASS_FACTORY(IODirectIOPSMsgDriver, IODataDriver);
 
-//using namespace memcache;
+// using namespace memcache;
 IODirectIOPSMsgDriver::IODirectIOPSMsgDriver(const std::string& alias)
-    : IODirectIODriver(alias) {
-  IODirectIOPSMsgDriver_DLDBG_<<"Instantiate:"<<alias;
+    : IODirectIODriver(alias), have_direct_cache(-1) {
+  IODirectIOPSMsgDriver_DLDBG_ << "Instantiate:" << alias;
   msgbrokerdrv = "kafka-rdk";
   msgbrokerdrv = GlobalConfiguration::getInstance()->getOption<std::string>(InitOption::OPT_MSG_BROKER_DRIVER);
 
-  prod = chaos::common::message::MessagePSDriver::getProducerDriver(msgbrokerdrv);
-  std::string gid=GlobalConfiguration::getInstance()->getNodeUID();
-  
+  prod            = chaos::common::message::MessagePSDriver::getProducerDriver(msgbrokerdrv);
+  std::string gid = GlobalConfiguration::getInstance()->getNodeUID();
+
   if (gid == "") {
     gid = "IODirectIODriver";
   }
@@ -71,7 +70,7 @@ int IODirectIOPSMsgDriver::storeHealthData(const std::string&                   
                                            CDWShrdPtr                                   data_to_store,
                                            DataServiceNodeDefinitionType::DSStorageType storage_type,
                                            const ChaosStringSet&                        tag_set) {
-  //IODirectIODriver::storeHealthData(key,data_to_store,storage_type,tag_set);
+  // IODirectIODriver::storeHealthData(key,data_to_store,storage_type,tag_set);
   return storeData(key, data_to_store, DataServiceNodeDefinitionType::DSStorageTypeLive, tag_set);
 }
 void IODirectIOPSMsgDriver::init(void* _init_parameter) {
@@ -86,7 +85,7 @@ void IODirectIOPSMsgDriver::init(void* _init_parameter) {
     prod->start();
   }
 }
-void IODirectIOPSMsgDriver::defaultHandler( chaos::common::message::ele_t& data) {
+void IODirectIOPSMsgDriver::defaultHandler(chaos::common::message::ele_t& data) {
   std::map<std::string, chaos::common::message::msgHandler>::iterator i, end;
   {
     boost::mutex::scoped_lock ll(hmutex);
@@ -149,9 +148,9 @@ int IODirectIOPSMsgDriver::storeData(const std::string&                         
   if (storage_type != DataServiceNodeDefinitionType::DSStorageTypeUndefined) {
     if (!data_to_store->hasKey(DataServiceNodeDefinitionKey::DS_STORAGE_TYPE)) {
       data_to_store->addInt32Value(DataServiceNodeDefinitionKey::DS_STORAGE_TYPE, storage_type);
-    }  else {
-        data_to_store->setValue(DataServiceNodeDefinitionKey::DS_STORAGE_TYPE, storage_type);
-      }
+    } else {
+      data_to_store->setValue(DataServiceNodeDefinitionKey::DS_STORAGE_TYPE, storage_type);
+    }
 
     if (tag_set.size()) {
       if (!data_to_store->hasKey(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_TAG)) {
@@ -175,8 +174,24 @@ int IODirectIOPSMsgDriver::storeData(const std::string&                         
 }
 
 chaos::common::data::CDataWrapper* IODirectIOPSMsgDriver::updateConfiguration(chaos::common::data::CDataWrapper* newConfigration) {
-  //lock the feeder access
-  //checkif someone has passed us the device indetification
+  // lock the feeder access
+  // checkif someone has passed us the device indetification
+  if (newConfigration == NULL) {
+    IODirectIOPSMsgDriver_LERR_ << "Invalid configuration";
+
+    return NULL;
+  }
+  if (cache_driver.get() == NULL) {
+    if (newConfigration->hasKey(chaos::DataServiceNodeDefinitionKey::DS_CACHE_SETTINGS)) {
+      CDWUniquePtr cs;
+
+      cs = newConfigration->getCSDataValue(chaos::DataServiceNodeDefinitionKey::DS_CACHE_SETTINGS);
+      if (cs->hasKey(chaos::common::cache_system::OPT_CACHE_DRIVER)) {
+        IODirectIOPSMsgDriver_DLDBG_ << "direct cache params:" << cs->getJSONString();
+        setpar.init(*cs.get());
+      }
+    }
+  }
   if (newConfigration->hasKey(DataServiceNodeDefinitionKey::DS_BROKER_ADDRESS_LIST)) {
     chaos_data::CMultiTypeDataArrayWrapperSPtr liveMemAddrConfig               = newConfigration->getVectorValue(DataServiceNodeDefinitionKey::DS_BROKER_ADDRESS_LIST);
     size_t                                     numerbOfserverAddressConfigured = liveMemAddrConfig->size();
@@ -201,7 +216,7 @@ chaos::common::data::CDataWrapper* IODirectIOPSMsgDriver::updateConfiguration(ch
       }
       IODirectIOPSMsgDriver_DLDBG_ << CHAOS_FORMAT("Added broker %1% to IODirectIOPSMsgDriver", % serverDesc);
 
-      //add new url to connection feeder, thi method in case of failure to allocate service will throw an eception
+      // add new url to connection feeder, thi method in case of failure to allocate service will throw an eception
     }
   }
   if (newConfigration->hasKey(DataServiceNodeDefinitionKey::DS_SUBSCRIBE_KEY_LIST)) {
@@ -219,108 +234,140 @@ chaos::common::data::CDataWrapper* IODirectIOPSMsgDriver::updateConfiguration(ch
   return ret;
 }
 
-
-
-
-
 int IODirectIOPSMsgDriver::removeData(const std::string& key,
-                                 uint64_t start_ts,
-                                 uint64_t end_ts) {
-    return chaos::common::network::NetworkBroker::getInstance()->getMetadataserverMessageChannel()->deleteDataCloud(key,start_ts,end_ts);
+                                      uint64_t           start_ts,
+                                      uint64_t           end_ts) {
+  return chaos::common::network::NetworkBroker::getInstance()->getMetadataserverMessageChannel()->deleteDataCloud(key, start_ts, end_ts);
 }
- /**
-                 *
-                 */
-int IODirectIOPSMsgDriver::retriveMultipleData(const ChaosStringVector& key,
-                                        chaos::common::data::VectorCDWShrdPtr& result){
-    return chaos::common::network::NetworkBroker::getInstance()->getMetadataserverMessageChannel()->retriveMultipleData(key,result);
+/**
+ *
+ */
+int IODirectIOPSMsgDriver::retriveMultipleData(const ChaosStringVector&               key,
+                                               chaos::common::data::VectorCDWShrdPtr& result) {
+  tryCacheInit();
 
+  if (cache_driver.get()) {
+    result = cache_driver->getData(key);
+    return 0;
   }
-                
-                /*
-                 * retrieveRawData
-                 */
-  CDWUniquePtr IODirectIOPSMsgDriver::retrieveData(const std::string& key){
-    return chaos::common::network::NetworkBroker::getInstance()->getMetadataserverMessageChannel()->retrieveData(key);
-
-   }
-                
-                
-int IODirectIOPSMsgDriver::loadDatasetTypeFromSnapshotTag(const std::string& restore_point_tag_name,
-                                                     const std::string& key,
-                                                     uint32_t dataset_type,
-                                                     chaos_data::CDWShrdPtr& cdw_shrd_ptr) {
-     //return IODirectIODriver::loadDatasetTypeFromSnapshotTag(restore_point_tag_name,key,dataset_type,cdw_shrd_ptr);                                                  
-    chaos::common::data::CDataWrapper data_set;
-    int err = chaos::common::network::NetworkBroker::getInstance()->getMetadataserverMessageChannel()->loadSnapshotNodeDataset(restore_point_tag_name,key,data_set);
-   // IODirectIOPSMsgDriver_DLDBG_<<"SNAPSHOT:"<<data_set.getJSONString();
-    if((dataset_type==DatasetTypeInput)&&data_set.hasKey(DataPackID::INPUT_DATASET_ID)&&data_set.isCDataWrapperValue(DataPackID::INPUT_DATASET_ID)){
-      cdw_shrd_ptr.reset(data_set.getCSDataValue(DataPackID::INPUT_DATASET_ID).release());
-
-    } else if((dataset_type==DatasetTypeOutput)&&data_set.hasKey(DataPackID::OUTPUT_DATASET_ID)&&data_set.isCDataWrapperValue(DataPackID::OUTPUT_DATASET_ID)){
-            cdw_shrd_ptr.reset(data_set.getCSDataValue(DataPackID::OUTPUT_DATASET_ID).release());
-
-    } else {
-        IODirectIOPSMsgDriver_LERR_<<" NOR INPUT OR OUTPUT snapshot selected "<<data_set.getJSONString();
-      //  cdw_shrd_ptr.reset(data_set.clone().release());
-
-    }
-    if(cdw_shrd_ptr.get()){
-      IODirectIOPSMsgDriver_DLDBG_<<"SNAPSHOT type:"<<dataset_type<<" VAL:"<<cdw_shrd_ptr->getJSONString();
-    }
-    return err;
+  return chaos::common::network::NetworkBroker::getInstance()->getMetadataserverMessageChannel()->retriveMultipleData(key, result);
 }
 
-QueryCursor *IODirectIOPSMsgDriver::performQuery(const std::string& key,
-                                            const uint64_t start_ts,
-                                            const uint64_t end_ts,
-                                            const ChaosStringSet& meta_tags,
-                                            const ChaosStringSet& projection_keys,
-                                            const uint32_t page_len) {
-   // IODirectIOPSMsgDriver_DLDBG_<<"query "<<key<<" start:"<<start_ts<<" end:"<<end_ts;
-    QueryCursor *q = new QueryCursorRPC(UUIDUtil::generateUUID(),
-                                                key,
-                                                start_ts,
-                                                end_ts,
-                                                meta_tags,
-                                                projection_keys,
-                                                page_len);
-    if(q) {
-        //add query to map
-        ChaosWriteLock wmap_loc(map_query_future_mutex);
-        map_query_future.insert(make_pair(q->queryID(), q));
+void IODirectIOPSMsgDriver::tryCacheInit() {
+  if (have_direct_cache == -1) {
+    have_direct_cache = 0;
+
+    std::string cache_impl_name = setpar.cache_driver_impl;
+    IODirectIOPSMsgDriver_DLDBG_ << "Try initialize Cache:" << cache_impl_name;
+
+    cache_driver.reset(ObjectFactoryRegister<chaos::common::cache_system::CacheDriver>::getInstance()->getNewInstanceByName(cache_impl_name),
+                       cache_impl_name);
+    if (cache_driver.get()) {
+      try {
+        cache_driver.init((void*)&setpar, __PRETTY_FUNCTION__);
+        IODirectIOPSMsgDriver_DLDBG_ << "direct cache initialized";
+        have_direct_cache = 1;
+      } catch (CException& e) {
+        cache_driver.reset(NULL, cache_impl_name);
+        throw e;
+      } catch (...) {
+        cache_driver.reset(NULL, cache_impl_name);
+      }
     } else {
-        releaseQuery(q);
+      IODirectIOPSMsgDriver_DLDBG_ << "cache driver " << cache_impl_name << " NOT found";
     }
-    return q;
+    // try to initialize
+  }
 }
 
-QueryCursor *IODirectIOPSMsgDriver::performQuery(const std::string& key,
-                                            const uint64_t start_ts,
-                                            const uint64_t end_ts,
-                                            const uint64_t sequid,
-                                            const uint64_t runid,
-                                            const ChaosStringSet& meta_tags,
-                                            const ChaosStringSet& projection_keys,
-                                            uint32_t page_len) {
+/*
+ * retrieveRawData
+ */
+CDWUniquePtr IODirectIOPSMsgDriver::retrieveData(const std::string& key) {
+  tryCacheInit();
+  if (cache_driver.get()) {
+    chaos::common::data::CDWShrdPtr r = cache_driver->getData(key);
+    if (r.get()) {
+      return r->clone();
+    }
+    return CDWUniquePtr();
+  }
+  return chaos::common::network::NetworkBroker::getInstance()->getMetadataserverMessageChannel()->retrieveData(key);
+}
+
+int IODirectIOPSMsgDriver::loadDatasetTypeFromSnapshotTag(const std::string&      restore_point_tag_name,
+                                                          const std::string&      key,
+                                                          uint32_t                dataset_type,
+                                                          chaos_data::CDWShrdPtr& cdw_shrd_ptr) {
+  // return IODirectIODriver::loadDatasetTypeFromSnapshotTag(restore_point_tag_name,key,dataset_type,cdw_shrd_ptr);
+  chaos::common::data::CDataWrapper data_set;
+  int                               err = chaos::common::network::NetworkBroker::getInstance()->getMetadataserverMessageChannel()->loadSnapshotNodeDataset(restore_point_tag_name, key, data_set);
+  // IODirectIOPSMsgDriver_DLDBG_<<"SNAPSHOT:"<<data_set.getJSONString();
+  if ((dataset_type == DatasetTypeInput) && data_set.hasKey(DataPackID::INPUT_DATASET_ID) && data_set.isCDataWrapperValue(DataPackID::INPUT_DATASET_ID)) {
+    cdw_shrd_ptr.reset(data_set.getCSDataValue(DataPackID::INPUT_DATASET_ID).release());
+
+  } else if ((dataset_type == DatasetTypeOutput) && data_set.hasKey(DataPackID::OUTPUT_DATASET_ID) && data_set.isCDataWrapperValue(DataPackID::OUTPUT_DATASET_ID)) {
+    cdw_shrd_ptr.reset(data_set.getCSDataValue(DataPackID::OUTPUT_DATASET_ID).release());
+
+  } else {
+    IODirectIOPSMsgDriver_LERR_ << " NOR INPUT OR OUTPUT snapshot selected " << data_set.getJSONString();
+    //  cdw_shrd_ptr.reset(data_set.clone().release());
+  }
+  if (cdw_shrd_ptr.get()) {
+    IODirectIOPSMsgDriver_DLDBG_ << "SNAPSHOT type:" << dataset_type << " VAL:" << cdw_shrd_ptr->getJSONString();
+  }
+  return err;
+}
+
+QueryCursor* IODirectIOPSMsgDriver::performQuery(const std::string&    key,
+                                                 const uint64_t        start_ts,
+                                                 const uint64_t        end_ts,
+                                                 const ChaosStringSet& meta_tags,
+                                                 const ChaosStringSet& projection_keys,
+                                                 const uint32_t        page_len) {
+  // IODirectIOPSMsgDriver_DLDBG_<<"query "<<key<<" start:"<<start_ts<<" end:"<<end_ts;
+  QueryCursor* q = new QueryCursorRPC(UUIDUtil::generateUUID(),
+                                      key,
+                                      start_ts,
+                                      end_ts,
+                                      meta_tags,
+                                      projection_keys,
+                                      page_len);
+  if (q) {
+    // add query to map
+    ChaosWriteLock wmap_loc(map_query_future_mutex);
+    map_query_future.insert(make_pair(q->queryID(), q));
+  } else {
+    releaseQuery(q);
+  }
+  return q;
+}
+
+QueryCursor* IODirectIOPSMsgDriver::performQuery(const std::string&    key,
+                                                 const uint64_t        start_ts,
+                                                 const uint64_t        end_ts,
+                                                 const uint64_t        sequid,
+                                                 const uint64_t        runid,
+                                                 const ChaosStringSet& meta_tags,
+                                                 const ChaosStringSet& projection_keys,
+                                                 uint32_t              page_len) {
   //  IODirectIOPSMsgDriver_DLDBG_<<"query "<<key<<" start:"<<start_ts<<" end:"<<end_ts;
 
-    QueryCursor *q = new QueryCursorRPC(UUIDUtil::generateUUID(),
-                                     key,
-                                     start_ts,
-                                     end_ts,
-                                     sequid,
-                                     runid,
-                                     meta_tags,
-                                     projection_keys,
-                                     page_len);
-    if(q) {
-        //add query to map
-        ChaosWriteLock wmap_loc(map_query_future_mutex);
-        map_query_future.insert(make_pair(q->queryID(), q));
-    } else {
-        releaseQuery(q);
-    }
-    return q;
+  QueryCursor* q = new QueryCursorRPC(UUIDUtil::generateUUID(),
+                                      key,
+                                      start_ts,
+                                      end_ts,
+                                      sequid,
+                                      runid,
+                                      meta_tags,
+                                      projection_keys,
+                                      page_len);
+  if (q) {
+    // add query to map
+    ChaosWriteLock wmap_loc(map_query_future_mutex);
+    map_query_future.insert(make_pair(q->queryID(), q));
+  } else {
+    releaseQuery(q);
+  }
+  return q;
 }
-

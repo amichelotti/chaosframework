@@ -15,6 +15,8 @@
 #include <chaos/common/utility/InizializableService.h>
 #include <chaos/common/io/IODataDriver.h>
 #include <chaos/common/batch_command/BatchCommandTypes.h>
+#include <chaos/common/property/property.h>
+
 #define DEFAULT_TIMEOUT_FOR_CONTROLLER 10000000
 namespace chaos {
   namespace metadata_service{
@@ -149,6 +151,12 @@ int deleteDataCloud(const std::string& key,
                                        const uint64_t end_ts,int32_t millisec_to_wait=10000);
 
 
+chaos::common::data::CDWUniquePtr updateProperty(const std::string& node_unique_id,chaos::common::property::PropertyGroup& node_property_group);
+  
+
+chaos::common::data::CDWUniquePtr updateProperty(const std::string& node_unique_id,
+                                       chaos::common::property::PropertyGroupVector& node_property_group_vector);
+  
 };
 }  // namespace service_common
 }  // namespace chaos

@@ -46,14 +46,19 @@ CDWUniquePtr RetrieveMultipleData::execute(CDWUniquePtr api_data) {
     ChaosStringVector nodes;
     chaos::common::data::VectorCDWShrdPtr res;
     if(api_data->hasKey("nodes")&&api_data->isVectorValue("nodes")){
-         CMultiTypeDataArrayWrapperSPtr d = api_data->getVectorValue("tags");
+         CMultiTypeDataArrayWrapperSPtr d = api_data->getVectorValue("nodes");
         for(int idx = 0;idx < d->size();idx++) {
             nodes.push_back(d->getStringElementAtIndex(idx));
         }
         err=execute(nodes,res);
         if(err==0){
             for(VectorObject::iterator i=res.begin();i!=res.end();i++){
-             result->appendCDataWrapperToArray(*(i->get()));   
+              if(i->get()){
+                result->appendCDataWrapperToArray(*(i->get()));   
+              } else {
+                result->appendCDataWrapperToArray(CDataWrapper());   
+
+              }
             }
             result->finalizeArrayForKey("data");
 
@@ -73,24 +78,7 @@ int RetrieveMultipleData::execute(const ChaosStringVector& keys,chaos::common::d
 CacheDriver& cache_slot = DriverPoolManager::getInstance()->getCacheDrv();
   try {
     //get data
-    MultiCacheData multi_cached_data;
-    err = cache_slot.getData(keys,
-                             multi_cached_data);
-    for (ChaosStringVectorConstIterator it  = keys.begin(),
-                                        end = keys.end();
-         it != end;
-         it++) {
-      const CacheData& cached_element = multi_cached_data[*it];
-      if (!cached_element ||
-          cached_element->size() == 0) {
-            result.push_back(chaos::common::data::CDWShrdPtr());
-       
-      } else {
-        result.push_back(chaos::common::data::CDWShrdPtr((chaos::common::data::CDataWrapper*)cached_element->data()));
-
-       
-      }
-    }
+    result=cache_slot.getData(keys);
 
   } catch (...) {
       ERR<<" CATCH ERROR";
