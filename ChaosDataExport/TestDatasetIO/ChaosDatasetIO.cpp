@@ -42,7 +42,7 @@ namespace driver{
         groupName(group_name),
         ageing(3600),
         storageType((int)chaos::DataServiceNodeDefinitionType::DSStorageTypeLiveHistory),
-        timeo(5000),
+        timeo(RpcConfigurationKey::GlobalRPCTimeoutinMSec),
         entry_created(false),
         query_index(0),
         defaultPage(30),

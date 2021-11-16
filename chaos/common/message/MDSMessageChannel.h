@@ -122,7 +122,7 @@ namespace chaos {
                  */
                 int sendNodeRegistration(chaos::common::data::CDWUniquePtr node_description,
                                          bool requestCheck = false,
-                                         uint32_t millisec_to_wait = 5000);
+                                         uint32_t millisec_to_wait = RpcConfigurationKey::GlobalRPCTimeoutinMSec);
                 
                 //! Send node load completion to MDS
                 /*!
@@ -133,7 +133,7 @@ namespace chaos {
                  */
                 int sendNodeLoadCompletion(chaos::common::data::CDWUniquePtr node_information,
                                            bool requestCheck = false,
-                                           uint32_t millisec_to_wait = 5000);
+                                           uint32_t millisec_to_wait = RpcConfigurationKey::GlobalRPCTimeoutinMSec);
                 
                 //! Send Unit server CU states to MDS
                 /*!
@@ -145,12 +145,12 @@ namespace chaos {
                 
                 int sendUnitServerCUStates(chaos::common::data::CDWUniquePtr deviceDataset,
                                            bool requestCheck = false,
-                                           uint32_t millisec_to_wait=5000);
+                                           uint32_t millisec_to_wait=RpcConfigurationKey::GlobalRPCTimeoutinMSec);
                 
                 //!sendNode heartbeat
                 int sentNodeHealthStatus(chaos::common::data::CDWUniquePtr node_health_data,
                                          bool request_check = false,
-                                         uint32_t millisec_to_wait=5000);
+                                         uint32_t millisec_to_wait=RpcConfigurationKey::GlobalRPCTimeoutinMSec);
                 
                 //! Get all active device id
                 /*!
@@ -159,7 +159,7 @@ namespace chaos {
                  \param millisec_to_wait delay after wich the wait is interrupt
                  */
                 int getAllDeviceID(vector<string>& deviceIDVec,
-                                   uint32_t millisec_to_wait=5000);
+                                   uint32_t millisec_to_wait=RpcConfigurationKey::GlobalRPCTimeoutinMSec);
                 
                 //! Get node address for identification id
                 /*!
@@ -171,7 +171,7 @@ namespace chaos {
                  */
                 int getNetworkAddressForDevice(const std::string& identificationID,
                                                chaos::common::network::CDeviceNetworkAddress** deviceNetworkAddress,
-                                               uint32_t millisec_to_wait=5000);
+                                               uint32_t millisec_to_wait=RpcConfigurationKey::GlobalRPCTimeoutinMSec);
                 
                 //! Get curent dataset for device
                 /*!
@@ -183,7 +183,7 @@ namespace chaos {
                  */
                 int getLastDatasetForDevice(const std::string& identificationID,
                                             chaos::common::data::CDWUniquePtr& device_definition,
-                                            uint32_t millisec_to_wait=5000);
+                                            uint32_t millisec_to_wait=RpcConfigurationKey::GlobalRPCTimeoutinMSec);
                 
                 //! Get full node description
                 /*!
@@ -195,13 +195,13 @@ namespace chaos {
                  */
                 int getFullNodeDescription(const std::string& identificationID,
                                            chaos::common::data::CDWUniquePtr& device_definition,
-                                           uint32_t millisec_to_wait=5000);
+                                           uint32_t millisec_to_wait=RpcConfigurationKey::GlobalRPCTimeoutinMSec);
                 //! return the configuration for the data driver
                 /*!
                  Return the besta available data service at the monent within the configuraiton for data driver
                  */
                 int getDataDriverBestConfiguration(chaos::common::data::CDWUniquePtr& device_definition,
-                                                   uint32_t millisec_to_wait=5000);
+                                                   uint32_t millisec_to_wait=RpcConfigurationKey::GlobalRPCTimeoutinMSec);
                 
                 //!Create a new snapshot
                 /*!
@@ -213,7 +213,7 @@ namespace chaos {
                  */
                 int createNewSnapshot(const std::string& snapshot_name,
                                       const ChaosStringVector& node_list,
-                                      uint32_t millisec_to_wait=5000);
+                                      uint32_t millisec_to_wait=RpcConfigurationKey::GlobalRPCTimeoutinMSec);
                 
                 //!Restore a snapshot
                 /*!
@@ -225,7 +225,7 @@ namespace chaos {
                  \return error code
                  */
                 int restoreSnapshot(const std::string& snapshot_name,
-                                    uint32_t millisec_to_wait=5000);
+                                    uint32_t millisec_to_wait=RpcConfigurationKey::GlobalRPCTimeoutinMSec);
                 
                 //! Delete a snapshoot
                 /*!
@@ -234,7 +234,7 @@ namespace chaos {
                  \return error code
                  */
                 int deleteSnapshot(const std::string& snapshot_name,
-                                   uint32_t millisec_to_wait=5000);
+                                   uint32_t millisec_to_wait=RpcConfigurationKey::GlobalRPCTimeoutinMSec);
                 
                 //! Search on snapshot
                 /*!
@@ -245,7 +245,7 @@ namespace chaos {
                  */
                 int searchSnapshot(const std::string& query_filter,
                                    ChaosStringVector& snapshot_found,
-                                   uint32_t millisec_to_wait=5000);
+                                   uint32_t millisec_to_wait=RpcConfigurationKey::GlobalRPCTimeoutinMSec);
                 
                 
                 //! Search on snapshot
@@ -257,7 +257,7 @@ namespace chaos {
                  */
                 int searchSnapshot(const std::string& query_filter,
                                    std::map<uint64_t,std::string>& snapshot_found,
-                                   uint32_t millisec_to_wait=5000);
+                                   uint32_t millisec_to_wait=RpcConfigurationKey::GlobalRPCTimeoutinMSec);
                 
                 //! Search node for snapshot
                 /*!
@@ -268,31 +268,31 @@ namespace chaos {
                  */
                 int searchNodeForSnapshot(const std::string& snapshot_name,
                                           ChaosStringVector& node_found,
-                                          uint32_t millisec_to_wait=5000);
+                                          uint32_t millisec_to_wait=RpcConfigurationKey::GlobalRPCTimeoutinMSec);
                 
                 //! retrieve a dataset related to a snapshot name of a given cu
                 int loadSnapshotNodeDataset(const std::string& snapname,
                                             const std::string& cu_name,
                                             chaos::common::data::CDataWrapper& data_set,
-                                            uint32_t millisec_to_wait=5000);
+                                            uint32_t millisec_to_wait=RpcConfigurationKey::GlobalRPCTimeoutinMSec);
                 //! create or update a variable
                 int setVariable(const std::string& variable_name,
                                 chaos::common::data::CDataWrapper& variable_value,
-                                uint32_t millisec_to_wait=5000);
+                                uint32_t millisec_to_wait=RpcConfigurationKey::GlobalRPCTimeoutinMSec);
                 
                 //! retrieve a variable value
                 int getVariable(const std::string& variable_name,
                                 chaos::common::data::CDWUniquePtr& variable_value,
-                                uint32_t millisec_to_wait=5000);
+                                uint32_t millisec_to_wait=RpcConfigurationKey::GlobalRPCTimeoutinMSec);
                 
                 //!remove a variable
                 int removeVariable(const std::string& variable_name,
-                                   uint32_t millisec_to_wait=5000);
+                                   uint32_t millisec_to_wait=RpcConfigurationKey::GlobalRPCTimeoutinMSec);
                 
                 //!remove a variable
                 int searchVariable(const std::string& variable_name,
                                    ChaosStringVector& variable_found,
-                                   uint32_t millisec_to_wait=5000);
+                                   uint32_t millisec_to_wait=RpcConfigurationKey::GlobalRPCTimeoutinMSec);
                 //! Search snapshot for node
                 /*!
                  \param node_uid tha unique id of the node
@@ -302,7 +302,7 @@ namespace chaos {
                  */
                 int searchSnapshotForNode(const std::string& node_uid,
                                           ChaosStringVector& snapshot_found,
-                                          uint32_t millisec_to_wait=5000);
+                                          uint32_t millisec_to_wait=RpcConfigurationKey::GlobalRPCTimeoutinMSec);
                 
                 //!search for chaos node
                 int searchNode(const std::string& unique_id_filter,
@@ -311,7 +311,7 @@ namespace chaos {
                                unsigned int last_node_sequence_id,
                                unsigned int page_length,
                                ChaosStringVector& node_found,
-                               uint32_t millisec_to_wait=5000,const std::string& impl="");
+                               uint32_t millisec_to_wait=RpcConfigurationKey::GlobalRPCTimeoutinMSec,const std::string& impl="");
                 
                 //! works with pages instead with sequenceid
                 int searchNode(const std::string& unique_id_filter,
@@ -321,7 +321,7 @@ namespace chaos {
                                unsigned int page_length,
                                unsigned int& num_of_page,
                                ChaosStringVector& node_found,
-                               uint32_t millisec_to_wait=5000,const std::string& impl="");
+                               uint32_t millisec_to_wait=RpcConfigurationKey::GlobalRPCTimeoutinMSec,const std::string& impl="");
                 //! send custom message to the servers
                 /*!
                  \param message_pack memory is not managed to the ownershiw is not keeped
@@ -344,7 +344,7 @@ namespace chaos {
                                                                                        int32_t request_timeout = 1000);
 
                int getScriptDesc(const std::string& scriptID,chaos::common::data::CDWUniquePtr& res,
-                               uint32_t millisec_to_wait=5000); 
+                               uint32_t millisec_to_wait=RpcConfigurationKey::GlobalRPCTimeoutinMSec); 
 
                 //! Performs query on a key
                     /*!

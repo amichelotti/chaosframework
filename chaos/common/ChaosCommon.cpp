@@ -398,7 +398,7 @@ void ChaosAbstractCommon::deinit() {
 
 void ChaosAbstractCommon::start() {}
 void ChaosAbstractCommon::stop() {
-    CHAOS_NOT_THROW(common::utility::StartableService::stopImplementation(NetworkBroker::getInstance(), "NetworkBroker", __PRETTY_FUNCTION__););
+   // CHAOS_NOT_THROW(common::utility::StartableService::stopImplementation(NetworkBroker::getInstance(), "NetworkBroker", __PRETTY_FUNCTION__););
 
 }
 

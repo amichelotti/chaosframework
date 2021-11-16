@@ -139,7 +139,7 @@ ChaosManager::ChaosManager()
 
   if (mdsChannel) {
     CDWUniquePtr best_available_da_ptr;
-    if (!mdsChannel->getDataDriverBestConfiguration(best_available_da_ptr, 5000)) {
+    if (!mdsChannel->getDataDriverBestConfiguration(best_available_da_ptr, RpcConfigurationKey::GlobalRPCTimeoutinMSec)) {
       //InizializableService::initImplementation(chaos::service_common::ChaosManager::getInstance(), (void*)best_available_da_ptr.get(), "ChaosManager", __PRETTY_FUNCTION__);
       chaos::common::network::NetworkBroker::getInstance()->disposeMessageChannel(mdsChannel);
 

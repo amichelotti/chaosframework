@@ -17,7 +17,6 @@
 #include <chaos/common/batch_command/BatchCommandTypes.h>
 #include <chaos/common/property/property.h>
 
-#define DEFAULT_TIMEOUT_FOR_CONTROLLER 10000000
 namespace chaos {
   namespace metadata_service{
     class ChaosMetadataService;
@@ -77,7 +76,7 @@ class ChaosManager : public chaos::common::utility::SingletonCW<ChaosManager>{
                  unsigned int                    page_length,
                  uint32_t&                       numberofpage,
                  ChaosStringVector&              node_found,
-                 uint32_t                        millisec_to_wait=5000,
+                 uint32_t                        millisec_to_wait=RpcConfigurationKey::GlobalRPCTimeoutinMSec,
                  const std::string&              impl="");
  chaos::common::data::CDWUniquePtr nodeGetDescription(const std::string& uid);
 chaos::common::data::CDWUniquePtr cuGetFullDescription(const std::string& uid);
