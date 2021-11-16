@@ -162,15 +162,23 @@ load_config(){
         error_mesg "localhost configuration file not found in \"$MDS_CONFIG\" " "start skipped"
         exit 1
     fi
-    
-    info_mesg "transferring configuration to MDS " "$MDS_CONFIG"
-    if ! jchaosctl --server http://localhost:8081 --upload $MDS_CONFIG >& $CHAOS_PREFIX/log/jchaosctl.config.std.out ;then
-        error_mesg "failed initialization of " "MDS with $MDS_CONFIG"
+    if $CHAOS_TOOLS/wait-for.sh localhost:8081 -t 60; then
+
+        info_mesg "waiting 10 before trasferring configuration  " "$MDS_CONFIG"
+        sleep 10;
+        info_mesg "transferring configuration to MDS " "$MDS_CONFIG"
+        if ! jchaosctl --server http://localhost:8081 --upload $MDS_CONFIG >& $CHAOS_PREFIX/log/jchaosctl.config.std.out ;then
+            error_mesg "failed initialization of " "MDS with $MDS_CONFIG"
+            exit 1
+        fi
+        info_mesg "initialization " "OK, wait 20s"
+        sleep 20
+        backend_checks
+    else
+        error_mesg "cannot contact webui" " exiting"
         exit 1
+
     fi
-    info_mesg "initialization " "OK, wait 20s"
-    sleep 20
-    backend_checks
 }
 
 start_us(){

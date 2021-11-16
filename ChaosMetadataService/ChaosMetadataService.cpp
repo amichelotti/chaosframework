@@ -326,6 +326,7 @@ void ChaosMetadataService::start() {
     deinit();
   } catch (CException& ex) {
     DECODE_CHAOS_EXCEPTION(ex)
+    exit(1);
   }
 }
 

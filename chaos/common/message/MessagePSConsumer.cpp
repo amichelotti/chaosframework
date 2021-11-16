@@ -32,9 +32,11 @@ static void removeElement(ele_t*p){
     delete p;
 }
 MessagePSConsumer::~MessagePSConsumer() {
-    MRDDBG_ << que_elem<<"] consuming all messages";
-
+    
+    if(!msgs.empty()){
+      MRDDBG_ << que_elem<<"] consuming all messages"; 
      msgs.consume_all(removeElement);
+    }
               
 }
 int MessagePSConsumer::getMsgAsync(const std::string& key, const int32_t pnum) {

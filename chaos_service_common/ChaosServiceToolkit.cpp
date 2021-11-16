@@ -104,10 +104,10 @@ void ChaosServiceToolkit::init(void* init_data) {
     }
 
     //force first allocation of metadata logging
-    if (GlobalConfiguration::getInstance()->getMetadataServerAddressList().size()) {
+    //if (GlobalConfiguration::getInstance()->getMetadataServerAddressList().size()) {
       //we can initilize the logging manager
-      InizializableService::initImplementation(chaos::common::metadata_logging::MetadataLoggingManager::getInstance(), NULL, "MetadataLoggingManager", __PRETTY_FUNCTION__);
-    }
+  //    InizializableService::initImplementation(chaos::common::metadata_logging::MetadataLoggingManager::getInstance(), NULL, "MetadataLoggingManager", __PRETTY_FUNCTION__);
+   // }
     StartableService::initImplementation(HealtManager::getInstance(), NULL, "HealtManager", __PRETTY_FUNCTION__);
    // StartableService::initImplementation(DataManager::getInstance(), NULL, "DataManager", "ChaosServiceToolkit::init");
 
@@ -165,7 +165,7 @@ void ChaosServiceToolkit::deinit() {
   LAPP_ << "Deinitilizzating !CHAOS Common Service";
   
 //  CHAOS_NOT_THROW(StartableService::deinitImplementation(DataManager::getInstance(), "DataManager", "ChaosServiceToolkit::deinit"););
-  CHAOS_NOT_THROW(InizializableService::deinitImplementation(MetadataLoggingManager::getInstance(), "MetadataLoggingManager", __PRETTY_FUNCTION__););
+  //CHAOS_NOT_THROW(InizializableService::deinitImplementation(MetadataLoggingManager::getInstance(), "MetadataLoggingManager", __PRETTY_FUNCTION__););
   CHAOS_NOT_THROW(StartableService::deinitImplementation(HealtManager::getInstance(), "HealtManager", __PRETTY_FUNCTION__););
   CHAOS_NOT_THROW(InizializableService::deinitImplementation(SharedManagedDirecIoDataDriver::getInstance(), "SharedManagedDirecIoDataDriver", __PRETTY_FUNCTION__););
   ChaosCommon<ChaosServiceToolkit>::deinit();

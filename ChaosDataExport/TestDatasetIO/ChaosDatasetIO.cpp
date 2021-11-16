@@ -42,13 +42,13 @@ namespace driver{
         groupName(group_name),
         ageing(3600),
         storageType((int)chaos::DataServiceNodeDefinitionType::DSStorageTypeLiveHistory),
-        timeo(5000),
+        timeo(RpcConfigurationKey::GlobalRPCTimeoutinMSec),
         entry_created(false),
         query_index(0),
         defaultPage(30),
         last_seq(0),
         last_push_rate_grap_ts(0),deinitialized(false) {
-            InizializableService::initImplementation(chaos::common::io::SharedManagedDirecIoDataDriver::getInstance(), NULL, "SharedManagedDirecIoDataDriver", __PRETTY_FUNCTION__);
+           // InizializableService::initImplementation(chaos::common::io::SharedManagedDirecIoDataDriver::getInstance(), NULL, "SharedManagedDirecIoDataDriver", __PRETTY_FUNCTION__);
             
             //ioLiveDataDriver =  chaos::metadata_service_client::ChaosMetadataServiceClient::getInstance()->getDataProxyChannelNewInstance();
             ioLiveDataDriver =chaos::common::io::SharedManagedDirecIoDataDriver::getInstance()->getSharedDriver();
@@ -461,13 +461,13 @@ namespace driver{
             chaos::common::async_central::AsyncCentralManager::getInstance()->removeTimer(this);
             DEBUG_CODE(DPD_LDBG << "Timer removed");
             
-            CHAOS_NOT_THROW(StartableService::stopImplementation(HealtManager::getInstance(), "HealtManager", __PRETTY_FUNCTION__););
-            DEBUG_CODE(DPD_LDBG << "Health stopped");
+          //  CHAOS_NOT_THROW(StartableService::stopImplementation(HealtManager::getInstance(), "HealtManager", __PRETTY_FUNCTION__););
+          //  DEBUG_CODE(DPD_LDBG << "Health stopped");
             
-            CHAOS_NOT_THROW(StartableService::deinitImplementation(HealtManager::getInstance(), "HealtManager", __PRETTY_FUNCTION__););
-            DEBUG_CODE(DPD_LDBG << "Health deinitialized");
+          //  CHAOS_NOT_THROW(StartableService::deinitImplementation(HealtManager::getInstance(), "HealtManager", __PRETTY_FUNCTION__););
+         //   DEBUG_CODE(DPD_LDBG << "Health deinitialized");
             
-            CHAOS_NOT_THROW(InizializableService::deinitImplementation(chaos::common::io::SharedManagedDirecIoDataDriver::getInstance(), "SharedManagedDirecIoDataDriver", __PRETTY_FUNCTION__););
+           // CHAOS_NOT_THROW(InizializableService::deinitImplementation(chaos::common::io::SharedManagedDirecIoDataDriver::getInstance(), "SharedManagedDirecIoDataDriver", __PRETTY_FUNCTION__););
         }
     }
 }
