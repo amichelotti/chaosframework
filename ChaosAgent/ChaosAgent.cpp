@@ -178,10 +178,13 @@ void ChaosAgent::stop() {
     LAPP_<<"STOP";
 
     CHAOS_NOT_THROW(StartableService::stopImplementation(HealtManager::getInstance(), "HealthManager", __PRETTY_FUNCTION__););
-    agent_register.stop(__PRETTY_FUNCTION__);
 #ifndef OLD_PROCESS_MANAGEMENT
     procRestUtil->stop();
+    procRestUtil.reset();
+
 #endif
+
+    agent_register.stop(__PRETTY_FUNCTION__);
     CHAOS_NOT_THROW(ChaosCommon<ChaosAgent>::stop(););
 }
 
