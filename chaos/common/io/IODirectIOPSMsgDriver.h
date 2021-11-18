@@ -53,6 +53,7 @@ namespace chaos{
               std::string msgbrokerdrv;
               chaos::common::message::producer_uptr_t prod;
               chaos::common::message::consumer_uptr_t cons;
+              chaos::common::message::MDSMessageChannel *mds_channel;
               void defaultHandler( chaos::common::message::ele_t& data);
                boost::mutex hmutex;
                std::map<std::string,chaos::common::message::msgHandler> handler_map;

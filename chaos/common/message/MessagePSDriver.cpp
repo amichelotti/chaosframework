@@ -45,7 +45,7 @@ producer_uptr_t                        MessagePSDriver::getNewProducerDriver(con
   if (GlobalConfiguration::getInstance()->hasOption(InitOption::OPT_MSG_PRODUCER_KVP)) {
     std::vector<std::string>           opt = GlobalConfiguration::getInstance()->getOption<std::vector<std::string> >(InitOption::OPT_MSG_PRODUCER_KVP);
     std::map<std::string, std::string> kv;
-    GlobalConfiguration::fillKVParameter(kv, opt, "");
+    fillKVParameter(kv, opt, "");
     for (std::map<std::string, std::string>::iterator i = kv.begin(); i != kv.end(); i++) {
       ret->setOption(i->first, i->second);
     }
@@ -88,7 +88,7 @@ consumer_uptr_t MessagePSDriver::getNewConsumerDriver(const std::string& drvname
   if (GlobalConfiguration::getInstance()->hasOption(InitOption::OPT_MSG_CONSUMER_KVP)) {
     std::vector<std::string>           opt = GlobalConfiguration::getInstance()->getOption<std::vector<std::string> >(InitOption::OPT_MSG_CONSUMER_KVP);
     std::map<std::string, std::string> kv;
-    GlobalConfiguration::fillKVParameter(kv, opt, "");
+    fillKVParameter(kv, opt, "");
     for (std::map<std::string, std::string>::iterator i = kv.begin(); i != kv.end(); i++) {
       ret->setOption(i->first, i->second);
     }

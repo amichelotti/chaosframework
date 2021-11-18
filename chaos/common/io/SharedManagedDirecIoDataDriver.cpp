@@ -27,13 +27,13 @@ void SharedManagedDirecIoDataDriver::init(void *data)  {
     ChaosWriteLock wl(init_mtx);
     if(getServiceState() == CUStateKey::INIT) {return;}
     shared_data_driver.reset(new ManagedDirectIODataDriver());
-    InizializableService::initImplementation(shared_data_driver.get(), NULL, "SharedManagedDirecIoDataDriver", __PRETTY_FUNCTION__);
+   // InizializableService::initImplementation(shared_data_driver.get(), NULL, "SharedManagedDirecIoDataDriver", __PRETTY_FUNCTION__);
 }
 
 void SharedManagedDirecIoDataDriver::deinit()  {
     ChaosWriteLock wl(init_mtx);
     if(getServiceState() == CUStateKey::DEINIT) {return;}
-    InizializableService::deinitImplementation(shared_data_driver.get(), "SharedManagedDirecIoDataDriver", __PRETTY_FUNCTION__);
+  //  InizializableService::deinitImplementation(shared_data_driver.get(), "SharedManagedDirecIoDataDriver", __PRETTY_FUNCTION__);
 }
 
 const ChaosSharedPtr<chaos::common::io::ManagedDirectIODataDriver>& SharedManagedDirecIoDataDriver::getSharedDriver() {

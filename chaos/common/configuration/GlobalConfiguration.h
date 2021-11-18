@@ -348,9 +348,10 @@ x = hasOption(y);
         //! return the script virtualmachine key value parameter
         MapStrKeyStrValue& getScriptVMKVParam();
         
-        static void fillKVParameter(std::map<std::string, std::string>& kvmap,
+        
+    };
+    void fillKVParameter(std::map<std::string, std::string>& kvmap,
                                     const std::vector<std::string>& kv_vector,
                                     const std::string& regex);
-    };
 }
 #endif

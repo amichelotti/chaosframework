@@ -46,7 +46,7 @@ DEFINE_CLASS_FACTORY(IODirectIOPSMsgDriver, IODataDriver);
 
 // using namespace memcache;
 IODirectIOPSMsgDriver::IODirectIOPSMsgDriver(const std::string& alias)
-    : IODirectIODriver(alias), have_direct_cache(-1) {
+    : IODirectIODriver(alias), have_direct_cache(-1),mds_channel(NULL) {
   IODirectIOPSMsgDriver_DLDBG_ << "Instantiate:" << alias;
   msgbrokerdrv = "kafka-rdk";
   msgbrokerdrv = GlobalConfiguration::getInstance()->getOption<std::string>(InitOption::OPT_MSG_BROKER_DRIVER);
@@ -61,10 +61,14 @@ IODirectIOPSMsgDriver::IODirectIOPSMsgDriver(const std::string& alias)
   if (cons->handlersEmpty()) {
     cons->addHandler(chaos::common::message::MessagePublishSubscribeBase::ONARRIVE, boost::bind(&IODirectIOPSMsgDriver::defaultHandler, this, _1));
   }
+  mds_channel=chaos::common::network::NetworkBroker::getInstance()->getMetadataserverMessageChannel();
 }
 
 IODirectIOPSMsgDriver::~IODirectIOPSMsgDriver() {
   // SO that if used as shared pointer will be called once the object is destroyed
+  if(mds_channel){
+    chaos::common::network::NetworkBroker::getInstance()->disposeMessageChannel(mds_channel);
+  }
 }
 int IODirectIOPSMsgDriver::storeHealthData(const std::string&                           key,
                                            CDWShrdPtr                                   data_to_store,
@@ -129,7 +133,9 @@ int IODirectIOPSMsgDriver::addHandler(chaos::common::message::msgHandler cb) {
 
 void IODirectIOPSMsgDriver::deinit() {
   IODirectIODriver::deinit();
-  prod->stop();
+  if(prod.get()){
+    prod->stop();
+  }
   if (cons.get()) {
     cons->stop();
   }
@@ -237,7 +243,7 @@ chaos::common::data::CDataWrapper* IODirectIOPSMsgDriver::updateConfiguration(ch
 int IODirectIOPSMsgDriver::removeData(const std::string& key,
                                       uint64_t           start_ts,
                                       uint64_t           end_ts) {
-  return chaos::common::network::NetworkBroker::getInstance()->getMetadataserverMessageChannel()->deleteDataCloud(key, start_ts, end_ts);
+  return mds_channel->deleteDataCloud(key, start_ts, end_ts);
 }
 /**
  *
@@ -250,7 +256,7 @@ int IODirectIOPSMsgDriver::retriveMultipleData(const ChaosStringVector&         
     result = cache_driver->getData(key);
     return 0;
   }
-  return chaos::common::network::NetworkBroker::getInstance()->getMetadataserverMessageChannel()->retriveMultipleData(key, result);
+  return mds_channel->retriveMultipleData(key, result);
 }
 
 void IODirectIOPSMsgDriver::tryCacheInit() {
@@ -292,7 +298,7 @@ CDWUniquePtr IODirectIOPSMsgDriver::retrieveData(const std::string& key) {
     }
     return CDWUniquePtr();
   }
-  return chaos::common::network::NetworkBroker::getInstance()->getMetadataserverMessageChannel()->retrieveData(key);
+  return mds_channel->retrieveData(key);
 }
 
 int IODirectIOPSMsgDriver::loadDatasetTypeFromSnapshotTag(const std::string&      restore_point_tag_name,
@@ -301,7 +307,7 @@ int IODirectIOPSMsgDriver::loadDatasetTypeFromSnapshotTag(const std::string&    
                                                           chaos_data::CDWShrdPtr& cdw_shrd_ptr) {
   // return IODirectIODriver::loadDatasetTypeFromSnapshotTag(restore_point_tag_name,key,dataset_type,cdw_shrd_ptr);
   chaos::common::data::CDataWrapper data_set;
-  int                               err = chaos::common::network::NetworkBroker::getInstance()->getMetadataserverMessageChannel()->loadSnapshotNodeDataset(restore_point_tag_name, key, data_set);
+  int                               err = mds_channel->loadSnapshotNodeDataset(restore_point_tag_name, key, data_set);
   // IODirectIOPSMsgDriver_DLDBG_<<"SNAPSHOT:"<<data_set.getJSONString();
   if ((dataset_type == DatasetTypeInput) && data_set.hasKey(DataPackID::INPUT_DATASET_ID) && data_set.isCDataWrapperValue(DataPackID::INPUT_DATASET_ID)) {
     cdw_shrd_ptr.reset(data_set.getCSDataValue(DataPackID::INPUT_DATASET_ID).release());

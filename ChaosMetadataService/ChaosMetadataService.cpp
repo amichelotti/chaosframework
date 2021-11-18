@@ -156,24 +156,22 @@ void ChaosMetadataService::init(void* init_data) {
     timePrecisionMask = ~(tmp - 1);
     is_present        = false;
     if (getGlobalConfigurationInstance()->hasOption(OPT_CACHE_DRIVER_KVP)) {
-      GlobalConfiguration::fillKVParameter(setting.cache_driver_setting.key_value_custom_param,
-                                           getGlobalConfigurationInstance()->getOption<std::vector<std::string> >(OPT_CACHE_DRIVER_KVP),
-                                           "");
+      chaos::fillKVParameter(setting.cache_driver_setting.key_value_custom_param,
+                                           getGlobalConfigurationInstance()->getOption<std::vector<std::string> >(OPT_CACHE_DRIVER_KVP),"[a-zA-Z0-9/_-]+:[a-zA-Z0-9/_-]+");
+    
       //            fillKVParameter(setting.cache_driver_setting.key_value_custom_param,
       //                            getGlobalConfigurationInstance()->getOption< std::vector<std::string> >(OPT_CACHE_DRIVER_KVP));
     }
 
     if (getGlobalConfigurationInstance()->hasOption(OPT_OBJ_STORAGE_DRIVER_KVP)) {
-      GlobalConfiguration::fillKVParameter(setting.object_storage_setting.key_value_custom_param,
-                                           getGlobalConfigurationInstance()->getOption<std::vector<std::string> >(OPT_OBJ_STORAGE_DRIVER_KVP),
-                                           "");
+      chaos::fillKVParameter(setting.object_storage_setting.key_value_custom_param,
+                                           getGlobalConfigurationInstance()->getOption<std::vector<std::string> >(OPT_OBJ_STORAGE_DRIVER_KVP),"[a-zA-Z0-9/_-]+:[a-zA-Z0-9/_-]+");
       //            fillKVParameter(setting.object_storage_setting.key_value_custom_param,
       //                            getGlobalConfigurationInstance()->getOption< std::vector<std::string> >(OPT_OBJ_STORAGE_DRIVER_KVP));
     }
     if (getGlobalConfigurationInstance()->hasOption(OPT_LOG_STORAGE_DRIVER_KVP)) {
-      GlobalConfiguration::fillKVParameter(setting.log_storage_setting.key_value_custom_param,
-                                           getGlobalConfigurationInstance()->getOption<std::vector<std::string> >(OPT_LOG_STORAGE_DRIVER_KVP),
-                                           "");
+      chaos::fillKVParameter(setting.log_storage_setting.key_value_custom_param,
+                                           getGlobalConfigurationInstance()->getOption<std::vector<std::string> >(OPT_LOG_STORAGE_DRIVER_KVP),"[a-zA-Z0-9/_-]+:[a-zA-Z0-9/_-]+");
       //            fillKVParameter(setting.object_storage_setting.key_value_custom_param,
       //                            getGlobalConfigurationInstance()->getOption< std::vector<std::string> >(OPT_OBJ_STORAGE_DRIVER_KVP));
     }
