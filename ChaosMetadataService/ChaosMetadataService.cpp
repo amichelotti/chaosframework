@@ -74,8 +74,6 @@ ChaosMetadataService::~ChaosMetadataService() {}
 void ChaosMetadataService::init(int argc, const char* argv[]) {
   is_present = false;
   ChaosCommon<ChaosMetadataService>::init(argc, argv);
-
-  
 }
 //! stringbuffer parser
 /*
@@ -91,24 +89,24 @@ void ChaosMetadataService::init(istringstream& initStringStream) {
  */
 void ChaosMetadataService::init(void* init_data) {
   try {
-     getGlobalConfigurationInstance()->getConfiguration()->addBoolValue("ismds",true);
-   std::string gname;
-   if(getGlobalConfigurationInstance()->hasOption(InitOption::OPT_GROUP_NAME)){
-    gname=getGlobalConfigurationInstance()->getOption<std::string>(InitOption::OPT_GROUP_NAME);
-   }
-   if(gname.size()){
-    getGlobalConfigurationInstance()->getConfiguration()->addStringValue(InitOption::OPT_GROUP_NAME,gname);
-   } else {
-     getGlobalConfigurationInstance()->getConfiguration()->addStringValue(InitOption::OPT_GROUP_NAME,CDS_GROUP_NAME);
-   }
+    getGlobalConfigurationInstance()->getConfiguration()->addBoolValue("ismds", true);
+    std::string gname;
+    if (getGlobalConfigurationInstance()->hasOption(InitOption::OPT_GROUP_NAME)) {
+      gname = getGlobalConfigurationInstance()->getOption<std::string>(InitOption::OPT_GROUP_NAME);
+    }
+    if (gname.size()) {
+      getGlobalConfigurationInstance()->getConfiguration()->addStringValue(InitOption::OPT_GROUP_NAME, gname);
+    } else {
+      getGlobalConfigurationInstance()->getConfiguration()->addStringValue(InitOption::OPT_GROUP_NAME, CDS_GROUP_NAME);
+    }
 
-   if((!GlobalConfiguration::getInstance()->hasOption(InitOption::OPT_NODEUID))||(GlobalConfiguration::getInstance()->getConfiguration()->getStringValue(InitOption::OPT_NODEUID).size()==0)){
-			// change before NetworkBroker Initialization
-        	nodeuid="cds_"+chaos::GlobalConfiguration::getInstance()->getHostname();
-			LCND_LDBG << "'"<<InitOption::OPT_NODEUID <<"' not specified, setting uid to:"<<nodeuid;
-		
-			GlobalConfiguration::getInstance()->setNodeUID(nodeuid);
-    	}
+    if ((!GlobalConfiguration::getInstance()->hasOption(InitOption::OPT_NODEUID)) || (GlobalConfiguration::getInstance()->getConfiguration()->getStringValue(InitOption::OPT_NODEUID).size() == 0)) {
+      // change before NetworkBroker Initialization
+      nodeuid = "cds_" + chaos::GlobalConfiguration::getInstance()->getHostname();
+      LCND_LDBG << "'" << InitOption::OPT_NODEUID << "' not specified, setting uid to:" << nodeuid;
+
+      GlobalConfiguration::getInstance()->setNodeUID(nodeuid);
+    }
     ChaosCommon<ChaosMetadataService>::init(init_data);
 
     if (signal((int)SIGINT, ChaosMetadataService::signalHanlder) == SIG_ERR) {
@@ -133,7 +131,6 @@ void ChaosMetadataService::init(void* init_data) {
       // no cache server provided
       throw chaos::CException(-4, "No persistence's server list provided", __PRETTY_FUNCTION__);
     }
-  
 
     if (getGlobalConfigurationInstance()->hasOption(chaos::service_common::persistence::OPT_PERSITENCE_KV_PARAMTER)) {
       fillKVParameter(setting.persistence_kv_param_map,
@@ -207,7 +204,7 @@ void ChaosMetadataService::init(void* init_data) {
     if (!message_consumer.get()) throw chaos::CException(-7, "Error instantiating message data consumer", __PRETTY_FUNCTION__);
     message_consumer.init(NULL, __PRETTY_FUNCTION__);
 #endif
-  
+
     //! batch system
     StartableService::initImplementation(MDSBatchExecutor::getInstance(), NULL, "MDSBatchExecutor", __PRETTY_FUNCTION__);
 
@@ -225,7 +222,7 @@ void ChaosMetadataService::init(void* init_data) {
                                              "MDSConousManager",
                                              __PRETTY_FUNCTION__);
 
-   // InizializableService::initImplementation(SharedManagedDirecIoDataDriver::getInstance(), NULL, "SharedManagedDirecIoDataDriver", __PRETTY_FUNCTION__);
+    // InizializableService::initImplementation(SharedManagedDirecIoDataDriver::getInstance(), NULL, "SharedManagedDirecIoDataDriver", __PRETTY_FUNCTION__);
 
     StartableService::initImplementation(HealtManagerDirect::getInstance(), NULL, "HealtManagerDirect", __PRETTY_FUNCTION__);
 
@@ -237,30 +234,28 @@ void ChaosMetadataService::init(void* init_data) {
 }
 
 int ChaosMetadataService::notifyNewNode(const std::string& nod) {
-  if(nod==nodeuid){
-      LCND_LDBG << " NEW NODE ITS ME" << nod;
-      return 0;
+  if (nod == nodeuid) {
+    LCND_LDBG << " NEW NODE ITS ME" << nod;
+    return 0;
 
   } else {
-      LCND_LDBG << " NEW NODE:" << nod;
+    LCND_LDBG << " NEW NODE:" << nod;
   }
   {
-    int retry=10;
-  while((message_consumer.get()==NULL)&&(retry>0)){
-      LCND_LDBG << " not still ready to process request from :"<<nod;
+    int retry = 10;
+    while ((message_consumer.get() == NULL) && (retry > 0)) {
+      LCND_LDBG << " not still ready to process request from :" << nod;
       sleep(1);
       retry--;
-
-  }
-  if(retry==0){
+    }
+    if (retry == 0) {
       LCND_LERR << "INTERNAL ERROR:  consumer not started exiting";
       exit(1);
-
+    }
   }
-  }
-  if(message_consumer.get()==NULL){
-      LCND_LERR << " not yet ready to process... request from :"<<nod;
-      return -1;
+  if (message_consumer.get() == NULL) {
+    LCND_LERR << " not yet ready to process... request from :" << nod;
+    return -1;
   }
   return message_consumer->consumeHealthDataEvent(nod, 0, ChaosStringSetConstSPtr(), ChaosMakeSharedPtr<Buffer>());
 }
@@ -281,11 +276,19 @@ void ChaosMetadataService::start() {
           << "\nRPC Server address: " << NetworkBroker::getInstance()->getRPCUrl() << "\nDirectIO Server address: " << NetworkBroker::getInstance()->getDirectIOUrl() << CHAOS_FORMAT("\nData Service published with url: %1%", % NetworkBroker::getInstance()->getDirectIOUrl()) << "\nTime precision mask: " << std::hex << timePrecisionMask << std::dec << "\n----------------------------------------------------------------------";
 
     // register this process on persistence database
-    persistence::data_access::DataServiceDataAccess* ds_da      = DriverPoolManager::getInstance()->getPersistenceDataAccess<persistence::data_access::DataServiceDataAccess>();
-    LCND_LDBG << "-----REGISTERING "<<nodeuid;
-    chaos::common::data::CDWUniquePtr info=getBuildInfo(chaos::common::data::CDWUniquePtr());
+    persistence::data_access::DataServiceDataAccess* ds_da = DriverPoolManager::getInstance()->getPersistenceDataAccess<persistence::data_access::DataServiceDataAccess>();
+    LCND_LDBG << "-----REGISTERING " << nodeuid;
+    std::string hostport;
+
+    chaos::common::data::CDWUniquePtr info = getBuildInfo(chaos::common::data::CDWUniquePtr());
+    NetworkBroker::getInstance()->getPublishedHostAndPort(hostport);
+    info->addStringValue(NodeDefinitionKey::NODE_RPC_ADDR,
+                         hostport);
+    info->addStringValue(NodeDefinitionKey::NODE_HOST_NAME,
+                         chaos::GlobalConfiguration::getInstance()->getHostname());
     info->addStringValue(NodeDefinitionKey::NODE_IP_ADDR,
-                           chaos::GlobalConfiguration::getInstance()->getLocalServerAddressAnBasePort());
+                         chaos::GlobalConfiguration::getInstance()->getLocalServerAddressAnBasePort());
+
     ds_da->registerNode(setting.ha_zone_name,
                         nodeuid,
                         NetworkBroker::getInstance()->getDirectIOUrl(),
@@ -333,9 +336,9 @@ void ChaosMetadataService::start() {
 void ChaosMetadataService::timeout() {
   int                                              err = 0;
   HealthStat                                       service_proc_stat;
-  persistence::data_access::DataServiceDataAccess* ds_da  = DriverPoolManager::getInstance()->getPersistenceDataAccess<persistence::data_access::DataServiceDataAccess>();
-  persistence::data_access::NodeDataAccess*        n_da   = DriverPoolManager::getInstance()->getPersistenceDataAccess<persistence::data_access::NodeDataAccess>();
-  service_proc_stat.mds_received_timestamp                = TimingUtil::getTimeStamp();
+  persistence::data_access::DataServiceDataAccess* ds_da = DriverPoolManager::getInstance()->getPersistenceDataAccess<persistence::data_access::DataServiceDataAccess>();
+  persistence::data_access::NodeDataAccess*        n_da  = DriverPoolManager::getInstance()->getPersistenceDataAccess<persistence::data_access::NodeDataAccess>();
+  service_proc_stat.mds_received_timestamp               = TimingUtil::getTimeStamp();
   if (is_present == false) {
     bool presence = false;
     if (n_da->checkNodePresence(presence, nodeuid) != 0) {
@@ -365,13 +368,13 @@ void ChaosMetadataService::timeout() {
 bool ChaosMetadataService::isNodeAlive(const std::string& uid) {
   ChaosStringVector s;
   uint64_t          now = chaos::common::utility::TimingUtil::getTimeStamp();
-  if (alive_cache.count(uid)){
-      if((alive_cache[uid] >= (now - (2 * chaos::common::constants::HBTimersTimeoutinMSec)))){
-       // LCND_LDBG << uid<<" found in cache";
+  if (alive_cache.count(uid)) {
+    if ((alive_cache[uid] >= (now - (2 * chaos::common::constants::HBTimersTimeoutinMSec)))) {
+      // LCND_LDBG << uid<<" found in cache";
 
-        return true;
-      } 
-  }  
+      return true;
+    }
+  }
   s.push_back(uid);
   bool alive = areNodeAlive(s)[0];
   // LCND_LDBG<<"NODE:"<<uid<<" "<<((alive)?"TRUE":"FALSE");
@@ -465,22 +468,21 @@ int ChaosMetadataService::removeStorageData(const std::string& control_unit_foun
 static boost::mutex mutex_cache;
 void                ChaosMetadataService::updateLiveCache(const chaos::common::data::CDataWrapper* d) {
   if (d && d->hasKey(DataPackCommonKey::DPCK_TIMESTAMP) && d->hasKey(chaos::NodeDefinitionKey::NODE_UNIQUE_ID)) {
-    std::string  name = d->getStringValue(chaos::NodeDefinitionKey::NODE_UNIQUE_ID);
-    updateLiveCache(name,d->getInt64Value(DataPackCommonKey::DPCK_TIMESTAMP));
+    std::string name = d->getStringValue(chaos::NodeDefinitionKey::NODE_UNIQUE_ID);
+    updateLiveCache(name, d->getInt64Value(DataPackCommonKey::DPCK_TIMESTAMP));
   }
 }
-void  ChaosMetadataService::updateLiveCache(const std::string& name,int64_t t) {
-       boost::lock_guard<boost::mutex> l(mutex_cache);
-    if (alive_cache.count(name)) {
-      if (alive_cache[name] < t) {
-         //   LCND_LDBG << name<<" updated cache";
+void ChaosMetadataService::updateLiveCache(const std::string& name, int64_t t) {
+  boost::lock_guard<boost::mutex> l(mutex_cache);
+  if (alive_cache.count(name)) {
+    if (alive_cache[name] < t) {
+      //   LCND_LDBG << name<<" updated cache";
 
-        alive_cache[name] = t;
-      }
-    } else {
       alive_cache[name] = t;
     }
- 
+  } else {
+    alive_cache[name] = t;
+  }
 }
 
 std::vector<bool> ChaosMetadataService::areNodeAlive(const ChaosStringVector& uids) {
@@ -520,7 +522,7 @@ std::vector<bool> ChaosMetadataService::areNodeAlive(const ChaosStringVector& ui
       } else if (ca.hasKey(DataPackCommonKey::DPCK_TIMESTAMP)) {
         ts = ca.getInt64Value(DataPackCommonKey::DPCK_TIMESTAMP);
       }
-      updateLiveCache(*it,ts);
+      updateLiveCache(*it, ts);
       res.push_back((ts > (now - (2 * chaos::common::constants::HBTimersTimeoutinMSec))));
     }
   }
