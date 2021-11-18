@@ -283,10 +283,12 @@ void NetworkBroker::deinit() {
       MessageChannel *messageChannelToDispose = it->second;
 
       //deinit channel
-      messageChannelToDispose->deinit();
+      if(messageChannelToDispose){
+        messageChannelToDispose->deinit();
 
-      //dispose it
-      delete (messageChannelToDispose);
+        //dispose it
+        delete (messageChannelToDispose);
+      }
     }
     MB_LAPP << "Clear rpc channel map";
     active_rpc_channel.clear();

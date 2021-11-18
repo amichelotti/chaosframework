@@ -45,6 +45,44 @@ namespace ext_unt = chaos::common::external_unit;
 #define _DIRECT_IO_PRIORITY_PORT	1672
 #define _DIRECT_IO_SERVICE_PORT		30175
 
+namespace chaos{
+    void fillKVParameter(std::map<std::string, std::string>& kvmap,
+                                          const std::vector<std::string>& kv_vector,
+                                          const std::string& regex) {
+    //no cache server provided
+    //clear previosly pair
+    const boost::regex rx(regex);
+    for(std::vector<std::string>::const_iterator it = kv_vector.begin(),
+        end = kv_vector.end();
+        it != end;
+        it++) {
+        
+        const std::string& kv_param_value = *it;
+        
+        /*if(regex.size() && kv_param_value.size()&&
+           !boost::regex_match(kv_param_value,rx)) {
+               std::stringstream ss;
+               ss<<"Malformed kv parameter string:"<<kv_param_value<<" regex:"<<regex;
+               LERR_<<ss.str();
+              // throw chaos::CException(-3,ss.str(), __PRETTY_FUNCTION__);
+           } else*/ {
+                    
+                    std::vector<std::string> kv_splitted;
+                    
+                    //get new pair
+                    boost::algorithm::split(kv_splitted,
+                                            kv_param_value,
+                                            boost::algorithm::is_any_of(":"),
+                                            boost::algorithm::token_compress_on);
+                    // add key/value pair
+                    if((kv_splitted.size()>1)&&(kv_splitted[0].size())){
+                     kvmap.insert(make_pair(kv_splitted[0], kv_splitted[1]));
+                    }
+        }
+    }
+}
+
+};
 GlobalConfiguration::GlobalConfiguration():
 desc(new  po::options_description("!CHAOS Framework Allowed options")){}
 GlobalConfiguration::~GlobalConfiguration(){
@@ -436,41 +474,6 @@ void GlobalConfiguration::addOptionZeroTokens(const char* name,
     }
 }
 
-void GlobalConfiguration::fillKVParameter(std::map<std::string, std::string>& kvmap,
-                                          const std::vector<std::string>& kv_vector,
-                                          const std::string& regex) {
-    //no cache server provided
-    //clear previosly pair
-    std::vector<std::string> kv_splitted;
-    for(std::vector<std::string>::const_iterator it = kv_vector.begin(),
-        end = kv_vector.end();
-        it != end;
-        it++) {
-        
-        const std::string& kv_param_value = *it;
-        
-        if(regex.size() &&kv_param_value.size()&&
-           !boost::regex_match(kv_param_value,
-                               boost::regex(regex))) {
-               std::stringstream ss;
-               ss<<"Malformed kv parameter string:"<<kv_param_value<<" regex:"<<regex;
-               LERR_<<ss.str();
-              // throw chaos::CException(-3,ss.str(), __PRETTY_FUNCTION__);
-           } else {
-                    
-                    //clear previosly pair
-                    kv_splitted.clear();
-                    
-                    //get new pair
-                    boost::algorithm::split(kv_splitted,
-                                            kv_param_value,
-                                            boost::algorithm::is_any_of(":"),
-                                            boost::algorithm::token_compress_on);
-                    // add key/value pair
-                    kvmap.insert(make_pair(kv_splitted[0], kv_splitted[1]));
-        }
-    }
-}
 
 /**
  *return the cdatawrapper that contains the global configuraiton

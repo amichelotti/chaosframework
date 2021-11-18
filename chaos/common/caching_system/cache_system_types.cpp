@@ -39,7 +39,7 @@ int CacheDriverSetting::init(chaos::common::data::CDataWrapper& cs) {
       chaos::common::data::CMultiTypeDataArrayWrapperSPtr v = cs.getVectorValue(OPT_CACHE_DRIVER_KVP);
       if (v.get()) {
         std::vector<std::string> a = *v;
-        chaos::GlobalConfiguration::fillKVParameter(key_value_custom_param, a, "[a-zA-Z0-9/_-]+:[a-zA-Z0-9/_-]+");
+        fillKVParameter(key_value_custom_param, a, "[a-zA-Z0-9/_-]+:[a-zA-Z0-9/_-]+");
         for (std::map<std::string, std::string>::iterator i = key_value_custom_param.begin(); i != key_value_custom_param.end(); i++) {
           LDBG_ << i->first << "=" << i->second;
         }

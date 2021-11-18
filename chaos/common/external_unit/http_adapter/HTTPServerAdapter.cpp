@@ -56,7 +56,7 @@ void HTTPServerAdapter::init(void *init_data)  {
     setting.thread_number = GlobalConfiguration::getInstance()->getOption<unsigned int>(InitOption::OPT_UNIT_GATEWAY_WORKER_THREAD_NUMBER);
     if(GlobalConfiguration::getInstance()->hasOption(InitOption::OPT_UNIT_GATEWAY_ADAPTER_KV_PARAM)) {
         std::map<string, string> http_param;
-        GlobalConfiguration::fillKVParameter(http_param,
+        fillKVParameter(http_param,
                                              GlobalConfiguration::getInstance()->getOption< std::vector<std::string> >(InitOption::OPT_UNIT_GATEWAY_ADAPTER_KV_PARAM),
                                              "");
         //check publishing port paramter

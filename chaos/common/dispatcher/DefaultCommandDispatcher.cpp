@@ -46,11 +46,17 @@ DefaultCommandDispatcher::~DefaultCommandDispatcher(){}
  Initialization method for output buffer
  */
 void DefaultCommandDispatcher::init(void *initConfiguration) {
+    if (deinitialized) {
+            LDEF_CMD_DISPTC_APP_ << "ALREADY initialized  Default Command Dispatcher";
+
+        return;
+    }
+
     LDEF_CMD_DISPTC_APP_ << "Initializing Default Command Dispatcher";
     AbstractCommandDispatcher::init(initConfiguration);
     
     deinitialized = true;
-    LDEF_CMD_DISPTC_APP_ << "Initilized Default Command Dispatcher";
+    LDEF_CMD_DISPTC_APP_ << "Initialized Default Command Dispatcher";
 }
 
 
@@ -58,6 +64,13 @@ void DefaultCommandDispatcher::init(void *initConfiguration) {
  Deinitialization method for output buffer
  */
 void DefaultCommandDispatcher::deinit() {
+
+    if (deinitialized==false) {
+        LDEF_CMD_DISPTC_APP_ << "ALREADY deinitialized  Default Command Dispatcher";
+
+        return;
+    }
+
     LDEF_CMD_DISPTC_APP_ << "Deinitializing Default Command Dispatcher";
     //we need to stop all das
     chaos::common::thread::ReadLock r_lock(das_map_mutex);
