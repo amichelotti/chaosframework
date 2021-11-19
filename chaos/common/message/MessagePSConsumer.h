@@ -12,7 +12,7 @@ namespace chaos {
             class MessagePSConsumer: public virtual MessagePublishSubscribeBase {
 
                 protected:
-                msg_queue_t msgs;
+              //  msg_queue_t msgs;
                 std::string client_id;
                 std::string defkey;
                 std::string groupid;

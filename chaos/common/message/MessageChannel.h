@@ -79,8 +79,7 @@ if(x->hasKey(RpcActionDefinitionKey::CS_CMDM_ACTION_MESSAGE)) x->getCSDataValue(
             class MessageChannel {
                 friend class chaos::common::network::NetworkBroker;
                 
-                //! Message broker associated with the channel instance
-                chaos::common::network::NetworkBroker *broker;
+               
                 
                 //! the use of shared pointer of MessageRequestDomain permit to share the same response domain to different messahe channel
                 ChaosSharedPtr<MessageRequestDomain> message_request_domain;
@@ -91,6 +90,8 @@ if(x->hasKey(RpcActionDefinitionKey::CS_CMDM_ACTION_MESSAGE)) x->getCSDataValue(
                 
                 void _callHandler(const FuturePromiseData& response_data);
             protected:
+             //! Message broker associated with the channel instance
+                chaos::common::network::NetworkBroker *broker;
                 
                 //!last error domain
                 std::string last_error_domain;

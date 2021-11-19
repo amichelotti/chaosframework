@@ -21,7 +21,7 @@ namespace message {
             };*/
 
 MessagePSConsumer::MessagePSConsumer(const std::string& clientid, const std::string& gid, const std::string& k)
-    : MessagePublishSubscribeBase(clientid), groupid(gid), defkey(k), msgs(MAXQUEUELEN),que_elem(0)
+    : MessagePublishSubscribeBase(clientid), groupid(gid), defkey(k),que_elem(0)
 {
 
                                                                       };
@@ -33,10 +33,7 @@ static void removeElement(ele_t*p){
 }
 MessagePSConsumer::~MessagePSConsumer() {
     
-    if(!msgs.empty()){
-      MRDDBG_ << que_elem<<"] consuming all messages"; 
-     msgs.consume_all(removeElement);
-    }
+    
               
 }
 int MessagePSConsumer::getMsgAsync(const std::string& key, const int32_t pnum) {
@@ -51,7 +48,7 @@ int MessagePSConsumer::getMsgAsync(const std::string& key, uint32_t off, const i
 }
 ele_uptr_t MessagePSConsumer::getMsg(int timeo) {
   ele_t* ele;
-
+/*
   if (msgs.empty()) {
     data_ready = false;
     MRDDBG_ << que_elem<<"] no messages yet, waiting..";
@@ -65,7 +62,8 @@ ele_uptr_t MessagePSConsumer::getMsg(int timeo) {
     if (ele) {
       return ele_uptr_t(ele);
     }
-  }
+  }*/
+  
   return ele_uptr_t();
 }
 

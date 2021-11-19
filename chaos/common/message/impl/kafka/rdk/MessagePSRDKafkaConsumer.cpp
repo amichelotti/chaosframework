@@ -65,9 +65,6 @@ MessagePSRDKafkaConsumer::~MessagePSRDKafkaConsumer() {
 
   if (rk) {
     rd_kafka_consumer_close(rk);
-
-    /* Destroy the consumer */
-    rd_kafka_destroy(rk);
   }
 }
 
@@ -101,6 +98,8 @@ static void err_cb (rd_kafka_t *rk, int err, const char *reason, void *opaque) {
 int MessagePSRDKafkaConsumer::applyConfiguration() {
   char ers[512];
   int  ret = 0;
+  boost::mutex::scoped_lock ll(io);
+
   if ((ret = MessagePSRDKafka::init(servers)) == 0) {
     /* If there is no previously committed offset for a partition
          * the auto.offset.reset strategy will be used to decide where
@@ -172,6 +171,7 @@ int MessagePSRDKafkaConsumer::subscribe(const std::string& key) {
     errstr = rd_kafka_err2str(err);
     rd_kafka_topic_partition_list_destroy(subscription);
     rd_kafka_destroy(rk);
+    rk=NULL;
     return -20;
   }
 
@@ -273,7 +273,7 @@ void MessagePSRDKafkaConsumer::poll() {
       }
 
       handlers[ONARRIVE](d);
-    } else {
+    } /*else {
       ele_t* ele = new ele_t();
       ele->key   = rd_kafka_topic_name(rkm->rkt);
       ele->off   = rkm->offset;
@@ -306,7 +306,7 @@ void MessagePSRDKafkaConsumer::poll() {
       stats.oks++;
       data_ready = true;
       cond.notify_all();
-    }
+    }*/
     stats.oks++;
   }
 

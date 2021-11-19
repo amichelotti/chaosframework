@@ -152,11 +152,11 @@ namespace chaos {
                                                                                           bool use_shared_request_domain = true);
                                 //! Basic Constructor
 				NetworkBroker();
-				
+				bool usepsbroker;
+
                                                                                             
 			public:
 				
-				bool usepsbroker;
 				//! Basic Destructor
 				virtual ~NetworkBroker();
 				
@@ -184,7 +184,12 @@ namespace chaos {
 				 * all part are started
 				 */
 				virtual void stop();
-				
+				/**
+				 * @brief use Publish subscribe RPC
+				 * 
+				 * @return true 
+				 */
+				bool isPS(){return usepsbroker;}
 				//!Get the published port
 				/*!
 				 Return the port where the rpc server has been published

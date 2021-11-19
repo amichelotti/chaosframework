@@ -191,6 +191,8 @@ void NetworkBroker::init(void *initData) {
       MB_LAPP << "Trying to initilize RPC Server: " << rpc_server_name;
       rpc_server = ObjectFactoryRegister<RpcServer>::getInstance()->getNewInstanceByName(rpc_server_name);
       if (!rpc_server) throw CException(-8, "Error allocating rpc server implementation", __PRETTY_FUNCTION__);
+     
+      usepsbroker=rpc_server->isps();
 #if CHAOS_PROMETHEUS
       rpc_server = new rpc::RpcServerMetricCollector(rpc_server->getName(), rpc_server);
 #endif

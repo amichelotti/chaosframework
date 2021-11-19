@@ -14,14 +14,19 @@ MessagePSRDKafka::~MessagePSRDKafka() {
   boost::mutex::scoped_lock ll(io);
 
   MRDDBG_<<" DESTROY KAFKA";
-  /*if(conf){
+  // rd_kafka_new deallocate conf
+ /* if(conf){
     rd_kafka_conf_destroy(conf);
     conf=NULL;
-  }
+  }*/
   if(topic_conf){
     rd_kafka_topic_conf_destroy(topic_conf);
     topic_conf=NULL;
-  }*/
+  }
+  if(rk){
+        rd_kafka_destroy(rk);
+  }
+  rk=NULL;
 
 }
 
