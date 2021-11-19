@@ -68,6 +68,10 @@ void MDSMessageChannel::deinit() {
 
 void MDSMessageChannel::manageResource() {
   int          err = 0;
+  if(broker->isPS()){
+    // no manage resources if publish subscribe
+    return;
+  }
   CDWUniquePtr bestEndpointConf;
 
   // run multimessage layer task

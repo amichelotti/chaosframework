@@ -55,7 +55,6 @@ MessagePSKafkaProducer::~MessagePSKafkaProducer() {
    snprintf(tmp, sizeof(tmp), "%i", SIGIO);  
    setOption("internal.termination.signal",tmp);
 */
-  rd_kafka_destroy(rk);
 
 }
 int MessagePSKafkaProducer::flush(const int timeo){

@@ -13,7 +13,7 @@ namespace chaos {
     namespace common {
         namespace message {
             typedef struct ele {std::string key;uint32_t off;uint32_t par;chaos::common::data::CDWUniquePtr cd;} ele_t;
-            typedef boost::lockfree::queue<ele_t*> msg_queue_t;
+           // typedef boost::lockfree::queue<ele_t*> msg_queue_t;
             typedef ChaosUniquePtr<ele_t> ele_uptr_t;
             //typedef std::vector<chaos::common::data::CDWShrdPtr> msg_queue_t;
             
