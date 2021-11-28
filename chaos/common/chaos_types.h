@@ -78,8 +78,43 @@ using ChaosFunction = std::function< R >;
 #define ChaosBindPlaceholder(x) std::placeholders::x
 #define ChaosUniquePtr std::unique_ptr
 #define ChaosMoveOperator(x) std::move(x)
+#endif
 
 #else
+// C98
+#include <stdint.h>
+#define CInt64  int64_t
+#define CUint64 uint64_t
+#define CInt32  int32_t
+#define CUInt32 uint32_t
+#define CDouble double
+/*
+#include <boost/shared_ptr.hpp>
+#include <boost/atomic.hpp>
+#include <boost/thread/future.hpp>
+#include <boost/chrono.hpp>
+#include <boost/function.hpp>
+
+#define ChaosSharedPtr boost::shared_ptr
+#define ChaosMakeSharedPtr boost::make_shared
+#define ChaosWeakPtr boost::weak_ptr
+#define ChaosAtomic boost::atomic
+#define ChaosPromise boost::promise
+#define ChaosFuture  boost::future
+#define ChaosSharedFuture  boost::shared_future
+#define ChaosFutureStatus boost::future_status
+#define ChaosCronoSeconds boost::chrono::seconds
+#define ChaosCronoMilliseconds boost::chrono::milliseconds
+#define ChaosCronoMicroseconds boost::chrono::microseconds
+#define ChaosFunction boost::function
+#define ChaosBind boost::bind
+#define ChaosBindPlaceholder(x) x
+*/
+#define FORCE_BOOST_SHPOINTER 1
+#endif
+
+
+#ifdef FORCE_BOOST_SHPOINTER
 #include <boost/shared_ptr.hpp>
 #include <boost/atomic.hpp>
 #include <boost/thread/future.hpp>
@@ -110,55 +145,10 @@ using ChaosFunction = std::function< R >;
 #define ChaosFunction boost::function
 #define ChaosBind boost::bind
 #define ChaosBindPlaceholder(x) x
-#if 0
-#include <boost/move/unique_ptr.hpp>
 
-#define ChaosUniquePtr boost::movelib::unique_ptr
-#define ChaosMoveOperator(x) boost::move(x)
-#else
 #define ChaosUniquePtr std::auto_ptr
 #define ChaosMoveOperator(x) x
 
-#endif
-#endif
-
-#else
-#include <stdint.h>
-#define CInt64  int64_t
-#define CUint64 uint64_t
-#define CInt32  int32_t
-#define CUInt32 uint32_t
-#define CDouble double
-
-#include <boost/shared_ptr.hpp>
-#include <boost/atomic.hpp>
-#include <boost/thread/future.hpp>
-#include <boost/chrono.hpp>
-#include <boost/function.hpp>
-#if 0
-#include <boost/move/unique_ptr.hpp>
-#define ChaosUniquePtr boost::movelib::unique_ptr
-#define ChaosMoveOperator(x)  boost::move(x)
-#else
-#define ChaosUniquePtr std::auto_ptr
-#define ChaosMoveOperator(x) (x)
-
-#endif
-
-#define ChaosSharedPtr boost::shared_ptr
-#define ChaosMakeSharedPtr boost::make_shared
-#define ChaosWeakPtr boost::weak_ptr
-#define ChaosAtomic boost::atomic
-#define ChaosPromise boost::promise
-#define ChaosFuture  boost::future
-#define ChaosSharedFuture  boost::shared_future
-#define ChaosFutureStatus boost::future_status
-#define ChaosCronoSeconds boost::chrono::seconds
-#define ChaosCronoMilliseconds boost::chrono::milliseconds
-#define ChaosCronoMicroseconds boost::chrono::microseconds
-#define ChaosFunction boost::function
-#define ChaosBind boost::bind
-#define ChaosBindPlaceholder(x) x
 #endif
 
 //allocator for smarpoitner
