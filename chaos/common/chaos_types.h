@@ -62,11 +62,11 @@ typedef std::future_status ChaosFutureStatus;
 typedef std::chrono::seconds ChaosCronoSeconds;
 typedef std::chrono::milliseconds ChaosCronoMilliseconds;
 typedef std::chrono::microseconds ChaosCronoMicroseconds;
-typedef std::mutex ChaosMutex;
-typedef std::lock_guard<std::mutex> ChaosLockGuard;
-typedef std::unique_lock<std::mutex> ChaosUniqueLock;
-typedef std::condition_variable ChaosConditionVariable;
-typedef std::condition_variable_any ChaosConditionVariableAny;
+#define ChaosMutex std::mutex 
+#define ChaosLockGuard std::lock_guard<std::mutex> 
+#define ChaosUniqueLock std::unique_lock<std::mutex>
+#define ChaosConditionVariable std::condition_variable 
+#define ChaosConditionVariableAny std::condition_variable_any 
 #define CHAOS_WAIT(condvar,lock,duration_ms) (condvar.wait_for(lock,std::chrono::milliseconds(duration_ms))==std::cv_status::no_timeout)
 #define CHAOS_WAIT_US(condvar,lock,duration_us) (condvar.wait_for(lock,std::chrono::microseconds(duration_us))==std::cv_status::no_timeout)
 
@@ -85,11 +85,11 @@ using ChaosFunction = std::function< R >;
 #include <boost/thread/future.hpp>
 #include <boost/chrono.hpp>
 #include <boost/function.hpp>
-typedef boost::mutex ChaosMutex;
-typedef boost::lock_guard<boost::mutex> ChaosLockGuard;
-typedef boost::unique_lock<boost::mutex> ChaosUniqueLock;
-typedef boost::condition_variable ChaosConditionVariable;
-typedef boost::condition_variable_any ChaosConditionVariableAny;
+#define ChaosMutex boost::mutex 
+#define ChaosLockGuard boost::lock_guard<boost::mutex> 
+#define ChaosUniqueLock boost::unique_lock<boost::mutex> 
+#define ChaosConditionVariable boost::condition_variable
+#define ChaosConditionVariableAny boost::condition_variable_any
 #define CHAOS_WAIT(condvar,lock,duration_ms) condvar.timed_wait(lock,boost::posix_time::milliseconds(duration_ms))
 #define CHAOS_WAIT_US(condvar,lock,duration_us) condvar.timed_wait(lock,boost::posix_time::microseconds(duration_us))
 

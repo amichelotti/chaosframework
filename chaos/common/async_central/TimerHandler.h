@@ -23,7 +23,6 @@
 #define __CHAOSFramework__TimerHandler__
 #include <boost/asio.hpp>
 #include <boost/thread/mutex.hpp>
-#include <boost/thread/condition.hpp>
 #include <chaos/common/chaos_types.h>
 namespace chaos {
 	namespace common {
