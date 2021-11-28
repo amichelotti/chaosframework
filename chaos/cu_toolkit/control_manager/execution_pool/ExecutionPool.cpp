@@ -72,17 +72,17 @@ void ExecutionPoolManager::deinit()  {
 }
 
 void ExecutionPoolManager::registerUID(const std::string& new_uid) {
-    boost::unique_lock<boost::mutex> wl(mutex_uid_set);
+    ChaosLockGuard wl(mutex_uid_set);
     eu_uid_list.insert(new_uid);
 }
 
 void ExecutionPoolManager::deregisterUID(const std::string& remove_uid) {
-    boost::unique_lock<boost::mutex> wl(mutex_uid_set);
+    ChaosLockGuard wl(mutex_uid_set);
     eu_uid_list.erase(remove_uid);
 }
 
 void ExecutionPoolManager::timeout() {
-    boost::unique_lock<boost::mutex> wl(mutex_uid_set);
+    ChaosLockGuard wl(mutex_uid_set);
     if(eu_uid_list.size() == 0 &&
        execution_pool_list.size() == 0) return;
     

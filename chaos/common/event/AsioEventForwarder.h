@@ -71,9 +71,9 @@ namespace chaos {
             private:
                 bool sent;
                 //! mutext used for unlock and wait esclusive access
-                boost::mutex wait_answer_mutex;
+                ChaosMutex wait_answer_mutex;
                 //! condition variable for wait the answer
-                boost::condition_variable wait_answer_condition;
+                ChaosConditionVariable wait_answer_condition;
                 boost::asio::ip::udp::socket _socket;
                 boost::asio::ip::udp::endpoint _endpoint;
             };

@@ -66,7 +66,7 @@ void MetadataLoggingManager::init(void *init_data)  {
 
 void MetadataLoggingManager::deinit()  {
     
-    boost::unique_lock<boost::mutex> wl(mutext_maps);
+    ChaosUniqueLock wl(mutext_maps);
     for(MetadataLoggingInstancesMapIterator it = map_instance.begin();
         it != map_instance.end();
         it++) {
@@ -89,7 +89,7 @@ void MetadataLoggingManager::registerChannel(const std::string& channel_alias,
 AbstractMetadataLogChannel *MetadataLoggingManager::getChannel(const std::string channel_alias) {
     //chec if we are initilized
     if(getServiceState() != 1) return NULL;
-    boost::unique_lock<boost::mutex> wl(mutext_maps);
+    ChaosUniqueLock wl(mutext_maps);
     //check if we have the channel
     if(map_instancer.count(channel_alias) == 0) return NULL;
     
@@ -103,7 +103,7 @@ AbstractMetadataLogChannel *MetadataLoggingManager::getChannel(const std::string
 
 void MetadataLoggingManager::releaseChannel(AbstractMetadataLogChannel *channel_instance) {
     //chec if we are initilized
-    boost::unique_lock<boost::mutex> wl(mutext_maps);
+    ChaosUniqueLock wl(mutext_maps);
     if(channel_instance == NULL) return;
     if(map_instance.count(channel_instance->getInstanceUUID()) == 0) return;
     //we can delete the instance
@@ -160,7 +160,7 @@ void MetadataLoggingManager::deinit()  {
     CObjectProcessingPriorityQueue<CDataWrapper>::deinit(true);
     MLM_DBG << "Queue is empty";
     
-    boost::unique_lock<boost::mutex> wl(mutext_maps);
+    ChaosUniqueLock wl(mutext_maps);
     for(MetadataLoggingInstancesMapIterator it = map_instance.begin();
         it != map_instance.end();
         it++) {
@@ -184,7 +184,7 @@ void MetadataLoggingManager::registerChannel(const std::string& channel_alias,
 AbstractMetadataLogChannel *MetadataLoggingManager::getChannel(const std::string channel_alias) {
     //chec if we are initilized
     if(getServiceState() != 1) return NULL;
-    boost::unique_lock<boost::mutex> wl(mutext_maps);
+    ChaosUniqueLock wl(mutext_maps);
     //check if we have the channel
     if(map_instancer.count(channel_alias) == 0) return NULL;
     
@@ -198,7 +198,7 @@ AbstractMetadataLogChannel *MetadataLoggingManager::getChannel(const std::string
 
 void MetadataLoggingManager::releaseChannel(AbstractMetadataLogChannel *channel_instance) {
     //chec if we are initilized
-    boost::unique_lock<boost::mutex> wl(mutext_maps);
+    ChaosUniqueLock wl(mutext_maps);
     if(channel_instance == NULL) return;
     if(map_instance.count(channel_instance->getInstanceUUID()) == 0) return;
     //we can delete the instance

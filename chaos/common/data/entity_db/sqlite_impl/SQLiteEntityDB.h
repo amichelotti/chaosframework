@@ -43,7 +43,7 @@ namespace chaos {
             std::string alias;
             sqlite3 *dbInstance;
             
-            boost::mutex seqWorkMutext;
+            ChaosMutex seqWorkMutext;
             
             //autoncrement statement
             sqlite3_stmt *stmt[NUM_STMT];

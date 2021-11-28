@@ -463,7 +463,7 @@ int ChaosMetadataService::removeStorageData(const std::string& control_unit_foun
   }
   return err;
 }
-static boost::mutex mutex_cache;
+static ChaosMutex mutex_cache;
 void                ChaosMetadataService::updateLiveCache(const chaos::common::data::CDataWrapper* d) {
   if (d && d->hasKey(DataPackCommonKey::DPCK_TIMESTAMP) && d->hasKey(chaos::NodeDefinitionKey::NODE_UNIQUE_ID)) {
     std::string name = d->getStringValue(chaos::NodeDefinitionKey::NODE_UNIQUE_ID);
@@ -471,7 +471,7 @@ void                ChaosMetadataService::updateLiveCache(const chaos::common::d
   }
 }
 void ChaosMetadataService::updateLiveCache(const std::string& name, int64_t t) {
-  boost::lock_guard<boost::mutex> l(mutex_cache);
+  ChaosLockGuard l(mutex_cache);
   if (alive_cache.count(name)) {
     if (alive_cache[name] < t) {
       //   LCND_LDBG << name<<" updated cache";

@@ -36,7 +36,7 @@ class QueryDataMsgPSConsumer : public QueryDataConsumer,protected chaos::common:
   std::string                             groupid;
   static std::map<std::string, uint64_t>         alive_map;
   chaos::common::message::consumer_uptr_t cons;
-  static boost::mutex                            map_m;
+  static ChaosMutex                           map_m;
   void                                    messageHandler( chaos::common::message::ele_t& data);
   void                                  messageError( chaos::common::message::ele_t& data);
   int subscribe_retry;

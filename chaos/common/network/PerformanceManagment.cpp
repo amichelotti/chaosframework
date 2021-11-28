@@ -84,7 +84,7 @@ void PerformanceManagment::stop()  {
 }
 
 DirectIOClient *PerformanceManagment::getLocalDirectIOClientInstance() {
-	boost::unique_lock<boost::mutex> ul(mutext_client_connection);
+	ChaosLockGuard ul(mutext_client_connection);
 	if(!global_performance_connection) {
 		global_performance_connection = network_broker->getSharedDirectIOClientInstance();
 	}

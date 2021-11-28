@@ -38,7 +38,7 @@ QuantumKeyConsumer::~QuantumKeyConsumer() {
 void QuantumKeyConsumer::quantumSlotHasData(const std::string& key,
                                             const KeyValue& value) {
     //acquire read lock
-    boost::unique_lock<boost::mutex> wl(map_mutex);
+    ChaosLockGuard wl(map_mutex);
     QKC_DBG<< "Broadcast data to handler for key " << key;
     //scan all attribute and call handler
     for(AttributeHandlerMapIterator it = map_attribute_handler.begin();
@@ -54,7 +54,7 @@ void QuantumKeyConsumer::quantumSlotHasData(const std::string& key,
 
 void QuantumKeyConsumer::quantumSlotHasNoData(const std::string& key) {
     //acquire read lock
-    boost::unique_lock<boost::mutex> wl(map_mutex);
+    ChaosLockGuard wl(map_mutex);
     QKC_DBG<< "Broadcast no data to handler for key " << key;
     //scan all attribute and call handler
     for(AttributeHandlerMapIterator it = map_attribute_handler.begin();
@@ -67,7 +67,7 @@ void QuantumKeyConsumer::quantumSlotHasNoData(const std::string& key) {
 
 void QuantumKeyConsumer::addAttributeHandler(AbstractQuantumKeyAttributeHandler *handler) {
     //aquire write lock to work on map
-    boost::unique_lock<boost::mutex> rl(map_mutex);
+    ChaosLockGuard rl(map_mutex);
     if(handler == NULL) return;
     
     uintptr_t handler_key = reinterpret_cast<uintptr_t>(handler);
@@ -81,7 +81,7 @@ void QuantumKeyConsumer::addAttributeHandler(AbstractQuantumKeyAttributeHandler 
 
 void QuantumKeyConsumer::removeAttributeHandler(AbstractQuantumKeyAttributeHandler *handler) {
     //aquire write lock to work on map
-    boost::unique_lock<boost::mutex> wl(map_mutex);
+    ChaosLockGuard wl(map_mutex);
     if(handler == NULL) return;
     QKC_INFO << "remove quantum handler for key:" << key << " and attribute:" << handler->getAttributeName();
     uintptr_t handler_key = reinterpret_cast<uintptr_t>(handler);
@@ -95,6 +95,6 @@ const std::string& QuantumKeyConsumer::getKey() {
 
 const size_t QuantumKeyConsumer::size() {
     //aquire write lock to work on map
-    boost::unique_lock<boost::mutex> wl(map_mutex);
+    ChaosLockGuard wl(map_mutex);
     return map_attribute_handler.size();
 }

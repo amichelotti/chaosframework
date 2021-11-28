@@ -72,7 +72,7 @@ namespace chaos {
                 //! is the last recevide ts superclass can help assigning this value using other dataset
                 uint64_t last_recevied_ts;
                 //the list of all registered handlers
-                boost::mutex        list_handler_mutex;
+                ChaosMutex       list_handler_mutex;
                 MonitoHandlerList   list_handler;
                 
                 HealthInformation health_info;

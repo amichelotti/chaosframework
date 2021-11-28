@@ -92,7 +92,7 @@ void IODirectIOPSMsgDriver::init(void* _init_parameter) {
 void IODirectIOPSMsgDriver::defaultHandler(chaos::common::message::ele_t& data) {
   std::map<std::string, chaos::common::message::msgHandler>::iterator i, end;
   {
-    boost::mutex::scoped_lock ll(hmutex);
+    ChaosLockGuard ll(hmutex);
     i   = handler_map.find(data.key);
     end = handler_map.end();
   }
@@ -120,7 +120,7 @@ int IODirectIOPSMsgDriver::subscribe(const std::string& key) {
 int IODirectIOPSMsgDriver::addHandler(const std::string& key, chaos::common::message::msgHandler cb) {
   std::string topic = key;
   std::replace(topic.begin(), topic.end(), '/', '.');
-  boost::mutex::scoped_lock ll(hmutex);
+  ChaosLockGuard ll(hmutex);
   handler_map[topic] = cb;
   IODirectIOPSMsgDriver_DLDBG_ << handler_map.size() << "] adding handler for:" << topic;
 

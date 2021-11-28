@@ -50,7 +50,7 @@ namespace chaos {
         bool armed;
             //! mutext for regulate action execution and other operation as
             //! registration and deregistration
-        boost::mutex eventSchedulerMutext;
+        ChaosMutex eventSchedulerMutext;
             //!pointer to the domain containing action
         map<string, EventAction*> eventActionList;
     protected:

@@ -73,7 +73,7 @@ namespace chaos {
 
             struct setting	setting;
             uint32_t timeError_opt;
-            typedef boost::mutex::scoped_lock lock;
+            typedef ChaosLockGuard lock;
             //! C and C++ attribute parser
             /*!
              Specialized option for startup c and cpp program main options parameter

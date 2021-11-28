@@ -61,12 +61,12 @@ namespace chaos {
 				boost::thread_group job_thread_group;
 				
 				//muthex for condition variable
-				boost::mutex mutex_job;
-				boost::mutex mutex_submit;
+				ChaosMutex mutex_job;
+				ChaosMutex mutex_submit;
                 
 				//condition for the threads
-				boost::condition_variable consume_job_condition;
-				boost::condition_variable push_condition;
+				ChaosConditionVariable consume_job_condition;
+				ChaosConditionVariable push_condition;
                 
 				bool work;
 				
@@ -76,7 +76,7 @@ namespace chaos {
 			protected:
 				void * * thread_cookie;
 				void consumeJob(void *cookie);
-				WorkerJobPtr getNextOrWait(boost::unique_lock<boost::mutex>& lock);
+				WorkerJobPtr getNextOrWait(ChaosUniqueLock& lock);
 				
 				virtual int executeJob(WorkerJobPtr job_info, void* cookie) = 0;
 			public:

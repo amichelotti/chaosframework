@@ -34,7 +34,7 @@ class AbstractDriverInterface {
 protected:
     DrvMsg message;
     DriverAccessor* accessor;
-    boost::mutex io_mux;
+    ChaosMutex io_mux;
 
 public:
     AbstractDriverInterface(chaos_driver::DriverAccessor*_accessor):accessor(_accessor){if(_accessor==NULL)throw chaos::CException(-20,"invalid accessor",__FUNCTION__);};

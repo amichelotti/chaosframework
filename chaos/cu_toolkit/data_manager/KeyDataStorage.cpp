@@ -222,7 +222,7 @@ int KeyDataStorage::pushDataSet(KeyDataStorageDomain domain,
     LChaosStringSetReadLock wl = current_tags.getReadLockObject();
     int err=0;
     //lock for protect the access
-    boost::unique_lock<boost::mutex> l(mutex_push_data);
+    ChaosLockGuard l(mutex_push_data);
   
     switch(domain) {
         case KeyDataStorageDomainOutput:

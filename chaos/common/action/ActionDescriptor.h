@@ -75,7 +75,7 @@ namespace chaos {
         bool shared_execution;
         
         //!whe action is not shared executable mutex need to lock all other thread
-        boost::mutex mutex_execution_lock;
+        ChaosMutex mutex_execution_lock;
         
         //map for action
         std::vector< ChaosSharedPtr<ActionParamDescription> > paramDescriptionVec;
@@ -180,7 +180,7 @@ namespace chaos {
         chaos::common::data::CDWUniquePtr call(chaos::common::data::CDWUniquePtr action_data)   {
             //call the action with param
             CHAOS_ASSERT(objectReference)
-            boost::unique_lock<boost::mutex> wl(mutex_execution_lock, boost::defer_lock);
+            ChaosUniqueLock wl(mutex_execution_lock, CHAOS_DEFER_LOCK);
             if(isShared() == false){wl.lock();};
             return ((*objectReference).*actionPointer)(MOVE(action_data));
         }

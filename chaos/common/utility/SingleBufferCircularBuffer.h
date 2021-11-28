@@ -118,7 +118,7 @@ namespace chaos {
 			class PointerBuffer {
 				ChaosSharedPtr<char> ptr;
 				int32_t bufferDimension;
-				boost::mutex mux;
+				ChaosMutex mux;
 			public:
 				//! Default constructor
 				PointerBuffer(){
@@ -135,7 +135,7 @@ namespace chaos {
 				 the memory is reallcoated to ensure that data will fit
 				 */
 				void updateData(const char * srcPtr, int32_t srcDataLen) {
-					boost::mutex::scoped_lock lock(mux);
+					ChaosLockGuard lock(mux);
 					if(srcPtr == NULL || srcDataLen <=0) return;
 					if(ptr){
 						if(bufferDimension!=srcDataLen){

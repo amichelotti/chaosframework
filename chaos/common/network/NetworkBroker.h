@@ -130,13 +130,13 @@ namespace chaos {
 				//!keep track of active channel
                 map<std::string, chaos::common::message::MessageChannel*> active_rpc_channel;
 				//!Mutex for rpc channel managment
-				boost::mutex mutex_map_rpc_channel_acces;
+				ChaosMutex mutex_map_rpc_channel_acces;
 				
 				//!keep track of active channel
                 map<std::string, chaos::common::event::channel::EventChannel*> active_event_channel;
 				
 				//!Mutex for event channel managment
-				boost::mutex muext_map_event_channel_access;
+				ChaosMutex muext_map_event_channel_access;
 
                     //! global shared message request domain
                 ChaosSharedPtr<chaos::common::message::MessageRequestDomain> global_request_domain;

@@ -47,7 +47,6 @@ int IODataDriver::removeData(const std::string& key,
  
  ---------------------------------------------------------------------------------*/
 ArrayPointer<CDataWrapper>*  IODataDriver::retriveData(const std::string& key, CDataWrapper*const) {
- //   boost::mutex::scoped_lock l(iomutex);
 
     //check for key length
     return retriveData(key);

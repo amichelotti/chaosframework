@@ -92,7 +92,7 @@ namespace chaos{
                 //!point to the current executing command
                 PRIORITY_ELEMENT(CommandInfoAndImplementation)   current_executing_command;
                 
-                boost::mutex                    mutext_access_current_command;
+                ChaosMutex                   mutext_access_current_command;
                 //boost::condition_variable_any   waithForNextCheck;
                 WaitSemaphore					whait_for_next_check;
                 
@@ -114,13 +114,13 @@ namespace chaos{
                 CommandPriorityQueue command_submitted_queue;
                 
                 //!Mutex used for sincronize the introspection of the current command
-                boost::mutex          mutex_next_command_queue;
+                ChaosMutex          mutex_next_command_queue;
                 
                 //! instance to the checker thread
                 ChaosUniquePtr<boost::thread>    thread_next_command_checker;
                 
                 //! Thread for whait until the queue is empty
-                boost::condition_variable_any  condition_waith_scheduler_end;
+                ChaosConditionVariableAny condition_waith_scheduler_end;
                 
                 //! Shared Channel Setting
                 /*!

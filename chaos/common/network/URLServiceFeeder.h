@@ -136,7 +136,7 @@ namespace chaos {
                 //!Return the total number for managed url
                 size_t getNumberOfURL();
             protected:
-                boost::mutex mutex_internal;
+                ChaosMutex mutex_internal;
                 //! contain the service index rule information
                 struct URLService {
                     uint32_t index;

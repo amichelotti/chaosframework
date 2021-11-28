@@ -628,7 +628,6 @@ void BatchCommandExecutor::submitCommand(const std::string& batch_command_alias,
  */
 CDWUniquePtr BatchCommandExecutor::getCommandState(CDWUniquePtr params)  {
     BCELAPP_ << "Get command state from the executor with id: " << executorID;
-    //boost::mutex::scoped_lock lock(mutextQueueManagment);
     ReadLock lock(command_state_rwmutex);
     uint64_t command_id = params->getUInt64Value(BatchCommandExecutorRpcActionKey::RPC_GET_COMMAND_STATE_CMD_ID_UI64);
     ChaosSharedPtr<CommandState> cmd_state = getCommandState(command_id);

@@ -326,7 +326,7 @@ void BatchCommandSandbox::checkNextCommand() {
         return;
     }
     //manage the lock on next command mutex
-    boost::unique_lock<boost::mutex> lock_next_command_queue(mutex_next_command_queue, boost::defer_lock_t());
+    ChaosUniqueLock lock_next_command_queue(mutex_next_command_queue, CHAOS_DEFER_LOCK);
     
     while (schedule_work_flag) {
         //lock the command queue access
@@ -347,7 +347,7 @@ void BatchCommandSandbox::checkNextCommand() {
                 PRIORITY_ELEMENT(CommandInfoAndImplementation) command_to_delete;
                 PRIORITY_ELEMENT(CommandInfoAndImplementation) next_available_command;
                 //compute the runnig state or fault
-                boost::mutex::scoped_lock lockForCurrentCommandMutex(mutext_access_current_command);
+                ChaosUniqueLock lockForCurrentCommandMutex(mutext_access_current_command);
                 // cehck waht we need to do with current and submitted command
                //// How many locks? 
                lock_next_command_queue.lock();
@@ -489,7 +489,7 @@ void BatchCommandSandbox::checkNextCommand() {
             //QUEUE EMPTY
             if(current_executing_command) {
                 if (current_executing_command->element->cmdImpl->runningProperty >= RunningPropertyType::RP_END) {
-                    boost::mutex::scoped_lock lockForCurrentCommandMutex(mutext_access_current_command);
+                    ChaosLockGuard lockForCurrentCommandMutex(mutext_access_current_command);
                     if (!command_stack.empty()) {
                         //keep track of running property that needs to be deleted
                         PRIORITY_ELEMENT(CommandInfoAndImplementation) command_to_delete = current_executing_command;
@@ -639,7 +639,7 @@ void BatchCommandSandbox::runCommand() {
     BatchCommand *curr_executing_impl = NULL;
     //check if the current command has ended or need to be substitute
 
-    boost::mutex::scoped_lock lockForCurrentCommand(mutext_access_current_command);
+    ChaosUniqueLock lockForCurrentCommand(mutext_access_current_command);
 
     do {
 
@@ -856,7 +856,7 @@ uint64_t BatchCommandSandbox::enqueueCommand(chaos_data::CDataWrapper *command_t
     //
     {
         DEBUG_CODE(SCSLDBG_ << CHAOS_FORMAT("Try to lock for command enqueue for: \"%1%\"", %command_impl->command_alias));
-        boost::unique_lock<boost::mutex> lock_next_command_queue(mutex_next_command_queue);
+        ChaosUniqueLock lock_next_command_queue(mutex_next_command_queue);
         
         //get the assigned id
         result_id = addCommandID(command_impl);
@@ -886,7 +886,7 @@ uint64_t BatchCommandSandbox::enqueueCommand(chaos_data::CDataWrapper *command_t
 void BatchCommandSandbox::setCurrentCommandFeatures(features::Features& features)  {
     uint64_t thread_step_delay = 0;
     //lock the scheduler
-    boost::mutex::scoped_lock lockForCurrentCommand(mutext_access_current_command);
+    ChaosLockGuard lockForCurrentCommand(mutext_access_current_command);
     if(default_sticky_command.get()){
         default_sticky_command->element->cmdImpl->commandFeatures.featuresFlag |= features.featuresFlag;
         default_sticky_command->element->cmdImpl->commandFeatures.featureSchedulerStepsDelay = (thread_step_delay = features.defaultSchedulerStepsDelay);
@@ -910,7 +910,7 @@ void BatchCommandSandbox::setCurrentCommandFeatures(features::Features& features
 
 void BatchCommandSandbox::setCurrentCommandScheduerStepDelay(uint64_t scheduler_step_delay) {
     //lock the scheduler
-    boost::mutex::scoped_lock lockForCurrentCommand(mutext_access_current_command);
+    ChaosLockGuard lockForCurrentCommand(mutext_access_current_command);
     
     if(!current_executing_command) return;
     
@@ -922,18 +922,16 @@ void BatchCommandSandbox::setCurrentCommandScheduerStepDelay(uint64_t scheduler_
                                           &scheduler_step_delay, sizeof (uint64_t));
     }
     
-    lockForCurrentCommand.unlock();
     thread_scheduler_pause_condition.unlock();
 }
 
 void BatchCommandSandbox::lockCurrentCommandFeature(bool lock) {
     //lock the scheduler
-    boost::mutex::scoped_lock lockForCurrentCommand(mutext_access_current_command);
+    ChaosLockGuard lockForCurrentCommand(mutext_access_current_command);
     
     if(!current_executing_command) return;
     
     current_executing_command->element->cmdImpl->lockFeaturePropertyFlag[0] = lock;
     
-    lockForCurrentCommand.unlock();
     thread_scheduler_pause_condition.unlock();
 }

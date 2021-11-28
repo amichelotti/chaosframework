@@ -429,7 +429,7 @@ channel::EventChannel *NetworkBroker::getNewEventChannelFromType(common::event::
   //check if the channel has been created
   if (new_event_channel) {
     new_event_channel->init();
-    boost::mutex::scoped_lock lock(muext_map_event_channel_access);
+    ChaosLockGuard lock(muext_map_event_channel_access);
     active_event_channel.insert(make_pair(new_event_channel->channelID, new_event_channel));
   }
 
@@ -467,7 +467,7 @@ void NetworkBroker::disposeEventChannel(common::event::channel::EventChannel *ev
   CHAOS_ASSERT(!GlobalConfiguration::getInstance()->getOption<bool>(InitOption::OPT_EVENT_DISABLE));
   if (!event_channel_to_dispose) return;
 
-  boost::mutex::scoped_lock lock(muext_map_event_channel_access);
+  ChaosLockGuard lock(muext_map_event_channel_access);
 
   //check if the channel is active
   if (active_event_channel.count(event_channel_to_dispose->channelID) == 0) return;
@@ -619,7 +619,7 @@ MessageChannel *NetworkBroker::getNewMessageChannelForRemoteHost(CNetworkAddress
   //check if the channel has been created
   if (channel) {
     channel->init();
-    boost::mutex::scoped_lock lock(mutex_map_rpc_channel_acces);
+    ChaosLockGuard lock(mutex_map_rpc_channel_acces);
     active_rpc_channel.insert(make_pair(channel->getChannelUUID(), channel));
   }
   return channel;
@@ -641,7 +641,7 @@ MDSMessageChannel *NetworkBroker::getMetadataserverMessageChannel(MessageRequest
   MDSMessageChannel *channel = (shared_request_domain.get() == NULL) ? (new MDSMessageChannel(this,mds , global_request_domain)) : (new MDSMessageChannel(this, mds, shared_request_domain));
   if (channel) {
     channel->init();
-    boost::mutex::scoped_lock lock(mutex_map_rpc_channel_acces);
+    ChaosLockGuard lock(mutex_map_rpc_channel_acces);
     active_rpc_channel.insert(make_pair(channel->getChannelUUID(), static_cast<MessageChannel *>(channel)));
   }
   return channel;
@@ -653,7 +653,7 @@ MDSMessageChannel *NetworkBroker::getMetadataserverMessageChannel(const VectorNe
   MDSMessageChannel *channel = (shared_request_domain.get() == NULL) ? (new MDSMessageChannel(this, endpoints, global_request_domain)) : (new MDSMessageChannel(this, endpoints, shared_request_domain));
   if (channel) {
     channel->init();
-    boost::mutex::scoped_lock lock(mutex_map_rpc_channel_acces);
+    ChaosLockGuard lock(mutex_map_rpc_channel_acces);
     active_rpc_channel.insert(make_pair(channel->getChannelUUID(), static_cast<MessageChannel *>(channel)));
   }
   return channel;
@@ -670,7 +670,7 @@ MultiAddressMessageChannel *NetworkBroker::getMultiMetadataServiceRawMessageChan
   }
   if (mc) {
     mc->init();
-    boost::mutex::scoped_lock lock(mutex_map_rpc_channel_acces);
+    ChaosLockGuard lock(mutex_map_rpc_channel_acces);
     active_rpc_channel.insert(make_pair(mc->getChannelUUID(), mc));
   }
   return mc;
@@ -694,7 +694,7 @@ DeviceMessageChannel *NetworkBroker::getDeviceMessageChannelFromAddress(CDeviceN
 
   if (channel) {
     channel->init();
-    boost::mutex::scoped_lock lock(mutex_map_rpc_channel_acces);
+    ChaosLockGuard lock(mutex_map_rpc_channel_acces);
     active_rpc_channel.insert(make_pair(channel->getChannelUUID(), static_cast<MessageChannel *>(channel)));
   }
   return channel;
@@ -723,7 +723,7 @@ chaos::common::message::MultiAddressMessageChannel *NetworkBroker::getRawMultiAd
   MultiAddressMessageChannel *mc = new MultiAddressMessageChannel(this, node_address);
   if (mc) {
     mc->init();
-    boost::mutex::scoped_lock lock(mutex_map_rpc_channel_acces);
+    ChaosLockGuard lock(mutex_map_rpc_channel_acces);
     active_rpc_channel.insert(make_pair(mc->getChannelUUID(), mc));
   }
   return mc;
@@ -743,7 +743,7 @@ void NetworkBroker::disposeMessageChannel(MessageChannel *message_channel_to_dis
 
   if (active_rpc_channel.count(uid) == 0) return;
 
-  boost::mutex::scoped_lock lock(mutex_map_rpc_channel_acces);
+  ChaosLockGuard lock(mutex_map_rpc_channel_acces);
 
   //remove the channel as active
   active_rpc_channel.erase(uid);

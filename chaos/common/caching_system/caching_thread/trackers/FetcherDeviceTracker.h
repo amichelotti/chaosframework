@@ -62,7 +62,7 @@ namespace chaos {
                         sched_yield();
                         
                         
-                        boost::mutex::scoped_lock  lock(*this->bufferMapMutex);
+                        ChaosLockGuard  lock(*this->bufferMapMutex);
                         DataElement<T>* newElement= this->fetcher->_getData();
                         
                         this->doTracking(newElement);

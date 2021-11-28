@@ -57,7 +57,7 @@ void TimerHandler::timerTimeout(const boost::system::error_code& error) {
     if(error) return;
     cicle_test = false;
     stop_me = false;
-    boost::unique_lock<boost::mutex> lock( wait_answer_mutex );
+    ChaosUniqueLock lock( wait_answer_mutex );
     if(!stoppped){
         int64_t start_ts = TimingUtil::getTimeStamp();
         //call timer handler
@@ -91,7 +91,7 @@ void TimerHandler::wait(int64_t _delay) {
 }
 
 void TimerHandler::removeTimer() {
-    boost::unique_lock<boost::mutex> lock( wait_answer_mutex );
+    ChaosUniqueLock lock( wait_answer_mutex );
     stoppped = true;
     std::size_t remain = 0;
     try{

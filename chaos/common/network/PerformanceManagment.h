@@ -62,7 +62,7 @@ namespace chaos {
 				friend class chaos::common::network::NetworkBroker;
 				chaos::common::network::NetworkBroker	*network_broker;
 				
-				boost::mutex							mutext_client_connection;
+				ChaosMutex							mutext_client_connection;
 				chaos_direct_io::DirectIOClient			*global_performance_connection;
 				
 				bool work_on_purge;

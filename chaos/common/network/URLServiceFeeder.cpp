@@ -147,7 +147,7 @@ void URLServiceFeeder::grow() {
 
 uint32_t URLServiceFeeder::addURL(const URL& new_url,
                                   uint32_t priority) {
-    boost::unique_lock<boost::mutex> wl(mutex_internal);
+    ChaosLockGuard wl(mutex_internal);
 	//lock the queue
 	uint32_t service_index = 0;
         //expand memory for contain new service description
@@ -184,14 +184,14 @@ uint32_t URLServiceFeeder::addURL(const URL& new_url,
 }
 
 void* URLServiceFeeder::getService(uint32_t idx) {
-    boost::unique_lock<boost::mutex> wl(mutex_internal);
+    ChaosLockGuard wl(mutex_internal);
     return service_list[idx]->service;
 }
 bool URLServiceFeeder::isOnline(uint32_t idx){
   return service_list[idx]->online;
 }
 void* URLServiceFeeder::getService() {
-    boost::unique_lock<boost::mutex> wl(mutex_internal);
+    ChaosLockGuard wl(mutex_internal);
     switch (feed_mode) {
         case URLServiceFeeder::URLServiceFeedModeRoundRobin:
             current_service = getNextFromSetByRoundRobin();
@@ -210,7 +210,7 @@ void* URLServiceFeeder::getService() {
 }
 
 void URLServiceFeeder::setURLOffline(uint32_t idx) {
-    boost::unique_lock<boost::mutex> wl(mutex_internal);
+    ChaosLockGuard wl(mutex_internal);
 	if(idx > (list_size/sizeof(URLServiceFeeder::URLService))) {
 		URLServiceFeeder_LERR << "Index out of range";
 		return;
@@ -232,7 +232,7 @@ void URLServiceFeeder::setURLOffline(uint32_t idx) {
 }
 
 void URLServiceFeeder::setURLOnline(uint32_t idx) {
-    boost::unique_lock<boost::mutex> wl(mutex_internal);
+    ChaosLockGuard wl(mutex_internal);
 	if(idx > (list_size/sizeof(URLServiceFeeder::URLService))) {
 		URLServiceFeeder_LERR << "Index out of range";
 		return;
@@ -253,7 +253,7 @@ void URLServiceFeeder::setURLOnline(uint32_t idx) {
 }
 
 void URLServiceFeeder::removeURL(uint32_t idx, bool dispose_service) {
-    boost::unique_lock<boost::mutex> wl(mutex_internal);
+    ChaosLockGuard wl(mutex_internal);
 	if(idx > (list_size/sizeof(URLServiceFeeder::URLService))) {
 		URLServiceFeeder_LERR << "Index out of range";
 		return;
@@ -272,7 +272,7 @@ void URLServiceFeeder::removeURL(uint32_t idx, bool dispose_service) {
 
 //!return the url string from index
 std::string URLServiceFeeder::getURLForIndex(uint32_t idx) {
-    boost::unique_lock<boost::mutex> wl(mutex_internal);
+    ChaosLockGuard wl(mutex_internal);
     if(mapping_url_index.hasRightKey(idx)) {
         return mapping_url_index.findByRightKey(idx);
     } else {
@@ -281,7 +281,7 @@ std::string URLServiceFeeder::getURLForIndex(uint32_t idx) {
 }
 
 uint32_t URLServiceFeeder::getIndexFromURL(const std::string& url) {
-    boost::unique_lock<boost::mutex> wl(mutex_internal);
+    ChaosLockGuard wl(mutex_internal);
     if(mapping_url_index.hasLeftKey(url)) {
         return mapping_url_index.findByLeftKey(url);
     } else {
@@ -290,7 +290,7 @@ uint32_t URLServiceFeeder::getIndexFromURL(const std::string& url) {
 }
 
 bool URLServiceFeeder::hasURL(const std::string& url) {
-    boost::unique_lock<boost::mutex> wl(mutex_internal);
+    ChaosLockGuard wl(mutex_internal);
     return mapping_url_index.hasLeftKey(url);
 }
 
@@ -300,7 +300,7 @@ void URLServiceFeeder::setFeedMode(URLServiceFeedMode new_feed_mode) {
 
 
 size_t URLServiceFeeder::getNumberOfURL() {
-    boost::unique_lock<boost::mutex> wl(mutex_internal);
+    ChaosLockGuard wl(mutex_internal);
     int ret=mapping_url_index.size();
 
     return ret;

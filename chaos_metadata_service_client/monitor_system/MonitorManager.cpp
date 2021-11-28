@@ -95,7 +95,7 @@ void MonitorManager::addKeyAttributeHandler(const std::string& key_to_monitor,
                                             AbstractQuantumKeyAttributeHandler *attribute_handler,
                                             unsigned int consumer_priority) {
     if(attribute_handler == NULL) return;
-    boost::unique_lock<boost::mutex>   lock(map_mutex);
+    ChaosLockGuard   lock(map_mutex);
     
     QuantumKeyConsumer *consumer = NULL;
     
@@ -136,7 +136,7 @@ void MonitorManager::removeKeyAttributeHandler(const std::string& key_to_monitor
                                                int quantum_multiplier,
                                                AbstractQuantumKeyAttributeHandler *attribute_handler) {
     if(attribute_handler == NULL) return;
-    boost::unique_lock<boost::mutex>   lock(map_mutex);
+    ChaosLockGuard   lock(map_mutex);
     
     //create unique key
     std::string unique_slot_key = CHAOS_QSS_COMPOSE_QUANTUM_SLOT_KEY(key_to_monitor, quantum_multiplier);
@@ -158,7 +158,7 @@ void MonitorManager::removeKeyAttributeHandler(const std::string& key_to_monitor
         
         //add key consumer to the queue of to purge
         //delete(it->second);
-        boost::unique_lock<boost::mutex> wl(mutex_queue_to_purge);
+        ChaosLockGuard wl(mutex_queue_to_purge);
         queue_to_purge.push(it->second);
         
         //remove elemento form the map of used key consumer
@@ -175,7 +175,7 @@ void MonitorManager::purgeKeyConsumer(bool all) {
     bool end_purge_operation = false;
     int max_to_purge = 3;
     QuantumKeyConsumer *consumer = NULL;
-    boost::unique_lock<boost::mutex> wl(mutex_queue_to_purge);
+    ChaosLockGuard wl(mutex_queue_to_purge);
     while(queue_to_purge.size() &&
           !end_purge_operation ) {
         consumer = queue_to_purge.front(); queue_to_purge.pop();

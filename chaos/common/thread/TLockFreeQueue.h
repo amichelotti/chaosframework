@@ -39,10 +39,10 @@ class TLockFreeQueue {
  private:
   //std::queue<T> the_queue;
   boost::lockfree::queue<T, boost::lockfree::fixed_sized<true> > element_queue;
-  mutable boost::mutex                                           the_mutex, mutex_read;
+  mutable ChaosMutex                                           the_mutex, mutex_read;
   int                                                            maxsize;
-  boost::condition_variable                                      the_condition_variable;
-  boost::condition_variable                                      some_read;
+  ChaosConditionVariable                                      the_condition_variable;
+  ChaosConditionVariable                                      some_read;
   boost::atomic<uint32_t> size;
  public:
   ~TLockFreeQueue() {
@@ -66,11 +66,11 @@ class TLockFreeQueue {
       the_condition_variable.notify_one();
       return size;
     } else {
-      boost::mutex::scoped_lock lock(mutex_read);
+      ChaosUniqueLock lock(mutex_read);
       if (timeout_ms > 0) {
-        boost::system_time const tim =
-            boost::get_system_time() + boost::posix_time::milliseconds(timeout_ms);
-        if (some_read.timed_wait(lock, tim) == false) {
+        /*boost::system_time const tim =
+            boost::get_system_time() + boost::posix_time::milliseconds(timeout_ms);*/
+        if (CHAOS_WAIT(some_read,lock, timeout_ms) == false) {
           return chaos::ErrorCode::EC_GENERIC_TIMEOUT;
         }
 
@@ -104,12 +104,12 @@ class TLockFreeQueue {
   }
   int wait_and_pop(T& popped_value, int timeout_ms = 0) {
     if (element_queue.empty()) {
-      boost::mutex::scoped_lock lock(the_mutex);
+      ChaosUniqueLock lock(the_mutex);
 
       if (timeout_ms > 0) {
-        boost::system_time const tim =
-            boost::get_system_time() + boost::posix_time::milliseconds(timeout_ms);
-        if (the_condition_variable.timed_wait(lock, tim)) {
+       /* boost::system_time const tim =
+            boost::get_system_time() + boost::posix_time::milliseconds(timeout_ms);*/
+        if (CHAOS_WAIT(the_condition_variable,lock, timeout_ms)) {
           if (pop(popped_value)) {
             return size;
           }

@@ -167,7 +167,7 @@ namespace chaos {
                 ~HealtManagerBase();
                 
                 //! permit to lock the access to publishing direct io channel
-                boost::mutex                                        mutex_publishing;
+                ChaosMutex                                        mutex_publishing;
                  void updateProcInfo();
                 virtual void _publish(const ChaosSharedPtr<NodeHealtSet>& heath_set,
                                      uint64_t publish_ts);

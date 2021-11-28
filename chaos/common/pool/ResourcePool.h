@@ -104,7 +104,7 @@ delete(x);
                 }
                 
                 ~ResourcePool() {
-                    boost::unique_lock<boost::mutex> l(mutex_r_pool);
+                    ChaosLockGuard l(mutex_r_pool);
                     for(typename std::deque< ResourceSlot* >::iterator it = r_pool.begin();
                         it!=r_pool.end();
                         it++) {
@@ -119,7 +119,7 @@ delete(x);
                  it provide the allcoation of a new resource and return it
                  */
                 ResourceSlot *getNewResource() {
-                    boost::unique_lock<boost::mutex> l(mutex_r_pool);
+                    ChaosLockGuard l(mutex_r_pool);
                     ResourceSlot *resource_slot_ptr = NULL;
                     if(r_pool.empty()) {
                         //create temporare autoPtr for safe operation in case of exception
@@ -144,7 +144,7 @@ delete(x);
                  */
                 void releaseResource(ResourceSlot *resource_slot,
                                      bool purge = false) {
-                    boost::unique_lock<boost::mutex> l(mutex_r_pool);
+                    ChaosLockGuard l(mutex_r_pool);
                     if(purge) {
                         //check and delete resource and slot
                         CHAOS_RESOURCE_POOL_DELETE_SLOT(resource_slot)
@@ -154,13 +154,13 @@ delete(x);
                 }
                 
                 size_t getSize() {
-                    boost::unique_lock<boost::mutex> l(mutex_r_pool);
+                    ChaosLockGuard l(mutex_r_pool);
                     return created_resources;
                 }
                 
                 void maintenance() {
                     //lock pool
-                    boost::unique_lock<boost::mutex> l(mutex_r_pool);
+                    ChaosLockGuard l(mutex_r_pool);
                     //check maximum 3 element
                     int max_to_check = r_pool.size()>3?3:(int)r_pool.size();
                     //check the current ts in ms
@@ -188,7 +188,7 @@ delete(x);
                 ResourcePoolHelper *resource_pooler_helper;
                 
                 //pool queue structure
-                boost::mutex mutex_r_pool;
+                ChaosMutex mutex_r_pool;
                 SocketPoolQueue r_pool;
                 
                 //! allocate a new resource

@@ -21,10 +21,10 @@ namespace chaos{
 				//mutex_ protects count_.
 				//Any code that reads or writes the count_ data must hold a lock on
 				//the mutex.
-				boost::mutex mutex_;
+				ChaosMutex mutex_;
 				
 				//Code that increments count_ must notify the condition variable.
-				boost::condition_variable condition_;
+				ChaosConditionVariable condition_;
 				
 			public:
 				explicit ThreadSemaphore(unsigned int initial_count)
@@ -35,12 +35,12 @@ namespace chaos{
 				unsigned int get_count()  {
 					//The "lock" object locks the mutex when it's constructed,
 					//and unlocks it when it's destroyed.
-					boost::unique_lock<boost::mutex> lock(mutex_);
+					ChaosLockGuard lock(mutex_);
 					return count_;
 				}
 				
 				void signal(unsigned int num_of_thread = 1) {
-					boost::unique_lock<boost::mutex> lock(mutex_);
+					ChaosLockGuard lock(mutex_);
 					
 					count_ += num_of_thread;
 					
@@ -52,7 +52,7 @@ namespace chaos{
 				}
 				
 				void wait() {
-					boost::unique_lock<boost::mutex> lock(mutex_);
+					ChaosLockGuard lock(mutex_);
 					while (count_ == 0)
 					{
 						condition_.wait(lock);

@@ -43,9 +43,9 @@ namespace chaos {
                 bool cicle_test;
                 bool stop_me;
                         //! mutext used for unlock and wait esclusive access
-                boost::mutex wait_answer_mutex;
+                ChaosMutex wait_answer_mutex;
                 //! condition variable for wait the answer
-                boost::condition_variable wait_answer_condition;
+                ChaosConditionVariable wait_answer_condition;
                 ChaosUniquePtr<boost::asio::deadline_timer> timer;
                 uint64_t    delay;
                 void timerTimeout(const boost::system::error_code& error);

@@ -63,7 +63,7 @@ namespace chaos {
                 const std::string metadata_logging_domain;
                 const std::string metadata_logging_action;
                 
-                boost::mutex mutext_maps;
+                ChaosMutex mutext_maps;
             
                 std::map<std::string, ChaosSharedPtr< chaos::common::utility::ObjectInstancer<AbstractMetadataLogChannel> > > map_instancer;
                 
@@ -104,7 +104,7 @@ namespace chaos {
                 const std::string metadata_logging_domain;
                 const std::string metadata_logging_action;
                 
-                boost::mutex mutext_maps;
+                ChaosMutex mutext_maps;
             
                 std::map<std::string, ChaosSharedPtr< chaos::common::utility::ObjectInstancer<AbstractMetadataLogChannel> > > map_instancer;
                 

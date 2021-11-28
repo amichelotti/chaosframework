@@ -97,7 +97,7 @@ namespace chaos{
                 //when tru the timing information set will be used
                 bool use_timing_info;
                 //mutex to protect access to data io driver
-                boost::mutex mutex_push_data;
+                ChaosMutex mutex_push_data;
                 // \return 0 if success
                 int pushDataWithControlOnHistoryTime(const std::string& key,
                                                       chaos::common::data::CDWShrdPtr dataset,

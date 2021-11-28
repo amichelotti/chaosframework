@@ -60,14 +60,14 @@ HttpPost::HttpPost(const std::string &id, uint32_t timeout_ms, uint32_t _retry_o
 HttpPost::~HttpPost() {
   free(mgr);
 }
-static boost::mutex devio_mutex;
+static ChaosMutex devio_mutex;
 
 int HttpPost::post(const std::string &server, const std::string &api, const std::string &body, std::stringstream &res) {
   char s_url[256];
   int  ret;
  // DBG << "before mutex offline:" << off_line.size();
 
-  boost::lock_guard<boost::mutex> l(devio_mutex);
+  ChaosLockGuard l(devio_mutex);
  if (off_line.count(server) && (chaos::common::utility::TimingUtil::getTimeStamp() - off_line[server]) < retry_offline_ms) {
     ERR << "server " << server << " has put offline for " << (retry_offline_ms - (chaos::common::utility::TimingUtil::getTimeStamp() - off_line[server])) << " ms";
 

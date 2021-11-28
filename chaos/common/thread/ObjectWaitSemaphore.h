@@ -45,9 +45,9 @@ namespace chaos {
             //! object waited by waiting lock
         T objecForWait;
             //! mutext used for unlock and wait esclusive access
-        boost::mutex wait_answer_mutex;
+        ChaosMutex wait_answer_mutex;
             //! condition variable for wait the answer
-        boost::condition_variable wait_answer_condition;
+        ChaosConditionVariable wait_answer_condition;
     public:
 
             //!ObjectWaitSemaphore
@@ -73,7 +73,7 @@ namespace chaos {
          set the waited object
          */
         void setWaithedObject(T _objecForWait){
-            boost::unique_lock<boost::mutex> lock( wait_answer_mutex );
+           ChaosUniqueLock lock( wait_answer_mutex );
             objecForWait = _objecForWait;
         }
         
@@ -84,7 +84,7 @@ namespace chaos {
          \return the object that someone has associated at this semaphore
          */
         T wait() {
-            boost::unique_lock<boost::mutex> lock( wait_answer_mutex );
+            ChaosUniqueLock lock( wait_answer_mutex );
             if(inWait) return NULL;
             inWait = true;
             answered = false;
@@ -107,11 +107,11 @@ namespace chaos {
          \return the object that someone has associated at this semaphore
          */
         T wait(unsigned long millisecToWait) {
-            boost::unique_lock<boost::mutex> lock( wait_answer_mutex );
+            ChaosUniqueLock lock( wait_answer_mutex );
             if(inWait) return NULL;
             inWait = true;
             answered = false;
-            do {} while(wait_answer_condition.timed_wait(lock, posix_time::milliseconds(millisecToWait)) && !answered);
+            do {} while(CHAOS_WAIT(wait_answer_condition,lock, millisecToWait) && !answered);
             inWait = false;
             answered = false;
             T result = objecForWait;
@@ -124,7 +124,7 @@ namespace chaos {
          unlock the waiting thread
          */
         void unlock(){
-            boost::unique_lock<boost::mutex> lock( wait_answer_mutex );
+            ChaosUniqueLock lock( wait_answer_mutex );
             answered = true;
             wait_answer_condition.notify_one();
         }
