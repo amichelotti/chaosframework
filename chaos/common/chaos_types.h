@@ -62,6 +62,15 @@ typedef std::future_status ChaosFutureStatus;
 typedef std::chrono::seconds ChaosCronoSeconds;
 typedef std::chrono::milliseconds ChaosCronoMilliseconds;
 typedef std::chrono::microseconds ChaosCronoMicroseconds;
+#define ChaosMutex std::mutex 
+#define ChaosLockGuard std::lock_guard<std::mutex> 
+#define ChaosUniqueLock std::unique_lock<std::mutex>
+#define ChaosConditionVariable std::condition_variable 
+#define ChaosConditionVariableAny std::condition_variable_any 
+#define CHAOS_WAIT(condvar,lock,duration_ms) (condvar.wait_for(lock,std::chrono::milliseconds(duration_ms))==std::cv_status::no_timeout)
+#define CHAOS_WAIT_US(condvar,lock,duration_us) (condvar.wait_for(lock,std::chrono::microseconds(duration_us))==std::cv_status::no_timeout)
+
+#define CHAOS_DEFER_LOCK std::defer_lock
 
 template< class R >
 using ChaosFunction = std::function< R >;
@@ -69,62 +78,22 @@ using ChaosFunction = std::function< R >;
 #define ChaosBindPlaceholder(x) std::placeholders::x
 #define ChaosUniquePtr std::unique_ptr
 #define ChaosMoveOperator(x) std::move(x)
-
-#else
-#include <boost/shared_ptr.hpp>
-#include <boost/atomic.hpp>
-#include <boost/thread/future.hpp>
-#include <boost/chrono.hpp>
-#include <boost/function.hpp>
-
-#define ChaosSharedPtr boost::shared_ptr
-#define ChaosMakeSharedPtr boost::make_shared
-#define ChaosWeakPtr boost::weak_ptr
-#define ChaosAtomic boost::atomic
-#define ChaosPromise boost::promise
-#define ChaosFuture boost::future
-#define ChaosSharedFuture boost::shared_future
-#define ChaosFutureStatus boost::future_status
-#define ChaosCronoSeconds boost::chrono::seconds
-#define ChaosCronoMilliseconds boost::chrono::milliseconds
-#define ChaosCronoMicroseconds boost::chrono::microseconds
-#define ChaosFunction boost::function
-#define ChaosBind boost::bind
-#define ChaosBindPlaceholder(x) x
-#if 0
-#include <boost/move/unique_ptr.hpp>
-
-#define ChaosUniquePtr boost::movelib::unique_ptr
-#define ChaosMoveOperator(x) boost::move(x)
-#else
-#define ChaosUniquePtr std::auto_ptr
-#define ChaosMoveOperator(x) x
-
-#endif
 #endif
 
 #else
+// C98
 #include <stdint.h>
 #define CInt64  int64_t
 #define CUint64 uint64_t
 #define CInt32  int32_t
 #define CUInt32 uint32_t
 #define CDouble double
-
+/*
 #include <boost/shared_ptr.hpp>
 #include <boost/atomic.hpp>
 #include <boost/thread/future.hpp>
 #include <boost/chrono.hpp>
 #include <boost/function.hpp>
-#if 0
-#include <boost/move/unique_ptr.hpp>
-#define ChaosUniquePtr boost::movelib::unique_ptr
-#define ChaosMoveOperator(x)  boost::move(x)
-#else
-#define ChaosUniquePtr std::auto_ptr
-#define ChaosMoveOperator(x) (x)
-
-#endif
 
 #define ChaosSharedPtr boost::shared_ptr
 #define ChaosMakeSharedPtr boost::make_shared
@@ -140,6 +109,46 @@ using ChaosFunction = std::function< R >;
 #define ChaosFunction boost::function
 #define ChaosBind boost::bind
 #define ChaosBindPlaceholder(x) x
+*/
+#define FORCE_BOOST_SHPOINTER 1
+#endif
+
+
+#ifdef FORCE_BOOST_SHPOINTER
+#include <boost/shared_ptr.hpp>
+#include <boost/atomic.hpp>
+#include <boost/thread/future.hpp>
+#include <boost/chrono.hpp>
+#include <boost/function.hpp>
+#define ChaosMutex boost::mutex 
+#define ChaosLockGuard boost::lock_guard<boost::mutex> 
+#define ChaosUniqueLock boost::unique_lock<boost::mutex> 
+#define ChaosConditionVariable boost::condition_variable
+#define ChaosConditionVariableAny boost::condition_variable_any
+#define CHAOS_WAIT(condvar,lock,duration_ms) condvar.timed_wait(lock,boost::posix_time::milliseconds(duration_ms))
+#define CHAOS_WAIT_US(condvar,lock,duration_us) condvar.timed_wait(lock,boost::posix_time::microseconds(duration_us))
+
+
+#define CHAOS_DEFER_LOCK boost::defer_lock
+
+#define ChaosSharedPtr boost::shared_ptr
+#define ChaosMakeSharedPtr boost::make_shared
+#define ChaosWeakPtr boost::weak_ptr
+#define ChaosAtomic boost::atomic
+#define ChaosPromise boost::promise
+#define ChaosFuture boost::future
+#define ChaosSharedFuture boost::shared_future
+#define ChaosFutureStatus boost::future_status
+#define ChaosCronoSeconds boost::chrono::seconds
+#define ChaosCronoMilliseconds boost::chrono::milliseconds
+#define ChaosCronoMicroseconds boost::chrono::microseconds
+#define ChaosFunction boost::function
+#define ChaosBind boost::bind
+#define ChaosBindPlaceholder(x) x
+
+#define ChaosUniquePtr std::auto_ptr
+#define ChaosMoveOperator(x) x
+
 #endif
 
 //allocator for smarpoitner
@@ -235,6 +244,7 @@ to_execute \
 typedef boost::shared_mutex                     ChaosSharedMutex;
 typedef boost::shared_lock<boost::shared_mutex> ChaosReadLock;
 typedef boost::unique_lock<boost::shared_mutex> ChaosWriteLock;
+
 
 typedef struct boost::defer_lock_t     ChaosDeferLock_t;
 typedef struct boost::try_to_lock_t    ChaosTryToLock_t;

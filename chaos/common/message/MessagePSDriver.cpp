@@ -19,7 +19,7 @@ namespace chaos {
 namespace common {
 namespace message {
 
-boost::mutex                           MessagePSDriver::io;
+ChaosMutex                           MessagePSDriver::io;
 std::map<std::string, producer_uptr_t> MessagePSDriver::producer_drv_m;
 std::map<std::string, consumer_uptr_t> MessagePSDriver::consumer_drv_m;
 producer_uptr_t                        MessagePSDriver::getNewProducerDriver(const std::string& drvname, const std::string& k) {
@@ -56,7 +56,7 @@ producer_uptr_t                        MessagePSDriver::getNewProducerDriver(con
 producer_uptr_t MessagePSDriver::getProducerDriver(const std::string& drvname, const std::string& k) {
   producer_uptr_t ret;
 
-  boost::mutex::scoped_lock                        ll(io);
+  ChaosLockGuard                        ll(io);
   std::map<std::string, producer_uptr_t>::iterator i = producer_drv_m.find(drvname);
   if (i != producer_drv_m.end()) {
     MRDDBG_ << drvname << "] returning allocated producer:" << std::hex << i->second.get();

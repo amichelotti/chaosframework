@@ -63,7 +63,7 @@ const HealthInformation& NodeController::getHealthInformation() const {
 }
 
 const unsigned int NodeController::getHandlerListSise() {
-    boost::unique_lock<boost::mutex> wl(list_handler_mutex);
+    ChaosLockGuard wl(list_handler_mutex);
     return (unsigned int)list_handler.size();
 }
 
@@ -213,7 +213,7 @@ void NodeController::_resetHealth() {
 }
 
 void NodeController::_fireHealthDatasetChanged(){
-    boost::unique_lock<boost::mutex> wl(list_handler_mutex);
+    ChaosLockGuard wl(list_handler_mutex);
     for(MonitoHandlerListIterator it = list_handler.begin(),
         it_end = list_handler.end();
         it != it_end;
@@ -227,7 +227,7 @@ void NodeController::_fireHealthDatasetChanged(){
 void NodeController::_setOnlineState(const OnlineState new_online_state) {
     bool changed = health_info.online_state != new_online_state;
     
-    boost::unique_lock<boost::mutex> wl(list_handler_mutex);
+    ChaosLockGuard wl(list_handler_mutex);
     for(MonitoHandlerListIterator it = list_handler.begin(),
         it_end = list_handler.end();
         it != it_end;
@@ -248,7 +248,7 @@ void NodeController::_setOnlineState(const OnlineState new_online_state) {
 
 void NodeController::_setNodeInternalState(const std::string& new_internal_state) {
     bool changed = health_info.internal_state.compare(new_internal_state) != 0;
-    boost::unique_lock<boost::mutex> wl(list_handler_mutex);
+    ChaosLockGuard wl(list_handler_mutex);
     for(MonitoHandlerListIterator it = list_handler.begin(),
         it_end = list_handler.end();
         it != it_end;
@@ -266,7 +266,7 @@ void NodeController::_setError(const ErrorInformation& new_error_information) {
     bool changed = (health_info.error_information.error_code != new_error_information.error_code) ||
     (health_info.error_information.error_message.compare(new_error_information.error_message) != 0) ||
     (health_info.error_information.error_domain.compare(new_error_information.error_domain) != 0);
-    boost::unique_lock<boost::mutex> wl(list_handler_mutex);
+    ChaosLockGuard wl(list_handler_mutex);
     for(MonitoHandlerListIterator it = list_handler.begin(),
         it_end = list_handler.end();
         it != it_end;
@@ -288,7 +288,7 @@ void NodeController::_setProcessResource(const ProcessResource& new_process_reso
     
     bool restarted = changed && health_info.process_resource.uptime > new_process_resource.uptime;
     
-    boost::unique_lock<boost::mutex> wl(list_handler_mutex);
+    ChaosLockGuard wl(list_handler_mutex);
     for(MonitoHandlerListIterator it = list_handler.begin(),
         it_end = list_handler.end();
         it != it_end;
@@ -307,7 +307,7 @@ void NodeController::_setProcessResource(const ProcessResource& new_process_reso
 }
 
 bool NodeController::addHandler(NodeMonitorHandler *handler_to_add) {
-    boost::unique_lock<boost::mutex> wl(list_handler_mutex);
+    ChaosLockGuard wl(list_handler_mutex);
     if(list_handler.find(handler_to_add) != list_handler.end()) return false;
     list_handler.insert(handler_to_add);
     //fire current state to the handler
@@ -329,7 +329,7 @@ bool NodeController::addHandler(NodeMonitorHandler *handler_to_add) {
 }
 
 bool NodeController::removeHandler(NodeMonitorHandler *handler_to_remove) {
-    boost::unique_lock<boost::mutex> wl(list_handler_mutex);
+    ChaosLockGuard wl(list_handler_mutex);
     if(list_handler.find(handler_to_remove) == list_handler.end()) return false;
     list_handler.erase(handler_to_remove);
     return true;

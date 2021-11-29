@@ -68,7 +68,7 @@ namespace chaos {
 public:
             static std::stringstream measurements;
             static uint32_t nmeas;
-            boost::mutex iolock;
+            ChaosMutex iolock;
           
 #if CHAOS_PROMETHEUS
     static chaos::common::metric::CounterUniquePtr counter_write_data_uptr;

@@ -57,11 +57,11 @@ namespace chaos {
                 std::map< eventTypes,msgHandler> handlers;
                 msgstats_t stats;
                 boost::atomic<bool>   data_ready;
-                boost::mutex mutex_cond;
-                boost::condition_variable cond;
+                ChaosMutex mutex_cond;
+                ChaosConditionVariable cond;
                 boost::thread th;
                 void thfunc();
-                boost::mutex io;
+                ChaosMutex io;
                 uint64_t    counter,oks,errs;
 
                 public:

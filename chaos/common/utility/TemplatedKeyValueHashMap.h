@@ -22,7 +22,7 @@
 #define __CHAOSFramework__TemplatedHash__
 
 #include <chaos/common/data/cache/FastHash.h>
-
+#include <chaos/common/chaos_types.h>
 #include <boost/thread.hpp>
 
 namespace chaos {
@@ -51,7 +51,7 @@ namespace chaos {
 			template<typename T>
 			struct HashHeadElementList {
 				//!list mutext
-				boost::mutex	mutex_list;
+				ChaosMutex	mutex_list;
 				
 				//! list point to the head element
 				KeyValueHashElement<T> *head;
@@ -83,7 +83,7 @@ namespace chaos {
 				//! flag for memory the allcoation state of the memory
 				bool			allocation_success;
 				
-				boost::mutex	mutex_hash;
+				ChaosMutex	mutex_hash;
                 
 				//! get the has for the key
 				inline uint32_t getHashForKey(const void * key, const uint32_t key_len) {
@@ -174,7 +174,7 @@ namespace chaos {
 				 Get element by his key
 				 */
 				int getElement(const void * key, const uint32_t key_len, T *element_ptr) {
-                    boost::unique_lock<boost::mutex>  wl(mutex_hash);
+                    ChaosLockGuard  wl(mutex_hash);
 					int err = -3;
 					//get the list for the has value
 					HashList *_list_head = getListByHash(getHashForKey(key, key_len));
@@ -216,7 +216,7 @@ namespace chaos {
 						//another element with the same key is preset
 						return -1;
 					}
-                    boost::unique_lock<boost::mutex>  wl(mutex_hash);
+                    ChaosLockGuard  wl(mutex_hash);
 					//get the list for the has value
 					HashList *_list_head = getListByHash(getHashForKey(key, key_len));
 					
@@ -224,7 +224,7 @@ namespace chaos {
 					if(!_list_head) return -1;
 					
 					//get the write lock
-					boost::unique_lock<boost::mutex> writeLock(_list_head->mutex_list);
+					ChaosLockGuard writeLock(_list_head->mutex_list);
 					
 					//allocate new struct for the element
 					HashedStruct *new_element = new HashedStruct();
@@ -258,7 +258,7 @@ namespace chaos {
 				 Remove the element identified by key
 				 */
 				void removeElement(const void *key, const uint32_t key_len) {
-                    boost::unique_lock<boost::mutex>  wl(mutex_hash);
+                    ChaosLockGuard  wl(mutex_hash);
 					//get the list for the has value
 					HashList *_list_head = getListByHash(getHashForKey(key, key_len));
 					
@@ -296,7 +296,7 @@ namespace chaos {
 				
 				//!clear all hash table
 				void clear() {
-                    boost::unique_lock<boost::mutex>  wl(mutex_hash);
+                    ChaosLockGuard  wl(mutex_hash);
 					//clear all element(not the hash vector)
 					for(int idx = 0; idx < hashsize(hash_hashpower); idx++) {
 						

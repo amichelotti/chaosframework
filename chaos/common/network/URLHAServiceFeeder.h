@@ -74,7 +74,7 @@ private:
     uint32_t max_retry_time;
     URLHAServiceCheckerFeederHandler *service_checker_handler;
     
-    boost::mutex mutex_queue;
+    ChaosMutex mutex_queue;
     std::queue< ChaosSharedPtr<ServiceRetryInformation> > retry_queue;
     std::queue<uint32_t> respawned_queue;
     

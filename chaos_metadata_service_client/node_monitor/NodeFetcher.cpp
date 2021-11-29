@@ -146,14 +146,14 @@ void NodeFetcher::managmentKeyToMonitor(const MonitorKeyList& key_to_listen,
 
 bool NodeFetcher::addHanlderForControllerType(ControllerType type,
                                               NodeMonitorHandler *handler) {
-    boost::unique_lock<boost::mutex> wl(maps_mutex);
+    ChaosLockGuard wl(maps_mutex);
     ChaosSharedPtr<NodeController>   controller = getControllerForType(type);
     return controller->addHandler(handler);
 }
 
 bool NodeFetcher::removeHandler(ControllerType type,
                                 NodeMonitorHandler *handler) {
-    boost::unique_lock<boost::mutex> wl(maps_mutex);
+    ChaosLockGuard wl(maps_mutex);
     if(map_type_controller.count(type) == 0) return false;
     
     return removeHandlerFromController(type, handler);

@@ -14,7 +14,7 @@ class BsonFStream{
     BsonFStream(const std::string&fname,int inital_size=1024*1024);
     BsonFStream();
     boost::iostreams::mapped_file mf;
-    boost::mutex wmutex;
+    ChaosMutex wmutex;
 
     ~BsonFStream();
     int open(const std::string&fname,int initial_size=1024*1024);

@@ -57,10 +57,10 @@ namespace chaos {
         boost::thread_group t_group;
     protected:
         bool in_deinit;
-        mutable boost::mutex qMutex;
+        mutable ChaosMutex qMutex;
         std::queue< QueueElementShrdPtr > buffer_queue;
-        boost::condition_variable liveThreadConditionLock;
-        boost::condition_variable emptyQueueConditionLock;
+        ChaosConditionVariable liveThreadConditionLock;
+        ChaosConditionVariable emptyQueueConditionLock;
         
         /*
          Thread method that work on buffer item
@@ -116,14 +116,14 @@ namespace chaos {
              Deinitialization method for output buffer
              */
             virtual void deinit(bool waithForEmptyQueue=true) {
-                boost::unique_lock<boost::mutex> lock(qMutex);
+                ChaosUniqueLock lock(qMutex);
                 COPQUEUE_LDBG_ << "Deinitialization";
                 
                 if(waithForEmptyQueue){
                     COPQUEUE_LDBG_ << " wait until queue is empty";
                     while(!buffer_queue.empty()){
-                        emptyQueueConditionLock.timed_wait(lock,
-                                                           boost::posix_time::milliseconds(500));
+                        CHAOS_WAIT(emptyQueueConditionLock,lock,500);
+                                        
                         
                     }
                     COPQUEUE_LDBG_ << "queue is empty";
@@ -145,7 +145,7 @@ namespace chaos {
              push the row value into the buffer
              */
             virtual bool push(QueueElementShrdPtr data) {
-                boost::unique_lock<boost::mutex> lock(qMutex);
+                ChaosLockGuard lock(qMutex);
                 if(in_deinit ||
                    (buffer_queue.size() > CObjectProcessingQueue_MAX_ELEMENT_IN_QUEUE)) {
                         COPQUEUE_LERR_ << "cannot push deinit:"<<in_deinit<<" size:"<<buffer_queue.size();
@@ -161,7 +161,7 @@ namespace chaos {
              get the last insert data
              */
             QueueElementShrdPtr waitAndPop() {
-                boost::unique_lock<boost::mutex> lock(qMutex);
+                ChaosUniqueLock lock(qMutex);
                 //output result poitner
                 QueueElementShrdPtr element;
                 //DEBUG_CODE(COPQUEUE_LDBG_<< " waitAndPop() begin to wait";)
@@ -186,7 +186,7 @@ namespace chaos {
              check for empty buffer
              */
             bool isEmpty() const {
-                boost::unique_lock<boost::mutex> lock(qMutex);
+                ChaosLockGuard lock(qMutex);
                 return buffer_queue.empty();
             }
             
@@ -194,10 +194,10 @@ namespace chaos {
              check for empty buffer
              */
             void waitForEmpty() {
-                boost::unique_lock<boost::mutex> lock(qMutex);
+                ChaosUniqueLock lock(qMutex);
                 while(!buffer_queue.empty()){
-                    emptyQueueConditionLock.timed_wait(lock,
-                                                       boost::posix_time::milliseconds(500));
+                    CHAOS_WAIT(emptyQueueConditionLock,lock,500);
+                                                    
                 }
                 return buffer_queue.empty();
             }
@@ -207,7 +207,7 @@ namespace chaos {
              clear the queue, remove all non processed element
              */
             void clear() {
-                CHAOS_BOOST_LOCK_ERR(boost::unique_lock<boost::mutex> lock(qMutex);, COPQUEUE_LERR_ << "Error on lock";)
+                CHAOS_BOOST_LOCK_ERR(ChaosLockGuard lock(qMutex);, COPQUEUE_LERR_ << "Error on lock";)
                 //remove all element
                 while (!buffer_queue.empty()) {
                     //QueueElementShrdPtr tmp = MOVE(bufferQueue.front());
@@ -219,7 +219,7 @@ namespace chaos {
              Return le number of elementi into live data
              */
             unsigned long queueSize() {
-                boost::unique_lock<boost::mutex> lock(qMutex);
+                ChaosLockGuard lock(qMutex);
                 return buffer_queue.size();
             }
             

@@ -65,28 +65,26 @@ namespace chaos {
             private:
                 //std::queue<T> the_queue;
                 boost::heap::priority_queue< TemplatedConcurrentQueueElement<T> > element_queue;
-                mutable boost::mutex the_mutex;
+                mutable ChaosMutex the_mutex;
                 
-                boost::condition_variable the_condition_variable;
+                ChaosConditionVariable the_condition_variable;
             public:
                 void push(T const& data, uint32_t priority = 50) {
-                    boost::mutex::scoped_lock lock(the_mutex);
+                    ChaosLockGuard lock(the_mutex);
                     element_queue.push(TemplatedConcurrentQueueElement<T>(data, priority));
                     
-                    //free the mutex
-                    lock.unlock();
                     
                     //notify the withing thread
                     the_condition_variable.notify_one();
                 }
                 
                 bool empty() const {
-                    boost::mutex::scoped_lock lock(the_mutex);
+                    ChaosLockGuard lock(the_mutex);
                     return element_queue.empty();
                 }
                 
                 bool try_pop(T& popped_value) {
-                    boost::mutex::scoped_lock lock(the_mutex);
+                    ChaosLockGuard lock(the_mutex);
                     if(element_queue.empty()) {
                         return false;
                     }
@@ -99,7 +97,7 @@ namespace chaos {
                 
                 void wait_and_pop(T& popped_value)
                 {
-                    boost::mutex::scoped_lock lock(the_mutex);
+                    ChaosUniqueLock lock(the_mutex);
                     while(element_queue.empty())
                     {
                         the_condition_variable.wait(lock);

@@ -590,7 +590,7 @@ PosixFile::cacheRead_t  PosixFile::s_lastAccessedDir;
 //PosixFile::ordered_t         PosixFile::s_ordered;
 PosixFile::searchWorkerMap_t PosixFile::searchWorkers;
 //ChaosSharedMutex PosixFile::devio_mutex;
-boost::mutex PosixFile::last_access_mutex, PosixFile::cache_mutex;
+ChaosMutex PosixFile::last_access_mutex, PosixFile::cache_mutex;
 
 bool SearchWorker::isExpired() {
   if (done == false) return false;
@@ -811,13 +811,12 @@ bool SearchWorker::waitData(int timeo) {
   if (done) {
     return false;
   }
-  boost::mutex::scoped_lock lock(mutex_io);
-  boost::system_time const  timeout = boost::get_system_time() + boost::posix_time::milliseconds(timeo);
+  ChaosUniqueLock lock(mutex_io);
 
   //   boost::chrono::system_clock::time_point wakeUpTime =
   //   boost::chrono::system_clock::now() + period;
   DBG << "waiting for data available.." << elements;
-  bool ret = wait_data.timed_wait(lock, timeout);
+  bool ret = CHAOS_WAIT(wait_data,lock, timeo);
   DBG << "data available:" << elements;
 
   return ret;
@@ -1005,7 +1004,7 @@ int PosixFile::pushObject(const std::string&                       key,
     bool                   notexist;
     write_path_t::iterator id;
     {
-      boost::mutex::scoped_lock lk(last_access_mutex);
+      ChaosLockGuard lk(last_access_mutex);
       id       = s_lastWriteDir.find(dir);
       notexist = (id == s_lastWriteDir.end());
       //last_access_mutex.unlock();

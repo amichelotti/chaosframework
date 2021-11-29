@@ -22,7 +22,6 @@
 #include "DataWorker.h"
 #include "../ChaosMetadataService.h"
 
-#include <boost/thread/lock_options.hpp>
 #include <chaos/common/global.h>
 
 #include <cstring>
@@ -44,7 +43,7 @@ thread_cookie(NULL){}
 
 DataWorker::~DataWorker() {}
 
-WorkerJobPtr DataWorker::getNextOrWait(boost::unique_lock<boost::mutex>& lock) {
+WorkerJobPtr DataWorker::getNextOrWait(ChaosUniqueLock& lock) {
     WorkerJobPtr new_job;
     while(!(new_job = job_queue.front()) &&
           work) {
@@ -56,7 +55,7 @@ WorkerJobPtr DataWorker::getNextOrWait(boost::unique_lock<boost::mutex>& lock) {
 void DataWorker::consumeJob(void *cookie) {
     WorkerJobPtr thread_job = NULL;
     //create lock defering
-    boost::unique_lock<boost::mutex> lock(mutex_job, boost::defer_lock);
+    ChaosUniqueLock lock(mutex_job, CHAOS_DEFER_LOCK);
     while(work) {
         lock.lock();
         //wait for next thread
@@ -122,12 +121,12 @@ void DataWorker::setMaxElement(uint64_t new_max_element) {
 }
 
 int DataWorker::submitJobInfo(WorkerJobPtr job_info, int64_t milliseconds_to_wait) {
-    boost::unique_lock<boost::mutex> lock(mutex_submit);
+    ChaosUniqueLock lock(mutex_submit);
     //check if we are out of max element in queue, in other case go out
     if(job_in_queue >= max_element) {
         DCLDBG_ << "Fifo Full queue :"<<job_in_queue<<", waiting..";
 
-        if(push_condition.wait_for(lock, boost::chrono::milliseconds(milliseconds_to_wait)) == boost::cv_status::timeout) {
+        if(CHAOS_WAIT(push_condition,lock,milliseconds_to_wait) ==false) {
             DCLERR_ << "Datapack has gone in timeout waiting for queue free more space";
             return -1;
         }

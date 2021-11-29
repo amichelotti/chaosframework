@@ -59,7 +59,7 @@ MessagePSKafkaProducer::~MessagePSKafkaProducer() {
 }
 int MessagePSKafkaProducer::flush(const int timeo){
   MRDDBG_ << "Flushing... ";
-  boost::mutex::scoped_lock ll(io);
+  ChaosLockGuard ll(io);
 
     rd_kafka_flush(rk, timeo);
 if (rd_kafka_outq_len(rk) > 0){
@@ -100,7 +100,7 @@ int MessagePSKafkaProducer::applyConfiguration() {
   MRDDBG_ << "Apply configuration";
         
 
-  boost::mutex::scoped_lock ll(io);
+  ChaosLockGuard ll(io);
   
   if ((ret = MessagePSRDKafka::init(servers)) == 0) {
     if(rk==NULL){
@@ -133,7 +133,7 @@ int MessagePSKafkaProducer::pushMsgAsync(const chaos::common::data::CDataWrapper
       errstr="Not applied configuration";
       return -11;
   }
- // boost::mutex::scoped_lock ll(io);
+ // ChaosLockGuard ll(io);
 
 //MRDDBG_ << "pushing: " << size<<" d:"<<data.getJSONString();
 retry:

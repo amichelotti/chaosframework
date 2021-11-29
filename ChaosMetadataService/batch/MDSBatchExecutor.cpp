@@ -130,7 +130,7 @@ void MDSBatchExecutor::deinit()  {
 
 //! return the number of the sandbox
 uint32_t MDSBatchExecutor::getNextSandboxToUse() {
-    boost::lock_guard<boost::mutex> l(mutex_sandbox_id);
+    ChaosLockGuard l(mutex_sandbox_id);
     last_used_sb_idx++;
     return (last_used_sb_idx %= getNumberOfSandboxInstance());
 }

@@ -80,36 +80,36 @@ namespace chaos {
                 ~SafeVector() {}
 
                 void insert(T in, const int index){
-                    std::lock_guard<std::mutex> lock(mut);
+                    ChaosLockGuard lock(mut);
                     vec[index] = std::move(in);
                 }
                 void push_back(T in){
-                    std::lock_guard<std::mutex> lock(mut);
+                    ChaosLockGuard lock(mut);
                     vec.push_back(std::move(in));
                 }
 
                  size_t size(){
-                    std::lock_guard<std::mutex> lock(mut);
+                    ChaosLockGuard lock(mut);
                     return vec.size();
                 }
                 T& operator[](const int index){
-                    std::lock_guard<std::mutex> lock(mut);
+                    ChaosLockGuard lock(mut);
 
                     return vec[index];
                 }
                 typename std::vector<T>::iterator begin(){
-                  std::lock_guard<std::mutex> lock(mut);
+                  ChaosLockGuard lock(mut);
 
                     return vec.begin();
                 }
                 typename std::vector<T>::iterator end(){
-                    std::lock_guard<std::mutex> lock(mut);
+                    ChaosLockGuard lock(mut);
 
                     return vec.end();
                 }
 
                 void clear(){
-                    std::lock_guard<std::mutex> lock(mut);
+                    ChaosLockGuard lock(mut);
 
                     vec.clear();
                 
@@ -120,7 +120,7 @@ namespace chaos {
 
                 private:
                 std::vector<T> vec;
-                std::mutex mut;
+                ChaosMutex mut;
             };
                 class SearchWorker {
                 typedef struct dataObj{
@@ -143,10 +143,10 @@ namespace chaos {
                 bool istemp;
       //  std::vector<unsigned char> encbuf[CAMERA_FRAME_BUFFERING];//encode stage
         
-                boost::condition_variable wait_data,tomany;
+                ChaosConditionVariable wait_data,tomany;
                 uint32_t max_elements;
                 uint32_t page_len;
-                boost::mutex mutex_io,mutex_many,mutex_ele,mutex_job;
+                ChaosMutex mutex_io,mutex_many,mutex_ele,mutex_job;
                 bool done;
                 int error;
                 void pathToCache(const std::string& final);
@@ -234,7 +234,7 @@ public:
                 typedef std::map<std::string,SearchWorker> searchWorkerMap_t;
                 static searchWorkerMap_t searchWorkers;
                 typedef std::map<std::string,read_path_t> cacheRead_t; 
-                static boost::mutex last_access_mutex,cache_mutex;
+                static ChaosMutex last_access_mutex,cache_mutex;
                 static cacheRead_t s_lastAccessedDir;
                 // something to process
                 bool process_dirs();
@@ -255,8 +255,8 @@ public:
                 };
                 void finalizeJob( );
                 boost::thread finalize_th;
-                boost::condition_variable wait_data;
-                boost::mutex mutex_io;
+                ChaosConditionVariable wait_data;
+                ChaosMutex mutex_io;
              //   static boost::lockfree::queue<dirpath_t*, boost::lockfree::fixed_sized<true> > file_to_finalize; 
 
                 bool exitFinalizeJob;

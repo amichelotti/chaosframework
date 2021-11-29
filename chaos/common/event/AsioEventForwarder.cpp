@@ -48,7 +48,7 @@ void AsioEventForwarder::init() {
  deinit the event adapter
  */
 void AsioEventForwarder::deinit() {
-    boost::unique_lock<boost::mutex> lock( wait_answer_mutex );
+    ChaosLockGuard lock( wait_answer_mutex );
     _socket.close();
     CObjectProcessingPriorityQueue<EventDescriptor>::clear();
     CObjectProcessingPriorityQueue<EventDescriptor>::deinit();

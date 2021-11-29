@@ -887,7 +887,7 @@ int16_t SQLiteEntityDB::makeInsertUpdateDelete(const char *sql) {
 
 int16_t SQLiteEntityDB::getNextIDOnTable(const char * tableName, uint32_t &seqID) {
     int16_t error = SQLITE_OK;
-    boost::mutex::scoped_lock  lock(seqWorkMutext);
+    ChaosLockGuard  lock(seqWorkMutext);
     sqlite3_reset(stmt[0]);
     sqlite3_reset(stmt[1]);
     

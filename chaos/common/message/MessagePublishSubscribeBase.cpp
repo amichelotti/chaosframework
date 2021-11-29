@@ -15,7 +15,7 @@ namespace chaos {
             
             }
                 void MessagePublishSubscribeBase::addServer(const std::string&url){
-                    boost::mutex::scoped_lock ll(io);
+                    ChaosLockGuard ll(io);
 
                     MRDDBG_<<"["<<servers.size()<<"] adding server:"<<url;
                     servers.insert(url);
@@ -43,10 +43,10 @@ namespace chaos {
             return 0;
             }
          int MessagePublishSubscribeBase::waitCompletion(const uint32_t timeout_ms){
-                boost::unique_lock<boost::mutex> guard(mutex_cond);
+                ChaosUniqueLock guard(mutex_cond);
                 MRDDBG_<<"wating operation";
                 if(data_ready) return stats.last_err;
-                if(!cond.timed_wait(guard,boost::posix_time::milliseconds(timeout_ms))){
+                if(!CHAOS_WAIT(cond,guard,timeout_ms)){
                 MRDERR_<<"Timeout";
                 return -100;
                 }
@@ -87,7 +87,7 @@ namespace chaos {
          }
 
          void MessagePublishSubscribeBase::start(){
-             boost::mutex::scoped_lock ll(io);
+             ChaosLockGuard ll(io);
             if(running==true){
                  MRDDBG_<<"Already running";
                 return;
@@ -97,7 +97,7 @@ namespace chaos {
 
          }
         void MessagePublishSubscribeBase::stop(){
-            boost::mutex::scoped_lock ll(io);
+            ChaosLockGuard ll(io);
             if(running==false){
                 MRDDBG_<<"Already stopped";
 

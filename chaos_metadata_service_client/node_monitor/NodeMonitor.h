@@ -52,7 +52,7 @@ namespace chaos {
                 chaos::metadata_service_client::monitor_system::MonitorManager *monitor_manager;
                 
                 
-                boost::mutex map_fetcher_mutex;
+                ChaosMutex map_fetcher_mutex;
                 NodeFetcherMap map_fetcher;
             protected:
                 NodeMonitor(chaos::metadata_service_client::monitor_system::MonitorManager *_monitor_manager,

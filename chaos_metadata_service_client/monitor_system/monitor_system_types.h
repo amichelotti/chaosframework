@@ -49,14 +49,14 @@ namespace chaos {
                 //!mutex and variable that help to notify when the consumer is free to be relased
                 //!and no more used by scheduler internal layer
                 bool                                    free_of_work;
-                boost::mutex                            mutex_condition_free;
-                boost::condition_variable               condition_free;
+                ChaosMutex                            mutex_condition_free;
+                ChaosConditionVariable               condition_free;
                 //!keep track of how many layers of the  scheduler are using this slot
                 boost::atomic<unsigned int> usage_counter;
                 //!relase any lock on conditional interal variable
                 void setFreeOfWork() {
                     try{
-                        boost::mutex::scoped_lock lock_on_condition(mutex_condition_free);
+                        ChaosLockGuard lock_on_condition(mutex_condition_free);
                         free_of_work = true;
                         condition_free.notify_one();
                     }catch(...){}
@@ -75,7 +75,7 @@ namespace chaos {
                 //! waith on conditional interval variable that is fired when the consumer can be released
                 void waitForCompletion() {
                     try{
-                        boost::mutex::scoped_lock lock_on_condition(mutex_condition_free);
+                        ChaosUniqueLock lock_on_condition(mutex_condition_free);
                         while(!free_of_work) {
                             condition_free.wait(lock_on_condition);
                         }

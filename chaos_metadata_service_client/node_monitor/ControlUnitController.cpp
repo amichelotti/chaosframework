@@ -144,7 +144,7 @@ void ControlUnitController::_updateDatsetKeyMapValue(chaos::metadata_service_cli
 void ControlUnitController::_fireUpdateDSOnHandler(int dataset_type,
                                                    MapDatasetKeyValues &map,
                                                    bool changed) {
-    boost::unique_lock<boost::mutex> wl(list_handler_mutex);
+    ChaosLockGuard wl(list_handler_mutex);
     for (MonitoHandlerListIterator it = list_handler.begin(),
          it_end = list_handler.end();
          it != it_end;
@@ -163,7 +163,7 @@ void ControlUnitController::_fireUpdateDSOnHandler(int dataset_type,
 }
 
 void ControlUnitController::_fireNoDSDataFoundOnHandler(int dataset_type) {
-    boost::unique_lock<boost::mutex> wl(list_handler_mutex);
+    ChaosLockGuard wl(list_handler_mutex);
     for (MonitoHandlerListIterator it = list_handler.begin(),
          it_end = list_handler.end();
          it != it_end;

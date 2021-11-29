@@ -68,14 +68,14 @@ namespace chaos {
                 chaos::common::network::NetworkBroker *network_broker;
                 
                 //! queue and mutex used for key consumer to be purged
-                boost::mutex                    mutex_queue_to_purge;
+                ChaosMutex                    mutex_queue_to_purge;
                 QuantuKeyConsumerToEraseQueue   queue_to_purge;
                 
                 //!quantum slot scheduler
                 QuantumSlotScheduler *slot_scheduler;
                 
                 //!map for QuantumKeyAttributeHandler structure
-                boost::mutex            map_mutex;
+                ChaosMutex            map_mutex;
                 QuantuKeyConsumerMap    map_quantum_key_consumer;
                 
                 MonitorManager(chaos::common::network::NetworkBroker *_network_broker,

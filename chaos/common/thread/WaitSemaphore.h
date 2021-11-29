@@ -42,9 +42,9 @@ namespace chaos {
         //! sign that an unlock has been given with the answer
         bool answered;
         //! mutext used for unlock and wait esclusive access
-        boost::mutex wait_answer_mutex;
+        ChaosMutex wait_answer_mutex;
         //! condition variable for wait the answer
-        boost::condition_variable wait_answer_condition;
+        ChaosConditionVariable wait_answer_condition;
     public:
         
         //!WaitSemaphore
@@ -95,7 +95,7 @@ namespace chaos {
          unlock the waiting thread
          */
         void unlock(){
-            boost::unique_lock<boost::mutex> lock( wait_answer_mutex );
+            ChaosUniqueLock lock( wait_answer_mutex );
                 //if(!inWait) return;
             answered = true;
             wait_answer_condition.notify_one();

@@ -55,13 +55,13 @@ namespace chaos {
                 //!< Iterator for all queues gave to this istance of Gabage collector
                 std::vector<IteratorGarbage<T>* > queues;
                 //!< Mutex lock for operation of deleting and inserting new queue to purge
-                boost::mutex* _access;
+                ChaosMutex* _access;
                 bool interrupted;
                 //!< This time represent time interval for gabageThread to perform an update
                 boost::posix_time::milliseconds* timeToSleep;
                 //!<condition used to sincronize closing beetween gatbageTrhead and TrackerThread
-                boost::condition_variable* conditionClose;
-                boost::mutex* closingLockMutex;
+                ChaosConditionVariable* conditionClose;
+                ChaosMutex* closingLockMutex;
                 
                 
             protected:
@@ -76,12 +76,12 @@ namespace chaos {
                  * \param closingLockMutex mutex to syncronize closing with tracker
                  *
                  */
-                GarbageThread(uint64_t millisToSleep,boost::condition_variable* conditionClose, boost::mutex* closingLockMutex){
+                GarbageThread(uint64_t millisToSleep,ChaosConditionVariable* conditionClose, ChaosMutex* closingLockMutex){
                     // this->queues=new std::vector<IteratorGarbage<T>* >();
                     interrupted=false;
                     timeToSleep=new boost::posix_time::milliseconds(millisToSleep);
                     //creating acces lock to data structure
-                    _access=new boost::mutex();
+                    _access=new ChaosMutex();
                     this->conditionClose=conditionClose;
                     this->closingLockMutex=closingLockMutex;
                 }
@@ -96,7 +96,7 @@ namespace chaos {
                         boost::this_thread::sleep(*timeToSleep);
                         
                         //gain lock on data structure to avoid change to them during garbaging
-                        boost::mutex::scoped_lock  lock(*_access);
+                        ChaosLockGuard  lock(*_access);
                         for(int j=0; j<queues.size();j++){
                             
                             //clear queue i
@@ -113,7 +113,7 @@ namespace chaos {
                     }
                     queues.clear();
                     
-                    boost::mutex::scoped_lock  closingLock(*closingLockMutex);
+                    ChaosLockGuard  closingLock(*closingLockMutex);
                     
                     // now i notify to tracker thaht my work is finished
                     this->conditionClose->notify_one();
@@ -135,7 +135,7 @@ namespace chaos {
                  */
                 void putQueueToGarbage(IteratorGarbage<T>* queueToPurge){
                     
-                    boost::mutex::scoped_lock  lock(*_access);
+                    ChaosLockGuard  lock(*_access);
                     queues.push_back(queueToPurge);
                     
                     
@@ -148,7 +148,7 @@ namespace chaos {
                  */
                 void removeQueueToGarbage(IteratorGarbage<T>* queueToPurge){
                     
-                    boost::mutex::scoped_lock  lock(*_access);
+                    ChaosLockGuard  lock(*_access);
                     for(int i=0;i<queues.size();i++){
                         
                         IteratorGarbage<T>* temp=queues.at(i);

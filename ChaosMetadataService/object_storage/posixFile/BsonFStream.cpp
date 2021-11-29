@@ -9,7 +9,7 @@ static void*
 test_bson_writer_custom_realloc_helper(void* mem, size_t num_bytes, void* ctx) {
   BsonFStream* f= (BsonFStream*)ctx;
   void *ptr;
-  //boost::mutex::scoped_lock lock(f->wmutex);
+  //ChaosLockGuard lock(f->wmutex);
 
   //boost::iostreams::mapped_file* mf = (boost::iostreams::mapped_file*)f.mf;;
   
@@ -32,7 +32,7 @@ BsonFStream::~BsonFStream(){
   close();
 }
 int BsonFStream::open(const std::string&fname,int size){
-        boost::mutex::scoped_lock lock(wmutex);
+        ChaosLockGuard lock(wmutex);
 
         boost::iostreams::mapped_file_params params;
         params.path          = fname;
@@ -62,7 +62,7 @@ int BsonFStream::open(const std::string&fname,int size){
         return -1;
 }
     size_t BsonFStream::size(){
-        boost::mutex::scoped_lock lock(wmutex);
+        ChaosLockGuard lock(wmutex);
 
         if(writer)
           return bson_writer_get_length(writer);
@@ -75,7 +75,7 @@ int BsonFStream::open(const std::string&fname,int size){
 
     int BsonFStream::close(){
        // DBG<<" Closing:"<<name;
-      boost::mutex::scoped_lock lock(wmutex);
+      ChaosLockGuard lock(wmutex);
       try{
       if(writer){
         fsize=bson_writer_get_length(writer);
@@ -99,7 +99,7 @@ int BsonFStream::open(const std::string&fname,int size){
     }
     int BsonFStream::write(const std::string&key,const chaos::common::data::CDataWrapper&ptr){
           bson_t* b = NULL;
-          boost::mutex::scoped_lock lock(wmutex);
+          ChaosLockGuard lock(wmutex);
 
           if(writer==NULL){
             ERR<<"attempt to write not open or close:"<<name<< " open time:"<<chaos::common::utility::TimingUtil::toString(open_ts)<<" close time:"<<chaos::common::utility::TimingUtil::toString(close_ts)<<" live:"<<(close_ts-open_ts)<<" ms"<< std::hex<<" x"<<this;
@@ -120,7 +120,7 @@ int BsonFStream::open(const std::string&fname,int size){
     }
     int BsonFStream::write(const std::string&key,const bson_value_t*ptr){
         bson_t* b = NULL;
-          boost::mutex::scoped_lock lock(wmutex);
+          ChaosLockGuard lock(wmutex);
 
            if(writer==NULL){
             ERR<<"attempt to write after close:"<<name<< " open time:"<<chaos::common::utility::TimingUtil::toString(open_ts)<<" close time:"<<chaos::common::utility::TimingUtil::toString(close_ts)<<" live:"<<(close_ts-open_ts)<<" ms";

@@ -29,31 +29,31 @@ namespace chaos {
            
             if(inWait) return;
             inWait = true;
-            while((!answered)){ boost::unique_lock<boost::mutex> lock( wait_answer_mutex );wait_answer_condition.wait(lock);};
+            while((!answered)){ ChaosUniqueLock lock( wait_answer_mutex );wait_answer_condition.wait(lock);};
             inWait = false;
             answered = false;
         }
     void WaitSemaphore::waitRaw() {
            
-            boost::unique_lock<boost::mutex> lock( wait_answer_mutex );
+            ChaosUniqueLock lock( wait_answer_mutex );
             wait_answer_condition.wait(lock);
         }
        
     void WaitSemaphore::wait(unsigned long millisecToWait) {
-            boost::unique_lock<boost::mutex> lock( wait_answer_mutex );
+            ChaosUniqueLock lock( wait_answer_mutex );
             if(inWait) return;
             inWait = true;
-            do {} while(wait_answer_condition.timed_wait(lock, posix_time::milliseconds(millisecToWait)) && !answered);
+            do {} while(CHAOS_WAIT(wait_answer_condition,lock,millisecToWait) && !answered);
             inWait = false;
             answered = false;
         }
         
 	
     void WaitSemaphore::waitUSec(uint64_t microsecondsToWait) {
-            boost::unique_lock<boost::mutex> lock( wait_answer_mutex );
+            ChaosUniqueLock lock( wait_answer_mutex );
             if(inWait) return;
             inWait = true;
-            do {} while(wait_answer_condition.timed_wait(lock, posix_time::microseconds(microsecondsToWait)) && !answered);
+            do {} while(CHAOS_WAIT_US(wait_answer_condition,lock, microsecondsToWait) && !answered);
             inWait = false;
             answered = false;
         }

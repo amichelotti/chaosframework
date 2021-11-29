@@ -75,7 +75,7 @@ void URLHAServiceFeeder::clear(bool dispose_service) {
 
 void* URLHAServiceFeeder::getService() {
     //!befor return renable respauned services
-    boost::unique_lock<boost::mutex> wr(mutex_queue);
+    ChaosUniqueLock wr(mutex_queue);
     while (respawned_queue.size()) {
         URLServiceFeeder::setURLOnline(respawned_queue.front());
         respawned_queue.pop();
@@ -86,7 +86,7 @@ void* URLHAServiceFeeder::getService() {
 
 //! set url has offline
 void URLHAServiceFeeder::setURLAsOffline(const std::string& remote_address) {
-    boost::unique_lock<boost::mutex> wr(mutex_queue);
+    ChaosLockGuard wr(mutex_queue);
     uint32_t url_index = getIndexFromURL(remote_address);
     URLServiceFeeder::setURLOffline(url_index);
     ChaosSharedPtr<ServiceRetryInformation> sri(new ServiceRetryInformation(url_index,
@@ -99,7 +99,7 @@ void URLHAServiceFeeder::setURLAsOffline(const std::string& remote_address) {
 }
 
 void URLHAServiceFeeder::setIndexAsOffline(const uint32_t remote_index) {
-    boost::unique_lock<boost::mutex> wr(mutex_queue);
+    ChaosLockGuard wr(mutex_queue);
     URLServiceFeeder::setURLOffline(remote_index);
     ChaosSharedPtr<ServiceRetryInformation> sri(new ServiceRetryInformation(remote_index,
                                                                             getURLForIndex(remote_index)));
@@ -118,7 +118,7 @@ void URLHAServiceFeeder::setEvitionHandler(EvitionHandler new_evition_handler) {
 
 void URLHAServiceFeeder::checkForAliveService() {
     uint64_t current_ts = TimingUtil::getTimeStamp();
-    boost::unique_lock<boost::mutex> wr(mutex_queue);
+    ChaosUniqueLock wr(mutex_queue);
     size_t max_element = retry_queue.size();
     
     while (retry_queue.size() &&
@@ -163,6 +163,6 @@ void URLHAServiceFeeder::checkForAliveService() {
 }
 
 size_t URLHAServiceFeeder::getOfflineSize() {
-    boost::unique_lock<boost::mutex> wr(mutex_queue);
+    ChaosLockGuard wr(mutex_queue);
     return retry_queue.size();
 }

@@ -65,7 +65,7 @@ namespace chaos{
                     //! contain all uid for the loaded execution unit
                     ChaosStringSet      eu_uid_list;
                     ChaosStringVector   execution_pool_list;
-                    boost::mutex        mutex_uid_set;
+                    ChaosMutex       mutex_uid_set;
                     double              cpu_cap_percentage;
                     std::string         unit_server_alias;
                     

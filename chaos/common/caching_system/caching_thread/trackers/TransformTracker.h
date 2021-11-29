@@ -60,7 +60,7 @@ namespace chaos {
                     
                     
                     //then, add it to the tracker
-                    boost::mutex::scoped_lock  lock(*this->bufferMapMutex);
+                    ChaosLockGuard  lock(*this->bufferMapMutex);
                     
                     this->doTracking(filteredData);
                     

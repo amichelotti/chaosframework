@@ -48,7 +48,7 @@ namespace chaos{
         protected:
             chaos::common::data::CDWUniquePtr nodeShutDown(chaos::common::data::CDWUniquePtr data);
         public:
-            typedef boost::mutex::scoped_lock lock;
+            typedef ChaosLockGuard lock;
             //! C and C++ attribute parser
             /*!
              Specialized option for startup c and cpp program main options parameter

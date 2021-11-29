@@ -11,7 +11,7 @@ namespace kafka {
 namespace rdk {
 
 MessagePSRDKafka::~MessagePSRDKafka() {
-  boost::mutex::scoped_lock ll(io);
+  ChaosLockGuard ll(io);
 
   MRDDBG_<<" DESTROY KAFKA";
   // rd_kafka_new deallocate conf

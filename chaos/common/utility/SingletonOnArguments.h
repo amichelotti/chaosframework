@@ -21,7 +21,7 @@ namespace chaos{
 			class SingletonOnArguments {
 				std::string init_params;
 				static std::map<std::string,boost::shared_ptr<T> > instances;
-				static boost::mutex mutex;
+				static ChaosMutex mutex;
 				
 			protected:
 				
@@ -36,7 +36,7 @@ namespace chaos{
 				void setParams(std::string p){init_params=p;}
 				
 				static boost::shared_ptr<T>& getInstance(std::string initParams){
-					boost::mutex::scoped_lock l(mutex);
+					ChaosLockGuard l(mutex);
 					
 					typename std::map<std::string, boost::shared_ptr<T> >::iterator i = instances.find(initParams);
 					if(i!=instances.end()){
@@ -53,7 +53,7 @@ namespace chaos{
 				}
 				
 				static void removeInstance( boost::shared_ptr<T>&t ){
-					boost::mutex::scoped_lock l(mutex);
+					ChaosLockGuard l(mutex);
 					
 					typename std::map<std::string, boost::shared_ptr<T> >::iterator i = instances.begin();
 					while(i!=instances.end()){
@@ -72,7 +72,7 @@ namespace chaos{
 				
 			};
 			template <class T> std::map<std::string,boost::shared_ptr<T>  > SingletonOnArguments<T>::instances;
-			template <class T> boost::mutex SingletonOnArguments<T>::mutex;
+			template <class T> ChaosMutex SingletonOnArguments<T>::mutex;
 		}
 	}
 }

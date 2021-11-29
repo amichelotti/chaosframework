@@ -32,30 +32,29 @@ EventTypeScheduler::~EventTypeScheduler() {}
 
 void EventTypeScheduler::init(int threadNumber) {
     DESLAPP_ << "Initializing";
-    boost::mutex::scoped_lock lockAction(eventSchedulerMutext);
+    ChaosLockGuard lockAction(eventSchedulerMutext);
     CObjectProcessingPriorityQueue<EventDescriptor>::init(threadNumber);
     armed = true;
 }
 
 void EventTypeScheduler::deinit() {
     DESLAPP_ << "Deinitializing ";
-    boost::mutex::scoped_lock lockAction(eventSchedulerMutext);
+    ChaosLockGuard lockAction(eventSchedulerMutext);
     armed = false;
-    lockAction.unlock();
     CObjectProcessingPriorityQueue<EventDescriptor>::clear();
     CObjectProcessingPriorityQueue<EventDescriptor>::deinit();
 
 }
 
 bool EventTypeScheduler::push(EventDescriptor *event) {
-    boost::mutex::scoped_lock lockAction(eventSchedulerMutext);
+    ChaosLockGuard lockAction(eventSchedulerMutext);
     if(!armed) throw CException(0, "Event can't be processed, scheduler is not armed", "EventTypeScheduler::push");
     uint8_t priority = event->getEventPriority();
     return CObjectProcessingPriorityQueue<EventDescriptor>::push(EventDescriptorSPtr(event), priority);
 }
 
 void EventTypeScheduler::installEventAction(EventAction *eventAction) {
-    boost::mutex::scoped_lock lockAction(eventSchedulerMutext);
+    ChaosLockGuard lockAction(eventSchedulerMutext);
     if(eventActionList.count(eventAction->getUUID()) > 0) return;
         //add action
     eventActionList.insert(make_pair(eventAction->getUUID(), eventAction));
@@ -64,7 +63,7 @@ void EventTypeScheduler::installEventAction(EventAction *eventAction) {
 
 void EventTypeScheduler::removeEventAction(EventAction *eventAction) {
     if(!eventAction) return;
-    boost::mutex::scoped_lock lockAction(eventSchedulerMutext);
+    ChaosLockGuard lockAction(eventSchedulerMutext);
     if(eventActionList.count(eventAction->getUUID()) == 0) return;
     
         //shutdown the state for fire the action
@@ -75,7 +74,7 @@ void EventTypeScheduler::removeEventAction(EventAction *eventAction) {
 }
 
 void EventTypeScheduler::processBufferElement(EventDescriptorSPtr event) {
-    boost::mutex::scoped_lock lockAction(eventSchedulerMutext);
+    ChaosLockGuard lockAction(eventSchedulerMutext);
     for ( map<string, EventAction*>::iterator iter =  eventActionList.begin();
          iter != eventActionList.end();
          iter++) {

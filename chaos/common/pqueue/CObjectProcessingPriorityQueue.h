@@ -108,9 +108,9 @@ namespace chaos {
                 std::string uid;
                 ChaosPriorityQueue bufferQueue;
                 bool in_deinit;
-                boost::mutex qMutex;
-                boost::condition_variable liveThreadConditionLock;
-                boost::condition_variable emptyQueueConditionLock;
+                ChaosMutex qMutex;
+                ChaosConditionVariable liveThreadConditionLock;
+                ChaosConditionVariable emptyQueueConditionLock;
                 
                 //thread group
                 boost::thread_group t_group;
@@ -154,7 +154,7 @@ namespace chaos {
                  Initialization method for output buffer
                  */
                 virtual void init(int threadNumber) {
-                    boost::unique_lock<boost::mutex>  lock(qMutex);
+                    ChaosLockGuard  lock(qMutex);
                     in_deinit = false;
                     COPPQUEUE_LAPP_ << "init";
                     //add the n thread on the threadgroup
@@ -169,14 +169,13 @@ namespace chaos {
                      Deinitialization method for output buffer
                      */
                     virtual void deinit(bool waithForEmptyQueue=true) {
-                        boost::unique_lock<boost::mutex>  lock(qMutex);
+                        ChaosUniqueLock  lock(qMutex);
                         COPPQUEUE_LAPP_ << "Deinitialization";
                         
                         if(waithForEmptyQueue){
                             COPPQUEUE_LAPP_ << "wait until queue is empty";
                             while(!bufferQueue.empty()){
-                                emptyQueueConditionLock.timed_wait(lock,
-                                                                   boost::posix_time::milliseconds(500));
+                                CHAOS_WAIT(emptyQueueConditionLock,lock,500);
                             }
                             COPPQUEUE_LAPP_ << "queue is empty";
                         }
@@ -195,7 +194,7 @@ namespace chaos {
                     
                     bool push(typename PriorityQueuedElement<T>::PriorityQueuedElementType elementToPush,
                               int32_t _priority = 0){
-                        boost::unique_lock<boost::mutex>  lock(qMutex);
+                        ChaosLockGuard  lock(qMutex);
                         if(in_deinit ||
                            bufferQueue.size() > CObjectProcessingPriorityQueue_MAX_ELEMENT_IN_QUEUE) return false;
                         //PRIORITY_ELEMENT(T) element(elementToPush);
@@ -208,7 +207,7 @@ namespace chaos {
                      get the last insert data
                      */
                     PRIORITY_ELEMENT(T) waitAndPop() {
-                        boost::unique_lock<boost::mutex> lock(qMutex);
+                        ChaosUniqueLock lock(qMutex);
                         //output result poitner
                         PRIORITY_ELEMENT(T) prioritizedElement;
                         
@@ -233,7 +232,7 @@ namespace chaos {
                      check for empty buffer
                      */
                     bool isEmpty() const {
-                        boost::unique_lock<boost::mutex>  lock(qMutex);
+                        ChaosLockGuard  lock(qMutex);
                         return bufferQueue.empty();
                     }
                     
@@ -241,10 +240,9 @@ namespace chaos {
                      check for empty buffer
                      */
                     void waitForEmpty() {
-                        boost::unique_lock<boost::mutex>  lock(qMutex);
+                        ChaosUniqueLock  lock(qMutex);
                         while( bufferQueue.empty()){
-                            emptyQueueConditionLock.timed_wait(lock,
-                                                               boost::posix_time::milliseconds(500));
+                            bool tim=CHAOS_WAIT(emptyQueueConditionLock,lock,500);
                         }
                     }
                     
@@ -253,7 +251,7 @@ namespace chaos {
                      clear the queue, remove all non processed element
                      */
                     void clear() {
-                        boost::unique_lock<boost::mutex>  lock(qMutex);
+                        ChaosLockGuard  lock(qMutex);
                         //remove all element
                         while (!bufferQueue.empty()) {
                             //remove upper element
@@ -265,7 +263,7 @@ namespace chaos {
                      Return le number of elementi into live data
                      */
                     unsigned long queueSize() {
-                        boost::unique_lock<boost::mutex> lock(qMutex);
+                        ChaosLockGuard lock(qMutex);
                         return bufferQueue.size();
                     }
                     

@@ -54,8 +54,8 @@ namespace chaos {
                 uint64_t highResValidity;
                 //!<
                 uint64_t highResHertz;
-                boost::condition_variable closedCondition;
-                boost::mutex closingLockMutex;
+                ChaosConditionVariable closedCondition;
+                ChaosMutex closingLockMutex;
                 //!<this vector is used to account listeners for this tracker
                 std::vector<TrackerListener<T>* > * trackerListeners;
                 //!< reference to current istance of garbage collector
@@ -72,7 +72,7 @@ namespace chaos {
                     this->highResHertz=usecSampleInterval;
                     this->highResValidity=validity;
                     this->highResQueue=new CommonBuffer<T>(validity);
-                    bufferMapMutex=new boost::mutex();
+                    bufferMapMutex=new ChaosMutex();
                     highResIterator=new std::vector< IteratorReader<T>* >();
                     setSleepTimeInUS(usecSampleInterval);
                     this->garbageCollector=new GarbageThread<T>(validity,&closedCondition,&closingLockMutex);
@@ -92,7 +92,7 @@ namespace chaos {
                 std::vector<IteratorReader<T>*  >* highResIterator;
                 
                 
-                boost::mutex* bufferMapMutex;
+                ChaosMutex* bufferMapMutex;
                 
                 //!< revers mapping from a string id to a BufferTracker
                 std::map<std::string, BufferTracker<T>* > lowResQueues;
@@ -210,7 +210,7 @@ namespace chaos {
                  */
                 IteratorReader<T>* openBuffer(uint64_t validity,uint64_t discretization){
                     //first take a mutex lock on this queue
-                    boost::mutex::scoped_lock  lock(*bufferMapMutex);
+                    ChaosLockGuard  lock(*bufferMapMutex);
                     std::stringstream key;
                     key<<validity<<":"<<discretization;
                     BufferTracker<T>* buffer=lowResQueues[key.str()];
@@ -241,7 +241,7 @@ namespace chaos {
                  * resolution buffer that will remain alive until you close the tracker.
                  */
                 void closeBuffer(IteratorReader<T>* iterator){
-                    boost::mutex::scoped_lock  lock(*bufferMapMutex);
+                    ChaosLockGuard  lock(*bufferMapMutex);
                     uint64_t idIterator=iterator->getId();
                     BufferTracker<T>* buffer=iteratorIdToBufferTracker[idIterator];
                     std::stringstream key;
@@ -301,7 +301,7 @@ namespace chaos {
                  */
                 void shutDownTracking(){
                     //this shutdown works, but it is very slow... it must be revisited...
-                    boost::mutex::scoped_lock  closingLock(closingLockMutex);
+                    ChaosLockGuard  closingLock(closingLockMutex);
                     //stopping garbaging and his iterators
                     stopGarbaging();
                     this->closedCondition.wait(closingLock);

@@ -52,7 +52,7 @@ namespace chaos {
             CHAOS_DEFINE_MAP_FOR_TYPE(std::string, QuantumSlotConsumer*, QuantumSlotConsumerMap)
             
 #define LOCK_QUEUE(queue_name)\
-boost::unique_lock<boost::mutex> wl(mutex_ ## queue_name);
+ChaosLockGuard wl(mutex_ ## queue_name);
     
 #define UNLOCK_QUEUE(queue_name)\
 mutex_ ## queue_name.unlock();
@@ -178,11 +178,11 @@ mutex_ ## queue_name.unlock();
                 chaos::common::network::NetworkBroker   *network_broker;
                 std::string                             data_driver_impl;
                 
-                boost::mutex                            mutex_condition_fetch;
-                boost::condition_variable               condition_fetch;
+                ChaosMutex                            mutex_condition_fetch;
+                ChaosConditionVariable               condition_fetch;
                 
-                boost::mutex                            mutex_condition_scan;
-                boost::condition_variable               condition_scan;
+                ChaosMutex                            mutex_condition_scan;
+                ChaosConditionVariable               condition_scan;
                 
                 //!groups for thread that make the scanner
                 bool                                    work_on_scan;
@@ -206,11 +206,11 @@ mutex_ ## queue_name.unlock();
                 //------------structure for comunication between public and internal layers-------------------------------------------
                 //! queue that conenct the public and internal layers of scheduler add and remove handler push quantum slot
                 //! withing this queue and scan slot funciton retrive new one added and increment the multiindex set
-                boost::mutex                          mutex_queue_new_quantum_slot_consumer;
+                ChaosMutex                         mutex_queue_new_quantum_slot_consumer;
                 QueueSlotConsumerInfo                 queue_new_quantum_slot_consumer;
                 
                 //!mute for work on map that of slot consumer managed by add and remove function
-                boost::mutex                            mutex_map_quantum_slot_consumer;
+                ChaosMutex                            mutex_map_quantum_slot_consumer;
                 
                 
                 //! default constructor

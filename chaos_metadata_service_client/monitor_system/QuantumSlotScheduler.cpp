@@ -135,7 +135,7 @@ void QuantumSlotScheduler::scanSlot() {
     ScheduleSlotDisableQuantum          disable_quantum_op;
     
     QSS_INFO << "Enter scan thread";
-    boost::unique_lock<boost::mutex> lock_on_condition(mutex_condition_scan, boost::defer_lock);
+    ChaosUniqueLock lock_on_condition(mutex_condition_scan, CHAOS_DEFER_LOCK);
     while(work_on_scan) {
         processed_element = 0;
         milliseconds_start = TimingUtil::getTimeStamp();
@@ -265,7 +265,7 @@ void QuantumSlotScheduler::dispath_new_value_async(const boost::system::error_co
                                                    QuantumSlot *cur_slot,
                                                    CDWUniquePtr& data_found) {
     std::string quantum_slot_key = CHAOS_QSS_COMPOSE_QUANTUM_SLOT_KEY(cur_slot->key, cur_slot->quantum_multiplier);
-    boost::unique_lock<boost::mutex> lock_on_condition(mutex_condition_scan);
+    ChaosUniqueLock lock_on_condition(mutex_condition_scan);
 
     //check if the slot is empty
     if(cur_slot->size()) {
@@ -303,7 +303,7 @@ void QuantumSlotScheduler::fetchValue(ChaosSharedPtr<IODataDriver> data_driver) 
     QuantumSlot *cur_slot = NULL;
     boost::system::error_code error;
     QSS_INFO << "Entering fetcher thread";
-    boost::unique_lock<boost::mutex> lock_on_condition(mutex_condition_fetch);
+    ChaosUniqueLock lock_on_condition(mutex_condition_fetch);
     while(work_on_fetch) {
         if(queue_active_slot.pop(cur_slot)) {
             //we have slot available
@@ -400,7 +400,7 @@ void QuantumSlotScheduler::_addKeyConsumer(SlotConsumerInfo *ci) {
     ChaosSharedPtr<QuantumSlot> quantum_slot;
     
     std::string quantum_slot_key = CHAOS_QSS_COMPOSE_QUANTUM_SLOT_KEY(ci->key_to_monitor, ci->quantum_multiplier);
-    boost::unique_lock<boost::mutex> lock_on_condition(mutex_condition_scan);
+    ChaosLockGuard lock_on_condition(mutex_condition_scan);
     SSSlotTypeQuantumSlotKeyIndexIterator it = set_slots_index_key_slot.find(quantum_slot_key);
     if(it == set_slots_index_key_slot.end()) {
         DEBUG_CODE(QSS_INFO << boost::str(boost::format("We need to create a new quantum slot for key consumer [%1%-%2%-%3%]")%ci->key_to_monitor%ci->quantum_multiplier%ci->consumer);)
@@ -429,7 +429,7 @@ bool QuantumSlotScheduler::_removeKeyConsumer(SlotConsumerInfo *ci) {
     std::string quantum_slot_key = CHAOS_QSS_COMPOSE_QUANTUM_SLOT_KEY(ci->key_to_monitor,
                                                                       ci->quantum_multiplier);
     
-    boost::unique_lock<boost::mutex> lock_on_condition(mutex_condition_scan);
+    ChaosLockGuard lock_on_condition(mutex_condition_scan);
     
     SSSlotTypeQuantumSlotKeyIndexIterator it = set_slots_index_key_slot.find(quantum_slot_key);
     if(it == set_slots_index_key_slot.end()) return true;

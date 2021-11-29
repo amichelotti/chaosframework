@@ -76,7 +76,7 @@ namespace chaos {
                 friend class chaos::common::network::NetworkBroker;
                 friend class chaos::common::message::MultiAddressMessageRequestFuture;
                 //!mutex for the managment of rescheduling server
-                boost::mutex mutex_server_usage;
+                ChaosMutex mutex_server_usage;
                 
                 uint64_t last_retry;
                 //!list of the offline server index

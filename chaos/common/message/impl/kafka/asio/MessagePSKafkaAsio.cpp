@@ -162,11 +162,11 @@ int MessagePSKafkaAsio::applyConfiguration() {
 }
 
   int MessagePSKafkaAsio::waitCompletion(const uint32_t timeo){
-    boost::unique_lock<boost::mutex> guard(mutex_cond);
+    ChaosLockGuard guard(mutex_cond);
    //  boost::posix_time::milliseconds timeoutDuration( timeo ); //wait for 10 seconds
     MRDDBG_<<"wating operation";
     if(data_ready) return stats.last_err;
-    if(!cond.timed_wait(guard,boost::posix_time::milliseconds(timeo))){
+    if(!CHAOS_WAIT(cond,guard,timeo)){
       MRDERR_<<"Timeout";
       return -100;
     }

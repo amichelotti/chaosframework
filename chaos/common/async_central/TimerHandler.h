@@ -23,7 +23,6 @@
 #define __CHAOSFramework__TimerHandler__
 #include <boost/asio.hpp>
 #include <boost/thread/mutex.hpp>
-#include <boost/thread/condition.hpp>
 #include <chaos/common/chaos_types.h>
 namespace chaos {
 	namespace common {
@@ -43,9 +42,9 @@ namespace chaos {
                 bool cicle_test;
                 bool stop_me;
                         //! mutext used for unlock and wait esclusive access
-                boost::mutex wait_answer_mutex;
+                ChaosMutex wait_answer_mutex;
                 //! condition variable for wait the answer
-                boost::condition_variable wait_answer_condition;
+                ChaosConditionVariable wait_answer_condition;
                 ChaosUniquePtr<boost::asio::deadline_timer> timer;
                 uint64_t    delay;
                 void timerTimeout(const boost::system::error_code& error);

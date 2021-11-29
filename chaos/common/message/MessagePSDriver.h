@@ -11,7 +11,7 @@ namespace chaos {
 
 class MessagePSDriver {
 
-    static boost::mutex io;
+    static ChaosMutex io;
     static std::map<std::string,producer_uptr_t> producer_drv_m;
     static std::map<std::string,consumer_uptr_t> consumer_drv_m;
 

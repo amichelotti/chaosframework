@@ -55,7 +55,7 @@ namespace chaos{
               chaos::common::message::consumer_uptr_t cons;
               chaos::common::message::MDSMessageChannel *mds_channel;
               void defaultHandler( chaos::common::message::ele_t& data);
-               boost::mutex hmutex;
+               ChaosMutex hmutex;
                std::map<std::string,chaos::common::message::msgHandler> handler_map;
                 ChaosSharedMutex                    map_query_future_mutex;
                 std::map<std::string, QueryCursor*>	map_query_future;

@@ -119,7 +119,7 @@ int InfluxDB::pushObject(const std::string&                       key,
       ERR<<" reached max number of measurements sending "<<nmeas<< " measurements";
       return -1;
   }
-  boost::mutex::scoped_lock ll(iolock);
+  ChaosLockGuard ll(iolock);
 
   measurements << stored_object.getStringValue(chaos::DataPackCommonKey::DPCK_DEVICE_ID);
   if ((meta_tags.get())&&(meta_tags->size() > 0)) {
@@ -266,7 +266,7 @@ void InfluxDB::push_process() {
 push_end=false;
 while(push_end==false){
 if (nmeas >0) {
-  boost::mutex::scoped_lock ll(iolock);
+  ChaosLockGuard ll(iolock);
 
   //DBG<<" sending "<<nmeas<< " measurements";
     nmeas = 0;

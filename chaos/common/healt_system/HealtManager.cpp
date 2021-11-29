@@ -437,7 +437,7 @@ void HealtManagerBase::_publish(const ChaosSharedPtr<NodeHealtSet>& heath_set,
                             uint64_t publish_ts) {
     int err = 0;
     //lock the driver for bublishing
-    boost::unique_lock<boost::mutex> wl_io(mutex_publishing);
+    ChaosLockGuard wl_io(mutex_publishing);
     //update infromation abour process
     updateProcInfo();
     

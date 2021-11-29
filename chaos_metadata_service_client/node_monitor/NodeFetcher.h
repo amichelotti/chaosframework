@@ -49,7 +49,7 @@ namespace chaos {
                 //keep track of how many times a key is needed and rmeoved when no other instance arre needed
                 std::map<std::string, int>    map_monitor_key_registered_times;
                 
-                boost::mutex            maps_mutex;
+                ChaosMutex           maps_mutex;
                 NodeTypeControllerMap   map_type_controller;
                 
                 //reference to global monitor manager instance

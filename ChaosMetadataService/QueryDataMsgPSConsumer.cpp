@@ -49,7 +49,7 @@ QueryDataMsgPSConsumer::~QueryDataMsgPSConsumer() {
 }
 */
 std::map<std::string, uint64_t> QueryDataMsgPSConsumer::alive_map;
-boost::mutex                    QueryDataMsgPSConsumer::map_m;
+ChaosMutex                   QueryDataMsgPSConsumer::map_m;
 QueryDataMsgPSConsumer::QueryDataMsgPSConsumer(const std::string& id)
     : groupid(id) {
   if (GlobalConfiguration::getInstance()->getConfiguration()->hasKey(InitOption::OPT_HA_ZONE_NAME)) {
@@ -143,7 +143,7 @@ void QueryDataMsgPSConsumer::processBufferElement(chaos::common::data::CDWShrdPt
 
 void QueryDataMsgPSConsumer::messageError(chaos::common::message::ele_t& data) {
   ChaosStringSetConstSPtr   meta_tag_set;
-  boost::mutex::scoped_lock ll(map_m);
+  ChaosLockGuard ll(map_m);
   std::string               path = data.key;
   std::replace(path.begin(), path.end(), '.', '/');
 
@@ -240,7 +240,7 @@ int QueryDataMsgPSConsumer::consumeHealthDataEvent(const std::string&           
                                                    BufferSPtr                    channel_data) {
   int err = 0;
 
-  boost::mutex::scoped_lock ll(map_m);
+  ChaosLockGuard ll(map_m);
 
   if (channel_data.get() == NULL || channel_data->data() == NULL) {
     // DBG<<"Empty health for:\""<<key<<"\" registration pack";
