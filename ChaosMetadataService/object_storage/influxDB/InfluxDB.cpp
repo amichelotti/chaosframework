@@ -28,7 +28,7 @@
 #define DBG DBG_LOG(InfluxDB)
 #define ERR ERR_LOG(InfluxDB)
 #include <chaos/common/utility/TimingUtil.h>
-
+#define MAX_ARRAY_POINTS 512
 using namespace chaos::metadata_service::object_storage;
 
 #if CHAOS_PROMETHEUS
@@ -157,8 +157,62 @@ int InfluxDB::pushObject(const std::string&                       key,
             first++;
             nmeas++;
           }
+          break;
         }
+        case DataType::TYPE_VECTOR_BOOL:{
+          uint32_t size=0;
+          const bool*ptr=(const bool*)stored_object.getBinaryValue(*i,size);
+          if(ptr){
+            for(int cnt=0;(cnt<size/sizeof(bool))&&(cnt<MAX_ARRAY_POINTS);cnt++){
+              measurements << c << *i+"." <<cnt<< "=" << ((ptr[cnt])?'t':'f');
+              first++;
+              nmeas++;
+            }
+          }
+          break;
+        }
+        case DataType::TYPE_VECTOR_INT32:{
+          uint32_t size=0;
+          const int32_t*ptr=(const int32_t*)stored_object.getBinaryValue(*i,size);
+          if(ptr){
+            for(int cnt=0;(cnt<size/sizeof(int32_t))&&(cnt<MAX_ARRAY_POINTS);cnt++){
+              measurements << c << *i+"." <<cnt<< "="<< ptr[cnt] << "i";
+              first++;
+              nmeas++;
+            }
+          }
+          break;
+        }
+        case DataType::TYPE_VECTOR_INT64:{
+          uint32_t size=0;
+          const int64_t*ptr=(const int64_t*)stored_object.getBinaryValue(*i,size);
+          if(ptr){
+            for(int cnt=0;(cnt<size/sizeof(int64_t))&&(cnt<MAX_ARRAY_POINTS);cnt++){
+              
+              measurements << c << *i+"." <<cnt<< "=" << ptr[cnt] << "i";
+              first++;
+              nmeas++;
+            }
+          }
+          break;
+        }
+        case DataType::TYPE_VECTOR_DOUBLE:{
+          uint32_t size=0;
+          const double*ptr=(const double*)stored_object.getBinaryValue(*i,size);
+          if(ptr){
+            for(int cnt=0;(cnt<size/sizeof(double))&&(cnt<MAX_ARRAY_POINTS);cnt++){
+              measurements << c << *i+"." <<cnt<< "=" << ptr[cnt];
+              first++;
+              nmeas++;
+            //  DBG<< c << *i+"_" <<cnt<< "=" << ptr[cnt];
+
+            }
+          }
+          break;
+        }
+            
         default:
+ //       DBG<<*i<<" packet cannot be influxed, type:"<<stored_object.getValueType(*i);
         break;
 
           // not handled

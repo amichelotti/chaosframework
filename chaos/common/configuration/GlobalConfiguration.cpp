@@ -402,10 +402,12 @@ void GlobalConfiguration::checkDefaultOption()  {
             it++) {
             addMetadataServerAddress(*it);
         }
-    } else {
-        addMetadataServerAddress("localhost:5000");
-    }
     finalizeMetadataServerAddress();
+
+    } /*else {
+        addMetadataServerAddress("localhost:5000");
+    }*/
+
     
     CHECK_AND_DEFINE_BOOL_ZERO_TOKEN_OPTION(auto_conf_mds_endpoint, InitOption::OPT_METADATASERVER_AUTO_CONF);
     configuration->addBoolValue(InitOption::OPT_METADATASERVER_AUTO_CONF, auto_conf_mds_endpoint);

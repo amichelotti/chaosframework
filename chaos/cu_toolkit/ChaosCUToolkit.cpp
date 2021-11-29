@@ -138,10 +138,10 @@ void ChaosCUToolkit::init(void* init_data) {
     }
 
     //force first allocation of metadata logging
-    if (GlobalConfiguration::getInstance()->getMetadataServerAddressList().size()) {
+    //if (GlobalConfiguration::getInstance()->getMetadataServerAddressList().size()) {
       //we can initilize the logging manager
-      InizializableService::initImplementation(chaos::common::metadata_logging::MetadataLoggingManager::getInstance(), NULL, "MetadataLoggingManager", __PRETTY_FUNCTION__);
-    }
+    InizializableService::initImplementation(chaos::common::metadata_logging::MetadataLoggingManager::getInstance(), NULL, "MetadataLoggingManager", __PRETTY_FUNCTION__);
+    
     StartableService::initImplementation(HealtManager::getInstance(), NULL, "HealtManager", __PRETTY_FUNCTION__);
     StartableService::initImplementation(CommandManager::getInstance(), NULL, "CommandManager", "ChaosCUToolkit::init");
     CommandManager::getInstance()->server_handler = this;

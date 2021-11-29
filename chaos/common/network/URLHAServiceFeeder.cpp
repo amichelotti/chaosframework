@@ -80,7 +80,6 @@ void* URLHAServiceFeeder::getService() {
         URLServiceFeeder::setURLOnline(respawned_queue.front());
         respawned_queue.pop();
     }
-    wr.unlock();
     return URLServiceFeeder::getService();
 }
 
