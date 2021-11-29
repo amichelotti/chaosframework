@@ -66,7 +66,7 @@ void MetadataLoggingManager::init(void *init_data)  {
 
 void MetadataLoggingManager::deinit()  {
     
-    ChaosUniqueLock wl(mutext_maps);
+    ChaosLockGuard wl(mutext_maps);
     for(MetadataLoggingInstancesMapIterator it = map_instance.begin();
         it != map_instance.end();
         it++) {
@@ -89,11 +89,18 @@ void MetadataLoggingManager::registerChannel(const std::string& channel_alias,
 AbstractMetadataLogChannel *MetadataLoggingManager::getChannel(const std::string channel_alias) {
     //chec if we are initilized
     if(getServiceState() != 1) return NULL;
-    ChaosUniqueLock wl(mutext_maps);
+    ChaosLockGuard wl(mutext_maps);
     //check if we have the channel
-    if(map_instancer.count(channel_alias) == 0) return NULL;
+    if(map_instancer.count(channel_alias) == 0) {
+        MLM_ERR<<" No channels registered: "+channel_alias;
+        return NULL;
+    }
     
     AbstractMetadataLogChannel *result = map_instancer[channel_alias]->getInstance();
+    if(result==NULL){
+         MLM_ERR<<" Invalid channel:"+channel_alias;
+        return NULL;
+    }
     result->setLoggingManager(this);
     map_instance.insert(std::pair<std::string, AbstractMetadataLogChannel*> (result->getInstanceUUID(), result));
     
@@ -103,7 +110,7 @@ AbstractMetadataLogChannel *MetadataLoggingManager::getChannel(const std::string
 
 void MetadataLoggingManager::releaseChannel(AbstractMetadataLogChannel *channel_instance) {
     //chec if we are initilized
-    ChaosUniqueLock wl(mutext_maps);
+    ChaosLockGuard wl(mutext_maps);
     if(channel_instance == NULL) return;
     if(map_instance.count(channel_instance->getInstanceUUID()) == 0) return;
     //we can delete the instance
@@ -160,7 +167,7 @@ void MetadataLoggingManager::deinit()  {
     CObjectProcessingPriorityQueue<CDataWrapper>::deinit(true);
     MLM_DBG << "Queue is empty";
     
-    ChaosUniqueLock wl(mutext_maps);
+    ChaosLockGuard wl(mutext_maps);
     for(MetadataLoggingInstancesMapIterator it = map_instance.begin();
         it != map_instance.end();
         it++) {
@@ -184,7 +191,7 @@ void MetadataLoggingManager::registerChannel(const std::string& channel_alias,
 AbstractMetadataLogChannel *MetadataLoggingManager::getChannel(const std::string channel_alias) {
     //chec if we are initilized
     if(getServiceState() != 1) return NULL;
-    ChaosUniqueLock wl(mutext_maps);
+    ChaosLockGuard wl(mutext_maps);
     //check if we have the channel
     if(map_instancer.count(channel_alias) == 0) return NULL;
     
@@ -198,7 +205,7 @@ AbstractMetadataLogChannel *MetadataLoggingManager::getChannel(const std::string
 
 void MetadataLoggingManager::releaseChannel(AbstractMetadataLogChannel *channel_instance) {
     //chec if we are initilized
-    ChaosUniqueLock wl(mutext_maps);
+    ChaosLockGuard wl(mutext_maps);
     if(channel_instance == NULL) return;
     if(map_instance.count(channel_instance->getInstanceUUID()) == 0) return;
     //we can delete the instance

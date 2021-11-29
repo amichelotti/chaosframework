@@ -1162,7 +1162,7 @@ chaos::DataType::DataType CDataWrapper::getValueType(const std::string& key) con
             break;
         case BSON_TYPE_BINARY:
             result = chaos::DataType::TYPE_BYTEARRAY;
-            /*switch(getBinarySubtype(key)){
+            switch(getBinarySubtype(key)){
                 case chaos::DataType::SUB_TYPE_INT8:
                 return chaos::DataType::TYPE_VECTOR_INT8;
                 case chaos::DataType::SUB_TYPE_INT32:
@@ -1178,7 +1178,7 @@ chaos::DataType::DataType CDataWrapper::getValueType(const std::string& key) con
                 case chaos::DataType::SUB_TYPE_BOOLEAN:
                 return chaos::DataType::TYPE_VECTOR_BOOL;     
 
-            }*/
+            }
             return result;
         case BSON_TYPE_UTF8:
             result = chaos::DataType::TYPE_STRING;
