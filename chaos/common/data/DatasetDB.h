@@ -24,9 +24,8 @@
 
 #include <string>
 
-#include <chaos/common/data/CUSchemaDB.h>
+#include "CUSchemaDB.h"
 
-#include <boost/lexical_cast.hpp>
 
 namespace chaos_data = chaos::common::data;
 

@@ -22,7 +22,7 @@
 #ifndef __CHAOSFramework__CDataBuffer_h
 #define __CHAOSFramework__CDataBuffer_h
 
-#include <chaos/common/data/Buffer.hpp>
+#include "Buffer.hpp"
 #include <stdint.h>
 
 namespace chaos {

@@ -23,8 +23,8 @@
 
 #include <chaos/common/utility/TimingUtil.h>
 #include <chaos/common/property/property.h>
+#include <chaos/common/batch_command/BatchCommandConstants.h>
 
-#include <boost/format.hpp>
 #include <boost/foreach.hpp>
 
 #include <mongo/client/dbclient.h>

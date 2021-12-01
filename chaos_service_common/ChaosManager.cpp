@@ -5,6 +5,8 @@
  * Created on 21/04/2021
  */
 #include "ChaosManager.h"
+#include <chaos/common/batch_command/BatchCommandConstants.h>
+
 #include <ChaosMetadataService/ChaosMetadataService.h>
 #include <chaos/common/message/MDSMessageChannel.h>
 #include <ChaosMetadataService/api/node/ClearCommandQueue.h>

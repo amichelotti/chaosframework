@@ -25,8 +25,7 @@
 #include "mongo_db_constants.h"
 #include "../../ChaosMetadataService.h"
 #include <chaos/common/utility/TimingUtil.h>
-#include <boost/algorithm/string.hpp>
-
+#include <chaos/common/batch_command/BatchCommandConstants.h>
 #include <map>
 #define MDBNDA_INFO INFO_LOG(MongoDBNodeDataAccess)
 #define MDBNDA_DBG  DBG_LOG(MongoDBNodeDataAccess)

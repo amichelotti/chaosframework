@@ -219,7 +219,7 @@ void *PublishTarget::serviceForURL(const URL &url, uint32_t service_index) {
         
         //set this class instance as event handler for connection
         endpoint_connection->connection->setEventHandler(this);
-        endpoint_connection->connection->setCustomStringIdentification(boost::lexical_cast<std::string>(service_index));
+        endpoint_connection->connection->setCustomStringIdentification(ChaosToString(service_index));
     } else {
         ERR << "Error creating client connection for " << url.getURL();
     }

@@ -24,6 +24,8 @@
 #include <chaos/common/global.h>
 #include <chaos/common/chaos_constants.h>
 
+#include <chaos/common/batch_command/BatchCommandConstants.h>
+        
 using namespace chaos::common::data;
 using namespace chaos::common::batch_command;
 using namespace chaos::metadata_service::api::node;

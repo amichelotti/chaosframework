@@ -392,7 +392,7 @@ void* IODirectIODriver::serviceForURL(const common::network::URL& url, uint32_t 
         }
         //set this driver instance as event handler for connection
         clients_channel->connection->setEventHandler(this);
-        clients_channel->connection->setCustomStringIdentification(boost::lexical_cast<std::string>(service_index));
+        clients_channel->connection->setCustomStringIdentification(ChaosToString(service_index));
         IODirectIODriver_DLDBG_ << "Connection for " << url.getURL() << " added succesfully";
         return clients_channel;
     } else {

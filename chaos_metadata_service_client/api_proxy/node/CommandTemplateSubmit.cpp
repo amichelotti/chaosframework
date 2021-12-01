@@ -20,6 +20,7 @@
  */
 
 #include <chaos_metadata_service_client/api_proxy/node/CommandTemplateSubmit.h>
+#include <chaos/common/batch_command/BatchCommandConstants.h>
 
 using namespace chaos::common::data;
 using namespace chaos::common::batch_command;

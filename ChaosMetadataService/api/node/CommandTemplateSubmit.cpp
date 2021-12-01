@@ -24,9 +24,7 @@
 #include "../../batch/node/SendRpcCommand.h"
 #include "../../batch/node/SubmitBatchCommand.h"
 
-#include <boost/format.hpp>
-#include <boost/foreach.hpp>
-#include <boost/shared_ptr.hpp>
+#include <chaos/common/batch_command/BatchCommandConstants.h>
 
 using namespace chaos;
 using namespace chaos::common::data;

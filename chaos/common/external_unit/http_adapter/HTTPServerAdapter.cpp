@@ -66,7 +66,7 @@ void HTTPServerAdapter::init(void *init_data)  {
     }
     run = true;
     mg_mgr_init(&mgr, NULL);
-    const std::string http_port_str = boost::lexical_cast<std::string>(InetUtility::scanForLocalFreePort(boost::lexical_cast<int>(setting.publishing_port)));
+    const std::string http_port_str = ChaosToString(InetUtility::scanForLocalFreePort(boost::lexical_cast<int>(setting.publishing_port)));
     root_connection = mg_bind(&mgr, http_port_str.c_str(), HTTPServerAdapter::eventHandler);
     if(root_connection == NULL) {throw CException(-1, "Error creating http connection", __PRETTY_FUNCTION__);}
     root_connection->user_data = new ConnectionMetadata<HTTPServerAdapter>("", this);

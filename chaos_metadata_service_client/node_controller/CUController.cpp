@@ -19,6 +19,7 @@
  * permissions and limitations under the Licence.
  */
 #include <chaos_metadata_service_client/ChaosMetadataServiceClient.h>
+#include <chaos/common/batch_command/BatchCommandConstants.h>
 
 #include <chaos_metadata_service_client/node_controller/CUController.h>
 #include <chaos/common/data/CDataWrapper.h>

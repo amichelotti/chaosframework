@@ -18,6 +18,7 @@
  * See the Licence for the specific language governing
  * permissions and limitations under the Licence.
  */
+#include <chaos/common/batch_command/BatchCommandConstants.h>
 
 #include <chaos_metadata_service_client/api_proxy/node/CommandTemplateSet.h>
 

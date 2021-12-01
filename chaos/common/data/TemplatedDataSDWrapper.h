@@ -22,7 +22,7 @@
 #ifndef __CHAOSFramework_EB44C3EB_D602_48B6_A57E_FBF4555A4C6A_TempaltedDataHelper_h
 #define __CHAOSFramework_EB44C3EB_D602_48B6_A57E_FBF4555A4C6A_TempaltedDataHelper_h
 #include <chaos/common/chaos_types.h>
-#include <chaos/common/data/CDataWrapper.h>
+#include "CDataWrapper.h"
 #if ! defined(BOOST_NO_TYPEID)
 #define GET_TYPE_NAME(T) typeid(T).name();
 #else

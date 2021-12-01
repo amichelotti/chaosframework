@@ -1,4 +1,4 @@
-#include <chaos/common/data/CDataWrapper.h>
+#include "CDataWrapper.h"
 #include <chaos/common/global.h>
 #ifndef __DATAPROPERTY__
 #define __DATAPROPERTY__

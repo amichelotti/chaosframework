@@ -20,8 +20,8 @@
  */
 
 #include "CommandTemplateGet.h"
+#include <chaos/common/batch_command/BatchCommandConstants.h>
 
-#include <boost/format.hpp>
 
 using namespace chaos;
 using namespace chaos::common::data;

@@ -24,12 +24,8 @@
 #include <chaos/common/chaos_constants.h>
 #include <chaos/common/bson/bson.h>
 #include <chaos/common/exception/CException.h>
-#include <chaos/common/data/CDataBuffer.h>
-#include <chaos/common/data/CDataVariant.h>
-
-#include <boost/scoped_ptr.hpp>
-
-#include <boost/shared_ptr.hpp>
+#include "CDataBuffer.h"
+#include "CDataVariant.h"
 #include <utility>
 
 #ifdef _WIN32
