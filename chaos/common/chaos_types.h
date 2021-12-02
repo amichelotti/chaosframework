@@ -79,10 +79,12 @@ using ChaosFunction = std::function< R >;
 #define ChaosBindPlaceholder(x) std::placeholders::x
 #define ChaosUniquePtr std::unique_ptr
 #define ChaosMoveOperator(x) std::move(x)
-#endif
+#endif //FORCE BOOST
 
 #else
 // C98
+#define FORCE_BOOST_SHPOINTER 1
+
 #include <stdint.h>
 #define CInt64  int64_t
 #define CUint64 uint64_t
@@ -111,11 +113,11 @@ using ChaosFunction = std::function< R >;
 #define ChaosBind boost::bind
 #define ChaosBindPlaceholder(x) x
 */
-#define FORCE_BOOST_SHPOINTER 1
 #endif
 
 
 #ifdef FORCE_BOOST_SHPOINTER
+#warning "Forcing BOOST USE"
 #include <boost/shared_ptr.hpp>
 #include <boost/atomic.hpp>
 #include <boost/thread/future.hpp>
