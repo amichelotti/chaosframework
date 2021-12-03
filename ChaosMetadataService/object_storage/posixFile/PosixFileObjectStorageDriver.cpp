@@ -93,7 +93,7 @@ void PosixFileObjectStorageDriver::init(void *init_data) throw (chaos::CExceptio
     MapKVP& obj_stoarge_kvp = metadata_service::ChaosMetadataService::getInstance()->setting.fsobject_storage_setting.key_value_custom_param;
   */
   
-    if ((boost::filesystem::exists(basedatapath) == false)){
+   /* if ((boost::filesystem::exists(basedatapath) == false)){
         bool ret=false;
         try {
             ret=boost::filesystem::create_directories(basedatapath);
@@ -105,8 +105,10 @@ void PosixFileObjectStorageDriver::init(void *init_data) throw (chaos::CExceptio
             throw chaos::CException(-2,__PRETTY_FUNCTION__,"cannot create directory:"+basedatapath);
 
             }
+    }*/
+    if ((boost::filesystem::exists(basedatapath) == false)){
+         throw chaos::CException(-1,__PRETTY_FUNCTION__,"directory:"+basedatapath+ " does not exists");
     }
-    
         
 
     PosixFile::removeTemp=removeTemp;

@@ -117,7 +117,6 @@ using ChaosFunction = std::function< R >;
 
 
 #ifdef FORCE_BOOST_SHPOINTER
-#warning "Forcing BOOST USE"
 #include <boost/shared_ptr.hpp>
 #include <boost/atomic.hpp>
 #include <boost/thread/future.hpp>
