@@ -1184,7 +1184,11 @@ typedef enum DataType {
   TYPE_VECTOR_STRING = 0x104,
   TYPE_VECTOR_FLOAT  = 0x105,
   TYPE_VECTOR_INT16  = 0x106,
-  TYPE_VECTOR_INT8  = 0x106,
+  TYPE_VECTOR_INT8  = 0x107,
+  TYPE_VECTOR_UINT32  = 0x108,
+  TYPE_VECTOR_UINT64  = 0x109,
+  TYPE_VECTOR_UINT16  = 0x110,
+  TYPE_VECTOR_UINT8   = 0x111,
 
   TYPE_ACCESS_ARRAY = 0x100,
   TYPE_UNDEFINED
@@ -1263,6 +1267,14 @@ typedef enum BinarySubtype {
   //! the subtype is represented by a specific mime type tagged in specific dataset constants
   SUB_TYPE_MIME,
   SUB_TYPE_FLOAT,
+  SUB_TYPE_UINT8,
+  //!Integer 16 bit length
+  SUB_TYPE_UINT16,
+  //!Integer 32 bit length
+  SUB_TYPE_UINT32,
+  //!Integer 64 bit length
+  SUB_TYPE_UINT64,
+  //!C string variable length
   //! no specific encoding
   SUB_TYPE_NONE,
   //! unsigned flag
