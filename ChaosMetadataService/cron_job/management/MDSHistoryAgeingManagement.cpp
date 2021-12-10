@@ -50,7 +50,7 @@ bool MDSHistoryAgeingManagement::execute(const common::cronus_manager::MapKeyVar
     uint32_t control_unit_ageing_time = 0;
     uint64_t last_ageing_perform_time = 0;
     uint64_t now = TimingUtil::getTimeStamp();
-
+    uint64_t start_sequence=last_sequence_found;
 //auto *obj_storage_da = DriverPoolManager::getInstance()->getObjectStorageDrv().getDataAccess<ObjectStorageDataAccess>();
     auto *metadata_cu_da = DriverPoolManager::getInstance()->getPersistenceDrv().getDataAccess<ControlUnitDataAccess>();
    // CHAOS_ASSERT(obj_storage_da && metadata_cu_da);
@@ -140,7 +140,10 @@ bool MDSHistoryAgeingManagement::execute(const common::cronus_manager::MapKeyVar
         
         need_another_step = true;
     } else {
-        log("Control unit with empty string");
+        //log("Control unit with empty string");
+        // control units that are not in storage are skipped
+        need_another_step = (last_sequence_found>start_sequence);
+
     }
     return need_another_step;
 }

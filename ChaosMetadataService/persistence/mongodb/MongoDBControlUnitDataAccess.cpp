@@ -1333,12 +1333,16 @@ int MongoDBControlUnitDataAccess::reserveControlUnitForAgeingManagement(uint64_t
                     it++) {
                     const std::string& pg_name = it->getGroupName();
                     if(pg_name.compare(ControlUnitPropertyKey::P_GROUP_NAME) == 0) {
-                        if(it->hasProperty(DataServiceNodeDefinitionKey::DS_STORAGE_HISTORY_AGEING)){
+                        if(it->hasProperty(DataServiceNodeDefinitionKey::DS_STORAGE_HISTORY_AGEING)&&it->hasProperty(DataServiceNodeDefinitionKey::DS_STORAGE_TYPE)){
                             //we have ageing data
                             control_unit_ageing_time = (uint32_t)it->getPropertyValue(DataServiceNodeDefinitionKey::DS_STORAGE_HISTORY_AGEING).asInt32();
+                            int type= it->getPropertyValue(DataServiceNodeDefinitionKey::DS_STORAGE_TYPE).asInt32();
                             last_sequence_id = (uint64_t)result_found.getField("seq").Long();
-                            control_unit_found = result_found.getField(NodeDefinitionKey::NODE_UNIQUE_ID).String();
                             last_ageing_perform_time = (uint64_t)result_found.getFieldDotted(key_last_performed_time).Date().asInt64();
+
+                            if((type& ((int)DataServiceNodeDefinitionType::DSStorageTypeHistory)) && (control_unit_ageing_time>0)){
+                                control_unit_found = result_found.getField(NodeDefinitionKey::NODE_UNIQUE_ID).String();
+                            }
                         }
                         break;
                     }
