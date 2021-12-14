@@ -104,7 +104,7 @@ AbstractMetadataLogChannel *MetadataLoggingManager::getChannel(const std::string
     result->setLoggingManager(this);
     map_instance.insert(std::pair<std::string, AbstractMetadataLogChannel*> (result->getInstanceUUID(), result));
     
-    MLM_DBG << "Creted new channel instance " << result->getInstanceUUID() << " for " << channel_alias;
+    MLM_DBG << "Created new channel instance " << result->getInstanceUUID() << " for " << channel_alias;
     return result;
 }
 
@@ -199,7 +199,7 @@ AbstractMetadataLogChannel *MetadataLoggingManager::getChannel(const std::string
     result->setLoggingManager(this);
     map_instance.insert(std::pair<std::string, AbstractMetadataLogChannel*> (result->getInstanceUUID(), result));
     
-    MLM_DBG << "Creted new channel instance " << result->getInstanceUUID() << " for " << channel_alias;
+    MLM_DBG << "Created new channel instance " << result->getInstanceUUID() << " for " << channel_alias;
     return result;
 }
 

@@ -33,8 +33,9 @@
 #include <chaos/common/exception/CException.h>
 #include <chaos/common/io/SharedManagedDirecIoDataDriver.h>
 #include <chaos/common/utility/ObjectFactoryRegister.h>
+//#include <chaos/common/metadata_logging/MetadataLoggingManager.h>
+
 #include <boost/algorithm/string.hpp>
-#include <boost/format.hpp>
 #include <csignal>
 #include <regex>
 using namespace std;
@@ -45,6 +46,7 @@ using namespace chaos::common::utility;
 using namespace chaos::common::async_central;
 using namespace chaos::common::data::structured;
 using namespace chaos::metadata_service::cache_system;
+//using namespace chaos::common::metadata_logging;
 
 using namespace chaos::service_common;
 
@@ -221,12 +223,17 @@ void ChaosMetadataService::init(void* init_data) {
                                              __PRETTY_FUNCTION__);
 
     // InizializableService::initImplementation(SharedManagedDirecIoDataDriver::getInstance(), NULL, "SharedManagedDirecIoDataDriver", __PRETTY_FUNCTION__);
+    //InizializableService::initImplementation(chaos::common::metadata_logging::MetadataLoggingManager::getInstance(), NULL, "MetadataLoggingManager", __PRETTY_FUNCTION__);
 
     StartableService::initImplementation(HealtManagerDirect::getInstance(), NULL, "HealtManagerDirect", __PRETTY_FUNCTION__);
 
   } catch (CException& ex) {
+
     DECODE_CHAOS_EXCEPTION(ex)
+    //logError(nodeuid,ex.errorMessage,ex.errorDomain,2);
+    //deinit();
     exit(1);
+    
   }
   // start data manager
 }
@@ -248,6 +255,9 @@ int ChaosMetadataService::notifyNewNode(const std::string& nod) {
     }
     if (retry == 0) {
       LCND_LERR << "INTERNAL ERROR:  consumer not started exiting";
+      logError(nodeuid,"INTERNAL ERROR:  consumer not started exiting",__PRETTY_FUNCTION__,2);
+      stop();
+      deinit();
       exit(1);
     }
   }
@@ -303,6 +313,10 @@ void ChaosMetadataService::start() {
     HealtManagerDirect::getInstance()->addNodeMetricValue(nodeuid,
                                                           NodeHealtDefinitionKey::NODE_HEALT_STATUS,
                                                           NodeHealtDefinitionValue::NODE_HEALT_STATUS_START);
+    // check logdriver ok
+    if( DriverPoolManager::getInstance()->getLogDrvPtr()==NULL){
+      logError(nodeuid,"Cannot initialize Log driver",__PRETTY_FUNCTION__,2);
+    }
 #if defined(KAFKA_RDK_ENABLE) || defined(KAFKA_ASIO_ENABLE)
 
     sleep(chaos::common::constants::HBTimersTimeoutinMSec / 1000);
@@ -553,6 +567,7 @@ void ChaosMetadataService::stop() {
  */
 void ChaosMetadataService::deinit() {
   InizializableService::deinitImplementation(SharedManagedDirecIoDataDriver::getInstance(), "SharedManagedDirecIoDataDriver", __PRETTY_FUNCTION__);
+  //CHAOS_NOT_THROW(InizializableService::deinitImplementation(MetadataLoggingManager::getInstance(), "MetadataLoggingManager", __PRETTY_FUNCTION__););
 
   CHAOS_NOT_THROW(StartableService::deinitImplementation(HealtManagerDirect::getInstance(), "HealtManagerDirect", __PRETTY_FUNCTION__););
 
