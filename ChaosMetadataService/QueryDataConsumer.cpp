@@ -147,9 +147,11 @@ int QueryDataConsumer::consumePutEvent(const std::string&                 key,
 
   if (storage_type & DataServiceNodeDefinitionType::DSStorageLogHisto) {
     //protected access to cached driver
-    ObjectStorageDataAccess* log_slot = DriverPoolManager::getInstance()->getLogDrv().getDataAccess<ObjectStorageDataAccess>();
+    chaos::service_common::persistence::data_access::AbstractPersistenceDriver* drv=DriverPoolManager::getInstance()->getLogDrvPtr();
+    ObjectStorageDataAccess* log_slot ;
+    if(drv&&(log_slot= drv->getDataAccess<ObjectStorageDataAccess>())){
 
-    if(log_slot){
+
     // CDataWrapper data_pack((char *)channel_data->data());
     //push received datapack into object storage
       if ((err = log_slot->pushObject(key,

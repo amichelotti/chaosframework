@@ -461,7 +461,7 @@ class AbstractControlUnit : public DeclareAction,
 
   //! Momentary driver for push data into the central memory
   ChaosUniquePtr<data_manager::KeyDataStorage> key_data_storage;
-  bool busy;
+  bool busy,bypass;
   //! fast cached attribute vector accessor
   std::vector<AttributeValue*> cache_output_attribute_vector;
   std::vector<AttributeValue*> cache_input_attribute_vector;
@@ -782,6 +782,22 @@ class AbstractControlUnit : public DeclareAction,
   //!set the severity on all state_variable
   void setStateVariableSeverity(chaos::cu::control_manager::StateVariableType variable_type,
                                 const common::alarm::MultiSeverityAlarmLevel  state_variable_severity);
+  /**
+   * @brief Set the State Mask object
+   * 
+   * @param state_variable_name name of the variable to mask
+   * @param maskunmask true mask,false unmask
+   * @return the number of objects sucessufully masked/unmasked
+   */
+  int setStateMask(const std::string& state_variable_name,bool maskunmask);
+  /**
+   * @brief Set the State All Mask object
+   * 
+   * @param maskunmask true mask, false unmask
+   * @return the number of objects sucessufully masked/unmasked
+
+   */
+  int setStateAllMask(bool maskunmask);
 
   //!set the state_variable state
   bool setStateVariableSeverity(chaos::cu::control_manager::StateVariableType variable_type,

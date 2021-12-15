@@ -151,7 +151,7 @@ AbstractControlUnit::AbstractControlUnit(const std::string& _control_unit_type,
     , log_maxupdate_ms(CONTROL_UNIT_LOG_MAX_MS_DEF)
     , last_push(0)
     , key_data_storage()
-    , busy(true) {
+    , busy(true),bypass(false) {
   _initPropertyGroup();
   //!try to decode parameter string has json document
   is_control_unit_json_param = CDataWrapper::isJSON(control_unit_param);
@@ -482,6 +482,44 @@ chaos::common::data::CDWUniquePtr AbstractControlUnit::setProperty(chaos::common
     setProperties(*data.get(), true);
   }
   return getProperties();
+}
+ 
+int AbstractControlUnit::setStateMask(const std::string& name,bool maskunmask){
+  AlarmCatalog&     catalogcu  = map_variable_catalog[StateVariableTypeAlarmCU];
+  AlarmCatalog&     catalogdev = map_variable_catalog[StateVariableTypeAlarmDEV];
+  AlarmDescription* alarmc     = catalogcu.getAlarmByName(name);
+  AlarmDescription* alarmv     = catalogdev.getAlarmByName(name);
+  int mask=0xFF;
+  if(maskunmask){
+    mask=0;
+  }
+  int found=0;
+  if (alarmc != NULL) {
+    ACULDBG_ << "Set CU alarm \"" << name << "\" mask to:" << mask;
+
+    alarmc->setMask(mask);
+    found++;
+  }
+  if (alarmv != NULL) {
+    ACULDBG_ << "Set DEV alarm \"" << name << "\" mask to:" << mask;
+
+    alarmv->setMask(mask);
+    found++;
+
+  }
+  return found;
+}
+ 
+int AbstractControlUnit::setStateAllMask(bool maskunmask){
+  AlarmCatalog&     catalogcu  = map_variable_catalog[StateVariableTypeAlarmCU];
+  AlarmCatalog&     catalogdev = map_variable_catalog[StateVariableTypeAlarmDEV];
+  int mask=0xFF;
+  if(maskunmask){
+    mask=0;
+  }
+  catalogcu.setAllAlarmMask(mask);
+   catalogdev.setAllAlarmMask(mask);
+  return (catalogcu.size()+catalogdev.size());
 }
 void AbstractControlUnit::setAlarmMask(const std::string& name, uint32_t mask) {
   AlarmCatalog&     catalogcu  = map_variable_catalog[StateVariableTypeAlarmCU];
@@ -2938,7 +2976,7 @@ int AbstractControlUnit::pushOutputDataset() {
     ACULERR_ << " Cannot allocate packet.. err:" << err;
     return err;
   }
-  if (busy == false) checkAlarms();
+  if ((busy == false)&&(bypass==false)) checkAlarms();
 
   output_attribute_dataset->addInt64Value(ControlUnitDatapackCommonKey::RUN_ID, run_id);
   output_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_TIMESTAMP, tscor /* *timestamp_acq_cached_value->getValuePtr<uint64_t>()*/);
@@ -3403,6 +3441,7 @@ void AbstractControlUnit::setBypassFlag(bool state) {
   if (system_cache.hasName(ControlUnitDatapackSystemKey::BYPASS_STATE)) {
     system_cache.getValueSettingByName(ControlUnitDatapackSystemKey::BYPASS_STATE)->setValue(CDataVariant(state));
   }
+  bypass=state;
 }
 const bool AbstractControlUnit::getBusyFlag() const {
   AttributeCache& system_cache = attribute_value_shared_cache->getSharedDomain(DOMAIN_SYSTEM);
