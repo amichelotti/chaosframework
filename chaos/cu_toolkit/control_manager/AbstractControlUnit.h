@@ -595,8 +595,9 @@ class AbstractControlUnit : public DeclareAction,
     chaos::common::data::RangeValueInfo range;
   } checkAttribute_t;
  // bidir (set/readout) to check
-  std::vector<checkAttribute_t > ioTocheck;
-  std::vector<checkAttribute_t > limitTocheck;
+ typedef std::map<std::string,checkAttribute_t > checkmap_t;
+  checkmap_t ioTocheck;
+  checkmap_t limitTocheck;
   int checkFn(double sval, double rval, const chaos::common::data::RangeValueInfo& i);
   int checkLimFn(double rval, const chaos::common::data::RangeValueInfo& i,int dir);
 
@@ -790,6 +791,24 @@ class AbstractControlUnit : public DeclareAction,
    * @return the number of objects sucessufully masked/unmasked
    */
   int setStateMask(const std::string& state_variable_name,bool maskunmask);
+
+  /**
+   * @brief Enable/Disable checks set/readout checks
+   * 
+   * @param ioname name of the variable to mask
+   * @param enable_disable true mask,false unmask
+   * @return the number of objects sucessufully masked/unmasked
+   */
+  int setReadoutCheck(const std::string& ioname,bool enable_disable);
+  
+  /**
+   * @brief Enable/Disable checks input/output limits
+   * 
+   * @param ioname name of the variable to mask
+   * @param enable_disable true mask,false unmask
+   * @return the number of objects sucessufully masked/unmasked
+   */
+  int setLimCheck(const std::string& ioname,bool enable_disable);
   /**
    * @brief Set the State All Mask object
    * 
