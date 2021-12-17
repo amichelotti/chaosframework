@@ -151,7 +151,7 @@ AbstractControlUnit::AbstractControlUnit(const std::string& _control_unit_type,
     , log_maxupdate_ms(CONTROL_UNIT_LOG_MAX_MS_DEF)
     , last_push(0)
     , key_data_storage()
-    , busy(true),bypass(false) {
+    , busy(false),bypass(false) {
   _initPropertyGroup();
   //!try to decode parameter string has json document
   is_control_unit_json_param = CDataWrapper::isJSON(control_unit_param);
@@ -192,7 +192,7 @@ AbstractControlUnit::AbstractControlUnit(const std::string&           _control_u
     , timestamp_acq_cached_value()
     , timestamp_hw_acq_cached_value()
     , thread_schedule_daly_cached_value()
-    , key_data_storage() {
+    , key_data_storage(), busy(false),bypass(false) {
   _initPropertyGroup();
   //!try to decode parameter string has json document
   is_control_unit_json_param = CDataWrapper::isJSON(control_unit_param);
@@ -261,6 +261,7 @@ void AbstractControlUnit::_initPropertyGroup() {
   pg_abstract_cu.addProperty(DataServiceNodeDefinitionKey::DS_STORAGE_HISTORY_TIME, "Set the control unit storage type", DataType::TYPE_INT64, 0, CDataVariant((int64_t)0));
   pg_abstract_cu.addProperty(DataServiceNodeDefinitionKey::DS_UPDATE_ANYWAY, "Update the dataset anyway (ms)", DataType::TYPE_INT32, 0, CDataVariant((int32_t)DS_UPDATE_ANYWAY_DEF));
   pg_abstract_cu.addProperty(ControlUnitDatapackSystemKey::CU_LOG_MAX_MS, "Maximum log rate (ms) 0 always", DataType::TYPE_INT32, 0, CDataVariant((int32_t)CONTROL_UNIT_LOG_MAX_MS_DEF));
+  busy=false;bypass=false;
   log_maxupdate_ms = CONTROL_UNIT_LOG_MAX_MS_DEF;
   ds_update_anyway = DS_UPDATE_ANYWAY_DEF;
   //    CDWUniquePtr burst_type_desc(new CDataWrapper());
@@ -2405,6 +2406,8 @@ void AbstractControlUnit::initSystemAttributeOnSharedAttributeCache() {
 
   //add busy state
   domain_attribute_setting.addAttribute("busy", 0, DataType::TYPE_BOOLEAN);
+  busy=false;
+  
 
   //add bypass state
   domain_attribute_setting.addAttribute(ControlUnitDatapackSystemKey::BYPASS_STATE, 0, DataType::TYPE_BOOLEAN);
@@ -2685,7 +2688,7 @@ void AbstractControlUnit::_setBypassState(bool bypass_stage,
        it++) {
     (*it)->send(&cmd, chaos::common::constants::CUTimersTimeoutinMSec);
   }
-
+   ACULDBG_ << "BYPASS COMMAND:"<<bypass_stage;
   setBypassFlag(bypass_stage);
 
   //update dateset
@@ -3454,19 +3457,36 @@ void AbstractControlUnit::alarmChanged(const std::string& state_variable_tag,
 }
 
 void AbstractControlUnit::setBusyFlag(bool state) {
-  AttributeCache& system_cache = attribute_value_shared_cache->getSharedDomain(DOMAIN_SYSTEM);
-  busy                         = state;
-  if (system_cache.hasName("busy")) {
-    system_cache.getValueSettingByName("busy")->setValue(CDataVariant(state));
+  if(state!=busy){
+    AttributeCache& system_cache = attribute_value_shared_cache->getSharedDomain(DOMAIN_SYSTEM);
+    busy                         = state;
+    if (system_cache.hasName("busy")) {
+      system_cache.getValueSettingByName("busy")->setValue(CDataVariant(state));
+    }
+    pushSystemDataset();
+
   }
 }
 void AbstractControlUnit::setBypassFlag(bool state) {
-  AttributeCache& system_cache = attribute_value_shared_cache->getSharedDomain(DOMAIN_SYSTEM);
-  if (system_cache.hasName(ControlUnitDatapackSystemKey::BYPASS_STATE)) {
-    system_cache.getValueSettingByName(ControlUnitDatapackSystemKey::BYPASS_STATE)->setValue(CDataVariant(state));
+ 
+  if(state!=bypass){
+     AttributeCache& system_cache = attribute_value_shared_cache->getSharedDomain(DOMAIN_SYSTEM);
+      if (system_cache.hasName(ControlUnitDatapackSystemKey::BYPASS_STATE)) {
+        system_cache.getValueSettingByName(ControlUnitDatapackSystemKey::BYPASS_STATE)->setValue(CDataVariant(state));
+      }
+    ACULDBG_ << "Bypass:"<<state <<" old:"<<bypass;
+    if(state){
+      metadataLogging(chaos::common::metadata_logging::StandardLoggingChannel::LogLevelInfo,
+                      "Bypass enabled");
+    } else {
+      metadataLogging(chaos::common::metadata_logging::StandardLoggingChannel::LogLevelInfo,
+                      "Bypass disabled");
+    }
+    bypass=state;
+    pushSystemDataset();
+
   }
-  bypass=state;
-  ACULDBG_ << "Bypass:"<<bypass;
+  
 
 }
 const bool AbstractControlUnit::getBusyFlag() const {
