@@ -43,7 +43,7 @@ namespace chaos {
 				 */
 				static std::string generateUUIDLite(){
 					boost::uuids::uuid _uuid = boost::uuids::random_generator()();
-					std::string str_uuid = boost::lexical_cast<std::string>(_uuid);
+					std::string str_uuid =  boost::uuids::to_string(_uuid);
 					size_t foundFirstSegment = str_uuid.find("-");
 					return (foundFirstSegment!=std::string::npos)?str_uuid.substr(0, foundFirstSegment):str_uuid;
 				}
@@ -53,7 +53,7 @@ namespace chaos {
 				 */
 				static std::string generateUUID(){
 					boost::uuids::uuid _uuid = boost::uuids::random_generator()();
-					return boost::lexical_cast<std::string>(_uuid);
+					return  boost::uuids::to_string(_uuid);
 				}
 			};
 		}

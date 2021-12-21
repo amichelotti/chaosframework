@@ -33,10 +33,12 @@
 #include <chaos/common/exception/CException.h>
 #include <chaos/common/io/SharedManagedDirecIoDataDriver.h>
 #include <chaos/common/utility/ObjectFactoryRegister.h>
+//#include <chaos/common/metadata_logging/MetadataLoggingManager.h>
+
 #include <boost/algorithm/string.hpp>
-#include <boost/format.hpp>
 #include <csignal>
 #include <regex>
+#include "api/logging/SubmitEntry.h"
 using namespace std;
 using namespace chaos;
 using namespace chaos::common::io;
@@ -45,6 +47,7 @@ using namespace chaos::common::utility;
 using namespace chaos::common::async_central;
 using namespace chaos::common::data::structured;
 using namespace chaos::metadata_service::cache_system;
+//using namespace chaos::common::metadata_logging;
 
 using namespace chaos::service_common;
 
@@ -221,12 +224,17 @@ void ChaosMetadataService::init(void* init_data) {
                                              __PRETTY_FUNCTION__);
 
     // InizializableService::initImplementation(SharedManagedDirecIoDataDriver::getInstance(), NULL, "SharedManagedDirecIoDataDriver", __PRETTY_FUNCTION__);
+    //InizializableService::initImplementation(chaos::common::metadata_logging::MetadataLoggingManager::getInstance(), NULL, "MetadataLoggingManager", __PRETTY_FUNCTION__);
 
     StartableService::initImplementation(HealtManagerDirect::getInstance(), NULL, "HealtManagerDirect", __PRETTY_FUNCTION__);
 
   } catch (CException& ex) {
+
     DECODE_CHAOS_EXCEPTION(ex)
+    //logError(nodeuid,ex.errorMessage,ex.errorDomain,2);
+    //deinit();
     exit(1);
+    
   }
   // start data manager
 }
@@ -248,6 +256,9 @@ int ChaosMetadataService::notifyNewNode(const std::string& nod) {
     }
     if (retry == 0) {
       LCND_LERR << "INTERNAL ERROR:  consumer not started exiting";
+      logError(nodeuid,"INTERNAL ERROR:  consumer not started exiting",__PRETTY_FUNCTION__,2);
+      stop();
+      deinit();
       exit(1);
     }
   }
@@ -303,6 +314,10 @@ void ChaosMetadataService::start() {
     HealtManagerDirect::getInstance()->addNodeMetricValue(nodeuid,
                                                           NodeHealtDefinitionKey::NODE_HEALT_STATUS,
                                                           NodeHealtDefinitionValue::NODE_HEALT_STATUS_START);
+    // check logdriver ok
+    if( DriverPoolManager::getInstance()->getLogDrvPtr()==NULL){
+      logError(nodeuid,"Cannot initialize Log driver",__PRETTY_FUNCTION__,2);
+    }
 #if defined(KAFKA_RDK_ENABLE) || defined(KAFKA_ASIO_ENABLE)
 
     sleep(chaos::common::constants::HBTimersTimeoutinMSec / 1000);
@@ -553,6 +568,7 @@ void ChaosMetadataService::stop() {
  */
 void ChaosMetadataService::deinit() {
   InizializableService::deinitImplementation(SharedManagedDirecIoDataDriver::getInstance(), "SharedManagedDirecIoDataDriver", __PRETTY_FUNCTION__);
+  //CHAOS_NOT_THROW(InizializableService::deinitImplementation(MetadataLoggingManager::getInstance(), "MetadataLoggingManager", __PRETTY_FUNCTION__););
 
   CHAOS_NOT_THROW(StartableService::deinitImplementation(HealtManagerDirect::getInstance(), "HealtManagerDirect", __PRETTY_FUNCTION__););
 
@@ -617,4 +633,50 @@ void ChaosMetadataService::fillKVParameter(std::map<std::string, std::string>& k
     // add key/value pair
     kvmap.insert(std::pair<std::string, std::string>(kv_splitted[0], kv_splitted[1]));
   }
+}
+void ChaosMetadataService::logError(const std::string&uid, const std::string&msg,const std::string&org,int lvl){
+    static int oldlvl=-3;
+    static uint32_t nmsg=0;
+
+    LDBG_ << uid<< "- ["<<nmsg<<"] Alarm level:"<<lvl<<" message:"<<msg<<" origin:"<<org;
+
+    CDataWrapper log_entry;
+    log_entry.addStringValue(MetadataServerLoggingDefinitionKeyRPC::PARAM_NODE_LOGGING_LOG_SOURCE_IDENTIFIER,
+                              nodeuid);
+    log_entry.addInt64Value(MetadataServerLoggingDefinitionKeyRPC::PARAM_NODE_LOGGING_LOG_TIMESTAMP,
+                             TimingUtil::getTimeStamp());
+    log_entry.addStringValue(MetadataServerLoggingDefinitionKeyRPC::PARAM_NODE_LOGGING_LOG_DOMAIN,
+                              org);
+    log_entry.addStringValue(MetadataServerLoggingDefinitionKeyRPC::PARAM_NODE_LOGGING_LOG_SUBJECT,
+                              "log");
+    std::string log_description;
+    switch (lvl) {
+        case 0:
+            log_description = "debug";
+            break;
+        case 1:
+            log_description = "Info";
+            break;
+        case 2:
+            log_description = "warning";
+            break;
+        case 3:
+            log_description = "error";
+            break;
+        case 4:
+            log_description = "fatal";
+            break;
+    }
+    
+    log_entry.addInt32Value(MetadataServerLoggingDefinitionKeyRPC::StandardLogging::PARAM_NODE_LOGGING_LOG_LEVEL_CODE, lvl);
+    log_entry.addStringValue(MetadataServerLoggingDefinitionKeyRPC::StandardLogging::PARAM_NODE_LOGGING_LOG_LEVEL_DESCRIPTION, log_description);
+    log_entry.addStringValue(MetadataServerLoggingDefinitionKeyRPC::StandardLogging::PARAM_NODE_LOGGING_LOG_MESSAGE, msg);
+    chaos::metadata_service::api::logging::SubmitEntry a;
+    a.execute(MOVE(log_entry.clone()));
+    if(lvl>1){
+        // if -1 just make info without change alarm level
+        HealtManagerDirect::getInstance()->addNodeMetricValue(uid,
+                                                                ControlUnitHealtDefinitionValue::CU_HEALT_OUTPUT_ALARM_LEVEL,
+                                                                lvl-1,true);
+    }
 }

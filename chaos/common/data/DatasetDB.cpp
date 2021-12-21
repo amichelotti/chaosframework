@@ -18,8 +18,8 @@
  * See the Licence for the specific language governing
  * permissions and limitations under the Licence.
  */
-#include <chaos/common/data/CDataWrapper.h>
-#include <chaos/common/data/DatasetDB.h>
+#include "CDataWrapper.h"
+#include "DatasetDB.h"
 
 #ifdef _WIN32
 using namespace chaos;

@@ -22,7 +22,6 @@
 
 using namespace chaos;
 using namespace chaos::common::data;
-using namespace chaos::common::batch_command;
 using namespace chaos::metadata_service::api::node;
 using namespace chaos::metadata_service::persistence::data_access;
 

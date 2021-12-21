@@ -46,6 +46,7 @@
 #define ChaosSharedPtr      std::shared_ptr
 #define ChaosMakeSharedPtr  std::make_shared
 #define ChaosWeakPtr        std::weak_ptr
+#define ChaosToString       std::to_string
 #include <atomic>
 #include <future>
 #include <chrono>
@@ -78,10 +79,12 @@ using ChaosFunction = std::function< R >;
 #define ChaosBindPlaceholder(x) std::placeholders::x
 #define ChaosUniquePtr std::unique_ptr
 #define ChaosMoveOperator(x) std::move(x)
-#endif
+#endif //FORCE BOOST
 
 #else
 // C98
+#define FORCE_BOOST_SHPOINTER 1
+
 #include <stdint.h>
 #define CInt64  int64_t
 #define CUint64 uint64_t
@@ -110,7 +113,6 @@ using ChaosFunction = std::function< R >;
 #define ChaosBind boost::bind
 #define ChaosBindPlaceholder(x) x
 */
-#define FORCE_BOOST_SHPOINTER 1
 #endif
 
 
@@ -127,7 +129,7 @@ using ChaosFunction = std::function< R >;
 #define ChaosConditionVariableAny boost::condition_variable_any
 #define CHAOS_WAIT(condvar,lock,duration_ms) condvar.timed_wait(lock,boost::posix_time::milliseconds(duration_ms))
 #define CHAOS_WAIT_US(condvar,lock,duration_us) condvar.timed_wait(lock,boost::posix_time::microseconds(duration_us))
-
+#define ChaosToString boost::lexical_cast<std::string>
 
 #define CHAOS_DEFER_LOCK boost::defer_lock
 

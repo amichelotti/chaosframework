@@ -28,8 +28,8 @@
 #include <boost/dynamic_bitset.hpp>
 
 #include <chaos/common/chaos_constants.h>
-#include <chaos/common/data/CDataVariant.h>
-#include <chaos/common/data/CDataWrapper.h>
+#include "../CDataVariant.h"
+#include "../CDataWrapper.h"
 
 namespace chaos{
     namespace common {

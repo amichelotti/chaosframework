@@ -25,10 +25,10 @@
 #include <chaos/common/healt_system/HealtManager.h>
 #include <chaos/common/property/property.h>
 #include <chaos/common/utility/UUIDUtil.h>
-#include <chaos/cu_toolkit/command_manager/CommandManager.h>
-#include <chaos/cu_toolkit/control_manager/AbstractControlUnit.h>
-#include <chaos/cu_toolkit/data_manager/DataManager.h>
-#include <chaos/cu_toolkit/driver_manager/DriverManager.h>
+#include "../command_manager/CommandManager.h"
+#include "AbstractControlUnit.h"
+#include "../data_manager/DataManager.h"
+#include "../driver_manager/DriverManager.h"
 #include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid.hpp>             // uuid class
@@ -151,7 +151,7 @@ AbstractControlUnit::AbstractControlUnit(const std::string& _control_unit_type,
     , log_maxupdate_ms(CONTROL_UNIT_LOG_MAX_MS_DEF)
     , last_push(0)
     , key_data_storage()
-    , busy(true) {
+    , busy(false),bypass(false) {
   _initPropertyGroup();
   //!try to decode parameter string has json document
   is_control_unit_json_param = CDataWrapper::isJSON(control_unit_param);
@@ -192,7 +192,7 @@ AbstractControlUnit::AbstractControlUnit(const std::string&           _control_u
     , timestamp_acq_cached_value()
     , timestamp_hw_acq_cached_value()
     , thread_schedule_daly_cached_value()
-    , key_data_storage() {
+    , key_data_storage(), busy(false),bypass(false) {
   _initPropertyGroup();
   //!try to decode parameter string has json document
   is_control_unit_json_param = CDataWrapper::isJSON(control_unit_param);
@@ -261,6 +261,7 @@ void AbstractControlUnit::_initPropertyGroup() {
   pg_abstract_cu.addProperty(DataServiceNodeDefinitionKey::DS_STORAGE_HISTORY_TIME, "Set the control unit storage type", DataType::TYPE_INT64, 0, CDataVariant((int64_t)0));
   pg_abstract_cu.addProperty(DataServiceNodeDefinitionKey::DS_UPDATE_ANYWAY, "Update the dataset anyway (ms)", DataType::TYPE_INT32, 0, CDataVariant((int32_t)DS_UPDATE_ANYWAY_DEF));
   pg_abstract_cu.addProperty(ControlUnitDatapackSystemKey::CU_LOG_MAX_MS, "Maximum log rate (ms) 0 always", DataType::TYPE_INT32, 0, CDataVariant((int32_t)CONTROL_UNIT_LOG_MAX_MS_DEF));
+  busy=false;bypass=false;
   log_maxupdate_ms = CONTROL_UNIT_LOG_MAX_MS_DEF;
   ds_update_anyway = DS_UPDATE_ANYWAY_DEF;
   //    CDWUniquePtr burst_type_desc(new CDataWrapper());
@@ -482,6 +483,44 @@ chaos::common::data::CDWUniquePtr AbstractControlUnit::setProperty(chaos::common
     setProperties(*data.get(), true);
   }
   return getProperties();
+}
+ 
+int AbstractControlUnit::setStateMask(const std::string& name,bool maskunmask){
+  AlarmCatalog&     catalogcu  = map_variable_catalog[StateVariableTypeAlarmCU];
+  AlarmCatalog&     catalogdev = map_variable_catalog[StateVariableTypeAlarmDEV];
+  AlarmDescription* alarmc     = catalogcu.getAlarmByName(name);
+  AlarmDescription* alarmv     = catalogdev.getAlarmByName(name);
+  int mask=0xFF;
+  if(maskunmask){
+    mask=0;
+  }
+  int found=0;
+  if (alarmc != NULL) {
+    ACULDBG_ << "Set CU alarm \"" << name << "\" mask to:" << mask;
+
+    alarmc->setMask(mask);
+    found++;
+  }
+  if (alarmv != NULL) {
+    ACULDBG_ << "Set DEV alarm \"" << name << "\" mask to:" << mask;
+
+    alarmv->setMask(mask);
+    found++;
+
+  }
+  return found;
+}
+ 
+int AbstractControlUnit::setStateAllMask(bool maskunmask){
+  AlarmCatalog&     catalogcu  = map_variable_catalog[StateVariableTypeAlarmCU];
+  AlarmCatalog&     catalogdev = map_variable_catalog[StateVariableTypeAlarmDEV];
+  int mask=0xFF;
+  if(maskunmask){
+    mask=0;
+  }
+  catalogcu.setAllAlarmMask(mask);
+   catalogdev.setAllAlarmMask(mask);
+  return (catalogcu.size()+catalogdev.size());
 }
 void AbstractControlUnit::setAlarmMask(const std::string& name, uint32_t mask) {
   AlarmCatalog&     catalogcu  = map_variable_catalog[StateVariableTypeAlarmCU];
@@ -950,106 +989,12 @@ void         AbstractControlUnit::doInitRpCheckList() {
       limitTocheck.clear();
       attribute_value_shared_cache->getSharedDomain(DOMAIN_INPUT).getAttributeNames(inp);
       for (ChaosStringVector::iterator i = inp.begin(); i != inp.end(); i++) {
-        RangeValueInfo attributeInfo;
-
-        getAttributeRangeValueInfo(*i, attributeInfo);
-        //ACULDBG_ << *i << " DOMAIN INPUT DIR:"<<attributeInfo.dir<<" warning:" << attributeInfo.warningThreshold<<" error:"<<attributeInfo.errorThreshold;
-
-        if (attributeInfo.dir == chaos::DataType::Bidirectional) {
-          //if(attributeInfo.)
-          checkAttribute_t a;
-
-          if (attributeInfo.warningThreshold.size() || attributeInfo.errorThreshold.size()) {
-            std::stringstream ss;
-            bool              error_set = false;
-            ss << "Notify when '" << *i << "'";
-            if (attributeInfo.warningThreshold.size() > 0) {
-              if (attributeInfo.warningThreshold == "0") {
-                ss << " warning if set!=readout ,";
-
-              } else {
-                ss << " warning if |set-readout| > " << atof(attributeInfo.warningThreshold.c_str()) << ",";
-              }
-              error_set = true;
-            }
-            if (attributeInfo.errorThreshold.size() > 0) {
-              if (attributeInfo.errorThreshold == "0") {
-                ss << " error if set!=readout ,";
-
-              } else {
-                ss << " error if |set-readout| > " << atof(attributeInfo.errorThreshold.c_str());
-              }
-              error_set = true;
-            }
-            if (error_set) {
-              addStateVariable(StateVariableTypeAlarmCU, *i + "_out_of_set", ss.str());
-            }
-
-            a.i_idx = attribute_value_shared_cache->getSharedDomain(DOMAIN_INPUT).getIndexForName(*i);
-            a.o_idx = attribute_value_shared_cache->getSharedDomain(DOMAIN_OUTPUT).getIndexForName(*i);
-            a.range = attributeInfo;
-
-            ioTocheck.push_back(a);
-            ACULDBG_ << "ENABLING CHECK " << ioTocheck.size() << " " << *i << " set (" << a.i_idx << ") read (" << a.o_idx << ") :" << ss.str();
-          }
-        }
-        bool limitcheck = false;
-        if (attributeInfo.maxRange.size() || attributeInfo.warningMaxRange.size()) {
-          std::stringstream ss;
-          ss << " Error if " << *i << " > " << attributeInfo.maxRange << ", warning if > " << attributeInfo.warningMaxRange;
-          addStateVariable(StateVariableTypeAlarmCU, *i + "_in_max_range", ss.str());
-          limitcheck = true;
-          ACULDBG_ << "ENABLING INPUT LIMIT CHECK " << limitTocheck.size() << " " << ss.str();
-        }
-        if (attributeInfo.minRange.size() || attributeInfo.warningMinRange.size()) {
-          std::stringstream ss;
-          ss << " Error if  " << *i << " < " << attributeInfo.minRange << ", warning if > " << attributeInfo.warningMinRange;
-          addStateVariable(StateVariableTypeAlarmCU, *i + "_in_min_range", ss.str());
-          limitcheck = true;
-          ACULDBG_ << "ENABLING INPUT LIMIT CHECK " << limitTocheck.size() << " " << ss.str();
-        }
-        if (limitcheck) {
-          checkAttribute_t a;
-          a.range = attributeInfo;
-
-          a.i_idx = attribute_value_shared_cache->getSharedDomain(DOMAIN_INPUT).getIndexForName(*i);
-
-          a.o_idx = -1;
-
-          limitTocheck.push_back(a);
-        }
+        setReadoutCheck(*i,true);        
       }
       inp.clear();
       attribute_value_shared_cache->getSharedDomain(DOMAIN_OUTPUT).getAttributeNames(inp);
       for (ChaosStringVector::iterator i = inp.begin(); i != inp.end(); i++) {
-        RangeValueInfo attributeInfo;
-
-        getAttributeRangeValueInfo(*i, attributeInfo);
-
-        bool limitcheck = false;
-        if (attributeInfo.maxRange.size() || attributeInfo.warningMaxRange.size()) {
-          std::stringstream ss;
-          ss << " Error if " << *i << " > " << attributeInfo.maxRange << ", warning if > " << attributeInfo.warningMaxRange;
-          addStateVariable(StateVariableTypeAlarmCU, *i + "_out_max_range", ss.str());
-          limitcheck = true;
-          ACULDBG_ << "ENABLING OUTPUT LIMIT CHECK " << limitTocheck.size() << " " << ss.str();
-        }
-        if (attributeInfo.minRange.size() || attributeInfo.warningMinRange.size()) {
-          std::stringstream ss;
-          ss << " Error if  " << *i << " < " << attributeInfo.minRange << ", warning if > " << attributeInfo.warningMinRange;
-          addStateVariable(StateVariableTypeAlarmCU, *i + "_out_min_range", ss.str());
-          limitcheck = true;
-          ACULDBG_ << "ENABLING OUTPUT LIMIT CHECK " << limitTocheck.size() << " " << ss.str();
-        }
-        if (limitcheck) {
-          checkAttribute_t a;
-          a.range = attributeInfo;
-
-          a.o_idx = attribute_value_shared_cache->getSharedDomain(DOMAIN_OUTPUT).getIndexForName(*i);
-
-          a.i_idx = -1;
-          limitTocheck.push_back(a);
-        }
+        setLimCheck(*i,true);
       }
 
       // set masks if any
@@ -1140,6 +1085,115 @@ void         AbstractControlUnit::doInitRpCheckList() {
   DataManager::getInstance()->getDataLiveDriverNewInstance()->subscribe(command_queue);
   DataManager::getInstance()->getDataLiveDriverNewInstance()->addHandler(command_queue, boost::bind(&AbstractControlUnit::consumerHandler, this, _1));
 }
+int AbstractControlUnit::setReadoutCheck(const std::string& ioname,bool enable_disable){
+        RangeValueInfo attributeInfo;
+        if(enable_disable){
+          if(ioTocheck.count(ioname)){
+            ACULDBG_<<"check on "<<ioname<<" Already enabled";
+            return 0;
+          }
+        } else {
+          checkmap_t::iterator i=ioTocheck.find(ioname);
+          if(i==ioTocheck.end()){
+              ACULDBG_<<"check on "<<ioname<<" Already disabled";
+              return 0;
+          }
+          ACULDBG_<<"check on "<<ioname<<" disabled";
+
+          ioTocheck.erase(i);
+          return ioTocheck.size();
+        }
+        
+        getAttributeRangeValueInfo(ioname, attributeInfo);
+        //ACULDBG_ << *i << " DOMAIN INPUT DIR:"<<attributeInfo.dir<<" warning:" << attributeInfo.warningThreshold<<" error:"<<attributeInfo.errorThreshold;
+
+        if (attributeInfo.dir == chaos::DataType::Bidirectional) {
+          //if(attributeInfo.)
+          checkAttribute_t a;
+
+          if (attributeInfo.warningThreshold.size() || attributeInfo.errorThreshold.size()) {
+            std::stringstream ss;
+            bool              error_set = false;
+            ss << "Notify when '" << ioname << "'";
+            if (attributeInfo.warningThreshold.size() > 0) {
+              if (attributeInfo.warningThreshold == "0") {
+                ss << " warning if set!=readout ,";
+
+              } else {
+                ss << " warning if |set-readout| > " << atof(attributeInfo.warningThreshold.c_str()) << ",";
+              }
+              error_set = true;
+            }
+            if (attributeInfo.errorThreshold.size() > 0) {
+              if (attributeInfo.errorThreshold == "0") {
+                ss << " error if set!=readout ,";
+
+              } else {
+                ss << " error if |set-readout| > " << atof(attributeInfo.errorThreshold.c_str());
+              }
+              error_set = true;
+            }
+            if (error_set) {
+              addStateVariable(StateVariableTypeAlarmCU, ioname + "_out_of_set", ss.str());
+            }
+
+            a.i_idx = attribute_value_shared_cache->getSharedDomain(DOMAIN_INPUT).getIndexForName(ioname);
+            a.o_idx = attribute_value_shared_cache->getSharedDomain(DOMAIN_OUTPUT).getIndexForName(ioname)              ;
+            a.range = attributeInfo;
+
+            ioTocheck[ioname]=a;
+            ACULDBG_ << "ENABLING CHECK " << ioTocheck.size() << " " << ioname << " set (" << a.i_idx << ") read (" << a.o_idx << ") :" << ss.str();
+          }
+        }
+        return ioTocheck.size();
+}
+int AbstractControlUnit::setLimCheck(const std::string& ioname,bool enable_disable){
+        RangeValueInfo attributeInfo;
+        if(enable_disable){
+          if(limitTocheck.count(ioname)){
+            ACULDBG_<<"check limit on "<<ioname<<" Already enabled";
+            return 0;
+          }
+        } else {
+          checkmap_t::iterator i=limitTocheck.find(ioname);
+          if(i==limitTocheck.end()){
+              ACULDBG_<<"limit check on "<<ioname<<" Already disabled";
+              return 0;
+          }
+          ACULDBG_<<"limit check on "<<ioname<<" disabled";
+
+          limitTocheck.erase(i);
+          return limitTocheck.size();
+        }
+        getAttributeRangeValueInfo(ioname, attributeInfo);
+
+        bool limitcheck = false;
+        if (attributeInfo.maxRange.size() || attributeInfo.warningMaxRange.size()) {
+          std::stringstream ss;
+          ss << " Error if " << ioname << " > " << attributeInfo.maxRange << ", warning if > " << attributeInfo.warningMaxRange;
+          addStateVariable(StateVariableTypeAlarmCU, ioname + "_out_max_range", ss.str());
+          limitcheck = true;
+          ACULDBG_ << "ENABLING OUTPUT LIMIT CHECK " << limitTocheck.size() << " " << ss.str();
+        }
+        if (attributeInfo.minRange.size() || attributeInfo.warningMinRange.size()) {
+          std::stringstream ss;
+          ss << " Error if  " << ioname << " < " << attributeInfo.minRange << ", warning if > " << attributeInfo.warningMinRange;
+          addStateVariable(StateVariableTypeAlarmCU, ioname + "_out_min_range", ss.str());
+          limitcheck = true;
+          ACULDBG_ << "ENABLING OUTPUT LIMIT CHECK " << limitTocheck.size() << " " << ss.str();
+        }
+        if (limitcheck) {
+          checkAttribute_t a;
+          a.range = attributeInfo;
+
+          a.o_idx = attribute_value_shared_cache->getSharedDomain(DOMAIN_OUTPUT).getIndexForName(ioname);
+
+          a.i_idx = -1;
+          limitTocheck[ioname]=a;
+        }
+        return limitTocheck.size();
+}
+
 std::string AbstractControlUnit::dsDefaultValue(const std::string& inputds) {
   chaos::common::data::RangeValueInfo attr_info;
   DatasetDB::getAttributeRangeValueInfo(inputds, attr_info);
@@ -2146,7 +2200,7 @@ int AbstractControlUnit::checkAlarms() {
 }
 
 int AbstractControlUnit::checkStdAlarms() {
-  std::vector<checkAttribute_t>::iterator i;
+  checkmap_t::iterator i;
   int                                     alarms = 0;
   //ACULDBG_ << "CHECK TO PERFORM :"<<ioTocheck.size();
   for (i = ioTocheck.begin(); i != ioTocheck.end(); i++) {
@@ -2156,33 +2210,38 @@ int AbstractControlUnit::checkStdAlarms() {
     // ACULDBG_ << "NAME :"<<i->range.name<<" INPUT VAL:"<<i->input<<" OUTPUT VAL:"<<i->output;
     // ACULDBG_ << "INAME :"<<i->input->name<<" ONAME :"<<i->output->name;
     double          res;
-    AttributeValue* inp = cache_input_attribute_vector[i->i_idx];
-    AttributeValue* out = cache_output_attribute_vector[i->o_idx];
+    AttributeValue* inp = cache_input_attribute_vector[i->second.i_idx];
+    AttributeValue* out = cache_output_attribute_vector[i->second.o_idx];
     /* {
       CDataWrapper t;
       fillCDatawrapperWithCachedValue(cache_input_attribute_vector,t);
     }*/
+   //   ACULDBG_ << i->first << " |SETPOINT-READOUT|CHECKING..." << " threshold:" << atof(i->second.range.warningThreshold.c_str());
+
     if (inp == NULL || out == NULL) {
       continue;
     }
     switch (inp->type) {
       case DataType::TYPE_BOOLEAN: {
-        if (*(inp->getValuePtr<bool>()) != *(out->getValuePtr<bool>())) {
-          level = 2;
-        }
+        int32_t sval    = (int32_t)*(inp->getValuePtr<bool>());
+        int32_t rval = (int32_t)*(out->getValuePtr<bool>());
+       //   ACULDBG_ << i->first << " |SETPOINT-READOUT|CHECK readout:" << rval << " setpoint:" << sval << " threshold:" << atof(i->second.range.warningThreshold.c_str());
+
+        level        = checkFn(sval, rval, i->second.range);
+
         break;
       }
       case DataType::TYPE_INT32: {
         int32_t sval = *(inp->getValuePtr<int32_t>());
         int32_t rval = *(out->getValuePtr<int32_t>());
-        level        = checkFn(sval, rval, i->range);
+        level        = checkFn(sval, rval, i->second.range);
 
         break;
       }
       case DataType::TYPE_INT64: {
         int64_t sval = *(inp->getValuePtr<int64_t>());
         int64_t rval = *(out->getValuePtr<int64_t>());
-        level        = checkFn(sval, rval, i->range);
+        level        = checkFn(sval, rval, i->second.range);
 
         break;
       }
@@ -2191,7 +2250,7 @@ int AbstractControlUnit::checkStdAlarms() {
         double rval = *(out->getValuePtr<double>());
         //      ACULDBG_ << "INPUT:"<<inp->name<<" val:"<<sval;
 
-        level = checkFn(sval, rval, i->range);
+        level = checkFn(sval, rval, i->second.range);
 
         break;
       }
@@ -2205,33 +2264,33 @@ int AbstractControlUnit::checkStdAlarms() {
   for (i = limitTocheck.begin(); i != limitTocheck.end(); i++) {
     int    level = 0;
     double res;
-
+    
     AttributeValue* val = NULL;
     int             dir = -1;
-    if (i->i_idx >= 0) {
+    if (i->second.i_idx >= 0) {
       dir = 0;
-      val = cache_input_attribute_vector[i->i_idx];
-    } else if (i->o_idx >= 0) {
+      val = cache_input_attribute_vector[i->second.i_idx];
+    } else if (i->second.o_idx >= 0) {
       dir = 1;
-      val = cache_output_attribute_vector[i->o_idx];
+      val = cache_output_attribute_vector[i->second.o_idx];
     }
     if (val) {
       switch (val->type) {
         case DataType::TYPE_INT32: {
           int32_t sval = *(val->getValuePtr<int32_t>());
-          level        = checkLimFn(sval, i->range, dir);
+          level        = checkLimFn(sval, i->second.range, dir);
 
           break;
         }
         case DataType::TYPE_INT64: {
           int64_t sval = *(val->getValuePtr<int64_t>());
-          level        = checkLimFn(sval, i->range, dir);
+          level        = checkLimFn(sval, i->second.range, dir);
 
           break;
         }
         case DataType::TYPE_DOUBLE: {
           double sval = *(val->getValuePtr<double>());
-          level       = checkLimFn(sval, i->range, dir);
+          level       = checkLimFn(sval, i->second.range, dir);
 
           break;
         }
@@ -2352,6 +2411,8 @@ void AbstractControlUnit::initSystemAttributeOnSharedAttributeCache() {
 
   //add busy state
   domain_attribute_setting.addAttribute("busy", 0, DataType::TYPE_BOOLEAN);
+  busy=false;
+  
 
   //add bypass state
   domain_attribute_setting.addAttribute(ControlUnitDatapackSystemKey::BYPASS_STATE, 0, DataType::TYPE_BOOLEAN);
@@ -2632,7 +2693,7 @@ void AbstractControlUnit::_setBypassState(bool bypass_stage,
        it++) {
     (*it)->send(&cmd, chaos::common::constants::CUTimersTimeoutinMSec);
   }
-
+   ACULDBG_ << "BYPASS COMMAND:"<<bypass_stage;
   setBypassFlag(bypass_stage);
 
   //update dateset
@@ -2938,7 +2999,11 @@ int AbstractControlUnit::pushOutputDataset() {
     ACULERR_ << " Cannot allocate packet.. err:" << err;
     return err;
   }
-  if (busy == false) checkAlarms();
+  if ((busy == false)&&(bypass==false)) {
+    checkAlarms();
+  } /*else {
+    ACULDBG_<<"Check disable because busy:"<<busy<<" bypass:"<<bypass;
+  }*/
 
   output_attribute_dataset->addInt64Value(ControlUnitDatapackCommonKey::RUN_ID, run_id);
   output_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_TIMESTAMP, tscor /* *timestamp_acq_cached_value->getValuePtr<uint64_t>()*/);
@@ -3270,8 +3335,13 @@ void         AbstractControlUnit::addStateVariable(StateVariableType  variable_t
   if (map_variable_catalog.count(variable_type) == 0) {
     //add new catalog
     map_variable_catalog.insert(MapStateVariablePair(variable_type, AlarmCatalog(stateVariableEnumToName(variable_type))));
-  }
+  } 
+  
   AlarmCatalog& catalog = map_variable_catalog[variable_type];
+  if(catalog.getAlarmByName(state_variable_name)){
+    // already present
+    return;
+  }
   catalog.addAlarm(new MultiSeverityAlarm(stateVariableEnumToName(variable_type),
                                           state_variable_name,
                                           state_variable_description,
@@ -3392,17 +3462,37 @@ void AbstractControlUnit::alarmChanged(const std::string& state_variable_tag,
 }
 
 void AbstractControlUnit::setBusyFlag(bool state) {
-  AttributeCache& system_cache = attribute_value_shared_cache->getSharedDomain(DOMAIN_SYSTEM);
-  busy                         = state;
-  if (system_cache.hasName("busy")) {
-    system_cache.getValueSettingByName("busy")->setValue(CDataVariant(state));
+  if(state!=busy){
+    AttributeCache& system_cache = attribute_value_shared_cache->getSharedDomain(DOMAIN_SYSTEM);
+    busy                         = state;
+    if (system_cache.hasName("busy")) {
+      system_cache.getValueSettingByName("busy")->setValue(CDataVariant(state));
+    }
+    pushSystemDataset();
+
   }
 }
 void AbstractControlUnit::setBypassFlag(bool state) {
-  AttributeCache& system_cache = attribute_value_shared_cache->getSharedDomain(DOMAIN_SYSTEM);
-  if (system_cache.hasName(ControlUnitDatapackSystemKey::BYPASS_STATE)) {
-    system_cache.getValueSettingByName(ControlUnitDatapackSystemKey::BYPASS_STATE)->setValue(CDataVariant(state));
+ 
+  if(state!=bypass){
+     AttributeCache& system_cache = attribute_value_shared_cache->getSharedDomain(DOMAIN_SYSTEM);
+      if (system_cache.hasName(ControlUnitDatapackSystemKey::BYPASS_STATE)) {
+        system_cache.getValueSettingByName(ControlUnitDatapackSystemKey::BYPASS_STATE)->setValue(CDataVariant(state));
+      }
+    ACULDBG_ << "Bypass:"<<state <<" old:"<<bypass;
+    if(state){
+      metadataLogging(chaos::common::metadata_logging::StandardLoggingChannel::LogLevelInfo,
+                      "Bypass enabled");
+    } else {
+      metadataLogging(chaos::common::metadata_logging::StandardLoggingChannel::LogLevelInfo,
+                      "Bypass disabled");
+    }
+    bypass=state;
+    pushSystemDataset();
+
   }
+  
+
 }
 const bool AbstractControlUnit::getBusyFlag() const {
   AttributeCache& system_cache = attribute_value_shared_cache->getSharedDomain(DOMAIN_SYSTEM);

@@ -18,8 +18,8 @@
  * See the Licence for the specific language governing
  * permissions and limitations under the Licence.
  */
-#include <string>
 #include <chaos/cu_toolkit/control_manager/slow_command/SlowCommand.h>
+#include <string>
 using namespace chaos;
 using namespace chaos::common::data;
 using namespace chaos::common::alarm;
@@ -38,120 +38,127 @@ SlowCommand::SlowCommand() {}
 
 // default destructor
 SlowCommand::~SlowCommand() {
-    
 }
 
-const string & SlowCommand::getDeviceID() {
-    return abstract_control_unit->getDeviceID();
+const string& SlowCommand::getDeviceID() {
+  return abstract_control_unit->getDeviceID();
 }
 
 void SlowCommand::setAutoBusy(bool new_auto_busy) {
-    instance_custom_attribute["auto_busy"] = CDataVariant(new_auto_busy);
+  instance_custom_attribute["auto_busy"] = CDataVariant(new_auto_busy);
 }
 
 const bool SlowCommand::isAutoBusy() {
-    return instance_custom_attribute["auto_busy"].asBool();
+  return instance_custom_attribute["auto_busy"].asBool();
 }
 
-chaos::common::data::DatasetDB * const SlowCommand::getDeviceDatabase() {
-    return abstract_control_unit;
+chaos::common::data::DatasetDB* const SlowCommand::getDeviceDatabase() {
+  return abstract_control_unit;
 }
 
-AttributeSharedCacheWrapper * const SlowCommand::getAttributeCache() {
-    return attribute_cache;
+AttributeSharedCacheWrapper* const SlowCommand::getAttributeCache() {
+  return attribute_cache;
 }
 
 #pragma mark Alarm API
-void SlowCommand::setStateVariableSeverity(StateVariableType variable_type,
+void         SlowCommand::setStateVariableSeverity(StateVariableType                            variable_type,
                                            const common::alarm::MultiSeverityAlarmLevel state_variable_severity) {
-    abstract_control_unit->setStateVariableSeverity(variable_type,
-                                                    state_variable_severity);
+  abstract_control_unit->setStateVariableSeverity(variable_type,
+                                                  state_variable_severity);
 }
 
-bool SlowCommand::setStateVariableSeverity(StateVariableType variable_type,
-                                           const std::string& state_variable_name,
+bool SlowCommand::setStateVariableSeverity(StateVariableType             variable_type,
+                                           const std::string&            state_variable_name,
                                            const MultiSeverityAlarmLevel state_variable_severity) {
-    return abstract_control_unit->setStateVariableSeverity(variable_type,
-                                                           state_variable_name,
-                                                           state_variable_severity);
+  return abstract_control_unit->setStateVariableSeverity(variable_type,
+                                                         state_variable_name,
+                                                         state_variable_severity);
 }
 
-bool SlowCommand::setStateVariableSeverity(StateVariableType variable_type,
-                                           const unsigned int state_variable_ordered_id,
-                                           const chaos::common::alarm:: MultiSeverityAlarmLevel state_variable_severity) {
-    return abstract_control_unit->setStateVariableSeverity(variable_type,
-                                                           state_variable_ordered_id,
-                                                           state_variable_severity);
+bool SlowCommand::setStateVariableSeverity(StateVariableType                                   variable_type,
+                                           const unsigned int                                  state_variable_ordered_id,
+                                           const chaos::common::alarm::MultiSeverityAlarmLevel state_variable_severity) {
+  return abstract_control_unit->setStateVariableSeverity(variable_type,
+                                                         state_variable_ordered_id,
+                                                         state_variable_severity);
 }
 
-bool SlowCommand::getStateVariableSeverity(StateVariableType variable_type,
-                                           const std::string& state_variable_name,
+bool SlowCommand::getStateVariableSeverity(StateVariableType        variable_type,
+                                           const std::string&       state_variable_name,
                                            MultiSeverityAlarmLevel& state_variable_severity) {
-    return abstract_control_unit->getStateVariableSeverity(variable_type,
-                                                           state_variable_name,
-                                                           state_variable_severity);
+  return abstract_control_unit->getStateVariableSeverity(variable_type,
+                                                         state_variable_name,
+                                                         state_variable_severity);
 }
 
-bool SlowCommand::getStateVariableSeverity(StateVariableType variable_type,
-                                           const unsigned int state_variable_ordered_id,
+  int SlowCommand::saveData(const std::string& keyname, const chaos::common::data::CDataWrapper& d){
+    return abstract_control_unit->saveData(keyname, d);
+  }
+
+  chaos::common::data::CDWUniquePtr SlowCommand::loadData(const std::string& keyname){
+      return abstract_control_unit->loadData(keyname);
+
+  }
+bool SlowCommand::getStateVariableSeverity(StateVariableType        variable_type,
+                                           const unsigned int       state_variable_ordered_id,
                                            MultiSeverityAlarmLevel& state_variable_severity) {
-    return abstract_control_unit->getStateVariableSeverity(variable_type,
-                                                           state_variable_ordered_id,
-                                                           state_variable_severity);
+  return abstract_control_unit->getStateVariableSeverity(variable_type,
+                                                         state_variable_ordered_id,
+                                                         state_variable_severity);
 }
 
 void SlowCommand::setBusyFlag(bool state) {
-    if(isAutoBusy()) {return;}
-    return abstract_control_unit->setBusyFlag(state);
-
+  if (isAutoBusy()) {
+    return;
+  }
+  return abstract_control_unit->setBusyFlag(state);
 }
-const string SlowCommand::getDeviceLoadParams(){
-     if(abstract_control_unit==NULL)
-        return std::string();
-   
-    return abstract_control_unit->getCUParam();
+const string SlowCommand::getDeviceLoadParams() {
+  if (abstract_control_unit == NULL)
+    return std::string();
+
+  return abstract_control_unit->getCUParam();
 }
 
-int SlowCommand::getDeviceLoadParams(chaos::common::data::CDataWrapper&parm){
-    if(abstract_control_unit==NULL)
-        return -1;
-    return abstract_control_unit->getCUParam(parm);
-    
+int SlowCommand::getDeviceLoadParams(chaos::common::data::CDataWrapper& parm) {
+  if (abstract_control_unit == NULL)
+    return -1;
+  return abstract_control_unit->getCUParam(parm);
 }
 
 bool SlowCommand::getBusyFlag() {
-     if(abstract_control_unit==NULL)
-        return false;
-   
-    return abstract_control_unit->getBusyFlag();
+  if (abstract_control_unit == NULL)
+    return false;
+
+  return abstract_control_unit->getBusyFlag();
 }
 
 void SlowCommand::metadataLogging(const StandardLoggingChannel::LogLevel log_level,
-                                  std::string message) {
-    abstract_control_unit->metadataLogging(getAlias(),
-                                           log_level,
-                                           message);
+                                  std::string                            message) {
+  abstract_control_unit->metadataLogging(getAlias(),
+                                         log_level,
+                                         message);
 }
 
 void SlowCommand::startHandler() {
-    BatchCommand::startHandler();
-    SCLDBG_ << "Starting command";
-    for(common::batch_command::BCInstantiationAttributeMapIterator it = instance_custom_attribute.begin(),
-        end = instance_custom_attribute.end();
-        it != end;
-        it++) {
-        SCLDBG_ << CHAOS_FORMAT("Custom property:%1% - Value:%2%", %it->first%it->second.asString());
-    }
-    
-    if(isAutoBusy()) {
-        abstract_control_unit->setBusyFlag(true);
-    }
+  BatchCommand::startHandler();
+  SCLDBG_ << "Starting command";
+  for (common::batch_command::BCInstantiationAttributeMapIterator it  = instance_custom_attribute.begin(),
+                                                                  end = instance_custom_attribute.end();
+       it != end;
+       it++) {
+    SCLDBG_ << CHAOS_FORMAT("Custom property:%1% - Value:%2%", % it->first % it->second.asString());
+  }
+
+  if (isAutoBusy()) {
+    abstract_control_unit->setBusyFlag(true);
+  }
 }
 
 void SlowCommand::endHandler() {
-    if(isAutoBusy()) {
-        abstract_control_unit->setBusyFlag(false);
-    }
-    BatchCommand::endHandler();
-    SCLDBG_ << "Finish command";
+  if (isAutoBusy()) {
+    abstract_control_unit->setBusyFlag(false);
+  }
+  BatchCommand::endHandler();
+  SCLDBG_ << "Finish command";
 }

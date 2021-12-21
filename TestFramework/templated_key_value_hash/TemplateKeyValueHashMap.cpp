@@ -47,7 +47,7 @@ void TestTemplateKeyValueHashMap::producer() {
         TemplateKeyValueHashMapElement *element = (TemplateKeyValueHashMapElement *)malloc(sizeof(TemplateKeyValueHashMapElement));
         element->product_id = production_id++;
         
-        std::string element_key = std::string("element_") + boost::lexical_cast<std::string>(element->product_id);
+        std::string element_key = std::string("element_") + ChaosToString(element->product_id);
         if(addElement(element_key.c_str(), (uint32_t)element_key.size(), element) != 0) {
             error_count++;
         }
@@ -60,7 +60,7 @@ void TestTemplateKeyValueHashMap::consumer() {
         idx < production_id;
         idx++) {
         TemplateKeyValueHashMapElement *element_found = NULL;
-        std::string element_key = std::string("element_") + boost::lexical_cast<std::string>(idx);
+        std::string element_key = std::string("element_") + ChaosToString(idx);
         
         if((err = getElement(element_key.c_str(),
                              (uint32_t)element_key.size(),

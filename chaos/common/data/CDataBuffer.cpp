@@ -19,7 +19,7 @@
  * permissions and limitations under the Licence.
  */
 
-#include <chaos/common/data/CDataBuffer.h>
+#include "CDataBuffer.h"
 #include "CDataWrapper.h"
 #include <cstring>
 #include <stdlib.h>

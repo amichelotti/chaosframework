@@ -187,7 +187,7 @@ void ZMQDirectIOServer::poller(const std::string& public_url,
     
     proxy_socket_configuration["ZMQ_LINGER"] = "500";
     //keep space for 2 compelte direct io message(3 message part) for every working thread
-    proxy_socket_configuration["ZMQ_RCVHWM"] = "1000";//boost::lexical_cast<std::string>((direct_io_thread_number*3)*2);
+    proxy_socket_configuration["ZMQ_RCVHWM"] = "1000";//ChaosToString((direct_io_thread_number*3)*2);
     proxy_socket_configuration["ZMQ_SNDHWM"] = "1000";
     proxy_socket_configuration["ZMQ_RCVTIMEO"] = "-1";
     proxy_socket_configuration["ZMQ_SNDTIMEO"] = "1000";

@@ -500,7 +500,7 @@ void ChaosAbstractCommon::logError(const std::string&uid, const std::string&msg,
         // if -1 just make info without change alarm level
         HealtManager::getInstance()->addNodeMetricValue(uid,
                                                                 ControlUnitHealtDefinitionValue::CU_HEALT_OUTPUT_ALARM_LEVEL,
-                                                                lvl);
+                                                                lvl,true);
     }
 }
 

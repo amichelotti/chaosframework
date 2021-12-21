@@ -191,7 +191,7 @@ void CDataWrapper::addStringValue(const std::string& key, const string& value,co
 void CDataWrapper::appendStringToArray(const string& value) {
     ENSURE_ARRAY(bson_tmp_array);
     bson_append_utf8(ACCESS_BSON(bson_tmp_array),
-                     boost::lexical_cast<std::string>(array_index++).c_str(),
+                     ChaosToString(array_index++).c_str(),
                      -1,
                      value.c_str(),
                      (int)value.size());
@@ -199,7 +199,7 @@ void CDataWrapper::appendStringToArray(const string& value) {
 void CDataWrapper::appendBooleanToArray(bool value){
     ENSURE_ARRAY(bson_tmp_array);
     bson_append_bool(ACCESS_BSON(bson_tmp_array),
-                     boost::lexical_cast<std::string>(array_index++).c_str(),
+                     ChaosToString(array_index++).c_str(),
                      -1,
                      value);
 }
@@ -208,7 +208,7 @@ void CDataWrapper::appendBooleanToArray(bool value){
 void CDataWrapper::appendInt32ToArray(int32_t value) {
     ENSURE_ARRAY(bson_tmp_array);
     bson_append_int32(ACCESS_BSON(bson_tmp_array),
-                      boost::lexical_cast<std::string>(array_index++).c_str(),
+                      ChaosToString(array_index++).c_str(),
                       -1,
                       value);
 }
@@ -217,7 +217,7 @@ void CDataWrapper::appendInt32ToArray(int32_t value) {
 void CDataWrapper::appendInt64ToArray(int64_t value) {
     ENSURE_ARRAY(bson_tmp_array);
     bson_append_int64(ACCESS_BSON(bson_tmp_array),
-                      boost::lexical_cast<std::string>(array_index++).c_str(),
+                      ChaosToString(array_index++).c_str(),
                       -1,
                       value);
 }
@@ -226,7 +226,7 @@ void CDataWrapper::appendInt64ToArray(int64_t value) {
 void CDataWrapper::appendDoubleToArray(double value) {
     ENSURE_ARRAY(bson_tmp_array);
     bson_append_double(ACCESS_BSON(bson_tmp_array),
-                       boost::lexical_cast<std::string>(array_index++).c_str(),
+                       ChaosToString(array_index++).c_str(),
                        -1,
                        value);
 }
@@ -235,7 +235,7 @@ void CDataWrapper::appendDoubleToArray(double value) {
 void CDataWrapper::appendCDataWrapperToArray(const CDataWrapper& value) {
     ENSURE_ARRAY(bson_tmp_array);
     bson_append_document(ACCESS_BSON(bson_tmp_array),
-                         boost::lexical_cast<std::string>(array_index++).c_str(),
+                         ChaosToString(array_index++).c_str(),
                          -1,
                          value.bson.get());
 }

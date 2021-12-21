@@ -480,19 +480,19 @@ std::string AttributeValue::toString() {
         }
             
         case chaos::DataType::TYPE_BOOLEAN:{
-            return boost::lexical_cast<std::string>(*getValuePtr<bool>());
+            return ChaosToString(*getValuePtr<bool>());
         }
             
         case chaos::DataType::TYPE_DOUBLE:{
-            return boost::lexical_cast<std::string>(*getValuePtr<double>());
+            return ChaosToString(*getValuePtr<double>());
         }
             
         case chaos::DataType::TYPE_INT32:{
-            return boost::lexical_cast<std::string>(*getValuePtr<int32_t>());
+            return ChaosToString(*getValuePtr<int32_t>());
         }
             
         case chaos::DataType::TYPE_INT64:{
-            return boost::lexical_cast<std::string>(*getValuePtr<int64_t>());
+            return ChaosToString(*getValuePtr<int64_t>());
         }
             
         default:
@@ -516,7 +516,7 @@ std::string AttributeValue::toString(int double_precision) {
         }
             
         case chaos::DataType::TYPE_BOOLEAN:{
-            return boost::lexical_cast<std::string>(*getValuePtr<bool>());
+            return ChaosToString(*getValuePtr<bool>());
         }
             
         case chaos::DataType::TYPE_DOUBLE:{
@@ -526,11 +526,11 @@ std::string AttributeValue::toString(int double_precision) {
         }
             
         case chaos::DataType::TYPE_INT32:{
-            return boost::lexical_cast<std::string>(*getValuePtr<int32_t>());
+            return ChaosToString(*getValuePtr<int32_t>());
         }
             
         case chaos::DataType::TYPE_INT64:{
-            return boost::lexical_cast<std::string>(*getValuePtr<int64_t>());
+            return ChaosToString(*getValuePtr<int64_t>());
         }
             
         default:

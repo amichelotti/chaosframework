@@ -113,12 +113,12 @@ void DriverPoolManager::init(void* init_data) {
     } else {
       try {
         log_driver.init((void*)&logSetting, __PRETTY_FUNCTION__);
-      } catch (CException& e) {
+      } catch (CException& ex) {
         log_driver.reset(NULL,log_impl_name);
-        throw e;
+        DECODE_CHAOS_EXCEPTION(ex)
+
       } catch (...) {
         DP_LOG_ERR << " Undefined exception catchd during initialization of LOG driver";
-
         log_driver.reset(NULL,log_impl_name);
       }
     }

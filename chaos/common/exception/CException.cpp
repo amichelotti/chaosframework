@@ -19,8 +19,7 @@
  * permissions and limitations under the Licence.
  */
 
-#include <chaos/common/exception/CException.h>
-#include <boost/exception/all.hpp>
+#include "CException.h"
 namespace chaos{
 CException::CException(int eCode,
                        const std::string& eMessage,

@@ -18,10 +18,11 @@
  * See the Licence for the specific language governing
  * permissions and limitations under the Licence.
  */
-#include <chaos/common/batch_command/BatchCommand.h>
-#include <chaos/common/batch_command/BatchCommandDescription.h>
+#include "BatchCommand.h"
+#include "BatchCommandDescription.h"
 using namespace chaos::common::data;
 using namespace chaos::common::batch_command;
+#include "BatchCommandConstants.h"
 
 
 BatchCommandDescription::BatchCommandDescription(const std::string& _command_alias,

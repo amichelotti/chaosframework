@@ -27,7 +27,6 @@
 
 #include <vector>
 
-#include <boost/shared_ptr.hpp>
 
 namespace chaos {
     namespace metadata_service_client {

@@ -22,7 +22,7 @@
 #include "GetCommandAndTemplateDescription.h"
 #include "CommandCommonUtility.h"
 
-#include <boost/format.hpp>
+#include <chaos/common/batch_command/BatchCommandConstants.h>
 
 using namespace chaos;
 using namespace chaos::common::data;

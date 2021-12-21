@@ -177,10 +177,12 @@ void ZMQServer::worker() {
     
     //err = zmq_bind(receiver, bind_str.str().c_str());
     err = zmq_connect(receiver, "inproc://workers");
+    std::ostringstream oss;
+    oss<<boost::this_thread::get_id();
     if(err == 0){
-        ZMQS_LAPP << "Thread id:" << boost::lexical_cast<std::string>(boost::this_thread::get_id()) << "binded successfully";
+        ZMQS_LAPP << "Thread id:" << oss.str() << "binded successfully";
     } else {
-        ZMQS_LERR << "Thread id:" << boost::lexical_cast<std::string>(boost::this_thread::get_id()) << "binded with error";
+        ZMQS_LERR << "Thread id:" << oss.str() << "binded with error";
         return;
     }
     err = zmq_setsockopt(receiver, ZMQ_LINGER, &linger, sizeof(int));

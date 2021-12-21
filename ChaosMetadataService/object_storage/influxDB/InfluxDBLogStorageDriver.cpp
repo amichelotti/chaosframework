@@ -109,8 +109,14 @@ void InfluxDBLogStorageDriver::init(void *init_data) throw (chaos::CException) {
     throw chaos::CException(ret,"cannot connect or create DB:"+database+" on server:"+servername,__FUNCTION__);  
     }
     r.setSerializedJsonData(resp.c_str());
-    DBG<<" DB returned:"<<ret<<" answer:\""<<resp<<"\"";
+    if(ret!=0){
+        ERR<<" DB returned:"<<ret<<" answer:\""<<resp<<"\"";
+        throw chaos::CException(ret,"Influx on server:"+servername+" error'"+resp+"'",__FUNCTION__);  
 
+    } else{
+            DBG<<" DB returned:"<<ret<<" answer:\""<<resp<<"\"";
+
+    }
     registerDataAccess<ObjectStorageDataAccess>(new InfluxDB(si));
 }
 

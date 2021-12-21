@@ -19,9 +19,9 @@
  * permissions and limitations under the Licence.
  */
 
-#include <chaos/common/data/CDataVariant.h>
+#include "CDataVariant.h"
 #include <chaos/common/exception/CException.h>
-#include <chaos/common/data/CDataWrapper.h>
+#include "CDataWrapper.h"
 #include <sstream>
 
 using namespace chaos;
@@ -103,11 +103,11 @@ double double_visitor::operator()(const ChaosSharedPtr<CDataBuffer>& buffer) con
 double double_visitor::operator()(const ChaosSharedPtr<CDataWrapper>& buffer) const {return static_cast<double>(buffer->getBSONRawSize());}
 
 #pragma mark stringvisitor
-std::string string_visitor::operator()(const bool bv) const {SAFE_LEXICAL_WITH_DEFAULT(boost::lexical_cast<std::string>(bv), "false")}
-std::string string_visitor::operator()(const int32_t i32v) const {SAFE_LEXICAL_WITH_DEFAULT(boost::lexical_cast<std::string>(i32v), "0")}
-std::string string_visitor::operator()(const uint32_t ui32v) const {SAFE_LEXICAL_WITH_DEFAULT(boost::lexical_cast<std::string>(ui32v), "0")}
-std::string string_visitor::operator()(const int64_t i64v) const {SAFE_LEXICAL_WITH_DEFAULT(boost::lexical_cast<std::string>(i64v), "0")}
-std::string string_visitor::operator()(const uint64_t ui64v) const {SAFE_LEXICAL_WITH_DEFAULT(boost::lexical_cast<std::string>(ui64v), "0")}
+std::string string_visitor::operator()(const bool bv) const {SAFE_LEXICAL_WITH_DEFAULT(ChaosToString(bv), "false")}
+std::string string_visitor::operator()(const int32_t i32v) const {SAFE_LEXICAL_WITH_DEFAULT(ChaosToString(i32v), "0")}
+std::string string_visitor::operator()(const uint32_t ui32v) const {SAFE_LEXICAL_WITH_DEFAULT(ChaosToString(ui32v), "0")}
+std::string string_visitor::operator()(const int64_t i64v) const {SAFE_LEXICAL_WITH_DEFAULT(ChaosToString(i64v), "0")}
+std::string string_visitor::operator()(const uint64_t ui64v) const {SAFE_LEXICAL_WITH_DEFAULT(ChaosToString(ui64v), "0")}
 std::string string_visitor::operator()(const double dv) const {
     std::ostringstream oss;
     if(param>=0) {

@@ -24,7 +24,7 @@
 
 #include <chaos/common/chaos_constants.h>
 //#include <chaos/common/data/CDataWrapper.h>
-#include <chaos/common/data/CDataBuffer.h>
+#include "CDataBuffer.h"
 
 #include <boost/variant.hpp>
 #include <boost/shared_ptr.hpp>

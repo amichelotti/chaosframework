@@ -125,6 +125,8 @@ namespace chaos {
              * @return int 
              */
             int notifyNewNode(const std::string& nodeuid);
+            void logError(const std::string&uid, const std::string&msg,const std::string&org,int lvl);
+
         };
     }
 }

@@ -38,7 +38,16 @@ for(miter it = log_entry.map.begin();\
 it != log_entry.map.end();\
 it++) {\
 b << it->first << c(it->second);\
-ss.append(boost::lexical_cast<std::string>(c(it->second))); \
+ss.append(ChaosToString(c(it->second))); \
+ss.append("|"); \
+}
+
+#define WRITE_LOG_ATTRIBUTE_MAP_ON_BUILDER_STRING(b, miter, map, ss)\
+for(miter it = log_entry.map.begin();\
+it != log_entry.map.end();\
+it++) {\
+b << it->first << (it->second);\
+ss.append(it->second); \
 ss.append("|"); \
 }
 
@@ -82,7 +91,7 @@ int MongoDBLoggingDataAccess::insertNewEntry(LogEntry& log_entry) {
         search_field.append(log_entry.subject); search_field.append("|");
         
         //add custom attribute in log entry
-        WRITE_LOG_ATTRIBUTE_MAP_ON_BUILDER(builder, LoggingKeyValueStringMapIterator, map_string_value, , search_field);
+        WRITE_LOG_ATTRIBUTE_MAP_ON_BUILDER_STRING(builder, LoggingKeyValueStringMapIterator, map_string_value, search_field);
         WRITE_LOG_ATTRIBUTE_MAP_ON_BUILDER(builder, LoggingKeyValueInt64MapIterator, map_int64_value, (long long), search_field);
         WRITE_LOG_ATTRIBUTE_MAP_ON_BUILDER(builder, LoggingKeyValueInt32MapIterator, map_int32_value, (int), search_field);
         WRITE_LOG_ATTRIBUTE_MAP_ON_BUILDER(builder, LoggingKeyValueDoubleMapIterator, map_double_value, , search_field);

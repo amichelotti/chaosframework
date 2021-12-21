@@ -23,7 +23,6 @@
 
 using namespace chaos::common::data;
 using namespace chaos::common::property;
-using namespace chaos::common::batch_command;
 using namespace chaos::metadata_service_client::api_proxy;
 using namespace chaos::metadata_service_client::api_proxy::node;
 

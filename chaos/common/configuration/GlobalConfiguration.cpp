@@ -30,7 +30,7 @@
 
 #include "GlobalConfiguration.h"
 #include <chaos/common/version.h>
-
+#include <chaos/common/external_unit/external_unit.h>
 using namespace chaos;
 using namespace chaos::common::data;
 using namespace chaos::common::network;
@@ -430,7 +430,7 @@ void GlobalConfiguration::checkDefaultOption()  {
 #if CHAOS_PROMETHEUS
     // configura http metric port
     CHECK_AND_DEFINE_OPTION_WITH_DEFAULT(std::string, httpMetricPort, InitOption::OPT_METRIC_WEB_SERVER_PORT, "10000");
-    httpMetricPort = boost::lexical_cast<std::string>(InetUtility::scanForLocalFreePort(boost::lexical_cast<int32_t>(httpMetricPort)));
+    httpMetricPort = ChaosToString(InetUtility::scanForLocalFreePort(boost::lexical_cast<int32_t>(httpMetricPort)));
     configuration->addStringValue(InitOption::OPT_METRIC_WEB_SERVER_PORT, httpMetricPort);
     
 #endif
