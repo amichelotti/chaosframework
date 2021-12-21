@@ -2216,14 +2216,19 @@ int AbstractControlUnit::checkStdAlarms() {
       CDataWrapper t;
       fillCDatawrapperWithCachedValue(cache_input_attribute_vector,t);
     }*/
+   //   ACULDBG_ << i->first << " |SETPOINT-READOUT|CHECKING..." << " threshold:" << atof(i->second.range.warningThreshold.c_str());
+
     if (inp == NULL || out == NULL) {
       continue;
     }
     switch (inp->type) {
       case DataType::TYPE_BOOLEAN: {
-        if (*(inp->getValuePtr<bool>()) != *(out->getValuePtr<bool>())) {
-          level = 2;
-        }
+        int32_t sval    = (int32_t)*(inp->getValuePtr<bool>());
+        int32_t rval = (int32_t)*(out->getValuePtr<bool>());
+       //   ACULDBG_ << i->first << " |SETPOINT-READOUT|CHECK readout:" << rval << " setpoint:" << sval << " threshold:" << atof(i->second.range.warningThreshold.c_str());
+
+        level        = checkFn(sval, rval, i->second.range);
+
         break;
       }
       case DataType::TYPE_INT32: {
