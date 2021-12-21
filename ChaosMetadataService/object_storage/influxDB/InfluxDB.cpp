@@ -143,12 +143,16 @@ int InfluxDB::pushObject(const std::string&                       key,
           first++;
 
         break;
-        case DataType::TYPE_DOUBLE:
-          measurements << c << *i << "=" << stored_object.getStringValue(*i);
-          nmeas++;
-          first++;
+        case DataType::TYPE_DOUBLE:{
+          double d=stored_object.getDoubleValue(*i);
+          if(std::isfinite( d)){
+            measurements << c << *i << "=" << d;
+            nmeas++;
+            first++;
+          }
 
           break;
+        }
         case DataType::TYPE_STRING:{
           std::string val=stored_object.getStringValue(*i);
           if((val.size()>0)&&(val.size()<(1024*64))){
@@ -183,6 +187,66 @@ int InfluxDB::pushObject(const std::string&                       key,
           }
           break;
         }
+        case DataType::TYPE_VECTOR_UINT32:{
+          uint32_t size=0;
+          const uint32_t*ptr=(const uint32_t*)stored_object.getBinaryValue(*i,size);
+          if(ptr){
+            for(int cnt=0;(cnt<size/sizeof(int32_t))&&(cnt<MAX_ARRAY_POINTS);cnt++){
+              measurements << c << *i+"." <<cnt<< "="<< ptr[cnt] << "i";
+              first++;
+              nmeas++;
+            }
+          }
+          break;
+        }
+        case DataType::TYPE_VECTOR_UINT8:{
+          uint32_t size=0;
+          const uint8_t*ptr=(const uint8_t*)stored_object.getBinaryValue(*i,size);
+          if(ptr){
+            for(int cnt=0;(cnt<size/sizeof(uint8_t))&&(cnt<MAX_ARRAY_POINTS);cnt++){
+              measurements << c << *i+"." <<cnt<< "="<< ptr[cnt] << "i";
+              first++;
+              nmeas++;
+            }
+          }
+          break;
+        }
+        case DataType::TYPE_VECTOR_UINT16:{
+          uint32_t size=0;
+          const uint16_t*ptr=(const uint16_t*)stored_object.getBinaryValue(*i,size);
+          if(ptr){
+            for(int cnt=0;(cnt<size/sizeof(uint16_t))&&(cnt<MAX_ARRAY_POINTS);cnt++){
+              measurements << c << *i+"." <<cnt<< "="<< ptr[cnt] << "i";
+              first++;
+              nmeas++;
+            }
+          }
+          break;
+        }
+        case DataType::TYPE_VECTOR_INT16:{
+          uint32_t size=0;
+          const int16_t*ptr=(const int16_t*)stored_object.getBinaryValue(*i,size);
+          if(ptr){
+            for(int cnt=0;(cnt<size/sizeof(int16_t))&&(cnt<MAX_ARRAY_POINTS);cnt++){
+              measurements << c << *i+"." <<cnt<< "="<< ptr[cnt] << "i";
+              first++;
+              nmeas++;
+            }
+          }
+          break;
+        }
+        case DataType::TYPE_VECTOR_INT8:{
+          uint32_t size=0;
+          const int8_t*ptr=(const int8_t*)stored_object.getBinaryValue(*i,size);
+          if(ptr){
+            for(int cnt=0;(cnt<size/sizeof(int8_t))&&(cnt<MAX_ARRAY_POINTS);cnt++){
+              measurements << c << *i+"." <<cnt<< "="<< ptr[cnt] << "i";
+              first++;
+              nmeas++;
+            }
+          }
+          break;
+        }
         case DataType::TYPE_VECTOR_INT64:{
           uint32_t size=0;
           const int64_t*ptr=(const int64_t*)stored_object.getBinaryValue(*i,size);
@@ -201,9 +265,27 @@ int InfluxDB::pushObject(const std::string&                       key,
           const double*ptr=(const double*)stored_object.getBinaryValue(*i,size);
           if(ptr){
             for(int cnt=0;(cnt<size/sizeof(double))&&(cnt<MAX_ARRAY_POINTS);cnt++){
-              measurements << c << *i+"." <<cnt<< "=" << ptr[cnt];
-              first++;
-              nmeas++;
+              if(std::isfinite( ptr[cnt])){
+                measurements << c << *i+"." <<cnt<< "=" << ptr[cnt];
+                first++;
+                nmeas++;
+              }
+            //  DBG<< c << *i+"_" <<cnt<< "=" << ptr[cnt];
+
+            }
+          }
+          break;
+        }
+        case DataType::TYPE_VECTOR_FLOAT:{
+          uint32_t size=0;
+          const float*ptr=(const float*)stored_object.getBinaryValue(*i,size);
+          if(ptr){
+            for(int cnt=0;(cnt<size/sizeof(float))&&(cnt<MAX_ARRAY_POINTS);cnt++){
+              if(std::isfinite( ptr[cnt])){
+                measurements << c << *i+"." <<cnt<< "=" << ptr[cnt];
+                first++;
+                nmeas++;
+              }
             //  DBG<< c << *i+"_" <<cnt<< "=" << ptr[cnt];
 
             }
