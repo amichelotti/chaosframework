@@ -21,10 +21,8 @@
 #ifndef __BasicIODriverInterface__
 #define __BasicIODriverInterface__
 
-#include <iostream>
-#include <chaos/cu_toolkit/driver_manager/driver/BasicIODriver.h>
-#include <chaos/cu_toolkit/driver_manager/driver/DriverTypes.h>
-#include <chaos/cu_toolkit/driver_manager/driver/DriverAccessor.h>
+#include "ReadWriteInterface.h"
+#include "DriverAccessor.h"
 namespace chaos {
     
     namespace cu {
@@ -32,14 +30,14 @@ namespace chaos {
         namespace driver_manager {
             namespace driver {
             
-            class BasicIODriverInterface:public BasicIODriver{
+            class BasicIODriverInterface:public ReadWriteInterface{
                 
             protected:
                 chaos::cu::driver_manager::driver::DrvMsg message;
-                BasicIODriver* impl;
+                ReadWriteInterface* impl;
             public:
                 
-                BasicIODriverInterface(chaos::cu::driver_manager::driver::DriverAccessor*_accessor):accessor(_accessor){assert (_accessor);impl=(BasicIODriver*)_accessor->getImpl();};
+                BasicIODriverInterface(chaos::cu::driver_manager::driver::DriverAccessor*_accessor):accessor(_accessor){assert (_accessor);impl=(ReadWriteInterface*)_accessor->getImpl();};
                 
                 chaos::cu::driver_manager::driver::DriverAccessor* accessor;
                 
@@ -90,7 +88,7 @@ namespace chaos {
                  \param data[out] dataset array
                  \return the number of sets, negative if error
                  */
-                int getDataset(ddDataSet_t*data,int sizen);
+       //         int getDataset(ddDataSet_t*data,int sizen);
                 
                 
                
@@ -99,7 +97,7 @@ namespace chaos {
 		   \brief return the size in byte of the dataset
 		   \return the size of the dataset if success, zero otherwise
 		*/
-		int getDatasetSize();
+	//	int getDatasetSize();
 
 
                 

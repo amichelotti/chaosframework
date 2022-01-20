@@ -65,7 +65,9 @@ void BasicIODriver::driverDeinit()  {
 
 //! Execute a command
 MsgManagmentResultType::MsgManagmentResult BasicIODriver::execOpcode(DrvMsgPtr cmd) {
-	MsgManagmentResultType::MsgManagmentResult result = MsgManagmentResultType::MMR_EXECUTED;
+    MsgManagmentResultType::MsgManagmentResult result = MsgManagmentResultType::MMR_EXECUTED;
+
+    #if 0
 	switch(cmd->opcode) {
 		case BasicIODriverOpcode_READ:{
                     int ch=cmd->parm[0];
@@ -109,7 +111,7 @@ MsgManagmentResultType::MsgManagmentResult BasicIODriver::execOpcode(DrvMsgPtr c
                     cmd->ret=deinitIO();
                     break;
                 }
-                case BasicIODriverOpcode_GET_DATASET:{
+  /*              case BasicIODriverOpcode_GET_DATASET:{
                     ddDataSet_t*dataset=(ddDataSet_t*)cmd->resultData;
 
                     cmd->ret = getDataset(dataset,cmd->resultDataLength);
@@ -120,10 +122,12 @@ MsgManagmentResultType::MsgManagmentResult BasicIODriver::execOpcode(DrvMsgPtr c
 
                 }
                 break;
+                */
 	}
+    #endif
 	return result;
 }
-
+/*
 int BasicIODriver::getDatasetSize(){
   return datasetSize;
 }
@@ -137,6 +141,7 @@ void BasicIODriver::setDataSet(ddDataSet_t*data,int sizeb){
     dataset = data;
     datasetSize=sizeb;
 }
+*/
 int BasicIODriver::iop(int operation,void*data,int sizeb){
     BasicIODriverLDBG_<<" not implemented";
     return -1;

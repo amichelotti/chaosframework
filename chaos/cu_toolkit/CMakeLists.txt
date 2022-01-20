@@ -70,7 +70,7 @@ SET(cu_lib_src ${cu_lib_src}
         control_manager/RTAbstractControlUnit.cpp
         control_manager/AbstractExecutionUnit.cpp
         control_manager/WorkUnitManagement.cpp
-        control_manager/IOCU.cpp
+    #    control_manager/IOCU.cpp
         control_manager/DriverPropertyCU.cpp
         control_manager/handler/AbstractAttributeHandler.cpp
         control_manager/handler/DatasetAttributeHandler.cpp
