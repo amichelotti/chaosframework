@@ -21,17 +21,18 @@
  */
 #ifndef __ReadWriteInterface_H__
 #define __ReadWriteInterface_H__
-
+#include "AbstractDriver.h"
 namespace chaos {
     namespace cu  {
         namespace driver_manager {
             namespace driver {
 
 
-                class ReadWriteInterface  {
+                class ReadWriteInterface: public chaos::cu::driver_manager::driver::AbstractDriver  {
                 
                 public:
-                   
+                    virtual void driverInit(const char *initParameter){}
+                    virtual void driverDeinit(){}
                     /**
                      \brief Read  from the physical device
                      \param buffer[out] destination buffer

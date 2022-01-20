@@ -37,7 +37,7 @@ namespace chaos {
                 ReadWriteInterface* impl;
             public:
                 
-                BasicIODriverInterface(chaos::cu::driver_manager::driver::DriverAccessor*_accessor):accessor(_accessor){assert (_accessor);impl=(ReadWriteInterface*)_accessor->getImpl();};
+                BasicIODriverInterface(chaos::cu::driver_manager::driver::DriverAccessor*_accessor):accessor(_accessor){assert (_accessor);impl=(ReadWriteInterface*)_accessor->getImpl();LDBG_<<"Driver impl @"<<std::hex<<impl;};
                 
                 chaos::cu::driver_manager::driver::DriverAccessor* accessor;
                 

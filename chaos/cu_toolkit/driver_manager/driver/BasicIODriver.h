@@ -32,7 +32,7 @@ namespace chaos {
                  driver definition
                  */
 
-                class BasicIODriver : ADD_CU_DRIVER_PLUGIN_SUPERCLASS,public ReadWriteInterface {
+                class BasicIODriver : public chaos::cu::driver_manager::driver::AbstractDriverPlugin,public ReadWriteInterface {
                     void driverInit(const char *initParameter);
                     void driverDeinit();
                 protected:
