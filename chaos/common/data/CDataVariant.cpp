@@ -159,7 +159,7 @@ type(DataType::TYPE_INT64),
 _internal_variant(int64_value) { }
 
 CDataVariant::CDataVariant(uint64_t int64_value):
-type(DataType::TYPE_INT64),
+type(DataType::TYPE_UINT64),
 _internal_variant(int64_value) { }
 
 CDataVariant::CDataVariant(double double_value):
@@ -222,6 +222,10 @@ type(_type){
         }
         case DataType::TYPE_INT64:{
             _internal_variant = *static_cast<const int64_t*>(_value_pointer);
+            break;
+        }
+        case DataType::TYPE_UINT64:{
+            _internal_variant = *static_cast<const uint64_t*>(_value_pointer);
             break;
         }
         case DataType::TYPE_DOUBLE:{

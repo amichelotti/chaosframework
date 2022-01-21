@@ -229,7 +229,7 @@ void CDataWrapper::appendInt64ToArray(int64_t value) {
 }
 
 //append a strin gto an open array
-void CDataWrapper::appendInt64ToArray(uint64_t value) {
+void CDataWrapper::appendUInt64ToArray(uint64_t value) {
     ENSURE_ARRAY(bson_tmp_array);
     bson_append_timestamp(ACCESS_BSON(bson_tmp_array),
                       ChaosToString(array_index++).c_str(),
@@ -537,9 +537,6 @@ void CDataWrapper::append(const std::string& key,int32_t val){
 
 void CDataWrapper::append(const std::string& key,int64_t val){
     addInt64Value(key, val);
-}
-void CDataWrapper::append(const std::string& key,uint64_t val){
-    addUInt64Value(key, val);
 }
 
 void CDataWrapper::append(const std::string& key,double val){
@@ -1337,13 +1334,13 @@ int CDataWrapper::setAsString(const std::string& key,const std::string& sval){
             setBson(&it,tmp);
         }
         break;
-        case BSON_TYPE_TIMESTAMP:{
+       /* case BSON_TYPE_TIMESTAMP:{
             CDataVariant val(sval);
 
             uint64_t tmp=val.asUInt64();
             setBson(&it,tmp);
         }
-        break;
+        break;*/
          case BSON_TYPE_DOUBLE:{
             CDataVariant val(sval);
 
@@ -1387,15 +1384,6 @@ int CDataWrapper::setAsString(const std::string& key,const std::string& sval){
 int CDataWrapper::setBson( const bson_iter_t *v ,const int64_t& val){
     if(ITER_TYPE(v)==BSON_TYPE_INT64){
         memcpy((void*)(v->raw + v->d1), (void*)&val,sizeof(int64_t));
-        return sizeof(int64_t);
-    }
-    return -1;
-}
-
-int CDataWrapper::setBson( const bson_iter_t *v ,const uint64_t& val){
-    if(ITER_TYPE(v)==BSON_TYPE_TIMESTAMP){
-        
-        memcpy((void*)(v->raw + v->d1), (void*)&val,sizeof(uint64_t));
         return sizeof(int64_t);
     }
     return -1;

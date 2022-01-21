@@ -250,6 +250,8 @@ void CUSchemaDB::addAttributeToDataSet(const std::string& node_uid,
             typeMaxDimension = sizeof(int32_t);
             break;
         case DataType::TYPE_INT64:
+        case DataType::TYPE_UINT64:
+
             typeMaxDimension = sizeof(int64_t);
             break;
         case DataType::TYPE_CLUSTER:

@@ -90,7 +90,7 @@ namespace chaos {
                 int array_index;
                 ChaosBsonShrdPtr bson_tmp_array;
                 explicit CDataWrapper(const std::string& json_document);
-                int setBson(const bson_iter_t * ,const uint64_t& val);
+               // int setBson(const bson_iter_t * ,const uint64_t& val);
                 int setBson(const bson_iter_t * ,const int64_t& val);
                 int setBson(const bson_iter_t *v ,const int32_t& val);
                 int setBson(const bson_iter_t * ,const double& val);
@@ -145,7 +145,7 @@ namespace chaos {
                 void appendStringToArray(const string &value);
                 void appendInt32ToArray(int32_t value);
                 void appendInt64ToArray(int64_t value);
-                void appendInt64ToArray(uint64_t value);
+                void appendUInt64ToArray(uint64_t value);
 
                 void appendDoubleToArray(double value);
                 void appendBooleanToArray(bool value);
@@ -163,7 +163,6 @@ namespace chaos {
                 void addInt32Value(const std::string&, int32_t);
                 void append(const std::string& key,int32_t val);
                 void append(const std::string& key,int64_t val);
-                void append(const std::string& key,uint64_t val);
 
                 void append(const std::string& key,double val);
                 void append(const std::string& key,bool val);

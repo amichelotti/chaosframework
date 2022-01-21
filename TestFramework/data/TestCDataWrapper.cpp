@@ -322,8 +322,8 @@ TEST(CDataWrapperTest, VectorDouble) {
 TEST(CDataWrapperTest, U64) {
 
     CDataWrapper data;
-    data.append("U64max",numeric_limits<uint64_t>::max());
-    data.append("U64min",numeric_limits<uint64_t>::min());
+    data.addUInt64Value("U64max",numeric_limits<uint64_t>::max());
+    data.addUInt64Value("U64min",numeric_limits<uint64_t>::min());
 
     uint64_t max=data.getUInt64Value("U64max");    
     uint64_t min=data.getUInt64Value("U64min");    
