@@ -145,6 +145,8 @@ namespace chaos {
                 void appendStringToArray(const string &value);
                 void appendInt32ToArray(int32_t value);
                 void appendInt64ToArray(int64_t value);
+                void appendInt64ToArray(uint64_t value);
+
                 void appendDoubleToArray(double value);
                 void appendBooleanToArray(bool value);
                 void appendCDataWrapperToArray(const CDataWrapper& value);
@@ -161,6 +163,8 @@ namespace chaos {
                 void addInt32Value(const std::string&, int32_t);
                 void append(const std::string& key,int32_t val);
                 void append(const std::string& key,int64_t val);
+                void append(const std::string& key,uint64_t val);
+
                 void append(const std::string& key,double val);
                 void append(const std::string& key,bool val);
                 void append(const std::string& key,const char* val);
@@ -168,12 +172,32 @@ namespace chaos {
 
                 void append(const std::string& key,const std::string& val);
                 void append(const std::string& key,const CDataWrapper& val);
-                void append(const std::string& key,const std::vector<int32_t>& val);
+              /*  
+              void append(const std::string& key,const std::vector<int32_t>& val);
+                void append(const std::string& key,const std::vector<uint32_t>& val);
+
+                void append(const std::string& key,const std::vector<int16_t>& val);
+                void append(const std::string& key,const std::vector<uint16_t>& val);
+                
+                void append(const std::string& key,const std::vector<int8_t>& val);
+                void append(const std::string& key,const std::vector<uint8_t>& val);
+                
                 void append(const std::string& key,const std::vector<int64_t>& val);
+                void append(const std::string& key,const std::vector<uint64_t>& val);
+
                 void append(const std::string& key,const std::vector<double>& val);
                 void append(const std::string& key,const std::vector<bool>& val);
+
+                */
+                template<typename T>
+                    void append(const std::string& key,const std::vector<T>& val){
+                            addArray(key,(T*)&val[0],val.size());
+
+                    }
                 void append(const std::string& key,const std::vector<std::string>& val);
                 void append(const std::string& key,const std::vector<CDataWrapper>& val);
+
+                
                 //add a integer value
                 void addInt32Value(const std::string&, uint32_t);
                 //add a integer value
@@ -193,10 +217,11 @@ namespace chaos {
                 int32_t getInt32Value(const std::string& key) const;
                 //get a integer value
                 int64_t getInt64Value(const std::string& key) const;
+                //get a unsigned integer64 value
+                uint64_t getUInt64Value(const std::string& key) const;
                 //get a integer value
                 uint32_t getUInt32Value(const std::string& key) const;
-                //get a integer value
-                uint64_t getUInt64Value(const std::string& key) const;
+                
                 //add a integer value
                 double getDoubleValue(const std::string& key) const;
                 //get a bool value
@@ -205,7 +230,21 @@ namespace chaos {
                 std::string getJsonValue(const std::string&) const;
                 // return key as a double value or nan if cannot convert
                 double getAsRealValue(const std::string& key) const;
+                template<typename T>
+                int getVectorValue(const std::string& key,std::vector<T>v){
+                    uint32_t bufLen;
+                    T* ptr=(T*)getBinaryValue(key,bufLen);
+                    if(ptr==NULL || bufLen==0){
+                        return 0;
+                    }
+                    for(int cnt=0;cnt<bufLen/sizeof(T);cnt++){
+                        v.push_back(ptr[cnt]);
+                    }
+                    return v.size();
+                    
 
+                    
+                }
 #define THROW_TYPE_EXC(type)\
 std::stringstream ss;\
 ss<<"cannot get or cast to '" << #type<<"'";\
@@ -299,12 +338,20 @@ throw chaos::CException(-2, ss.str(), __PRETTY_FUNCTION__);
                 void addArray(const std::string& key,bool* arr,int count);
                 void addArray(const std::string& key,char* arr,int count);
                 void addArray(const std::string& key,int32_t* arr,int count);
+                void addArray(const std::string& key,uint32_t* arr,int count);
+
                 void addArray(const std::string& key,double* arr,int count);
                 void addArray(const std::string& key,float* arr,int count);
 
                 void addArray(const std::string& key,int16_t* arr,int count);
-                void addArray(const std::string& key,int64_t* arr,int count);
+                void addArray(const std::string& key,uint16_t* arr,int count);
+
+                void addArray(const std::string& key,int8_t* arr,int count);
+                void addArray(const std::string& key,uint8_t* arr,int count);
                 
+                void addArray(const std::string& key,int64_t* arr,int count);
+                void addArray(const std::string& key,uint64_t* arr,int count);
+ 
                
 
                 template<typename T>
@@ -430,6 +477,8 @@ throw chaos::CException(-2, ss.str(), __PRETTY_FUNCTION__);
                 double getDoubleElementAtIndex(const int) const;
                 int32_t getInt32ElementAtIndex(const int) const;
                 int64_t getInt64ElementAtIndex(const int) const;
+                uint64_t getUInt64ElementAtIndex(const int) const;
+
                 bool getBoolElementAtIndex(const int) const;
                 /**
                  * @brief convert an array of cdwappers with k,v into a map 
@@ -458,6 +507,12 @@ throw chaos::CException(-2, ss.str(), __PRETTY_FUNCTION__);
                     }
                     if(values[pos]->value_type == BSON_TYPE_INT64){
                         return static_cast<T>(values[pos]->value.v_int64);
+                    }
+                    if(values[pos]->value_type == BSON_TYPE_TIMESTAMP){
+                        uint64_t ret=((uint64_t)values[pos]->value.v_timestamp.timestamp<<32) | values[pos]->value.v_timestamp.increment;
+
+                        
+                        return static_cast<T>(ret);
                     }
                     if(values[pos]->value_type == BSON_TYPE_BOOL){
                         return static_cast<T>(values[pos]->value.v_bool);
