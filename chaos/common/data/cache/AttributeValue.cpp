@@ -456,7 +456,10 @@ void AttributeValue::writeToCDataWrapper( CDataWrapper& data_wrapper) {
             data_wrapper.addInt32Value(name, *getValuePtr<int32_t>());
             break;
         }
-            
+        case chaos::DataType::TYPE_UINT64:{
+            data_wrapper.addUInt64Value(name, *getValuePtr<uint64_t>());
+            break;
+        }    
         case chaos::DataType::TYPE_INT64:{
             data_wrapper.addInt64Value(name, *getValuePtr<int64_t>());
             break;

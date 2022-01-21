@@ -203,7 +203,7 @@ namespace chaos {
                 //add a integer value
                 void addInt64Value(const std::string&, int64_t);
                 //add a integer value
-                void addInt64Value(const std::string&, uint64_t);
+                void addUInt64Value(const std::string&, uint64_t);
                 //add a double value
                 void addDoubleValue(const std::string&key, double dValue);
                 //add a bool value

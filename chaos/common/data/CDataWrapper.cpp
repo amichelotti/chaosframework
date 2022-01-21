@@ -314,7 +314,7 @@ void CDataWrapper::addInt64Value(const std::string& key, int64_t value) {
 }
 
 //add a integer value
-void CDataWrapper::addInt64Value(const std::string& key, uint64_t value) {
+void CDataWrapper::addUInt64Value(const std::string& key, uint64_t value) {
     bson_append_timestamp(ACCESS_BSON(bson),
                       key.c_str(),
                       (int)key.size(),
@@ -539,7 +539,7 @@ void CDataWrapper::append(const std::string& key,int64_t val){
     addInt64Value(key, val);
 }
 void CDataWrapper::append(const std::string& key,uint64_t val){
-    addInt64Value(key, val);
+    addUInt64Value(key, val);
 }
 
 void CDataWrapper::append(const std::string& key,double val){
@@ -684,7 +684,7 @@ void CDataWrapper::addVariantValue(const std::string& key,
             addInt64Value(key, variant_value.asInt64());
             break;
         case DataType::TYPE_UINT64:
-            addInt64Value(key, variant_value.asUInt64());
+            addUInt64Value(key, variant_value.asUInt64());
             break;
         case DataType::TYPE_DOUBLE:
             addDoubleValue(key, variant_value.asDouble());

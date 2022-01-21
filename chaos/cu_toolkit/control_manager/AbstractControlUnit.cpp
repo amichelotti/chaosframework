@@ -951,6 +951,9 @@ void         AbstractControlUnit::doInitRpCheckList() {
               case DataType::TYPE_INT64:
                 cdw_unique_ptr->addInt64Value(attrName, (int64_t)strtoll(attrValue.c_str(), 0, 0));
                 break;
+              case DataType::TYPE_UINT64:
+                cdw_unique_ptr->addUInt64Value(attrName, (uint64_t)strtoll(attrValue.c_str(), 0, 0));
+                break;
               case DataType::TYPE_DOUBLE:
                 cdw_unique_ptr->addDoubleValue(attrName, CDataVariant(attrValue).asDouble());
                 break;
@@ -3025,6 +3028,9 @@ int AbstractControlUnit::pushOutputDataset() {
         break;
       case DataType::TYPE_INT64:
         output_attribute_dataset->addInt64Value(value_set->name, *value_set->getValuePtr<int64_t>());
+        break;
+      case DataType::TYPE_UINT64:
+        output_attribute_dataset->addUInt64Value(value_set->name, *value_set->getValuePtr<uint64_t>());
         break;
       case DataType::TYPE_DOUBLE:
         output_attribute_dataset->addDoubleValue(value_set->name, *value_set->getValuePtr<double>());
