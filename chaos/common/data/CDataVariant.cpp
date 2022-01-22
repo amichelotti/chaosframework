@@ -43,7 +43,7 @@ bool bool_visitor::operator()(const uint32_t ui32v) const {return static_cast<bo
 bool bool_visitor::operator()(const int64_t i64v) const {return static_cast<bool>(i64v);}
 bool bool_visitor::operator()(const uint64_t ui64v) const {return static_cast<bool>(ui64v);}
 bool bool_visitor::operator()(const double dv) const {return static_cast<bool>(dv);}
-bool bool_visitor::operator()(const std::string& str) const {/*SAFE_STREAM_CONV(bool, str, b);*/ return ((str=="true")||(str=="TRUE")||((str=="1")));}
+bool bool_visitor::operator()(const std::string& str) const {SAFE_STREAM_CONV(int, str, b); return ((str=="true")||(str=="TRUE")||((str=="1")) ||(b!=0));}
 bool bool_visitor::operator()(const ChaosSharedPtr<CDataBuffer>& buffer) const {return static_cast<int32_t>(buffer->getBufferSize());}
 bool bool_visitor::operator()(const ChaosSharedPtr<CDataWrapper>& buffer) const {return buffer.get();}
 
