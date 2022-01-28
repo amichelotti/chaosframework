@@ -3375,7 +3375,10 @@ bool AbstractControlUnit::setStateVariableSeverity(StateVariableType            
                                                    const MultiSeverityAlarmLevel state_variable_severity) {
   GET_CAT_OR_EXIT(variable_type, false)
   AlarmDescription* alarm = catalog.getAlarmByName(state_variable_name);
-  if (alarm == NULL) return false;
+  if (alarm == NULL) {
+    ACULERR_<<"Alarm \""<<state_variable_name<<"\" not found";
+    return false;
+  }
   alarm->setCurrentSeverity(state_variable_severity);
   //update global alarm output attribute
   /*
