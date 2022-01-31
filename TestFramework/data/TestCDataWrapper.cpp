@@ -19,6 +19,8 @@
  * permissions and limitations under the Licence.
  */
 #include <chaos/common/chaos_types.h>
+#include <chaos/common/global.h>
+
 #include <chaos/common/exception/CException.h>
 #include <chaos/common/data/CDataVariant.h>
 #include <chaos/common/data/CDataWrapper.h>
@@ -219,7 +221,7 @@ TEST(CDataWrapperTest, VectorInt8) {
     std::vector<int8_t> res;
 
     CDataWrapper data;
-    data.append("vint8",arr);
+    data.appendArray("vint8",arr);
     data.getVectorValue("vint8",res);    
     ASSERT_EQ(std::memcmp(&res[0], &arr[0], res.size()*sizeof(int8_t)), 0);
 }
@@ -229,7 +231,7 @@ TEST(CDataWrapperTest, VectorUInt8) {
     std::vector<uint8_t> res;
 
     CDataWrapper data;
-    data.append("vuint8",arr);
+    data.appendArray("vuint8",arr);
     data.getVectorValue("vuint8",res);  
     for_each(res.begin(),res.end(),[](uint8_t r){std::cout<<r<<" ";});
     ASSERT_EQ(std::memcmp(&res[0], &arr[0], res.size()*sizeof(uint8_t)), 0);
@@ -240,7 +242,7 @@ TEST(CDataWrapperTest, VectorInt16) {
     std::vector<int16_t> res;
 
     CDataWrapper data;
-    data.append("vint16",arr);
+    data.appendArray("vint16",arr);
     data.getVectorValue("vint16",res); 
     for_each(res.begin(),res.end(),[](int16_t r){std::cout<<r<<" ";});
     std::cout<<std::endl;   
@@ -252,7 +254,7 @@ TEST(CDataWrapperTest, VectorUInt16) {
     std::vector<uint16_t> res;
 
     CDataWrapper data;
-    data.append("vuint16",arr);
+    data.appendArray("vuint16",arr);
     data.getVectorValue("vuint16",res);
     for_each(res.begin(),res.end(),[](uint16_t r){std::cout<<r<<" ";});
     std::cout<<std::endl;
@@ -264,7 +266,7 @@ TEST(CDataWrapperTest, VectorInt32) {
     std::vector<int32_t> res;
 
     CDataWrapper data;
-    data.append("vint32",arr);
+    data.appendArray("vint32",arr);
     data.getVectorValue("vint32",res);    
     for_each(res.begin(),res.end(),[](int32_t r){std::cout<<r<<" ";});
     std::cout<<std::endl;
@@ -276,7 +278,7 @@ TEST(CDataWrapperTest, VectorUInt32) {
     std::vector<uint32_t> res;
 
     CDataWrapper data;
-    data.append("vuint32",arr);
+    data.appendArray("vuint32",arr);
     data.getVectorValue("vuint32",res); 
     for_each(res.begin(),res.end(),[](uint32_t r){std::cout<<r<<" ";});
     std::cout<<std::endl; 
@@ -288,7 +290,7 @@ TEST(CDataWrapperTest, VectorInt64) {
     std::vector<int64_t> res;
 
     CDataWrapper data;
-    data.append("vint64",arr);
+    data.appendArray("vint64",arr);
     data.getVectorValue("vint64",res); 
     for_each(res.begin(),res.end(),[](int64_t r){std::cout<<r<<" ";});
     std::cout<<std::endl;   
@@ -300,7 +302,7 @@ TEST(CDataWrapperTest, VectorUInt64) {
     std::vector<uint64_t> res;
 
     CDataWrapper data;
-    data.append("vuint64",arr);
+    data.appendArray("vuint64",arr);
     data.getVectorValue("vuint64",res);  
     for_each(res.begin(),res.end(),[](uint64_t r){std::cout<<r<<" ";});
     std::cout<<std::endl;  
@@ -312,7 +314,7 @@ TEST(CDataWrapperTest, VectorDouble) {
     std::vector<double> res;
 
     CDataWrapper data;
-    data.append("vdouble",arr);
+    data.appendArray("vdouble",arr);
     data.getVectorValue("vdouble",res);    
     for_each(res.begin(),res.end(),[](double r){std::cout<<r<<" ";});
     std::cout<<std::endl;
@@ -330,5 +332,25 @@ TEST(CDataWrapperTest, U64) {
 
     ASSERT_EQ(max, numeric_limits<uint64_t>::max());
     ASSERT_EQ(min, numeric_limits<uint64_t>::min());
+
+}
+
+TEST(CDataWrapperTest, appendValues) {
+
+    CDataWrapper data;
+    std::vector<int> iarr={1,2,3,4,5};
+    data.append("bsonVector",iarr);
+    LDBG_<<data.getJSONString();
+    std::vector<int> iarr2={6,7,8,9,10};
+    data.append("bsonVector",iarr2);
+    LDBG_<<data.getJSONString();
+    std::vector<int> iarr3={11,12,13,14,15};
+    data.append("bsonVector",iarr3);
+    LDBG_<<data.getJSONString();
+
+    std::vector<int> res,ok={1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
+    data.getVectorValue("bsonVector",res);
+
+    ASSERT_EQ(std::memcmp(&res[0], &ok[0], ok.size()*sizeof(int)), 0);
 
 }

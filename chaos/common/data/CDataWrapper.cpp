@@ -266,6 +266,37 @@ bson_append_array(ACCESS_BSON(bson),
 //finalize the array into a key for the current dataobject
 void CDataWrapper::finalizeArrayForKey(const std::string& key) {
     ENSURE_ARRAY(bson_tmp_array);
+
+    FIND_AND_CHECK(key, BSON_ITER_HOLDS_ARRAY){
+        // if already exists
+        CMultiTypeDataArrayWrapperSPtr v=getVectorValue(key);
+        removeKey(key);
+        array_index=0;
+        bson_t *tmp=bson_new();
+        for(int cnt=0;cnt<v->size();cnt++){
+            bson_value_t * bv=v->getBSONElementAtIndex(cnt);
+            if(bv){
+                std::string k=ChaosToString(array_index++);
+                bson_append_value(tmp,k.c_str(),-1,bv);
+            }
+             
+        }
+        bson_iter_t it;
+        bson_iter_init(&it, ACCESS_BSON(bson_tmp_array));
+        while(bson_iter_next(&it)) {
+            const bson_value_t * bv= bson_iter_value(&it);
+            std::string k=ChaosToString(array_index++);
+            bson_append_value(tmp,k.c_str(),-1,bv);
+        }          
+
+        bson_append_array(ACCESS_BSON(bson),
+                      key.c_str(),
+                      (int)key.size(),
+                      tmp);
+        bson_tmp_array.reset();
+        bson_free(tmp);
+        return;
+    } 
     bson_append_array(ACCESS_BSON(bson),
                       key.c_str(),
                       (int)key.size(),
@@ -291,7 +322,7 @@ void CDataWrapper::addInt32Value(const std::string& key, int32_t value) {
                       value);
 }
 //add a long value
-void CDataWrapper::addInt32Value(const std::string& key, uint32_t value) {
+void CDataWrapper::addUInt32Value(const std::string& key, uint32_t value) {
     bson_append_int32(ACCESS_BSON(bson),
                       key.c_str(),
                       (int)key.size(),
@@ -497,37 +528,37 @@ void CDataWrapper::addBinaryValue(const std::string& key,
                        (const uint8_t *)buff,
                        buf_len);
 }
-void CDataWrapper::addArray(const std::string& key,char* arr,int count){
+void CDataWrapper::appendArray(const std::string& key,char* arr,int count){
     addBinaryValue(key,chaos::DataType::SUB_TYPE_INT8,(const char*)arr,count);
 }
-void CDataWrapper::addArray(const std::string& key,int32_t* arr,int count){
+void CDataWrapper::appendArray(const std::string& key,int32_t* arr,int count){
     addBinaryValue(key,chaos::DataType::SUB_TYPE_INT32,(const char*)arr,count*sizeof(int32_t));
 }
-void CDataWrapper::addArray(const std::string& key,uint32_t* arr,int count){
+void CDataWrapper::appendArray(const std::string& key,uint32_t* arr,int count){
     addBinaryValue(key,chaos::DataType::SUB_TYPE_UINT32,(const char*)arr,count*sizeof(int32_t));
 }
-void CDataWrapper::addArray(const std::string& key,double* arr,int count){
+void CDataWrapper::appendArray(const std::string& key,double* arr,int count){
     addBinaryValue(key,chaos::DataType::SUB_TYPE_DOUBLE,(const char*)arr,count*sizeof(double));
 }
-void CDataWrapper::addArray(const std::string& key,float* arr,int count){
+void CDataWrapper::appendArray(const std::string& key,float* arr,int count){
     addBinaryValue(key,chaos::DataType::SUB_TYPE_FLOAT,(const char*)arr,count*sizeof(float));
 }
-void CDataWrapper::addArray(const std::string& key,int16_t* arr,int count){
+void CDataWrapper::appendArray(const std::string& key,int16_t* arr,int count){
      addBinaryValue(key,chaos::DataType::SUB_TYPE_INT16,(const char*)arr,count*sizeof(int16_t));
 }
-void CDataWrapper::addArray(const std::string& key,uint16_t* arr,int count){
+void CDataWrapper::appendArray(const std::string& key,uint16_t* arr,int count){
      addBinaryValue(key,chaos::DataType::SUB_TYPE_UINT16,(const char*)arr,count*sizeof(int16_t));
 }
-void CDataWrapper::addArray(const std::string& key,int8_t* arr,int count){
+void CDataWrapper::appendArray(const std::string& key,int8_t* arr,int count){
      addBinaryValue(key,chaos::DataType::SUB_TYPE_INT8,(const char*)arr,count*sizeof(int16_t));
 }
-void CDataWrapper::addArray(const std::string& key,uint8_t* arr,int count){
+void CDataWrapper::appendArray(const std::string& key,uint8_t* arr,int count){
      addBinaryValue(key,chaos::DataType::SUB_TYPE_UINT8,(const char*)arr,count*sizeof(int16_t));
 }
-void CDataWrapper::addArray(const std::string& key,int64_t* arr,int count){
+void CDataWrapper::appendArray(const std::string& key,int64_t* arr,int count){
     addBinaryValue(key,chaos::DataType::SUB_TYPE_INT64,(const char*)arr,count*sizeof(int64_t));
 }
-void CDataWrapper::addArray(const std::string& key,uint64_t* arr,int count){
+void CDataWrapper::appendArray(const std::string& key,uint64_t* arr,int count){
     addBinaryValue(key,chaos::DataType::SUB_TYPE_UINT64,(const char*)arr,count*sizeof(uint64_t));
 }
 
@@ -560,60 +591,60 @@ void CDataWrapper::append(const std::string& key,const CDataWrapper& val){
 void CDataWrapper::append(const std::string& key,const std::vector<int32_t>& val){
     //ADD_VECTOR(val,int32_t,Int32);
     //finalizeArrayForKey(key);
-    addArray(key,(int32_t*)&val[0],val.size());
+    appendArray(key,(int32_t*)&val[0],val.size());
 }
 
 void CDataWrapper::append(const std::string& key,const std::vector<uint32_t>& val){
     //ADD_VECTOR(val,int32_t,Int32);
     //finalizeArrayForKey(key);
-    addArray(key,(uint32_t*)&val[0],val.size());
+    appendArray(key,(uint32_t*)&val[0],val.size());
 }
 
 void CDataWrapper::append(const std::string& key,const std::vector<int64_t>& val){
     //ADD_VECTOR(val,int64_t,Int64);
     //finalizeArrayForKey(key);
-    addArray(key,(int64_t*)&val[0],val.size());
+    appendArray(key,(int64_t*)&val[0],val.size());
 
 }
 
 void CDataWrapper::append(const std::string& key,const std::vector<uint64_t>& val){
     //ADD_VECTOR(val,int64_t,Int64);
     //finalizeArrayForKey(key);
-    addArray(key,(uint64_t*)&val[0],val.size());
+    appendArray(key,(uint64_t*)&val[0],val.size());
 
 }
 
 void CDataWrapper::append(const std::string& key,const std::vector<int16_t>& val){
-    addArray(key,(int16_t*)&val[0],val.size());
+    appendArray(key,(int16_t*)&val[0],val.size());
 
 }
 
 void CDataWrapper::append(const std::string& key,const std::vector<uint16_t>& val){
-    addArray(key,(uint16_t*)&val[0],val.size());
+    appendArray(key,(uint16_t*)&val[0],val.size());
 
 }
 
 void CDataWrapper::append(const std::string& key,const std::vector<int8_t>& val){
-    addArray(key,(int8_t*)&val[0],val.size());
+    appendArray(key,(int8_t*)&val[0],val.size());
 
 }
 
 void CDataWrapper::append(const std::string& key,const std::vector<uint8_t>& val){
-    addArray(key,(uint8_t*)&val[0],val.size());
+    appendArray(key,(uint8_t*)&val[0],val.size());
 
 }
 
 void CDataWrapper::append(const std::string& key,const std::vector<double>& val){
     //ADD_VECTOR(val,double,Double);
     //finalizeArrayForKey(key);
-    addArray(key,(double*)&val[0],val.size());
+    appendArray(key,(double*)&val[0],val.size());
 
 }
 
 void CDataWrapper::append(const std::string& key,const std::vector<bool>& val){
     ADD_VECTOR(val,bool,Boolean);
     finalizeArrayForKey(key);
-    //addArray(key,(bool*)&val[0],val.size());
+    //appendArray(key,(bool*)&val[0],val.size());
 
 }
 */
@@ -627,7 +658,22 @@ void CDataWrapper::append(const std::string& key,const std::vector<CDataWrapper>
     finalizeArrayForKey(key);
 }
 
-void CDataWrapper::appendArray(const std::string&key,DataType::DataType typ,const char*buf,int len){
+void CDataWrapper::append(const std::string& key,const std::vector<int32_t>& val){
+    ADD_VECTOR(val,int32_t,Int32);
+    finalizeArrayForKey(key);
+
+}
+void CDataWrapper::append(const std::string& key,const std::vector<int64_t>& val){
+    ADD_VECTOR(val,int64_t,Int64);
+    finalizeArrayForKey(key);
+
+}
+void CDataWrapper::append(const std::string& key,const std::vector<double>& val){
+    ADD_VECTOR(val,double,Double);
+    finalizeArrayForKey(key);
+}
+
+void CDataWrapper::append(const std::string&key,DataType::DataType typ,const char*buf,int len){
     int i;
     if(len<=0 ||(typ!=DataType::TYPE_BOOLEAN) &&(typ!=DataType::TYPE_INT32)&&(typ!=DataType::TYPE_INT64)&&(typ!=DataType::TYPE_DOUBLE) ){
         throw CException(-51, "Invalid ARRAY TYPE/SIZE", __PRETTY_FUNCTION__);
@@ -1030,7 +1076,7 @@ bool CDataWrapper::removeKey(const std::string& key){
             found=true;
         }
     }
-    reset();
+    bson_reinit(ACCESS_BSON(bson));
     bson_iter_init(&it, ACCESS_BSON(destination.bson));
     while (bson_iter_next(&it)) {
             bson_append_value(ACCESS_BSON(bson),
@@ -1551,6 +1597,10 @@ string CMultiTypeDataArrayWrapper::getStringElementAtIndex(const int pos) const{
     return std::string(values[pos]->value.v_utf8.str, values[pos]->value.v_utf8.len);
 }
 
+bson_value_t * CMultiTypeDataArrayWrapper::getBSONElementAtIndex(const int pos) const{
+    if(pos<values.size()) return values[pos];
+    return NULL;
+}
 
 double CMultiTypeDataArrayWrapper::getDoubleElementAtIndex(const int pos) const{
     if(values[pos]->value_type != BSON_TYPE_DOUBLE){
