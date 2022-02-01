@@ -143,7 +143,7 @@ bool PSMClient::submitMessage(NFISharedPtr forwardInfo,
         forwardInfo->message->addInt64Value(RPC_TS_KEY, chaos::common::utility::TimingUtil::getTimeStamp());
 
         std::string key=forwardInfo->destinationAddr;
-        PSMC_LDBG<<seq_id<<"] Reqid:"<<forwardInfo->sender_request_id<<" "<<forwardInfo->sender_node_id<<" Sends message to:"<<forwardInfo->destinationAddr<<" size:"<<forwardInfo->message->getBSONRawSize();
+        PSMC_LDBG<<seq_id<<"] Reqid:"<<forwardInfo->sender_request_id<<" "<<forwardInfo->sender_node_id<<" Sends message to:"<<forwardInfo->destinationAddr<<" size:"<<forwardInfo->message->getBSONRawSize();//<<":"<<forwardInfo->message->getJSONString();
         prod->pushMsgAsync(*forwardInfo->message.get(),key);
 
     } catch(CException& ex){

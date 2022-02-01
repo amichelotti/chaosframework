@@ -35,10 +35,20 @@ TEST(VariantTest, Normal) {
     CDataVariant double_v(36.6);
     CDataVariant neg_double_v(-36.6);
     CDataVariant buffer_var(ChaosMoveOperator(buff_ptr));
+    CDataVariant bool_v("true");
+    CDataVariant bool_f("false");
+    CDataVariant bool_nf("0");
+    CDataVariant bool_nt("1");
+
     //str variant
     ASSERT_EQ(static_cast<double>(str_v), 36.6);
     ASSERT_EQ(static_cast<int32_t>(str_v), 36);
     ASSERT_TRUE(static_cast<bool>(str_v));
+    ASSERT_TRUE(static_cast<bool>(bool_v));
+    ASSERT_FALSE(static_cast<bool>(bool_f));
+    ASSERT_TRUE(static_cast<bool>(bool_nt));
+    ASSERT_FALSE(static_cast<bool>(bool_nf));
+
     tmp_str.assign(static_cast< CDBufferShrdPtr >(str_v)->getBuffer(), static_cast< CDBufferShrdPtr >(str_v)->getBufferSize());
     ASSERT_STREQ(tmp_str.c_str(), "36.6");
     ASSERT_EQ(static_cast< CDBufferShrdPtr >(buffer_var)->getBufferSize(), 256);

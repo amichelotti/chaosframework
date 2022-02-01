@@ -58,8 +58,14 @@ keyfound=bson_iter_find_case(&element_found, key.c_str());
 #define GET_VALUE(t,c) \
 if(keyfound&& (c(&element_found))){return bson_iter_##t (&element_found);}
 
+#define GET_64UVALUE() \
+if(keyfound&& (BSON_ITER_HOLDS_TIMESTAMP(&element_found))){uint64_t dst;uint32_t*u=(uint32_t*)&dst;bson_iter_timestamp(&element_found,&u[1],&u[0]);return dst ;}
+
 #define GET_VALUE_AS_STRING(t,c) \
 if(keyfound&& (c(&element_found))){std::stringstream ss;ss<<bson_iter_##t (&element_found);return ss.str();}
+
+#define GET_TIMESTAMP_AS_STRING() \
+if(keyfound&& (BSON_ITER_HOLDS_TIMESTAMP(&element_found))){uint64_t dst;uint32_t*u=(uint32_t*)&dst;bson_iter_timestamp(&element_found,&u[1],&u[0]);std::stringstream ss;ss<<dst;return ss.str();}
 
 static void bsonDeallocator(bson_t* bson) {if(bson){bson_destroy(bson);}}
 
@@ -223,6 +229,16 @@ void CDataWrapper::appendInt64ToArray(int64_t value) {
 }
 
 //append a strin gto an open array
+void CDataWrapper::appendUInt64ToArray(uint64_t value) {
+    ENSURE_ARRAY(bson_tmp_array);
+    bson_append_timestamp(ACCESS_BSON(bson_tmp_array),
+                      ChaosToString(array_index++).c_str(),
+                      -1,
+                      value>>32,
+                      value&0xFFFFFFFF);
+}
+
+//append a strin gto an open array
 void CDataWrapper::appendDoubleToArray(double value) {
     ENSURE_ARRAY(bson_tmp_array);
     bson_append_double(ACCESS_BSON(bson_tmp_array),
@@ -250,6 +266,37 @@ bson_append_array(ACCESS_BSON(bson),
 //finalize the array into a key for the current dataobject
 void CDataWrapper::finalizeArrayForKey(const std::string& key) {
     ENSURE_ARRAY(bson_tmp_array);
+
+    FIND_AND_CHECK(key, BSON_ITER_HOLDS_ARRAY){
+        // if already exists
+        CMultiTypeDataArrayWrapperSPtr v=getVectorValue(key);
+        removeKey(key);
+        array_index=0;
+        bson_t *tmp=bson_new();
+        for(int cnt=0;cnt<v->size();cnt++){
+            bson_value_t * bv=v->getBSONElementAtIndex(cnt);
+            if(bv){
+                std::string k=ChaosToString(array_index++);
+                bson_append_value(tmp,k.c_str(),-1,bv);
+            }
+             
+        }
+        bson_iter_t it;
+        bson_iter_init(&it, ACCESS_BSON(bson_tmp_array));
+        while(bson_iter_next(&it)) {
+            const bson_value_t * bv= bson_iter_value(&it);
+            std::string k=ChaosToString(array_index++);
+            bson_append_value(tmp,k.c_str(),-1,bv);
+        }          
+
+        bson_append_array(ACCESS_BSON(bson),
+                      key.c_str(),
+                      (int)key.size(),
+                      tmp);
+        bson_tmp_array.reset();
+        bson_free(tmp);
+        return;
+    } 
     bson_append_array(ACCESS_BSON(bson),
                       key.c_str(),
                       (int)key.size(),
@@ -275,7 +322,7 @@ void CDataWrapper::addInt32Value(const std::string& key, int32_t value) {
                       value);
 }
 //add a long value
-void CDataWrapper::addInt32Value(const std::string& key, uint32_t value) {
+void CDataWrapper::addUInt32Value(const std::string& key, uint32_t value) {
     bson_append_int32(ACCESS_BSON(bson),
                       key.c_str(),
                       (int)key.size(),
@@ -298,11 +345,12 @@ void CDataWrapper::addInt64Value(const std::string& key, int64_t value) {
 }
 
 //add a integer value
-void CDataWrapper::addInt64Value(const std::string& key, uint64_t value) {
-    bson_append_int64(ACCESS_BSON(bson),
+void CDataWrapper::addUInt64Value(const std::string& key, uint64_t value) {
+    bson_append_timestamp(ACCESS_BSON(bson),
                       key.c_str(),
                       (int)key.size(),
-                      static_cast<int64_t>(value));
+                      value>>32,
+                      value&0xFFFFFFFF);
 }
 
 //get a csdata value
@@ -354,6 +402,8 @@ string  CDataWrapper::getStringValue(const std::string& key) const{
     GET_VALUE_AS_STRING(int32,BSON_ITER_HOLDS_INT32);
     GET_VALUE_AS_STRING(double,BSON_ITER_HOLDS_DOUBLE);
     GET_VALUE_AS_STRING(int64,BSON_ITER_HOLDS_INT64);
+    GET_TIMESTAMP_AS_STRING();
+
     GET_VALUE_AS_STRING(bool,BSON_ITER_HOLDS_BOOL);
     GET_VALUE_AS_STRING(date_time,BSON_ITER_HOLDS_DATE_TIME);
 
@@ -391,6 +441,8 @@ uint32_t CDataWrapper::getUInt32Value(const std::string& key) const{
 int64_t CDataWrapper::getInt64Value(const std::string& key) const{
     INIT_ITERATOR(key);
     GET_VALUE(int64,BSON_ITER_HOLDS_INT64);
+    
+    GET_64UVALUE();
     GET_VALUE(date_time,BSON_ITER_HOLDS_DATE_TIME);
     GET_VALUE(int32,BSON_ITER_HOLDS_INT32);
     GET_VALUE(double,BSON_ITER_HOLDS_DOUBLE);
@@ -403,6 +455,7 @@ int64_t CDataWrapper::getInt64Value(const std::string& key) const{
 //add a integer value
 uint64_t CDataWrapper::getUInt64Value(const std::string& key) const{
     INIT_ITERATOR(key);
+    GET_64UVALUE();
     GET_VALUE(int64,BSON_ITER_HOLDS_INT64);
     GET_VALUE(date_time,BSON_ITER_HOLDS_DATE_TIME);
     GET_VALUE(int32,BSON_ITER_HOLDS_INT32);
@@ -418,6 +471,7 @@ double CDataWrapper::getDoubleValue(const std::string& key) const{
     INIT_ITERATOR(key);
     GET_VALUE(double,BSON_ITER_HOLDS_DOUBLE);
     GET_VALUE(int64,BSON_ITER_HOLDS_INT64);
+    GET_64UVALUE();
     GET_VALUE(int32,BSON_ITER_HOLDS_INT32);
     GET_VALUE(bool,BSON_ITER_HOLDS_BOOL);
     if(isStringValue(key)){
@@ -474,23 +528,38 @@ void CDataWrapper::addBinaryValue(const std::string& key,
                        (const uint8_t *)buff,
                        buf_len);
 }
-void CDataWrapper::addArray(const std::string& key,char* arr,int count){
+void CDataWrapper::appendArray(const std::string& key,char* arr,int count){
     addBinaryValue(key,chaos::DataType::SUB_TYPE_INT8,(const char*)arr,count);
 }
-void CDataWrapper::addArray(const std::string& key,int32_t* arr,int count){
+void CDataWrapper::appendArray(const std::string& key,int32_t* arr,int count){
     addBinaryValue(key,chaos::DataType::SUB_TYPE_INT32,(const char*)arr,count*sizeof(int32_t));
 }
-void CDataWrapper::addArray(const std::string& key,double* arr,int count){
+void CDataWrapper::appendArray(const std::string& key,uint32_t* arr,int count){
+    addBinaryValue(key,chaos::DataType::SUB_TYPE_UINT32,(const char*)arr,count*sizeof(int32_t));
+}
+void CDataWrapper::appendArray(const std::string& key,double* arr,int count){
     addBinaryValue(key,chaos::DataType::SUB_TYPE_DOUBLE,(const char*)arr,count*sizeof(double));
 }
-void CDataWrapper::addArray(const std::string& key,float* arr,int count){
+void CDataWrapper::appendArray(const std::string& key,float* arr,int count){
     addBinaryValue(key,chaos::DataType::SUB_TYPE_FLOAT,(const char*)arr,count*sizeof(float));
 }
-void CDataWrapper::addArray(const std::string& key,int16_t* arr,int count){
+void CDataWrapper::appendArray(const std::string& key,int16_t* arr,int count){
      addBinaryValue(key,chaos::DataType::SUB_TYPE_INT16,(const char*)arr,count*sizeof(int16_t));
 }
-void CDataWrapper::addArray(const std::string& key,int64_t* arr,int count){
+void CDataWrapper::appendArray(const std::string& key,uint16_t* arr,int count){
+     addBinaryValue(key,chaos::DataType::SUB_TYPE_UINT16,(const char*)arr,count*sizeof(int16_t));
+}
+void CDataWrapper::appendArray(const std::string& key,int8_t* arr,int count){
+     addBinaryValue(key,chaos::DataType::SUB_TYPE_INT8,(const char*)arr,count*sizeof(int16_t));
+}
+void CDataWrapper::appendArray(const std::string& key,uint8_t* arr,int count){
+     addBinaryValue(key,chaos::DataType::SUB_TYPE_UINT8,(const char*)arr,count*sizeof(int16_t));
+}
+void CDataWrapper::appendArray(const std::string& key,int64_t* arr,int count){
     addBinaryValue(key,chaos::DataType::SUB_TYPE_INT64,(const char*)arr,count*sizeof(int64_t));
+}
+void CDataWrapper::appendArray(const std::string& key,uint64_t* arr,int count){
+    addBinaryValue(key,chaos::DataType::SUB_TYPE_UINT64,(const char*)arr,count*sizeof(uint64_t));
 }
 
 void CDataWrapper::append(const std::string& key,int32_t val){
@@ -518,38 +587,93 @@ void CDataWrapper::append(const std::string& key,const char* val){
 void CDataWrapper::append(const std::string& key,const CDataWrapper& val){
     addCSDataValue(key,val);
 }
-
+/*
 void CDataWrapper::append(const std::string& key,const std::vector<int32_t>& val){
-    ADD_VECTOR(val,int32_t,Int32);
-    finalizeArrayForKey(key);
+    //ADD_VECTOR(val,int32_t,Int32);
+    //finalizeArrayForKey(key);
+    appendArray(key,(int32_t*)&val[0],val.size());
+}
+
+void CDataWrapper::append(const std::string& key,const std::vector<uint32_t>& val){
+    //ADD_VECTOR(val,int32_t,Int32);
+    //finalizeArrayForKey(key);
+    appendArray(key,(uint32_t*)&val[0],val.size());
 }
 
 void CDataWrapper::append(const std::string& key,const std::vector<int64_t>& val){
-    ADD_VECTOR(val,int64_t,Int64);
-    finalizeArrayForKey(key);
+    //ADD_VECTOR(val,int64_t,Int64);
+    //finalizeArrayForKey(key);
+    appendArray(key,(int64_t*)&val[0],val.size());
+
+}
+
+void CDataWrapper::append(const std::string& key,const std::vector<uint64_t>& val){
+    //ADD_VECTOR(val,int64_t,Int64);
+    //finalizeArrayForKey(key);
+    appendArray(key,(uint64_t*)&val[0],val.size());
+
+}
+
+void CDataWrapper::append(const std::string& key,const std::vector<int16_t>& val){
+    appendArray(key,(int16_t*)&val[0],val.size());
+
+}
+
+void CDataWrapper::append(const std::string& key,const std::vector<uint16_t>& val){
+    appendArray(key,(uint16_t*)&val[0],val.size());
+
+}
+
+void CDataWrapper::append(const std::string& key,const std::vector<int8_t>& val){
+    appendArray(key,(int8_t*)&val[0],val.size());
+
+}
+
+void CDataWrapper::append(const std::string& key,const std::vector<uint8_t>& val){
+    appendArray(key,(uint8_t*)&val[0],val.size());
+
 }
 
 void CDataWrapper::append(const std::string& key,const std::vector<double>& val){
-    ADD_VECTOR(val,double,Double);
-    finalizeArrayForKey(key);
+    //ADD_VECTOR(val,double,Double);
+    //finalizeArrayForKey(key);
+    appendArray(key,(double*)&val[0],val.size());
+
 }
 
 void CDataWrapper::append(const std::string& key,const std::vector<bool>& val){
     ADD_VECTOR(val,bool,Boolean);
     finalizeArrayForKey(key);
-}
+    //appendArray(key,(bool*)&val[0],val.size());
 
+}
+*/
 void CDataWrapper::append(const std::string& key,const std::vector<std::string>& val){
     ADD_VECTOR(val,std::string,String);
     finalizeArrayForKey(key);
-    
-}
 
+}
 void CDataWrapper::append(const std::string& key,const std::vector<CDataWrapper>& val){
     ADD_VECTOR(val,CDataWrapper,CDataWrapper);
     finalizeArrayForKey(key);
 }
-void CDataWrapper::appendArray(const std::string&key,DataType::DataType typ,const char*buf,int len){
+
+void CDataWrapper::append(const std::string& key,const std::vector<int32_t>& val){
+    ADD_VECTOR(val,int32_t,Int32);
+    finalizeArrayForKey(key);
+
+}
+void CDataWrapper::append(const std::string& key,const std::vector<int64_t>& val){
+    ADD_VECTOR(val,int64_t,Int64);
+    finalizeArrayForKey(key);
+
+}
+void CDataWrapper::append(const std::string& key,const std::vector<double>& val){
+    ADD_VECTOR(val,double,Double);
+    finalizeArrayForKey(key);
+}
+
+void CDataWrapper::append(const std::string&key,DataType::DataType typ,const char*buf,int len){
     int i;
     if(len<=0 ||(typ!=DataType::TYPE_BOOLEAN) &&(typ!=DataType::TYPE_INT32)&&(typ!=DataType::TYPE_INT64)&&(typ!=DataType::TYPE_DOUBLE) ){
         throw CException(-51, "Invalid ARRAY TYPE/SIZE", __PRETTY_FUNCTION__);
@@ -569,6 +693,11 @@ void CDataWrapper::appendArray(const std::string&key,DataType::DataType typ,cons
         case DataType::TYPE_INT64:
             for( i=0;i<len/sizeof(int64_t);i++){
                 appendInt64ToArray(((int64_t*)buf)[i]);
+            }
+            break;
+        case DataType::TYPE_UINT64:
+            for( i=0;i<len/sizeof(uint64_t);i++){
+                appendInt64ToArray(((uint64_t*)buf)[i]);
             }
             break;
         case DataType::TYPE_DOUBLE:
@@ -596,6 +725,9 @@ void CDataWrapper::addVariantValue(const std::string& key,
             break;
         case DataType::TYPE_INT64:
             addInt64Value(key, variant_value.asInt64());
+            break;
+        case DataType::TYPE_UINT64:
+            addUInt64Value(key, variant_value.asUInt64());
             break;
         case DataType::TYPE_DOUBLE:
             addDoubleValue(key, variant_value.asDouble());
@@ -691,6 +823,7 @@ uint32_t CDataWrapper::getValueSize(const std::string& key) const{
     const bson_value_t *v = bson_iter_value(&it);
     switch(v->value_type) {
         case BSON_TYPE_INT64:
+        case BSON_TYPE_TIMESTAMP:
             return sizeof(int64_t);
         case BSON_TYPE_INT32:
             return sizeof(int32_t);
@@ -725,7 +858,13 @@ const char * CDataWrapper::getRawValuePtr(const std::string& key) const{
     if(bson_iter_find_case(&it, key.c_str()) == false) return 0;
     const bson_value_t *v = bson_iter_value(&it);
     switch(v->value_type) {
+          case BSON_TYPE_TIMESTAMP:{
+          
+        
+            return reinterpret_cast<const char*>(&v->value.v_timestamp);
+          }
         case BSON_TYPE_INT64:
+        
             return reinterpret_cast<const char*>(&v->value.v_int64);
         case BSON_TYPE_INT32:
             return reinterpret_cast<const char*>(&v->value.v_int32);
@@ -937,7 +1076,7 @@ bool CDataWrapper::removeKey(const std::string& key){
             found=true;
         }
     }
-    reset();
+    bson_reinit(ACCESS_BSON(bson));
     bson_iter_init(&it, ACCESS_BSON(destination.bson));
     while (bson_iter_next(&it)) {
             bson_append_value(ACCESS_BSON(bson),
@@ -1012,6 +1151,8 @@ CDataVariant CDataWrapper::getVariantValue(const std::string& key) const{
             return CDataVariant(getInt32Value(key));
         case  chaos::DataType::TYPE_INT64:
             return CDataVariant(getInt64Value(key));
+        case  chaos::DataType::TYPE_UINT64:
+            return CDataVariant(getUInt64Value(key));
         case  chaos::DataType::TYPE_DOUBLE:{
             double val=getDoubleValue(key);
             return CDataVariant(val);
@@ -1061,11 +1202,17 @@ bool CDataWrapper::isInt32Value(const std::string& key) const{
 }
 
 bool CDataWrapper::isInt64Value(const std::string& key) const{
-    FIND_AND_CHECK(key, BSON_ITER_HOLDS_INT64){
-        return true;
+    bson_iter_t element_found;
+    bson_iter_init(&element_found, ACCESS_BSON(bson));
+    if(bson_iter_find_case(&element_found, key.c_str())){
+        if(BSON_ITER_HOLDS_INT64(&element_found)||BSON_ITER_HOLDS_TIMESTAMP(&element_found)){
+            return true;
+        }
     }
     return false;
 }
+
+
 
 bool CDataWrapper::isDoubleValue(const std::string& key) const{
     FIND_AND_CHECK(key, BSON_ITER_HOLDS_DOUBLE){
@@ -1165,16 +1312,24 @@ chaos::DataType::DataType CDataWrapper::getValueType(const std::string& key) con
             switch(getBinarySubtype(key)){
                 case chaos::DataType::SUB_TYPE_INT8:
                 return chaos::DataType::TYPE_VECTOR_INT8;
+                case chaos::DataType::SUB_TYPE_UINT8:
+                return chaos::DataType::TYPE_VECTOR_UINT8;
                 case chaos::DataType::SUB_TYPE_INT32:
                 return chaos::DataType::TYPE_VECTOR_INT32;
+                case chaos::DataType::SUB_TYPE_UINT32:
+                return chaos::DataType::TYPE_VECTOR_UINT32;
                 case chaos::DataType::SUB_TYPE_FLOAT:
                 return chaos::DataType::TYPE_VECTOR_FLOAT;
                 case chaos::DataType::SUB_TYPE_DOUBLE:
                 return chaos::DataType::TYPE_VECTOR_DOUBLE;
                 case chaos::DataType::SUB_TYPE_INT16:
                 return chaos::DataType::TYPE_VECTOR_INT16;
+                case chaos::DataType::SUB_TYPE_UINT16:
+                return chaos::DataType::TYPE_VECTOR_UINT16;
                 case chaos::DataType::SUB_TYPE_INT64:
                 return chaos::DataType::TYPE_VECTOR_INT64;
+                case chaos::DataType::SUB_TYPE_UINT64:
+                return chaos::DataType::TYPE_VECTOR_UINT64;
                 case chaos::DataType::SUB_TYPE_BOOLEAN:
                 return chaos::DataType::TYPE_VECTOR_BOOL;     
 
@@ -1191,6 +1346,9 @@ chaos::DataType::DataType CDataWrapper::getValueType(const std::string& key) con
             break;
         case BSON_TYPE_INT64:
             result = chaos::DataType::TYPE_INT64;
+            break;
+        case BSON_TYPE_TIMESTAMP:
+            result = chaos::DataType::TYPE_UINT64;
             break;
         case BSON_TYPE_BOOL:
             result = chaos::DataType::TYPE_BOOLEAN;
@@ -1222,6 +1380,13 @@ int CDataWrapper::setAsString(const std::string& key,const std::string& sval){
             setBson(&it,tmp);
         }
         break;
+       /* case BSON_TYPE_TIMESTAMP:{
+            CDataVariant val(sval);
+
+            uint64_t tmp=val.asUInt64();
+            setBson(&it,tmp);
+        }
+        break;*/
          case BSON_TYPE_DOUBLE:{
             CDataVariant val(sval);
 
@@ -1261,13 +1426,6 @@ int CDataWrapper::setAsString(const std::string& key,const std::string& sval){
     return 0;
 }
 
-int CDataWrapper::setBson( const bson_iter_t *v ,const uint64_t& val){
-    if(ITER_TYPE(v)==BSON_TYPE_INT64){
-        memcpy((void*)(v->raw + v->d1), (void*)&val,sizeof(uint64_t));
-        return sizeof(uint64_t);
-    }
-    return -1;
-}
 
 int CDataWrapper::setBson( const bson_iter_t *v ,const int64_t& val){
     if(ITER_TYPE(v)==BSON_TYPE_INT64){
@@ -1439,6 +1597,10 @@ string CMultiTypeDataArrayWrapper::getStringElementAtIndex(const int pos) const{
     return std::string(values[pos]->value.v_utf8.str, values[pos]->value.v_utf8.len);
 }
 
+bson_value_t * CMultiTypeDataArrayWrapper::getBSONElementAtIndex(const int pos) const{
+    if(pos<values.size()) return values[pos];
+    return NULL;
+}
 
 double CMultiTypeDataArrayWrapper::getDoubleElementAtIndex(const int pos) const{
     if(values[pos]->value_type != BSON_TYPE_DOUBLE){
@@ -1477,6 +1639,18 @@ int64_t CMultiTypeDataArrayWrapper::getInt64ElementAtIndex(const int pos) const{
     return values[pos]->value.v_int64;
 }
 
+uint64_t CMultiTypeDataArrayWrapper::getUInt64ElementAtIndex(const int pos) const{
+    //CHAOS_ASSERT(values[pos]->value_type == BSON_TYPE_INT64);
+    if(values[pos]->value_type != BSON_TYPE_TIMESTAMP){
+        std::stringstream ss;
+        ss<<"type at index ["<<pos<<"] is not uint64, typeid:"<<values[pos]->value_type;
+        throw CException(1, ss.str(), __PRETTY_FUNCTION__);
+    }
+     uint64_t ret=((uint64_t)values[pos]->value.v_timestamp.timestamp<<32) | values[pos]->value.v_timestamp.increment;
+
+    return ret;
+}
+
 bool CMultiTypeDataArrayWrapper::isStringElementAtIndex(const int pos) const{
     return values[pos]->value_type == BSON_TYPE_UTF8;
 }
@@ -1492,7 +1666,7 @@ bool CMultiTypeDataArrayWrapper::isBoolElementAtIndex(const int pos) const{
     return values[pos]->value_type == BSON_TYPE_BOOL;
 }
 bool CMultiTypeDataArrayWrapper::isInt64ElementAtIndex(const int pos) const{
-    return values[pos]->value_type == BSON_TYPE_INT64;
+    return ((values[pos]->value_type == BSON_TYPE_INT64)||(values[pos]->value_type == BSON_TYPE_TIMESTAMP));
 }
 
 bool CMultiTypeDataArrayWrapper::isCDataWrapperElementAtIndex(const int pos) const{
@@ -1504,6 +1678,9 @@ const char * CMultiTypeDataArrayWrapper::getRawValueAtIndex(const int pos,uint32
         case BSON_TYPE_INT64:
             size=sizeof(int64_t);
             return reinterpret_cast<const char*>(&values[pos]->value.v_int64);
+        case BSON_TYPE_TIMESTAMP:
+            size=sizeof(uint64_t);
+            return reinterpret_cast<const char*>(&values[pos]->value.v_timestamp);
         case BSON_TYPE_INT32:
             size=sizeof(int32_t);
             return reinterpret_cast<const char*>(&values[pos]->value.v_int32);

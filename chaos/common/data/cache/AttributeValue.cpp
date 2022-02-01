@@ -132,6 +132,20 @@ bool AttributeValue::setValue(const void* value_ptr,
           
             break;
         }
+        case DataType::TYPE_UINT64: {
+            uint64_t i64v = *(uint64_t*)value_ptr;
+             if(old_value.i64data!=i64v){
+                *(uint64_t*)value_buffer=i64v;
+                tag_has_changed =true;
+                old_value.i64data=i64v;
+            }else {
+                tag_has_changed =false;
+
+            }
+            //copy string to buffer
+          
+            break;
+        }
         case DataType::TYPE_DOUBLE: {
             double dv = *(double*)value_ptr;
              if(old_value.ddata!=dv){
@@ -263,6 +277,25 @@ bool AttributeValue::setValue(const CDataVariant& attribute_value,
             old_value.i64data=*(int64_t*)value_buffer;
 
             *(int64_t*)value_buffer=i64v;
+
+             if(old_value.i64data!=i64v){
+                tag_has_changed =true;
+            }else {
+                tag_has_changed =false;
+
+            }
+            //copy string to buffer
+            /*std::memcpy(value_buffer,
+                        &i64v,
+                        sizeof(int64_t));*/
+            break;
+        }
+        case DataType::TYPE_UINT64: {
+            if(!grow(sizeof(int64_t))) return false;
+            uint64_t i64v = attribute_value.asUInt64();
+            old_value.i64data=*(uint64_t*)value_buffer;
+
+            *(uint64_t*)value_buffer=i64v;
 
              if(old_value.i64data!=i64v){
                 tag_has_changed =true;
@@ -456,7 +489,10 @@ void AttributeValue::writeToCDataWrapper( CDataWrapper& data_wrapper) {
             data_wrapper.addInt32Value(name, *getValuePtr<int32_t>());
             break;
         }
-            
+        case chaos::DataType::TYPE_UINT64:{
+            data_wrapper.addUInt64Value(name, *getValuePtr<uint64_t>());
+            break;
+        }    
         case chaos::DataType::TYPE_INT64:{
             data_wrapper.addInt64Value(name, *getValuePtr<int64_t>());
             break;
@@ -493,6 +529,9 @@ std::string AttributeValue::toString() {
             
         case chaos::DataType::TYPE_INT64:{
             return ChaosToString(*getValuePtr<int64_t>());
+        }
+        case chaos::DataType::TYPE_UINT64:{
+            return ChaosToString(*getValuePtr<uint64_t>());
         }
             
         default:
@@ -531,6 +570,9 @@ std::string AttributeValue::toString(int double_precision) {
             
         case chaos::DataType::TYPE_INT64:{
             return ChaosToString(*getValuePtr<int64_t>());
+        }
+         case chaos::DataType::TYPE_UINT64:{
+            return ChaosToString(*getValuePtr<uint64_t>());
         }
             
         default:

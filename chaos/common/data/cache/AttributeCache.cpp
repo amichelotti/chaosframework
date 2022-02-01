@@ -70,6 +70,8 @@ void AttributeCache::addAttribute(const string& name,
             size = sizeof(int32_t);
             break;
         case chaos::DataType::TYPE_INT64:
+        case chaos::DataType::TYPE_UINT64:
+
             size = sizeof(int64_t);
             break;
             
@@ -110,6 +112,8 @@ void AttributeCache::addAttribute(const std::string& name,
             size = sizeof(int32_t);
             break;
         case chaos::DataType::TYPE_INT64:
+        case chaos::DataType::TYPE_UINT64:
+
             size = sizeof(int64_t);
             break;
         case chaos::DataType::TYPE_STRING:

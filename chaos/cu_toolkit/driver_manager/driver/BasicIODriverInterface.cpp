@@ -166,7 +166,7 @@ int BasicIODriverInterface::initIO(void *buffer,int sizeb){
 int BasicIODriverInterface::deinitIO(){
     return impl->deinitIO();
 }
-
+/*
 int BasicIODriverInterface::getDataset(ddDataSet_t*data,int sizeb){
     return impl->getDataset(data,sizeb);
    
@@ -178,5 +178,5 @@ int BasicIODriverInterface::getDatasetSize(){
     
 
 }
-
+*/
 #endif

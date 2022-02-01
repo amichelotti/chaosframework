@@ -81,7 +81,89 @@ namespace chaos {
             typedef ChaosSharedPtr<struct _bson_t> ChaosBsonShrdPtr;
             typedef ChaosSharedPtr<struct _bson_value_t> ChaosBsonValuesShrdPtr;
 
+            CHAOS_DEFINE_VECTOR_FOR_TYPE(bson_value_t*, VectorBsonValues);
 
+
+
+ /*!
+             Class to read the and arry of multivalue
+             */
+            class CMultiTypeDataArrayWrapper {
+                friend class CDataWrapper;
+                const ChaosBsonShrdPtr document_shrd_ptr;
+                bson_t *array_doc;
+                VectorBsonValues values;
+                CMultiTypeDataArrayWrapper(const ChaosBsonShrdPtr& _document_shrd_ptr,
+                                           const std::string& key);
+            public:
+                ~CMultiTypeDataArrayWrapper();
+                string getStringElementAtIndex(const int) const;
+                double getDoubleElementAtIndex(const int) const;
+                int32_t getInt32ElementAtIndex(const int) const;
+                int64_t getInt64ElementAtIndex(const int) const;
+                uint64_t getUInt64ElementAtIndex(const int) const;
+                bson_value_t * getBSONElementAtIndex(const int pos) const;
+                bool getBoolElementAtIndex(const int) const;
+                /**
+                 * @brief convert an array of cdwappers with k,v into a map 
+                 * 
+                 * @return std::map<std::string,std::string> 
+                 */
+                std::map<std::string,std::string> toKVmap(const std::string kname="name",const std::string kvalue="value") const;
+               
+                ChaosUniquePtr<CDataWrapper> getCDataWrapperElementAtIndex(const int) const;
+                std::string getJSONString();
+                std::string getCanonicalJSONString();
+                bool isStringElementAtIndex(const int) const;
+                bool isDoubleElementAtIndex(const int) const;
+                bool isInt32ElementAtIndex(const int) const;
+                bool isInt64ElementAtIndex(const int) const;
+                bool isBoolElementAtIndex(const int) const;
+                int removeElementAtIndex(const int);
+                bool isCDataWrapperElementAtIndex(const int) const;
+                template<class T>
+                T getElementAtIndex(const int pos) const{
+                    if(values[pos]->value_type == BSON_TYPE_DOUBLE){
+                        return static_cast<T>(values[pos]->value.v_double);
+                    }
+                    if(values[pos]->value_type == BSON_TYPE_INT32){
+                        return static_cast<T>(values[pos]->value.v_int32);
+                    }
+                    if(values[pos]->value_type == BSON_TYPE_INT64){
+                        return static_cast<T>(values[pos]->value.v_int64);
+                    }
+                    if(values[pos]->value_type == BSON_TYPE_TIMESTAMP){
+                        uint64_t ret=((uint64_t)values[pos]->value.v_timestamp.timestamp<<32) | values[pos]->value.v_timestamp.increment;
+
+                        
+                        return static_cast<T>(ret);
+                    }
+                    if(values[pos]->value_type == BSON_TYPE_BOOL){
+                        return static_cast<T>(values[pos]->value.v_bool);
+                    }
+                    std::stringstream ss;
+                    ss<<"type at index ["<<pos<<"] cannot convert, typeid:"<<values[pos]->value_type;
+                    throw CException(1, ss.str(), __PRETTY_FUNCTION__);
+                    return 0;
+                }
+
+                operator std::vector<std::string>(){
+                    std::vector<std::string> ret;
+                    for(int cnt=0;cnt<size();cnt++){
+                        ret.push_back(getStringElementAtIndex(cnt));
+                    }
+                    return ret;
+                }
+                 operator std::set<std::string>(){
+                    std::set<std::string> ret;
+                    for(int cnt=0;cnt<size();cnt++){
+                        ret.insert(getStringElementAtIndex(cnt));
+                    }
+                    return ret;
+                }
+                const char * getRawValueAtIndex(const int key,uint32_t& size) const;
+                size_t size() const;
+            };
             /*!
              Class that wrap the serializaiton system for data storage
              */
@@ -90,7 +172,7 @@ namespace chaos {
                 int array_index;
                 ChaosBsonShrdPtr bson_tmp_array;
                 explicit CDataWrapper(const std::string& json_document);
-                int setBson(const bson_iter_t * ,const uint64_t& val);
+               // int setBson(const bson_iter_t * ,const uint64_t& val);
                 int setBson(const bson_iter_t * ,const int64_t& val);
                 int setBson(const bson_iter_t *v ,const int32_t& val);
                 int setBson(const bson_iter_t * ,const double& val);
@@ -145,22 +227,23 @@ namespace chaos {
                 void appendStringToArray(const string &value);
                 void appendInt32ToArray(int32_t value);
                 void appendInt64ToArray(int64_t value);
+                void appendUInt64ToArray(uint64_t value);
+
                 void appendDoubleToArray(double value);
                 void appendBooleanToArray(bool value);
                 void appendCDataWrapperToArray(const CDataWrapper& value);
                 //finalize the array into a key for the current dataobject
                 void finalizeArrayForKey(const std::string&);
-                void appendArray(const std::string&key,DataType::DataType typ,const char*buf,int len);
                 //get a string value
                 string  getStringValue(const std::string&) const;
                 const char *  getCStringValue(const std::string& key) const;
                 //return a vectorvalue for a key
                 CMultiTypeDataArrayWrapperSPtr getVectorValue(const std::string&) const;
                 void addNullValue(const std::string&);
-                //add a integer value
-                void addInt32Value(const std::string&, int32_t);
+                
                 void append(const std::string& key,int32_t val);
                 void append(const std::string& key,int64_t val);
+
                 void append(const std::string& key,double val);
                 void append(const std::string& key,bool val);
                 void append(const std::string& key,const char* val);
@@ -168,18 +251,74 @@ namespace chaos {
 
                 void append(const std::string& key,const std::string& val);
                 void append(const std::string& key,const CDataWrapper& val);
-                void append(const std::string& key,const std::vector<int32_t>& val);
+              
+                void append(const std::string& key,const std::vector<int32_t>& val);                
                 void append(const std::string& key,const std::vector<int64_t>& val);
                 void append(const std::string& key,const std::vector<double>& val);
                 void append(const std::string& key,const std::vector<bool>& val);
+                
+                void append(const std::string&key,DataType::DataType typ,const char*buf,int len);
                 void append(const std::string& key,const std::vector<std::string>& val);
                 void append(const std::string& key,const std::vector<CDataWrapper>& val);
+                
+                template<typename T>
+                int getVectorValue(const std::string& key,std::vector<T>&vv){
+                    
+                    CMultiTypeDataArrayWrapperSPtr v=getVectorValue(key);
+                    for(int cnt=0;cnt<v->size();cnt++){
+                        vv.push_back(v->getElementAtIndex<T>(cnt));
+                            
+                    }
+                    return vv.size();
+                    
+                }
+                /**
+                * Array are realized as a binary sequence of bytes
+                * 
+               */
+                template<typename T>
+                    void appendArray(const std::string& key,const std::vector<T>& val){
+                            appendArray(key,(T*)&val[0],val.size());
+
+                    }
+                void appendArray(const std::string& key,bool* arr,int count);
+                void appendArray(const std::string& key,char* arr,int count);
+                void appendArray(const std::string& key,int32_t* arr,int count);
+                void appendArray(const std::string& key,uint32_t* arr,int count);
+
+                void appendArray(const std::string& key,double* arr,int count);
+                void appendArray(const std::string& key,float* arr,int count);
+
+                void appendArray(const std::string& key,int16_t* arr,int count);
+                void appendArray(const std::string& key,uint16_t* arr,int count);
+
+                void appendArray(const std::string& key,int8_t* arr,int count);
+                void appendArray(const std::string& key,uint8_t* arr,int count);
+                
+                void appendArray(const std::string& key,int64_t* arr,int count);
+                void appendArray(const std::string& key,uint64_t* arr,int count);
+                template<typename T>
+                int getArrayValue(const std::string& key,std::vector<T>&v){
+                    uint32_t bufLen;
+                    T* ptr=(T*)getBinaryValue(key,bufLen);
+                    if(ptr==NULL || bufLen==0){
+                        return 0;
+                    }
+                    for(int cnt=0;cnt<bufLen/sizeof(T);cnt++){
+                        v.push_back(ptr[cnt]);
+                    }
+                    return v.size();
+                    
+                }
+
                 //add a integer value
-                void addInt32Value(const std::string&, uint32_t);
+                void addInt32Value(const std::string&, int32_t);
+                //add a integer value
+                void addUInt32Value(const std::string&, uint32_t);
                 //add a integer value
                 void addInt64Value(const std::string&, int64_t);
                 //add a integer value
-                void addInt64Value(const std::string&, uint64_t);
+                void addUInt64Value(const std::string&, uint64_t);
                 //add a double value
                 void addDoubleValue(const std::string&key, double dValue);
                 //add a bool value
@@ -193,10 +332,11 @@ namespace chaos {
                 int32_t getInt32Value(const std::string& key) const;
                 //get a integer value
                 int64_t getInt64Value(const std::string& key) const;
+                //get a unsigned integer64 value
+                uint64_t getUInt64Value(const std::string& key) const;
                 //get a integer value
                 uint32_t getUInt32Value(const std::string& key) const;
-                //get a integer value
-                uint64_t getUInt64Value(const std::string& key) const;
+                
                 //add a integer value
                 double getDoubleValue(const std::string& key) const;
                 //get a bool value
@@ -205,7 +345,7 @@ namespace chaos {
                 std::string getJsonValue(const std::string&) const;
                 // return key as a double value or nan if cannot convert
                 double getAsRealValue(const std::string& key) const;
-
+                
 #define THROW_TYPE_EXC(type)\
 std::stringstream ss;\
 ss<<"cannot get or cast to '" << #type<<"'";\
@@ -296,15 +436,8 @@ throw chaos::CException(-2, ss.str(), __PRETTY_FUNCTION__);
                                     const char *buff,
                                     int bufLen);
 
-                void addArray(const std::string& key,bool* arr,int count);
-                void addArray(const std::string& key,char* arr,int count);
-                void addArray(const std::string& key,int32_t* arr,int count);
-                void addArray(const std::string& key,double* arr,int count);
-                void addArray(const std::string& key,float* arr,int count);
-
-                void addArray(const std::string& key,int16_t* arr,int count);
-                void addArray(const std::string& key,int64_t* arr,int count);
                 
+ 
                
 
                 template<typename T>
@@ -413,78 +546,7 @@ throw chaos::CException(-2, ss.str(), __PRETTY_FUNCTION__);
                 bool operator!=(const CDataWrapper&d) const {return !(*this==d);};
 
             };
-            CHAOS_DEFINE_VECTOR_FOR_TYPE(bson_value_t*, VectorBsonValues);
-            /*!
-             Class to read the and arry of multivalue
-             */
-            class CMultiTypeDataArrayWrapper {
-                friend class CDataWrapper;
-                const ChaosBsonShrdPtr document_shrd_ptr;
-                bson_t *array_doc;
-                VectorBsonValues values;
-                CMultiTypeDataArrayWrapper(const ChaosBsonShrdPtr& _document_shrd_ptr,
-                                           const std::string& key);
-            public:
-                ~CMultiTypeDataArrayWrapper();
-                string getStringElementAtIndex(const int) const;
-                double getDoubleElementAtIndex(const int) const;
-                int32_t getInt32ElementAtIndex(const int) const;
-                int64_t getInt64ElementAtIndex(const int) const;
-                bool getBoolElementAtIndex(const int) const;
-                /**
-                 * @brief convert an array of cdwappers with k,v into a map 
-                 * 
-                 * @return std::map<std::string,std::string> 
-                 */
-                std::map<std::string,std::string> toKVmap(const std::string kname="name",const std::string kvalue="value") const;
-               
-                ChaosUniquePtr<CDataWrapper> getCDataWrapperElementAtIndex(const int) const;
-                std::string getJSONString();
-                std::string getCanonicalJSONString();
-                bool isStringElementAtIndex(const int) const;
-                bool isDoubleElementAtIndex(const int) const;
-                bool isInt32ElementAtIndex(const int) const;
-                bool isInt64ElementAtIndex(const int) const;
-                bool isBoolElementAtIndex(const int) const;
-                int removeElementAtIndex(const int);
-                bool isCDataWrapperElementAtIndex(const int) const;
-                template<class T>
-                T getElementAtIndex(const int pos) const{
-                    if(values[pos]->value_type == BSON_TYPE_DOUBLE){
-                        return static_cast<T>(values[pos]->value.v_double);
-                    }
-                    if(values[pos]->value_type == BSON_TYPE_INT32){
-                        return static_cast<T>(values[pos]->value.v_int32);
-                    }
-                    if(values[pos]->value_type == BSON_TYPE_INT64){
-                        return static_cast<T>(values[pos]->value.v_int64);
-                    }
-                    if(values[pos]->value_type == BSON_TYPE_BOOL){
-                        return static_cast<T>(values[pos]->value.v_bool);
-                    }
-                    std::stringstream ss;
-                    ss<<"type at index ["<<pos<<"] cannot convert, typeid:"<<values[pos]->value_type;
-                    throw CException(1, ss.str(), __PRETTY_FUNCTION__);
-                    return 0;
-                }
-
-                operator std::vector<std::string>(){
-                    std::vector<std::string> ret;
-                    for(int cnt=0;cnt<size();cnt++){
-                        ret.push_back(getStringElementAtIndex(cnt));
-                    }
-                    return ret;
-                }
-                 operator std::set<std::string>(){
-                    std::set<std::string> ret;
-                    for(int cnt=0;cnt<size();cnt++){
-                        ret.insert(getStringElementAtIndex(cnt));
-                    }
-                    return ret;
-                }
-                const char * getRawValueAtIndex(const int key,uint32_t& size) const;
-                size_t size() const;
-            };
+           
 
 #define CDW_GET_SRT_WITH_DEFAULT(c, k, d) ((c)->hasKey(k)?(c)->getStringValue(k):d)
 #define CDW_GET_BOOL_WITH_DEFAULT(c, k, d) ((c)->hasKey(k)?(c)->getBoolValue(k):d)

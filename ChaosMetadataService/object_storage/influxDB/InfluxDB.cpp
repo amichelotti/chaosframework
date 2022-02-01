@@ -138,6 +138,8 @@ int InfluxDB::pushObject(const std::string&                       key,
           break;
         case DataType::TYPE_INT32:
         case DataType::TYPE_INT64:
+        case DataType::TYPE_UINT64:
+
                   measurements << c << *i << "=" << stored_object.getStringValue(*i)<<'i';
                         nmeas++;
           first++;

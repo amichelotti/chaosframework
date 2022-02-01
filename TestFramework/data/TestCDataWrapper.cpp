@@ -19,6 +19,8 @@
  * permissions and limitations under the Licence.
  */
 #include <chaos/common/chaos_types.h>
+#include <chaos/common/global.h>
+
 #include <chaos/common/exception/CException.h>
 #include <chaos/common/data/CDataVariant.h>
 #include <chaos/common/data/CDataWrapper.h>
@@ -56,7 +58,7 @@ TEST(CDataWrapperTest, MemoryLeaks) {
     data_pack.addInt64Value("i64v", (int64_t)0);
     data_pack.addDoubleValue("dbv", (double)36.6);
     data_pack.appendInt32ToArray(1);
-    data_pack.appendInt64ToArray(2);
+    data_pack.appendInt64ToArray((uint64_t)2);
     data_pack.appendDoubleToArray(3.0);
     data_pack.appendStringToArray("array_lement");
     data_pack.finalizeArrayForKey("array");
@@ -213,4 +215,142 @@ TEST(CDataWrapperTest, GetVariantValue) {
     ASSERT_TRUE(buff_shrd_ptr.get());
     ASSERT_EQ(buff_shrd_ptr->getBufferSize(), 256);
     ASSERT_EQ(std::memcmp(buffer, buff_shrd_ptr->getBuffer(), 256), 0);
+}
+TEST(CDataWrapperTest, VectorInt8) {
+    std::vector<int8_t> arr={numeric_limits<int8_t>::min(),2,3,4,5,-6,-7,-8};
+    std::vector<int8_t> res;
+
+    CDataWrapper data;
+    data.appendArray("vint8",arr);
+    data.getVectorValue("vint8",res);    
+    ASSERT_EQ(std::memcmp(&res[0], &arr[0], res.size()*sizeof(int8_t)), 0);
+}
+
+TEST(CDataWrapperTest, VectorUInt8) {
+    std::vector<uint8_t> arr={numeric_limits<uint8_t>::max(),numeric_limits<uint8_t>::max()-1,3,4,5,6,7,8};
+    std::vector<uint8_t> res;
+
+    CDataWrapper data;
+    data.appendArray("vuint8",arr);
+    data.getVectorValue("vuint8",res);  
+    for_each(res.begin(),res.end(),[](uint8_t r){std::cout<<r<<" ";});
+    ASSERT_EQ(std::memcmp(&res[0], &arr[0], res.size()*sizeof(uint8_t)), 0);
+}
+
+TEST(CDataWrapperTest, VectorInt16) {
+    std::vector<int16_t> arr={numeric_limits<int16_t>::min(),2,3,4,5,-6,-7,-8};
+    std::vector<int16_t> res;
+
+    CDataWrapper data;
+    data.appendArray("vint16",arr);
+    data.getVectorValue("vint16",res); 
+    for_each(res.begin(),res.end(),[](int16_t r){std::cout<<r<<" ";});
+    std::cout<<std::endl;   
+    ASSERT_EQ(std::memcmp(&res[0], &arr[0], res.size()*sizeof(int16_t)), 0);
+}
+
+TEST(CDataWrapperTest, VectorUInt16) {
+    std::vector<uint16_t> arr={numeric_limits<uint16_t>::max(),numeric_limits<uint16_t>::max()-1,3,4,5,6,7,8};
+    std::vector<uint16_t> res;
+
+    CDataWrapper data;
+    data.appendArray("vuint16",arr);
+    data.getVectorValue("vuint16",res);
+    for_each(res.begin(),res.end(),[](uint16_t r){std::cout<<r<<" ";});
+    std::cout<<std::endl;
+    ASSERT_EQ(std::memcmp(&res[0], &arr[0], res.size()*sizeof(uint16_t)), 0);
+}
+
+TEST(CDataWrapperTest, VectorInt32) {
+    std::vector<int32_t> arr={numeric_limits<int32_t>::min(),2,3,4,5,-6,-7,-8};
+    std::vector<int32_t> res;
+
+    CDataWrapper data;
+    data.appendArray("vint32",arr);
+    data.getVectorValue("vint32",res);    
+    for_each(res.begin(),res.end(),[](int32_t r){std::cout<<r<<" ";});
+    std::cout<<std::endl;
+    ASSERT_EQ(std::memcmp(&res[0], &arr[0], res.size()*sizeof(int32_t)), 0);
+}
+
+TEST(CDataWrapperTest, VectorUInt32) {
+    std::vector<uint32_t> arr={numeric_limits<uint32_t>::max(),numeric_limits<uint32_t>::max()-1,3,4,5,6,7,8};
+    std::vector<uint32_t> res;
+
+    CDataWrapper data;
+    data.appendArray("vuint32",arr);
+    data.getVectorValue("vuint32",res); 
+    for_each(res.begin(),res.end(),[](uint32_t r){std::cout<<r<<" ";});
+    std::cout<<std::endl; 
+    ASSERT_EQ(std::memcmp(&res[0], &arr[0], res.size()*sizeof(uint32_t)), 0);
+}
+
+TEST(CDataWrapperTest, VectorInt64) {
+    std::vector<int64_t> arr={numeric_limits<int64_t>::min(),numeric_limits<int64_t>::min()+1,3,4,5,-6,-7,-8};
+    std::vector<int64_t> res;
+
+    CDataWrapper data;
+    data.appendArray("vint64",arr);
+    data.getVectorValue("vint64",res); 
+    for_each(res.begin(),res.end(),[](int64_t r){std::cout<<r<<" ";});
+    std::cout<<std::endl;   
+    ASSERT_EQ(std::memcmp(&res[0], &arr[0], res.size()*sizeof(int64_t)), 0);
+}
+
+TEST(CDataWrapperTest, VectorUInt64) {
+    std::vector<uint64_t> arr={numeric_limits<uint64_t>::max(),numeric_limits<uint64_t>::max()-1,3,4,5,6,7,8};
+    std::vector<uint64_t> res;
+
+    CDataWrapper data;
+    data.appendArray("vuint64",arr);
+    data.getVectorValue("vuint64",res);  
+    for_each(res.begin(),res.end(),[](uint64_t r){std::cout<<r<<" ";});
+    std::cout<<std::endl;  
+    ASSERT_EQ(std::memcmp(&res[0], &arr[0], res.size()*sizeof(uint64_t)), 0);
+}
+
+TEST(CDataWrapperTest, VectorDouble) {
+    std::vector<double> arr={numeric_limits<double>::min(),numeric_limits<double>::max(),3.0,4.0,5.0,-6.0,-7.0,-8.0};
+    std::vector<double> res;
+
+    CDataWrapper data;
+    data.appendArray("vdouble",arr);
+    data.getVectorValue("vdouble",res);    
+    for_each(res.begin(),res.end(),[](double r){std::cout<<r<<" ";});
+    std::cout<<std::endl;
+    ASSERT_EQ(std::memcmp(&res[0], &arr[0], res.size()*sizeof(double)), 0);
+}
+
+TEST(CDataWrapperTest, U64) {
+
+    CDataWrapper data;
+    data.addUInt64Value("U64max",numeric_limits<uint64_t>::max());
+    data.addUInt64Value("U64min",numeric_limits<uint64_t>::min());
+
+    uint64_t max=data.getUInt64Value("U64max");    
+    uint64_t min=data.getUInt64Value("U64min");    
+
+    ASSERT_EQ(max, numeric_limits<uint64_t>::max());
+    ASSERT_EQ(min, numeric_limits<uint64_t>::min());
+
+}
+
+TEST(CDataWrapperTest, appendValues) {
+
+    CDataWrapper data;
+    std::vector<int> iarr={1,2,3,4,5};
+    data.append("bsonVector",iarr);
+    LDBG_<<data.getJSONString();
+    std::vector<int> iarr2={6,7,8,9,10};
+    data.append("bsonVector",iarr2);
+    LDBG_<<data.getJSONString();
+    std::vector<int> iarr3={11,12,13,14,15};
+    data.append("bsonVector",iarr3);
+    LDBG_<<data.getJSONString();
+
+    std::vector<int> res,ok={1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
+    data.getVectorValue("bsonVector",res);
+
+    ASSERT_EQ(std::memcmp(&res[0], &ok[0], ok.size()*sizeof(int)), 0);
+
 }

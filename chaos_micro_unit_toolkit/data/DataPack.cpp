@@ -363,6 +363,7 @@ uint32_t DataPack::getValueSize(const std::string& key) const{
     const bson_value_t *v = bson_iter_value(&it);
     switch(v->value_type) {
         case BSON_TYPE_INT64:
+        case BSON_TYPE_TIMESTAMP:
             return sizeof(int64_t);
         case BSON_TYPE_INT32:
             return sizeof(int32_t);

@@ -1174,7 +1174,12 @@ typedef enum DataType {
   TYPE_STRING = 4,
   //!byte array variable length
   TYPE_BYTEARRAY,
-
+  TYPE_INT16 = 6,
+  TYPE_INT8 = 7,
+  TYPE_UINT32 = 8,
+  TYPE_UINT64 = 9,
+  TYPE_UINT16 = 0xA,
+  TYPE_UINT8 = 0xB,
   TYPE_CLUSTER,
   //!modifier to be ored to normal data types
   TYPE_VECTOR_BOOL = 0x100,
@@ -1187,8 +1192,8 @@ typedef enum DataType {
   TYPE_VECTOR_INT8  = 0x107,
   TYPE_VECTOR_UINT32  = 0x108,
   TYPE_VECTOR_UINT64  = 0x109,
-  TYPE_VECTOR_UINT16  = 0x110,
-  TYPE_VECTOR_UINT8   = 0x111,
+  TYPE_VECTOR_UINT16  = 0x10A,
+  TYPE_VECTOR_UINT8   = 0x10B,
 
   TYPE_ACCESS_ARRAY = 0x100,
   TYPE_UNDEFINED

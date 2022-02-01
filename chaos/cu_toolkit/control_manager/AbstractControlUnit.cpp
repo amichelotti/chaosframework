@@ -951,6 +951,9 @@ void         AbstractControlUnit::doInitRpCheckList() {
               case DataType::TYPE_INT64:
                 cdw_unique_ptr->addInt64Value(attrName, (int64_t)strtoll(attrValue.c_str(), 0, 0));
                 break;
+              case DataType::TYPE_UINT64:
+                cdw_unique_ptr->addUInt64Value(attrName, (uint64_t)strtoll(attrValue.c_str(), 0, 0));
+                break;
               case DataType::TYPE_DOUBLE:
                 cdw_unique_ptr->addDoubleValue(attrName, CDataVariant(attrValue).asDouble());
                 break;
@@ -3026,6 +3029,9 @@ int AbstractControlUnit::pushOutputDataset() {
       case DataType::TYPE_INT64:
         output_attribute_dataset->addInt64Value(value_set->name, *value_set->getValuePtr<int64_t>());
         break;
+      case DataType::TYPE_UINT64:
+        output_attribute_dataset->addUInt64Value(value_set->name, *value_set->getValuePtr<uint64_t>());
+        break;
       case DataType::TYPE_DOUBLE:
         output_attribute_dataset->addDoubleValue(value_set->name, *value_set->getValuePtr<double>());
         break;
@@ -3369,7 +3375,10 @@ bool AbstractControlUnit::setStateVariableSeverity(StateVariableType            
                                                    const MultiSeverityAlarmLevel state_variable_severity) {
   GET_CAT_OR_EXIT(variable_type, false)
   AlarmDescription* alarm = catalog.getAlarmByName(state_variable_name);
-  if (alarm == NULL) return false;
+  if (alarm == NULL) {
+    ACULERR_<<"Alarm \""<<state_variable_name<<"\" not found";
+    return false;
+  }
   alarm->setCurrentSeverity(state_variable_severity);
   //update global alarm output attribute
   /*
