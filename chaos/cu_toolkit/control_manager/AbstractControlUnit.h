@@ -843,7 +843,13 @@ class AbstractControlUnit : public DeclareAction,
 
   void addTag(const std::string& tname);
   void removeTag(const std::string& tname);
-
+  /**
+   * @brief Set the State object
+   * 
+   * @param state set state to the given string
+   */
+  void setState(const std::string& state,bool update=false);
+  
   //! set the value on the busy flag
   void setBusyFlag(bool state);
 

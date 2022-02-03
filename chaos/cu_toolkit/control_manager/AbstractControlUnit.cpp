@@ -2705,11 +2705,15 @@ void AbstractControlUnit::_setBypassState(bool bypass_stage,
 bool AbstractControlUnit::unitRestoreToSnapshot(AbstractSharedDomainCache* const snapshot_cache) {
   return true;
 }
+void AbstractControlUnit::setState(const std::string& state,bool update){
+  HealtManager::getInstance()->addNodeMetricValue(control_unit_id,
+                                                  NodeHealtDefinitionKey::NODE_HEALT_STATUS,
+                                                  state,
+                                                  update);
+}
 
 chaos::common::data::CDWUniquePtr AbstractControlUnit::_unitPerformCalibration(chaos::common::data::CDWUniquePtr data) {
   chaos::common::data::CDWUniquePtr ret;
-  std::string                       prev_state = HealtManager::getInstance()->getNodeMetricStringValue(control_unit_id,
-                                                                                 NodeHealtDefinitionKey::NODE_HEALT_STATUS);
 
   HealtManager::getInstance()->addNodeMetricValue(control_unit_id,
                                                   NodeHealtDefinitionKey::NODE_HEALT_STATUS,
@@ -2717,10 +2721,6 @@ chaos::common::data::CDWUniquePtr AbstractControlUnit::_unitPerformCalibration(c
                                                   true);
 
   ret = unitPerformCalibration(MOVE(data));
-  HealtManager::getInstance()->addNodeMetricValue(control_unit_id,
-                                                  NodeHealtDefinitionKey::NODE_HEALT_STATUS,
-                                                  prev_state,
-                                                  true);
   return ret;
 }
 
