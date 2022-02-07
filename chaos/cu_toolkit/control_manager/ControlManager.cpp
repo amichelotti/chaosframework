@@ -496,10 +496,18 @@ CDWUniquePtr ControlManager::loadControlUnit(CDWUniquePtr message_data) {
   //check if cuid is already present
   ReadLock read_registering_lock(mutex_map_cuid_reg_unreg_instance);
   ReadLock read_registered_lock(mutex_map_cuid_registered_instance);
+  if(map_cuid_registered_instance.count(work_unit_id)){
+    LCMDBG_<<"Another work unit use the same id:" + work_unit_id;
+      return CDWUniquePtr();
+  }
 
+  if(map_cuid_reg_unreg_instance.count(work_unit_id)){
+    LCMDBG_<<"Another work unit is still using the same id:" + work_unit_id;
+      return CDWUniquePtr();
+  }
   // we can't have two different work unit with the same unique identifier within the same process
-  CHECK_ASSERTION_THROW_AND_LOG(!map_cuid_reg_unreg_instance.count(work_unit_id), LCMERR_, -3, "Another work unit use the same id:" + work_unit_id)
-  CHECK_ASSERTION_THROW_AND_LOG(!map_cuid_registered_instance.count(work_unit_id), LCMERR_, -4, "Another work unit use the same id:" + work_unit_id)
+//  CHECK_ASSERTION_THROW_AND_LOG(!map_cuid_reg_unreg_instance.count(work_unit_id), LCMERR_, -3, "Another work unit use the same id:" + work_unit_id)
+//  CHECK_ASSERTION_THROW_AND_LOG(!map_cuid_registered_instance.count(work_unit_id), LCMERR_, -4, "Another work unit use the same id:" + work_unit_id)
 
   LCMDBG_ << "instantiate work unit ->"
           << "device_id:" << work_unit_id << " load_options:" << load_options;
