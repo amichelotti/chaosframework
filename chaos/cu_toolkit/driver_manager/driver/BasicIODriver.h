@@ -21,7 +21,6 @@
  */
 #ifndef __BASICIODRIVER_H__
 #define __BASICIODRIVER_H__
-#include "AbstractDriverPlugin.h"
 #include "ReadWriteInterface.h"
 namespace chaos {
     namespace cu  {
@@ -54,12 +53,7 @@ namespace chaos {
                      */
                  //   int getDatasetSize();
 
-                    /**
-                       \brief return the dataset copying max size bytes
-                       \param data[out] array of data
-                       \param sizeb[in] max byte to copy
-                       \return the size of the dataset if success, zero otherwise
-                     */
+                   
 
                   //  int getDataset(ddDataSet_t*data, int sizeb);
 

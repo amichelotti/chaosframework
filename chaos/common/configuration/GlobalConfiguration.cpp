@@ -518,7 +518,7 @@ void GlobalConfiguration::addLocalServerAddress(const std::string& mdsAddress)  
         throw CException(1, ss.str(), "GlobalConfiguration::addMetadataServerAddress");
     }
     //address can be added
-    configuration->addStringValue("local_ip", mdsAddress);
+    configuration->addStringValue(chaos::InitOption::OPT_NODE_IP, mdsAddress);
 }
 
 /**
@@ -556,7 +556,7 @@ VectorNetworkAddress GlobalConfiguration::getMetadataServerAddressList() {
  return the address of metadataserver
  */
 string GlobalConfiguration::getLocalServerAddress() {
-    return configuration->getStringValue("local_ip");
+    return configuration->getStringValue(chaos::InitOption::OPT_NODE_IP);
 }
 
 std::string GlobalConfiguration::getDesc(){
@@ -594,7 +594,7 @@ int32_t GlobalConfiguration::getHttpMetricsPort() {
 
 string GlobalConfiguration::getLocalServerAddressAnBasePort(){
     char buf[128];
-    string addr = configuration->getStringValue("local_ip");
+    string addr = configuration->getStringValue(chaos::InitOption::OPT_NODE_IP);
     sprintf ( buf, "%s:%d", addr.c_str(), (int)configuration->getInt32Value("base_port"));
     addr.assign(buf);
     return addr;

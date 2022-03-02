@@ -296,7 +296,7 @@ void ChaosMetadataService::start() {
     info->addStringValue(NodeDefinitionKey::NODE_HOST_NAME,
                          chaos::GlobalConfiguration::getInstance()->getHostname());
     info->addStringValue(NodeDefinitionKey::NODE_IP_ADDR,
-                         chaos::GlobalConfiguration::getInstance()->getLocalServerAddressAnBasePort());
+                         chaos::GlobalConfiguration::getInstance()->getLocalServerAddress());
 
     ds_da->registerNode(setting.ha_zone_name,
                         nodeuid,

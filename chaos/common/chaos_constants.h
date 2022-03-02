@@ -126,6 +126,7 @@ static const char* const OPT_METRIC_WEB_SERVER_PORT = "metrics-http-port";
 #endif
 //! optional description of the node
 static const char* const OPT_NODE_DESC = "node-desc";
+static const char* const OPT_NODE_IP = "node-ip";
 
 static const char* const OPT_MSG_BROKER_SERVER = "msg-broker-server";
 static const char* const OPT_MSG_BROKER_DRIVER = "msg-broker-driver";
