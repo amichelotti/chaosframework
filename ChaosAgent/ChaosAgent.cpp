@@ -57,7 +57,7 @@ void ChaosAgent::init(istringstream &initStringStream)  {
 void ChaosAgent::init(void *init_data)  {
     if((!GlobalConfiguration::getInstance()->hasOption(InitOption::OPT_NODEUID))||(GlobalConfiguration::getInstance()->getConfiguration()->getStringValue(InitOption::OPT_NODEUID).size()==0)){
 			// change before NetworkBroker Initialization
-        	nodeuid="ChaosAgent_"+chaos::GlobalConfiguration::getInstance()->getHostname();
+        	nodeuid="cagent-"+chaos::GlobalConfiguration::getInstance()->getHostname();
 			DBG << "'"<<InitOption::OPT_NODEUID <<"' not specified, setting uid to:"<<nodeuid;
 		
 			GlobalConfiguration::getInstance()->setNodeUID(nodeuid);

@@ -105,7 +105,7 @@ void ChaosMetadataService::init(void* init_data) {
 
     if ((!GlobalConfiguration::getInstance()->hasOption(InitOption::OPT_NODEUID)) || (GlobalConfiguration::getInstance()->getConfiguration()->getStringValue(InitOption::OPT_NODEUID).size() == 0)) {
       // change before NetworkBroker Initialization
-      nodeuid = "cds_" + chaos::GlobalConfiguration::getInstance()->getHostname();
+      nodeuid = "cds-" + chaos::GlobalConfiguration::getInstance()->getHostname();
       LCND_LDBG << "'" << InitOption::OPT_NODEUID << "' not specified, setting uid to:" << nodeuid;
 
       GlobalConfiguration::getInstance()->setNodeUID(nodeuid);
