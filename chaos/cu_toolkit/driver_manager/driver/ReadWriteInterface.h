@@ -22,6 +22,8 @@
 #ifndef __ReadWriteInterface_H__
 #define __ReadWriteInterface_H__
 #include "AbstractDriver.h"
+#include "AbstractDriverPlugin.h"
+
 namespace chaos {
     namespace cu  {
         namespace driver_manager {

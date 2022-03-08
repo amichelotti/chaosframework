@@ -163,6 +163,8 @@ ChaosUniquePtr<chaos::common::data::CDataWrapper> AgentRegister::getAgentRegistr
                            /*chaos::GlobalConfiguration::getInstance()->getLocalServerAddressAnBasePort()*/);
     result->addStringValue(NodeDefinitionKey::NODE_HOST_NAME,
                            chaos::GlobalConfiguration::getInstance()->getHostname());
+    result->addStringValue(NodeDefinitionKey::NODE_IP_ADDR,
+                           chaos::GlobalConfiguration::getInstance()->getLocalServerAddress());                       
     if(chaos::GlobalConfiguration::getInstance()->getDesc()!=""){
         result->addStringValue(NodeDefinitionKey::NODE_DESC,
                            chaos::GlobalConfiguration::getInstance()->getDesc());

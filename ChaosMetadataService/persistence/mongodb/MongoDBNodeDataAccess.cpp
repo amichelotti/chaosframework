@@ -205,6 +205,9 @@ int MongoDBNodeDataAccess::updateNode(chaos::common::data::CDataWrapper& node_de
         if(node_description.hasKey(chaos::NodeDefinitionKey::NODE_RPC_DOMAIN)) {
             updated_field << chaos::NodeDefinitionKey::NODE_RPC_DOMAIN << node_description.getStringValue(chaos::NodeDefinitionKey::NODE_RPC_DOMAIN);
         }
+         if(node_description.hasKey(chaos::NodeDefinitionKey::NODE_IP_ADDR)) {
+            updated_field << chaos::NodeDefinitionKey::NODE_IP_ADDR << node_description.getStringValue(chaos::NodeDefinitionKey::NODE_IP_ADDR);
+        }
         if(node_description.hasKey(chaos::NodeDefinitionKey::NODE_HOST_NAME)) {
             updated_field << chaos::NodeDefinitionKey::NODE_HOST_NAME << node_description.getStringValue(chaos::NodeDefinitionKey::NODE_HOST_NAME);
         }
