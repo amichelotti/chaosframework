@@ -569,8 +569,13 @@ void AbstractControlUnit::setAlarmMask(const std::string& name, uint32_t mask) {
     fs<<d.getJSONString();
 
     fs.close();
+    if(!getAttributeCache()->exist(DOMAIN_CUSTOM,keyname)){
+      getAttributeCache()->addCustomAttribute(keyname, d);
+      ACULDBG_ << "CREATE custom attribute:'"<<keyname<<"'";
+
+    }
     ACULDBG_ << keyname<<" wrote " <<ss.str()<<" size:"<<d.getJSONString().size();
-    getAttributeCache()->addCustomAttribute(keyname, d);
+
     getAttributeCache()->setCustomAttributeValue(keyname, d);
     fillCachedValueVector(attribute_value_shared_cache->getSharedDomain(DOMAIN_CUSTOM),
                                   cache_custom_attribute_vector);
@@ -3376,7 +3381,7 @@ bool AbstractControlUnit::setStateVariableSeverity(StateVariableType            
   GET_CAT_OR_EXIT(variable_type, false)
   AlarmDescription* alarm = catalog.getAlarmByName(state_variable_name);
   if (alarm == NULL) {
-    ACULERR_<<"Alarm \""<<state_variable_name<<"\" not found";
+    ACULERR_<<"Alarm \""<<state_variable_name<<"\" not found level:"<<(int)state_variable_severity;
     return false;
   }
   alarm->setCurrentSeverity(state_variable_severity);
