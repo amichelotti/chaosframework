@@ -151,7 +151,7 @@ shift $(( OPTIND - 1 ))
 
 if [ ${#on_dir[@]} -eq 0 ]; then
 #    dirs=$(find . -name ".git" -exec grep -sl infn \{\}/config \;)
-    dirs=$(find . -maxdepth $maxdepth -name ".git" -type d -not -path *.repo/* )
+    dirs=$(find . -maxdepth $maxdepth -name ".git" -not -path *.repo/* )
 
     for d in $dirs;do
 	dir=$(dirname $d)
