@@ -109,7 +109,7 @@ void PSMServer::messageHandler( chaos::common::message::ele_t& data) {
     if(data.cd->hasKey(RPC_TS_KEY)){
         ts=data.cd->getInt64Value(RPC_TS_KEY);
         if((now-ts)>(4*chaos::common::constants::CUTimersTimeoutinMSec)){
-            PSMS_LERR << "discarding Message TOO OLD Received from node:"<<src<<" seq_id:"<<seq_id<<" sent:"<<(now-ts)*1.0/1000.0<<" s";//<< " desc:"<<data.cd->getJSONString();
+            PSMS_LERR << "discarding Message TOO OLD Received from node:"<<src<<" seq_id:"<<seq_id<<" sent:"<<(now-ts)*1.0/1000.0<<" s ("<<ts<<" - "<<chaos::common::utility::TimingUtil::toString(ts)<<")";//<< " desc:"<<data.cd->getJSONString();
             return;
         }   
     }
@@ -138,6 +138,7 @@ void PSMServer::messageHandler( chaos::common::message::ele_t& data) {
     if(result_data_pack.get() && src.size()){
      //   PSMS_LDBG << "Something to send back:"<<seq_id << "to node:"<<src;
         prod->pushMsgAsync(*result_data_pack.get(),src);
+        prod->flush();
     }
                     
 }
