@@ -144,7 +144,9 @@ bool PSMClient::submitMessage(NFISharedPtr forwardInfo,
 
         std::string key=forwardInfo->destinationAddr;
         PSMC_LDBG<<seq_id<<"] Reqid:"<<forwardInfo->sender_request_id<<" "<<forwardInfo->sender_node_id<<" Sends message to:"<<forwardInfo->destinationAddr<<" size:"<<forwardInfo->message->getBSONRawSize();//<<":"<<forwardInfo->message->getJSONString();
-        prod->pushMsgAsync(*forwardInfo->message.get(),key);
+        if(prod->pushMsgAsync(*forwardInfo->message.get(),key)!=0){
+            return false;
+        }
         prod->flush();
 
     } catch(CException& ex){

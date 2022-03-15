@@ -162,7 +162,7 @@ retry:
                          * Failed to *enqueue* message for producing.
                          */
 
-    MRDERR_ << "["<<stats.counter<<","<<stats.oks<<","<<stats.errs<<"] Failed to produce to topic " << topic << rd_kafka_err2str(err)<<" size:"<<size;
+    MRDERR_ << "["<<stats.counter<<","<<stats.oks<<","<<stats.errs<<"] Failed to produce to topic '" << topic <<"' err:"<< rd_kafka_err2str(err)<<" size:"<<size;
 
     if (err == RD_KAFKA_RESP_ERR__QUEUE_FULL) {
       /* If the internal queue is full, wait for
