@@ -66,7 +66,7 @@ void QueryDataMsgPSConsumer::messageHandler(chaos::common::message::ele_t& data)
     chaos::common::data::CDataWrapper* cd=data.cd.get();
 
     if (cd&&cd->hasKey(DataPackCommonKey::DPCK_DATASET_TYPE) && cd->hasKey(NodeDefinitionKey::NODE_UNIQUE_ID)) {
-      uint64_t now = TimingUtil::getTimeStamp();
+      int64_t now = TimingUtil::getTimeStamp();
 
       int pktype = cd->getInt32Value(DataPackCommonKey::DPCK_DATASET_TYPE);
 
@@ -80,7 +80,7 @@ void QueryDataMsgPSConsumer::messageHandler(chaos::common::message::ele_t& data)
       }
 
     //  kp          = cd->getStringValue(NodeDefinitionKey::NODE_UNIQUE_ID) + datasetTypeToPostfix(pktype);
-      int32_t lat = 0;
+      int64_t lat = 0;
       if (pktype == DataPackCommonKey::DPCK_DATASET_TYPE_LOG) {
         if (cd->hasKey(MetadataServerLoggingDefinitionKeyRPC::PARAM_NODE_LOGGING_LOG_TIMESTAMP)) {
           ts  = cd->getInt64Value(MetadataServerLoggingDefinitionKeyRPC::PARAM_NODE_LOGGING_LOG_TIMESTAMP);

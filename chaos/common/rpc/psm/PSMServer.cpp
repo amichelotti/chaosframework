@@ -100,7 +100,7 @@ void PSMServer::init(void *init_data) {
 }
 void PSMServer::messageHandler( chaos::common::message::ele_t& data) {
     int64_t seq_id=-1,ts=0;
-    uint64_t now=chaos::common::utility::TimingUtil::getTimeStamp();
+    int64_t now=chaos::common::utility::TimingUtil::getTimeStamp();
     std::string src;
     //chaos::common::data::CDWUniquePtr data(d.cd.release());
     if(data.cd->hasKey(RPC_SEQ_KEY)){
