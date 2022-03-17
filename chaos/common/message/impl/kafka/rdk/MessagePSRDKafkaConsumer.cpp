@@ -244,6 +244,7 @@ void MessagePSRDKafkaConsumer::poll() {
       d.key = rd_kafka_topic_name(rkm->rkt);
       d.off = rkm->offset;
       d.par = rkm->partition;
+
       try {
         d.cd = chaos::common::data::CDWUniquePtr(new chaos::common::data::CDataWrapper((const char*)rkm->payload, rkm->len));
         if(d.cd.get()==NULL){
@@ -251,6 +252,19 @@ void MessagePSRDKafkaConsumer::poll() {
           return;
         }
       } catch (chaos::CException& e) {
+        try {
+          // maybe is json
+          chaos::common::data::CDataWrapper*r=new chaos::common::data::CDataWrapper();
+          r->setSerializedJsonData((const char*)rkm->payload);
+          d.cd = chaos::common::data::CDWUniquePtr(r);
+          stats.oks++;
+
+          handlers[ONARRIVE](d);
+          rd_kafka_message_destroy(rkm);
+          return;
+        } catch (chaos::CException& ee){
+
+        }
         stats.errs++;
         std::stringstream ss;
         ss<< rkm->offset << "," << rkm->partition << " invalid chaos packet from:" << rd_kafka_topic_name(rkm->rkt) << " len:" << rkm->len << " msg:" << e.what();

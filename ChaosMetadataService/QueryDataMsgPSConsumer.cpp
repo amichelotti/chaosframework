@@ -215,11 +215,11 @@ void QueryDataMsgPSConsumer::start() {
   cons->start();
   boost::thread(&QueryDataMsgPSConsumer::subscribeProcess, this, 1);
 
-  /* std::string keysub="CHAOS_LOG";
+   std::string keysub="chaos_web_log";
   if (cons->subscribe(keysub) != 0) {
       ERR <<" cannot subscribe to :" << keysub<<" err:"<<cons->getLastError();
               
-  }*/
+  }
 }
 
 void QueryDataMsgPSConsumer::stop() {
