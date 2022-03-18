@@ -100,7 +100,7 @@ void PSMServer::init(void *init_data) {
 }
 void PSMServer::messageHandler( chaos::common::message::ele_t& data) {
     int64_t seq_id=-1,ts=0;
-    int64_t now=chaos::common::utility::TimingUtil::getTimeStamp();
+    int64_t now=(int64_t)chaos::common::utility::TimingUtil::getTimeStamp();
     std::string src;
     //chaos::common::data::CDWUniquePtr data(d.cd.release());
     if(data.cd->hasKey(RPC_SEQ_KEY)){
@@ -108,7 +108,7 @@ void PSMServer::messageHandler( chaos::common::message::ele_t& data) {
     }
     if(data.cd->hasKey(RPC_TS_KEY)){
         ts=data.cd->getInt64Value(RPC_TS_KEY);
-        if((now-ts)>(4*chaos::common::constants::CUTimersTimeoutinMSec)){
+        if(((int64_t)(now-ts))>((int64_t)(4*chaos::common::constants::CUTimersTimeoutinMSec))){
             PSMS_LERR << "discarding Message TOO OLD Received from node:"<<src<<" seq_id:"<<seq_id<<" sent:"<<(now-ts)*1.0/1000.0<<" s ("<<ts<<" - "<<chaos::common::utility::TimingUtil::toString(ts)<<")";//<< " desc:"<<data.cd->getJSONString();
             return;
         }   
