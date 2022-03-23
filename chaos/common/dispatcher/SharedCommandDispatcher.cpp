@@ -69,6 +69,8 @@ void SharedCommandDispatcher::registerAction(DeclareAction *declareActionClass) 
         if(map_domain_actions().count(domain_name) == 0) {
             map_domain_actions().insert(MapDomainActionsPair(domain_name, ChaosSharedPtr<DomainActions>(new DomainActions(domain_name))));
         }
+        LDBG_<<"Register Action \""<<(*actDescIter)->getActionName()<<"\" Domain:\""<<(*actDescIter)->getActionDomain()<<"\"";
+
         map_domain_actions()[domain_name]->addActionDescriptor(*actDescIter);
     }
 }
@@ -123,7 +125,7 @@ CDWUniquePtr SharedCommandDispatcher::executeCommandSync(CDWUniquePtr rpc_call_d
         }
         
         if(map_domain_actions()[action_domain]->hasActionName(action_name) == false) {
-            MANAGE_ERROR_IN_CDATAWRAPPERPTR(result, -4, "Action Domain \""+action_domain+"\" not registered (data pack \""+rpc_call_data->getJSONString()+"\")", __PRETTY_FUNCTION__)
+            MANAGE_ERROR_IN_CDATAWRAPPERPTR(result, -4, "Action Domain \""+action_domain+"\" doesnt have '"+action_name+"' not registered (data pack \""+rpc_call_data->getJSONString()+"\")", __PRETTY_FUNCTION__)
             return result;
         }
         

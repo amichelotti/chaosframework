@@ -1020,7 +1020,7 @@ void         AbstractControlUnit::doInitRpCheckList() {
       //init on shared cache the all the dataaset with the default value
       //set first timestamp for simulate the run step
       int err;
-      *timestamp_acq_cached_value->getValuePtr<uint64_t>() = TimingUtil::getTimeCorStamp();
+      *timestamp_acq_cached_value->getValuePtr<uint64_t>() = TimingUtil::getTimeStamp();
       attribute_value_shared_cache->getSharedDomain(DOMAIN_SYSTEM).markAllAsChanged();
       /*
                  *if ((err = pushSystemDataset()) != 0) {
@@ -2590,9 +2590,8 @@ void AbstractControlUnit::useCustomHigResolutionTimestamp(bool _use_custom_high_
 }
 
 void AbstractControlUnit::setHigResolutionAcquistionTimestamp(uint64_t high_resolution_timestamp) {
-  if (use_custom_high_resolution_timestamp) {
     *timestamp_hw_acq_cached_value->getValuePtr<uint64_t>() = high_resolution_timestamp;
-  }
+  
 }
 
 void AbstractControlUnit::_updateRunScheduleDelay(uint64_t new_scehdule_delay) {
@@ -2988,7 +2987,7 @@ int AbstractControlUnit::pushOutputDataset() {
   AttributeCache&                       output_attribute_cache = attribute_value_shared_cache->getSharedDomain(DOMAIN_OUTPUT);
   ChaosSharedPtr<SharedCacheLockDomain> r_lock                 = attribute_value_shared_cache->getLockOnDomain(DOMAIN_OUTPUT, false);
   r_lock->lock();
-  uint64_t tscor = TimingUtil::getTimeCorStamp();
+  uint64_t tscor = *timestamp_acq_cached_value->getValuePtr<uint64_t>();//TimingUtil::getTimeStamp();//TimingUtil::getTimeCorStamp();
   if ((tscor - last_push) < ds_update_anyway) {
     //check if something as changed
     if (!output_attribute_cache.hasChanged()) {
@@ -3014,8 +3013,10 @@ int AbstractControlUnit::pushOutputDataset() {
   }*/
 
   output_attribute_dataset->addInt64Value(ControlUnitDatapackCommonKey::RUN_ID, run_id);
-  output_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_TIMESTAMP, tscor /* *timestamp_acq_cached_value->getValuePtr<uint64_t>()*/);
+  output_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_TIMESTAMP,*timestamp_acq_cached_value->getValuePtr<uint64_t>());
   output_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_HIGH_RESOLUTION_TIMESTAMP, *timestamp_hw_acq_cached_value->getValuePtr<uint64_t>());
+  //ACULDBG_<<"TIME DIFF:"<<(tscor-(*timestamp_hw_acq_cached_value->getValuePtr<uint64_t>()/1000));
+
   //add all other output channel
   for (int idx = 0;
        idx < ((int)cache_output_attribute_vector.size()) - 1;  //the device id and timestamp in added out of this list
@@ -3104,13 +3105,15 @@ int AbstractControlUnit::pushInputDataset() {
   AttributeCache& input_attribute_cache = attribute_value_shared_cache->getSharedDomain(DOMAIN_INPUT);
   if (!input_attribute_cache.hasChanged()) return err;
   //get the cdatawrapper for the pack
-  int64_t    cur_us                  = TimingUtil::getTimeStampInMicroseconds();
+ // int64_t    cur_us                  = TimingUtil::getTimeStampInMicroseconds();
   CDWShrdPtr input_attribute_dataset = key_data_storage->getNewDataPackForDomain(KeyDataStorageDomainInput);
   if (input_attribute_dataset.get()) {
     input_attribute_dataset->addInt64Value(ControlUnitDatapackCommonKey::RUN_ID, run_id);
     //input dataset timestamp is added only when pushed on cache
-    input_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_TIMESTAMP, TimingUtil::getTimeCorStamp());
-    input_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_HIGH_RESOLUTION_TIMESTAMP, cur_us);
+   // input_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_TIMESTAMP, TimingUtil::getTimeCorStamp());
+   input_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_TIMESTAMP, TimingUtil::getTimeStamp());
+   
+   // input_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_HIGH_RESOLUTION_TIMESTAMP, cur_us);
     //fill the dataset
     fillCDatawrapperWithCachedValue(cache_input_attribute_vector, *input_attribute_dataset);
 
@@ -3131,14 +3134,14 @@ int AbstractControlUnit::pushCustomDataset() {
   AttributeCache& custom_attribute_cache = attribute_value_shared_cache->getSharedDomain(DOMAIN_CUSTOM);
   if (!custom_attribute_cache.hasChanged()) return err;
   //get the cdatawrapper for the pack
-  int64_t cur_us = TimingUtil::getTimeStampInMicroseconds();
+ // int64_t cur_us = TimingUtil::getTimeStampInMicroseconds();
   if (key_data_storage.get()) {
     CDWShrdPtr custom_attribute_dataset = key_data_storage->getNewDataPackForDomain(KeyDataStorageDomainCustom);
     if (custom_attribute_dataset.get()) {
       custom_attribute_dataset->addInt64Value(ControlUnitDatapackCommonKey::RUN_ID, run_id);
       //input dataset timestamp is added only when pushed on cache
-      custom_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_TIMESTAMP, TimingUtil::getTimeCorStamp());
-      custom_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_HIGH_RESOLUTION_TIMESTAMP, cur_us);
+      custom_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_TIMESTAMP, TimingUtil::getTimeStamp());
+    //  custom_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_HIGH_RESOLUTION_TIMESTAMP, cur_us);
 
       //fill the dataset
       fillCDatawrapperWithCachedValue(cache_custom_attribute_vector, *custom_attribute_dataset);
@@ -3160,7 +3163,7 @@ int AbstractControlUnit::pushCustomDataset() {
 int AbstractControlUnit::pushSystemDataset() {
   int             err                    = 0;
   AttributeCache& system_attribute_cache = attribute_value_shared_cache->getSharedDomain(DOMAIN_SYSTEM);
-  uint64_t        tscor                  = TimingUtil::getTimeCorStamp();
+  uint64_t        tscor                  = TimingUtil::getTimeStamp();
   if ((tscor - last_push) < ds_update_anyway) {
     //check if something as changed
     if (!system_attribute_cache.hasChanged()) {
@@ -3179,7 +3182,7 @@ int AbstractControlUnit::pushSystemDataset() {
     system_attribute_dataset->addInt64Value(ControlUnitDatapackCommonKey::RUN_ID, run_id);
     //input dataset timestamp is added only when pushed on cache
     system_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_TIMESTAMP, tscor);
-    system_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_HIGH_RESOLUTION_TIMESTAMP, cur_us);
+   // system_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_HIGH_RESOLUTION_TIMESTAMP, cur_us);
     //fill the dataset
     fillCDatawrapperWithCachedValue(cache_system_attribute_vector, *system_attribute_dataset);
     //ACULDBG_ << system_attribute_dataset->getJSONString();
@@ -3201,7 +3204,7 @@ CDWShrdPtr AbstractControlUnit::writeCatalogOnCDataWrapper(AlarmCatalog& catalog
   if (attribute_dataset) {
     //fill datapack with
     //! the dataaset can be pushed also in other moment
-    attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_TIMESTAMP, TimingUtil::getTimeCorStamp());
+    attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_TIMESTAMP, TimingUtil::getTimeStamp());
     attribute_dataset->addInt64Value(ControlUnitDatapackCommonKey::RUN_ID, run_id);
     //scan all alarm ad create the datapack
     size_t alarm_size = catalog.size();

@@ -24,8 +24,6 @@
 
 
 #include <string>
-#include <boost/shared_ptr.hpp>
-
 #include <chaos/common/chaos_types.h>
 #include <chaos/common/thread/ChaosThread.h>
 #include <chaos/common/dispatcher/AbstractCommandDispatcher.h>
