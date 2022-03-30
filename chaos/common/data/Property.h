@@ -101,7 +101,13 @@ namespace data {
         return ret; }, [](AbstractControlUnit *thi, const std::string &name, const chaos::common::data::CDataWrapper &p) -> chaos::common::data::CDWUniquePtr { \
           ((typ*)thi)->var=p.getStringValue(PROPERTY_VALUE_KEY);\
           return p.clone(); });
-
+#define CREATE_CU_STRING_ROPROP(n, pub, var) \
+  createProperty(                               \
+      n, var, pub, [](AbstractControlUnit *thi, const std::string &name, const chaos::common::data::CDataWrapper &p) -> chaos::common::data::CDWUniquePtr {\
+        chaos::common::data::CDWUniquePtr ret(new chaos::common::data::CDataWrapper());\
+        ret->addStringValue(PROPERTY_VALUE_KEY,var);\
+        return ret; }, [](AbstractControlUnit *thi, const std::string &name, const chaos::common::data::CDataWrapper &p) -> chaos::common::data::CDWUniquePtr { \
+          return p.clone(); });
 #define FILLPROPERTYCD(cw, value, min, max, incr) \
   cw->append(PROPERTY_VALUE_KEY, value);          \
   cw->append(PROPERTY_VALUE_MIN_KEY, min);        \
