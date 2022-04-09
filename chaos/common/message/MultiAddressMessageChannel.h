@@ -153,6 +153,8 @@ namespace chaos {
                  Initialization phase of the channel
                  */
                 virtual void deinit();
+                std::string last_used_address;
+
             public:
                 //!@ URLHAServiceFeeder::setAutoEvitionForDeadUrl
                 void setAutoEvitionForDeadUrl(bool auto_eviction);

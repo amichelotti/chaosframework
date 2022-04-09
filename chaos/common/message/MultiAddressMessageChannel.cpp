@@ -42,6 +42,7 @@ MessageChannel(message_broker,
 service_feeder("MultiAddressMessageChannel",
                this,
                this),
+               last_used_address(chaos::common::constants::CHAOS_ADMIN_ADMIN_TOPIC),
 last_retry(0){}
 
 //!Base constructor
@@ -53,6 +54,7 @@ MessageChannel(message_broker,
 service_feeder("MultiAddressMessageChannel",
                this,
                this),
+               last_used_address(chaos::common::constants::CHAOS_ADMIN_ADMIN_TOPIC),
 last_retry(0){
     addNode(node_address);
 }
@@ -202,18 +204,25 @@ ChaosUniquePtr<MessageRequestFuture> MultiAddressMessageChannel::_sendRequestWit
                                                                                         std::string& used_remote_address) {
     ChaosUniquePtr<MessageRequestFuture> result;
     MMCFeederService *service =  static_cast<MMCFeederService*>(service_feeder.getService());
-    if(service) {
+    if(service && service->ip_port.size()) {
         DEBUG_CODE(MAMC_DBG << "Sending request to:" << service->ip_port<<" action:"<<action_name<<" domain:"<<action_domain<<" request pack:"<<((request_pack.get())?request_pack->getJSONString():""));
 
         result = MessageChannel::sendRequestWithFuture((used_remote_address = service->ip_port),
                                                        action_domain,
                                                        action_name,
                                                        MOVE(request_pack));
+        last_used_address=service->ip_port;
+        
 
     } else {
+        used_remote_address=last_used_address;
+        
         MAMC_ERR << "Cannot get Service feeder, Sending request to:'" << used_remote_address<<"'  action:"<<action_name<<" domain:"<<action_domain<<" request pack:"<<((request_pack.get())?request_pack->getJSONString():"");
 
-        used_remote_address.clear();
+        result = MessageChannel::sendRequestWithFuture(used_remote_address,
+                                                       action_domain,
+                                                       action_name,
+                                                       MOVE(request_pack));
 
     }
     return result;

@@ -68,6 +68,8 @@ class ChaosManager : public chaos::common::utility::SingletonCW<ChaosManager>{
 
   chaos::common::data::CDWShrdPtr  getLiveChannel(const std::string& key, int domain);
   chaos::common::data::VectorCDWShrdPtr getLiveChannel(const std::vector<std::string>& channels);
+  int  putLiveChannel(const std::string& key, const chaos::common::data::CDataWrapper& val);
+
 
   int nodeSearch(const std::string&              unique_id_filter,
                  chaos::NodeType::NodeSearchType node_type_filter,
