@@ -438,7 +438,7 @@ void AbstractControlUnit::_defineActionAndDataset(CDataWrapper& setup_configurat
 
   addActionDescritionInstance<AbstractControlUnit>(this, &AbstractControlUnit::_setDriverProperties, ControlUnitNodeDomainAndActionRPC::CONTROL_UNIT_DRV_SET_PROPERTIES, "method for set properties of a driver");
   addActionDescritionInstance<AbstractControlUnit>(this, &AbstractControlUnit::_getDriverProperties, ControlUnitNodeDomainAndActionRPC::CONTROL_UNIT_DRV_GET_PROPERTIES, "method for get properties of a driver");
-  addActionDescritionInstance<AbstractControlUnit>(this, &AbstractControlUnit::clrAlarm, NodeDomainAndActionRPC::ACTION_NODE_CLRALRM, "method for clear alarm");
+  addActionDescritionInstance<AbstractControlUnit>(this, &AbstractControlUnit::clearAlarm, NodeDomainAndActionRPC::ACTION_NODE_CLRALRM, "method for clear alarm");
 
   addActionDescritionInstance<AbstractControlUnit>(this, &AbstractControlUnit::setAlarm, ControlUnitNodeDomainAndActionRPC::CONTROL_UNIT_SET_ALARM, "method for set alarms and  masks");
 
@@ -615,16 +615,21 @@ void AbstractControlUnit::setAlarmMask(const std::string& name, uint32_t mask) {
     }
     return ret;
   }
-chaos::common::data::CDWUniquePtr AbstractControlUnit::clrAlarm(chaos::common::data::CDWUniquePtr data) {
+chaos::common::data::CDWUniquePtr AbstractControlUnit::clearAlarm(chaos::common::data::CDWUniquePtr data) {
   if (data.get()) {
     if (!data->hasKey("value")) {
       data->addInt32Value("value", 0);
+    }
+     if (!data->hasKey("all")) {
+      data->addBoolValue("all",true);
     }
     return setAlarm(MOVE(data));
   }
   return data;
 }
 chaos::common::data::CDWUniquePtr AbstractControlUnit::setAlarm(chaos::common::data::CDWUniquePtr data) {
+    ACULDBG_ << "Set Alarm "<< (data.get()?data->getJSONString():" NO DATA");
+
   if (data.get()) {
     bool              mod           = false;
     AlarmCatalog&     catalogcu     = map_variable_catalog[StateVariableTypeAlarmCU];
@@ -671,18 +676,18 @@ chaos::common::data::CDWUniquePtr AbstractControlUnit::setAlarm(chaos::common::d
         ACULDBG_ << "Set mask of all Alarms to :" << val;
         catalogcu.setAllAlarmMask(val);
         catalogdev.setAllAlarmMask(val);
-        AttributeCache& output_cache = attribute_value_shared_cache->getSharedDomain(DOMAIN_SYSTEM);
 
-        output_cache.getValueSettingByName(stateVariableEnumToName(StateVariableTypeAlarmCU))->setValue(CDataVariant(catalog.maxLevel()));
-        output_cache.getValueSettingByName(stateVariableEnumToName(StateVariableTypeAlarmDEV))->setValue(CDataVariant(catalog.maxLevel()));
+        
       }
     }
     if (mod) {
       AttributeCache& output_cache = attribute_value_shared_cache->getSharedDomain(DOMAIN_SYSTEM);
-
-      output_cache.getValueSettingByName(stateVariableEnumToName(variable_type))->setValue(CDataVariant(catalog.maxLevel()));
+      output_cache.getValueSettingByName(stateVariableEnumToName(StateVariableTypeAlarmCU))->setValue(CDataVariant(catalogcu.maxLevel()));
+      output_cache.getValueSettingByName(stateVariableEnumToName(StateVariableTypeAlarmDEV))->setValue(CDataVariant(catalogdev.maxLevel()));
+      //output_cache.getValueSettingByName(stateVariableEnumToName(variable_type))->setValue(CDataVariant(catalog.maxLevel()));
       pushDevAlarmDataset();
       pushCUAlarmDataset();
+      pushSystemDataset();
       HealtManager::getInstance()->addNodeMetricValue(control_unit_id,
                                                   ControlUnitHealtDefinitionValue::CU_HEALT_OUTPUT_ALARM_LEVEL,
                                                   std::max(catalogcu.maxLevel(), catalogdev.maxLevel()));

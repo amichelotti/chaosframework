@@ -759,7 +759,8 @@ class AbstractControlUnit : public DeclareAction,
 
   chaos::common::data::CDWUniquePtr setAlarm(chaos::common::data::CDWUniquePtr data);
 
-  chaos::common::data::CDWUniquePtr clrAlarm(chaos::common::data::CDWUniquePtr data);
+  //chaos::common::data::CDWUniquePtr clrAlarm(chaos::common::data::CDWUniquePtr data);
+  virtual chaos::common::data::CDWUniquePtr clearAlarm(chaos::common::data::CDWUniquePtr data);
 
   //!check if attribute hase been autorized by handler
   bool isInputAttributeChangeAuthorizedByHandler(const std::string& attr_name);
