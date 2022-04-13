@@ -29,6 +29,7 @@
 #include <chaos/cu_toolkit/control_manager/script/api/api.h>
 #include <chaos/cu_toolkit/data_manager/DataManager.h>
 #include "windowsCompliant.h"
+#include <chaos/common/direct_io/HttpStreamManager.h>
 using namespace std;
 using namespace chaos::cu;
 using namespace chaos::cu::data_manager;
@@ -155,6 +156,22 @@ void ChaosCUToolkit::init(void* init_data) {
       InizializableService::initImplementation(common::external_unit::ExternalUnitManager::getInstance(), NULL, "ExternalUnitManager", __PRETTY_FUNCTION__);
     }
 
+    if (GlobalConfiguration::getInstance()->hasOption(chaos::InitOption::OPT_DIRECT_HTTP_STREAM_ENABLE) &&
+        GlobalConfiguration::getInstance()->getOption<bool>(chaos::InitOption::OPT_DIRECT_HTTP_STREAM_ENABLE)) {
+      //initilize stream
+      
+      if(GlobalConfiguration::getInstance()->hasOption(chaos::InitOption::OPT_DIRECT_HTTP_STREAM_PORT)){
+        uint32_t port=GlobalConfiguration::getInstance()->getOption<uint32_t>(chaos::InitOption::OPT_DIRECT_HTTP_STREAM_PORT);
+        char sport[256];
+        sprintf(sport,"%d",port);
+        InizializableService::initImplementation(common::direct_io::HttpStreamManager::getInstance(), (void*)sport, "HttpStreamManager", __PRETTY_FUNCTION__);
+
+      } else {
+        InizializableService::initImplementation(common::direct_io::HttpStreamManager::getInstance(), NULL, "HttpStreamManager", __PRETTY_FUNCTION__);
+
+      }
+    }
+
     LAPP_ << "Control Manager Initialized";
 
     LAPP_ << "!CHAOS Control Unit System Initialized";
@@ -219,6 +236,11 @@ void ChaosCUToolkit::deinit() {
       GlobalConfiguration::getInstance()->getOption<bool>(chaos::common::external_unit::InitOption::OPT_UNIT_GATEWAY_ENABLE)) {
     //initilize unit gateway
     InizializableService::deinitImplementation(common::external_unit::ExternalUnitManager::getInstance(), "ExternalUnitManager", __PRETTY_FUNCTION__);
+  }
+    if (GlobalConfiguration::getInstance()->hasOption(chaos::InitOption::OPT_DIRECT_HTTP_STREAM_ENABLE) &&
+        GlobalConfiguration::getInstance()->getOption<bool>(chaos::InitOption::OPT_DIRECT_HTTP_STREAM_ENABLE)) {
+        InizializableService::deinitImplementation(common::direct_io::HttpStreamManager::getInstance(), "HttpStreamManager", __PRETTY_FUNCTION__);
+
   }
   CHAOS_NOT_THROW(StartableService::deinitImplementation(CommandManager::getInstance(), "CommandManager", "ChaosCUToolkit::stop"););
   CHAOS_NOT_THROW(StartableService::deinitImplementation(ControlManager::getInstance(), "ControlManager", "ChaosCUToolkit::stop"););

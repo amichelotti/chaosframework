@@ -441,6 +441,7 @@ SET(common_lib_src ${common_lib_src}
                     direct_io/channel/DirectIOPerformanceClientChannel.cpp
                     direct_io/channel/DirectIOSystemAPIServerChannel.cpp
                     direct_io/channel/DirectIOSystemAPIClientChannel.cpp
+                    direct_io/HttpStreamManager.cpp
                     )
 
 SET(common_lib_src ${common_lib_src}
