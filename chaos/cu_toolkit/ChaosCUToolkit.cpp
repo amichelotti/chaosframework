@@ -159,17 +159,25 @@ void ChaosCUToolkit::init(void* init_data) {
     if (GlobalConfiguration::getInstance()->hasOption(chaos::InitOption::OPT_DIRECT_HTTP_STREAM_ENABLE) &&
         GlobalConfiguration::getInstance()->getOption<bool>(chaos::InitOption::OPT_DIRECT_HTTP_STREAM_ENABLE)) {
       //initilize stream
-      
-      if(GlobalConfiguration::getInstance()->hasOption(chaos::InitOption::OPT_DIRECT_HTTP_STREAM_PORT)){
-        uint32_t port=GlobalConfiguration::getInstance()->getOption<uint32_t>(chaos::InitOption::OPT_DIRECT_HTTP_STREAM_PORT);
-        char sport[256];
-        sprintf(sport,"%d",port);
-        InizializableService::initImplementation(common::direct_io::HttpStreamManager::getInstance(), (void*)sport, "HttpStreamManager", __PRETTY_FUNCTION__);
+      int port=9080;
+      uint32_t workers=1;
+      std::string host=chaos::GlobalConfiguration::getInstance()->getLocalServerAddress();
+      std::stringstream ss;
 
-      } else {
-        InizializableService::initImplementation(common::direct_io::HttpStreamManager::getInstance(), NULL, "HttpStreamManager", __PRETTY_FUNCTION__);
+      if(GlobalConfiguration::getInstance()->hasOption(chaos::InitOption::OPT_DIRECT_HTTP_STREAM_PORT)){
+        port=GlobalConfiguration::getInstance()->getOption<uint32_t>(chaos::InitOption::OPT_DIRECT_HTTP_STREAM_PORT);
 
       }
+      if(GlobalConfiguration::getInstance()->hasOption(chaos::InitOption::OPT_DIRECT_HTTP_STREAM_WORKER)){
+        workers=GlobalConfiguration::getInstance()->getOption<uint32_t>(chaos::InitOption::OPT_DIRECT_HTTP_STREAM_WORKER);
+      }
+      if(GlobalConfiguration::getInstance()->hasOption(chaos::InitOption::OPT_DIRECT_HTTP_STREAM_HOST)){
+        host=GlobalConfiguration::getInstance()->getOption<std::string>(chaos::InitOption::OPT_DIRECT_HTTP_STREAM_HOST);
+      }
+      ss<<host<<":"<<port<<":"<<workers;
+
+      InizializableService::initImplementation(common::direct_io::HttpStreamManager::getInstance(), (void*)ss.str().c_str(), "HttpStreamManager", __PRETTY_FUNCTION__);
+
     }
 
     LAPP_ << "Control Manager Initialized";

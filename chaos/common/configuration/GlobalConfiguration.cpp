@@ -153,7 +153,10 @@ void GlobalConfiguration::preParseStartupParameters()  {
 
         addOption(ext_unt::InitOption::OPT_UNIT_GATEWAY_ENABLE, po::value< bool >()->zero_tokens(), ext_unt::InitOption::OPT_UNIT_GATEWAY_ENABLE_DESC);
         addOption(InitOption::OPT_DIRECT_HTTP_STREAM_ENABLE, po::value< bool >()->zero_tokens(), "Enable direct streaming of images ");
-        addOption(InitOption::OPT_DIRECT_HTTP_STREAM_PORT, po::value<uint32_t>()->default_value(9080), "Default server http port for streaming");
+        addOption(InitOption::OPT_DIRECT_HTTP_STREAM_PORT, po::value<uint32_t>()->default_value(STREAMER_PORT), "Default server http port for streaming");
+        addOption(InitOption::OPT_DIRECT_HTTP_STREAM_WORKER, po::value<uint32_t>()->default_value(1), "Number of stream thread");
+
+        addOption(InitOption::OPT_DIRECT_HTTP_STREAM_HOST, po::value<std::string>()->default_value(""), "Default server http host ip for streaming, empty autodetect");
 
         addOption(ext_unt::InitOption::OPT_UNIT_GATEWAY_WORKER_THREAD_NUMBER, po::value< uint32_t >()->default_value(ext_unt::InitOption::OPT_UNIT_GATEWAY_WORKER_THREAD_NUMBER_DEFAULT), ext_unt::InitOption::OPT_UNIT_GATEWAY_WORKER_THREAD_NUMBER_DESC);
         addOption(ext_unt::InitOption::OPT_UNIT_GATEWAY_ADAPTER_KV_PARAM, po::value< std::vector<std::string> >(), ext_unt::InitOption::OPT_UNIT_GATEWAY_ADAPTER_KV_PARAM_DESC);

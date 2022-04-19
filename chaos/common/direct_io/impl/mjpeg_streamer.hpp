@@ -657,7 +657,7 @@ class Publisher : public nadjieb::utils::NonCopyable, public nadjieb::utils::Run
 
         std::unique_lock<std::mutex> payloads_lock(payloads_mtx_);
         payloads_.emplace(path, buffer);
-        payloads_lock.unlock();
+      //  payloads_lock.unlock();
         condition_.notify_one();
     }
 

@@ -3,7 +3,6 @@
 namespace nadjieb {
     class MJPEGStreamer;
 }
-#define STREAMER_PORT 8090
 
 namespace chaos {
 	namespace common {
