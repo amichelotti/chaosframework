@@ -176,6 +176,7 @@ ChaosManager::~ChaosManager() {
       
 
   }
+  return -1;
   }
 
 int ChaosManager::init(const chaos::common::data::CDataWrapper& best_available_da_ptr) {

@@ -171,7 +171,7 @@ void ChaosCUToolkit::init(void* init_data) {
       if(GlobalConfiguration::getInstance()->hasOption(chaos::InitOption::OPT_DIRECT_HTTP_STREAM_WORKER)){
         workers=GlobalConfiguration::getInstance()->getOption<uint32_t>(chaos::InitOption::OPT_DIRECT_HTTP_STREAM_WORKER);
       }
-      if(GlobalConfiguration::getInstance()->hasOption(chaos::InitOption::OPT_DIRECT_HTTP_STREAM_HOST)){
+      if(GlobalConfiguration::getInstance()->hasOption(chaos::InitOption::OPT_DIRECT_HTTP_STREAM_HOST)&&(GlobalConfiguration::getInstance()->getOption<std::string>(chaos::InitOption::OPT_DIRECT_HTTP_STREAM_HOST).size()>0)){
         host=GlobalConfiguration::getInstance()->getOption<std::string>(chaos::InitOption::OPT_DIRECT_HTTP_STREAM_HOST);
       }
       ss<<host<<":"<<port<<":"<<workers;
