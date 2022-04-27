@@ -76,7 +76,7 @@ ArrayPointer<CDataWrapper>* IODataDriver::retriveData(const std::string& key)  {
 CDataWrapper* IODataDriver::updateConfiguration(CDataWrapper*){
     return NULL;
 }
-int IODataDriver::subscribe(const std::string&key){
+int IODataDriver::subscribe(const std::string&key,bool sub){
     IODataDriverLERR << "Not implemented";
     return 0;
 

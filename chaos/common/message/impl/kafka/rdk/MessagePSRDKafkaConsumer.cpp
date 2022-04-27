@@ -145,8 +145,8 @@ int MessagePSRDKafkaConsumer::applyConfiguration() {
   return ret;
 }
 
-int MessagePSRDKafkaConsumer::subscribe(const std::string& key) {
-  int ret=MessagePSConsumer::subscribe(key);
+int MessagePSRDKafkaConsumer::subscribe(const std::string& key,bool sub) {
+  int ret=MessagePSConsumer::subscribe(key,sub);
   if(ret!=0){
     return ret;
   }
@@ -155,29 +155,45 @@ int MessagePSRDKafkaConsumer::subscribe(const std::string& key) {
     MRDERR_ << errstr;
     return -5;
   }
-  rd_kafka_topic_partition_list_t* subscription;
-  subscription = rd_kafka_topic_partition_list_new(keylist.size());
-  for (std::set<std::string>::iterator i = keylist.begin(); i != keylist.end(); i++) {
-    rd_kafka_topic_partition_list_add(subscription,
-                                      (*i).c_str(),
-                                      /* the partition is ignored
-                                                   * by subscribe() */
-                                      RD_KAFKA_PARTITION_UA);
-    // MRDDBG_<<" subscribing to "<<*i;
+  rd_kafka_topic_partition_list_t* subscription=NULL;
+  rd_kafka_resp_err_t err;
+  if(keylist.size()==0){
+     err=rd_kafka_unsubscribe(rk);
+  } else {
+    subscription = rd_kafka_topic_partition_list_new(keylist.size());
+    for (std::set<std::string>::iterator i = keylist.begin(); i != keylist.end(); i++) {
+      rd_kafka_topic_partition_list_add(subscription,
+                                        (*i).c_str(),
+                                        /* the partition is ignored
+                                                    * by subscribe() */
+                                        RD_KAFKA_PARTITION_UA);
+      // MRDDBG_<<" subscribing to "<<*i;
+    }
+    err = rd_kafka_subscribe(rk, subscription);
   }
-  rd_kafka_resp_err_t err = rd_kafka_subscribe(rk, subscription);
   if (err) {
-    MRDERR_ << "Failed to subscribe to " << subscription->cnt << " topics, group:\"" << groupid << "\" err:" << rd_kafka_err2str(err);
+    if(subscription){
+      MRDERR_ << "Failed to subscribe to " << subscription->cnt << " topics, group:\"" << groupid << "\" err:" << rd_kafka_err2str(err);
+      rd_kafka_topic_partition_list_destroy(subscription);
+
+    } else {
+      MRDERR_ << "Failed to unsubscribe, group:\"" << groupid << "\" err:" << rd_kafka_err2str(err);
+
+    }
     errstr = rd_kafka_err2str(err);
-    rd_kafka_topic_partition_list_destroy(subscription);
-    rd_kafka_destroy(rk);
-    rk=NULL;
+   // rd_kafka_destroy(rk);
+    //rk=NULL;
     return -20;
   }
+  if(subscription){
 
-  MRDDBG_ << " subscribing items " << subscription->cnt;
+    MRDDBG_ << " subscribing items " << subscription->cnt;
 
-  rd_kafka_topic_partition_list_destroy(subscription);
+    rd_kafka_topic_partition_list_destroy(subscription);
+  } else {
+        MRDDBG_ << " unsubscribed";
+
+  }
   return 0;
 }
 

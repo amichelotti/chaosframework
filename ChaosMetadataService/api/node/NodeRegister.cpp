@@ -57,10 +57,12 @@ CDWUniquePtr NodeRegister::execute(CDWUniquePtr api_data){
     }
     
     const std::string node_type = api_data->getStringValue(NodeDefinitionKey::NODE_TYPE);
-    if(node_type.compare(NodeType::NODE_TYPE_UNIT_SERVER) == 0) {
+    if((node_type.compare(NodeType::NODE_TYPE_UNIT_SERVER) == 0)) {
         result = unitServerRegistration(MOVE(api_data));
-    } else if(boost::starts_with(node_type, NodeType::NODE_TYPE_CONTROL_UNIT)||boost::starts_with(node_type, NodeType::NODE_TYPE_ROOT)) {
+    } else if(boost::starts_with(node_type, NodeType::NODE_TYPE_CONTROL_UNIT)) {
         result = controlUnitRegistration(MOVE(api_data));
+    } else if(boost::starts_with(node_type, NodeType::NODE_TYPE_ROOT)) {
+        result = euRegistration(MOVE(api_data));
     } else if(boost::starts_with(node_type, NodeType::NODE_TYPE_AGENT)) {
         result = agentRegistration(MOVE(api_data));
     } else {
@@ -474,4 +476,153 @@ CDWUniquePtr NodeRegister::controlUnitRegistration(CDWUniquePtr api_data) {
     }
     return CDWUniquePtr();
 }
+
+CDWUniquePtr NodeRegister::euRegistration(CDWUniquePtr api_data) {
+    int         err = 0;
+    uint64_t    command_id;
+    std::string us_host;
+    bool        is_present = false;
+    bool        loaded_from_unit_server = false;
+    bool        has_an_unit_server = false;
+    CHECK_KEY_THROW_AND_LOG(api_data, NodeDefinitionKey::NODE_RPC_DOMAIN, USRA_ERR, -1, "The rpc domain key is mandatory")
+    CHECK_KEY_THROW_AND_LOG(api_data, ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_DESCRIPTION, USRA_ERR, -2, "The cudk_ds_desc key is mandatory")
+    
+    //fetch the unit server data access
+    GET_DATA_ACCESS(ControlUnitDataAccess, cu_da, -3)
+    GET_DATA_ACCESS(NodeDataAccess, n_da, -4)
+    GET_DATA_ACCESS(UnitServerDataAccess, us_da, -5)
+    
+    //allocate datapack for batch command
+    ChaosUniquePtr<chaos::common::data::CDataWrapper> ack_command(new CDataWrapper());
+    const std::string cu_uid = api_data->getStringValue(NodeDefinitionKey::NODE_UNIQUE_ID);
+    if(api_data->hasKey(chaos::NodeDefinitionKey::NODE_TIMESTAMP)){
+        uint32_t lat=( chaos::common::utility::TimingUtil::getTimeStamp()-api_data->getInt64Value(chaos::NodeDefinitionKey::NODE_TIMESTAMP));
+        if(lat>chaos::common::constants::SkipDatasetOlderThan){
+            USRA_ERR << "Registration timestamp too old " << cu_uid<<" "<<lat/1000.0<<" sec old";
+            return CDWUniquePtr();
+        }
+    }
+    USRA_INFO << "Register Execution unit " << cu_uid;
+    ChaosMetadataService::getInstance()->notifyNewNode(cu_uid); 
+    //set cu id to the batch command datapack
+    ack_command->addStringValue(NodeDefinitionKey::NODE_UNIQUE_ID,
+                                cu_uid);
+    //aset rpc address
+    ack_command->addStringValue(NodeDefinitionKey::NODE_RPC_ADDR,
+                                api_data->getStringValue(NodeDefinitionKey::NODE_RPC_ADDR));
+    //aset rpc address
+    ack_command->addStringValue(NodeDefinitionKey::NODE_RPC_DOMAIN,
+                                api_data->getStringValue(NodeDefinitionKey::NODE_RPC_DOMAIN));
+    
+    try {
+        //check if the cu has been loaded from unit server
+        if(api_data->hasKey("mds_control_key")) {
+            const std::string mds_ctrl_key = api_data->getStringValue("mds_control_key");
+            loaded_from_unit_server = (mds_ctrl_key.compare("mds") == 0);
+        }
+        
+    
+        
+        //check if the node is present
+        if((err = cu_da->checkPresence(cu_uid, is_present))) {
+            LOG_AND_TROW(USRA_ERR, -8, "error checking the execution unit presence");
+        } if (is_present) {
+            if((err = n_da->updateNode(*api_data))) {
+                LOG_AND_TROW(USRA_ERR, err, "Error updating default node field");
+            }
+            
+            if((err = cu_da->setDataset(cu_uid,
+                                        *api_data))){
+                LOG_AND_TROW(USRA_ERR, err, "error setting the dataset of the execution unit");
+            }
+            //ok->registered
+            ack_command->addInt32Value(MetadataServerNodeDefinitionKeyRPC::PARAM_REGISTER_NODE_RESULT,
+                                       ErrorCode::EC_MDS_NODE_REGISTRATION_OK);
+        } else {
+            
+            USRA_INFO << "Execution Unit " << cu_uid << " not present, check if it is hosted by an unit server";
+            //we need to check if the control unit is assocaite to an unit server
+            if((err = us_da->getUnitserverForControlUnitID(cu_uid,
+                                                           us_host) == 0)){
+                if(us_host.size() == 0) {
+                    USRA_INFO << "execution unit " << cu_uid << " doesn't belong to any execution so can ste forwardar";
+                    
+                    if((err = cu_da->insertNewControlUnit(*api_data))) {
+                        LOG_AND_TROW_FORMATTED(USRA_ERR, err, "Error creating new execution unit %1%",%cu_uid);
+                    }
+                    
+                    if((err = cu_da->setDataset(cu_uid,
+                                                *api_data))){
+                        LOG_AND_TROW_FORMATTED(USRA_ERR, err, "error setting the dataset for the execution unit %1%",%cu_uid);
+                    }
+                }else {
+                    if(loaded_from_unit_server == false) {
+                        //need to be stoped becaus the cu need be loaded form unit server
+                        USRA_ERR << "The execution unit "<< cu_uid <<" need to be stoped because the cu need be loaded form unit server";
+                        //actiually only the control unit hosted by unit server can be registered
+                        ack_command->addInt32Value(MetadataServerNodeDefinitionKeyRPC::PARAM_REGISTER_NODE_RESULT,
+                                                   ErrorCode::EC_MDS_NODE_REGISTRATION_FAILURE_INVALID_ALIAS);
+                    }
+                }
+            } else {
+                LOG_AND_TROW_FORMATTED(USRA_ERR, -9, "Error searching unit server for execution unit %1% with code %2%",%cu_uid%err);
+            }
+            
+        }
+        
+        //!save porperty
+        PropertyGroupVectorSDWrapper pgv_swd;
+        pgv_swd.serialization_key = "property";
+        pgv_swd.deserialize(api_data.get());
+        if((err = n_da->setProperty(cu_uid, pgv_swd()))) {
+            LOG_AND_TROW_FORMATTED(USRA_ERR, err, "Error on node porperty update for %1%",%cu_uid);
+        }
+        
+        //set the code to inform cu that all is gone well
+        command_id = getBatchExecutor()->submitCommand(GET_MDS_COMMAND_ALIAS(batch::control_unit::RegistrationAckBatchCommand),
+                                                       ack_command->clone().release(),
+                                                       0,
+                                                       1000);
+        USRA_INFO << "Sent ack for registration ok to the execution unit " << cu_uid << " with commadn id:" <<command_id;
+      
+        
+        ///
+        if(api_data->hasKey(NodeDefinitionKey::NODE_TYPE)&&(api_data->getStringValue(NodeDefinitionKey::NODE_TYPE)==NodeType::NODE_TYPE_ROOT)){
+            CDWUniquePtr cmd_load=ack_command->clone();
+            CDWUniquePtr cmd_init=ack_command->clone();
+
+            cmd_init->addInt32Value("action", (int32_t)0);
+            cmd_load->addBoolValue("load", true);
+
+
+            command_id =getBatchExecutor()->submitCommand(GET_MDS_COMMAND_ALIAS(batch::unit_server::LoadUnloadControlUnit),cmd_load.release(),0,1000);
+            USRA_INFO << "Sent load for registration ok to the execution unit " << cu_uid << " with commadn id:" <<command_id;
+
+            command_id =getBatchExecutor()->submitCommand(GET_MDS_COMMAND_ALIAS(batch::control_unit::IDSTControlUnitBatchCommand),cmd_init.release(),0,1000);
+            USRA_INFO << "Sent Init for registration ok to the execution unit " << cu_uid << " with commadn id:" <<command_id;
+
+        }
+                                                   
+        ///
+
+    } catch (chaos::CException& ex) {
+        ack_command->addInt32Value(MetadataServerNodeDefinitionKeyRPC::PARAM_REGISTER_NODE_RESULT,
+                                   ErrorCode::EC_MDS_NODE_REGISTRATION_FAILURE_INVALID_ALIAS);
+        
+        USRA_ERR << "Sent ack for registration denied to the execution unit " << cu_uid;
+        command_id = getBatchExecutor()->submitCommand(GET_MDS_COMMAND_ALIAS(batch::control_unit::RegistrationAckBatchCommand),
+                                                       ack_command->clone().release());
+        throw;
+    } catch (...) {
+        USRA_ERR << "Sent ack for registration denied to the execution server " << cu_uid;
+        //somenthing goes worng so deny the registration
+        ack_command->addInt32Value(MetadataServerNodeDefinitionKeyRPC::PARAM_REGISTER_NODE_RESULT,
+                                   ErrorCode::EC_MDS_NODE_REGISTRATION_FAILURE_INVALID_ALIAS);
+        command_id = getBatchExecutor()->submitCommand(GET_MDS_COMMAND_ALIAS(batch::control_unit::RegistrationAckBatchCommand),
+                                                       ack_command->clone().release());
+        LOG_AND_TROW(USRA_ERR, -6, "Unknown exception")
+    }
+    return CDWUniquePtr();
+}
+
 

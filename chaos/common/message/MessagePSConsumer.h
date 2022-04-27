@@ -39,7 +39,7 @@ namespace chaos {
                 ele_uptr_t getMsg(int timeo=MSG_TIMEOUT_MS);
                // virtual int retriveMsg(const chaos::common::data::CDataWrapper&data,const std::string&key,const int32_t pnum=0);
 
-                virtual int subscribe(const std::string& key);
+                virtual int subscribe(const std::string& key,bool sub=true);
 
             };
         }

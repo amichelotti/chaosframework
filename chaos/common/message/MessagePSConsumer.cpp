@@ -67,7 +67,7 @@ ele_uptr_t MessagePSConsumer::getMsg(int timeo) {
   return ele_uptr_t();
 }
 
-int MessagePSConsumer::subscribe(const std::string& key) {
+int MessagePSConsumer::subscribe(const std::string& key,bool sub) {
   std::string topic = key;
   if(key.size()==0){
       MRDERR_ << " empty subscription name";
@@ -76,7 +76,11 @@ int MessagePSConsumer::subscribe(const std::string& key) {
   std::replace(topic.begin(), topic.end(), '/', '.');
   std::replace(topic.begin(), topic.end(), ':', '.');
 
-  keylist.insert(topic);
+  if(sub){
+    keylist.insert(topic);
+  } else {
+    keylist.erase(topic);
+  }
   //MRDDBG_ <<keylist.size()<< "] subscribing to:"<<topic;
 
   return 0;
