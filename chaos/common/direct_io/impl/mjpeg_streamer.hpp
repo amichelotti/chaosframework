@@ -48,6 +48,14 @@ SOFTWARE.
 
 // #include <nadjieb/net/http_request.hpp>
 
+#include <chaos/common/global.h>
+#include <chaos/common/chaos_types.h>
+
+#include <boost/format.hpp>
+
+#define STREAM_BASE_LAPP_ INFO_LOG(MPJSTREAM)
+#define STREAM_BASE_LDBG_ DBG_LOG(MPJSTREAM)
+#define STREAM_BASE_LERR_ ERR_LOG(MPJSTREAM)
 
 #include <sstream>
 #include <string>
@@ -696,7 +704,7 @@ class Publisher : public nadjieb::utils::NonCopyable, public nadjieb::utils::Run
             cv_lock.unlock();
 
             std::string res_str
-                = "--nadjiebmjpegstreamer\r\n"
+                = "--chaosstream\r\n"
                   "Content-Type: image/jpeg\r\n"
                   "Content-Length: "
                   + std::to_string(payload.second.size()) + "\r\n\r\n" + payload.second;
@@ -716,7 +724,7 @@ class Publisher : public nadjieb::utils::NonCopyable, public nadjieb::utils::Run
                 if (client.revents != POLLWRNORM) {
                     throw std::runtime_error("revents != POLLWRNORM\n");
                 }
-
+                STREAM_BASE_LDBG_<<"SendSocket Image "<<res_str.size()<<" bytes";
                 sendViaSocket(client.fd, res_str.c_str(), res_str.size(), 0);
             }
         }
@@ -805,7 +813,7 @@ class MJPEGStreamer : public nadjieb::utils::NonCopyable {
         init_res.setValue("Connection", "close");
         init_res.setValue("Cache-Control", "no-cache, no-store, must-revalidate, pre-check=0, post-check=0, max-age=0");
         init_res.setValue("Pragma", "no-cache");
-        init_res.setValue("Content-Type", "multipart/x-mixed-replace; boundary=nadjiebmjpegstreamer");
+        init_res.setValue("Content-Type", "multipart/x-mixed-replace; boundary=chaosstream");
         auto init_res_str = init_res.serialize();
 
         nadjieb::net::sendViaSocket(sockfd, init_res_str.c_str(), init_res_str.size(), 0);
