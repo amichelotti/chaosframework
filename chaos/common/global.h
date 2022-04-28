@@ -198,7 +198,8 @@ dw->addStringValue(RpcActionDefinitionKey::CS_CMDM_ACTION_SUBMISSION_ERROR_MESSA
 #define MANAGE_ERROR_IN_CDATAWRAPPERPTR(dw, code, message, domain)\
 dw->addStringValue(RpcActionDefinitionKey::CS_CMDM_ACTION_SUBMISSION_ERROR_DOMAIN, domain);\
 dw->addInt32Value(RpcActionDefinitionKey::CS_CMDM_ACTION_SUBMISSION_ERROR_CODE, code);\
-dw->addStringValue(RpcActionDefinitionKey::CS_CMDM_ACTION_SUBMISSION_ERROR_MESSAGE, message);
+dw->addStringValue(RpcActionDefinitionKey::CS_CMDM_ACTION_SUBMISSION_ERROR_MESSAGE, message);\
+LERR_<<__PRETTY_FUNCTION__<<" "<<dw->getJSONString();
 
 #define DELETE_OBJ_POINTER(x)\
 delete(x); x=NULL;

@@ -116,6 +116,12 @@ static const char* const OPT_DATA_DIR = "data-dir";
 
 static const char* const OPT_MSG_PRODUCER_KVP = "msgopt-producer-kvp";
 static const char* const OPT_MSG_CONSUMER_KVP = "msgopt-consumer-kvp";
+static const char* const OPT_DIRECT_HTTP_STREAM_HOST= "http-stream-host";
+static const char* const OPT_DIRECT_HTTP_STREAM_WORKER= "http-stream-thread";
+#define STREAMER_PORT 8090
+
+static const char* const OPT_DIRECT_HTTP_STREAM_PORT= "http-stream-port";
+static const char* const OPT_DIRECT_HTTP_STREAM_ENABLE= "http-stream-enable";
 
 
 #if CHAOS_PROMETHEUS

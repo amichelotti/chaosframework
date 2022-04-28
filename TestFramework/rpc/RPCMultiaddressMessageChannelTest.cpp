@@ -118,8 +118,10 @@ TEST_F(RPCMultiaddressMessageChannelTest, AddRemoteURL) {
                                                                                               1000);
     DEBUG_PRINTER("Sent request")
     // false because no server are set
-    ASSERT_TRUE(future->wait());
-    ASSERT_EQ(future->getError(),  chaos::ErrorRpcCoce::EC_RPC_REQUEST_FUTURE_NOT_AVAILABLE);
+    ASSERT_TRUE(!future->wait());
+    ASSERT_EQ(future->getError(),  0); // if not set, send to default
+
+   // ASSERT_EQ(future->getError(),  chaos::ErrorRpcCoce::EC_RPC_REQUEST_FUTURE_NOT_AVAILABLE);
     DEBUG_PRINTER("Wait end got what expcted")
     //add first
     msg_chnl->addNode(ist_1->getAddress());

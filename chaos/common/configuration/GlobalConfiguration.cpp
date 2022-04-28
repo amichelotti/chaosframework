@@ -137,7 +137,7 @@ void GlobalConfiguration::preParseStartupParameters()  {
         addOption(InitOption::OPT_RPC_IMPL_KV_PARAM, po::value< std::vector<std::string> >(),"RPC implementation key value parameter[k:v]");
         addOption(InitOption::OPT_RPC_DOMAIN_QUEUE_THREAD, po::value<uint32_t>()->default_value(1),"RPC domain scheduler queue's thread consumer number");
         addOption(InitOption::OPT_RPC_DOMAIN_SCHEDULER_TYPE, po::value<uint32_t>()->default_value(0),"RPC domain scheduler type[0-default, 1-shared]");
-        addOption(InitOption::OPT_EVENT_DISABLE, po::value< bool >()->default_value(false), "Disable the event system [by default it is enable]");
+        addOption(InitOption::OPT_EVENT_DISABLE, po::value< bool >()->default_value(true), "Disable the event system [by default it is enable]");
         addOption(InitOption::OPT_PUBLISHING_IP, po::value< string >(), "Specify the ip address where to publish the framework rpc system");
         addOption(InitOption::OPT_PUBLISHING_INTERFACE, po::value< string >(), "Specify the interface where to publish the framework rpc system");
         addOption(InitOption::OPT_TIME_CALIBRATION, po::value< bool >()->zero_tokens(), "Enable the time calibration for chaos process");
@@ -152,6 +152,12 @@ void GlobalConfiguration::preParseStartupParameters()  {
         addOption(InitOption::OPT_REST_POLL_TIME_US, po::value< uint32_t >()->default_value(10),"Rest poll time in us (less means more responsive, but more cpu intensive)");
 
         addOption(ext_unt::InitOption::OPT_UNIT_GATEWAY_ENABLE, po::value< bool >()->zero_tokens(), ext_unt::InitOption::OPT_UNIT_GATEWAY_ENABLE_DESC);
+        addOption(InitOption::OPT_DIRECT_HTTP_STREAM_ENABLE, po::value< bool >()->zero_tokens(), "Enable direct streaming of images ");
+        addOption(InitOption::OPT_DIRECT_HTTP_STREAM_PORT, po::value<uint32_t>()->default_value(STREAMER_PORT), "Default server http port for streaming");
+        addOption(InitOption::OPT_DIRECT_HTTP_STREAM_WORKER, po::value<uint32_t>()->default_value(1), "Number of stream thread");
+
+        addOption(InitOption::OPT_DIRECT_HTTP_STREAM_HOST, po::value<std::string>()->default_value(""), "Default server http host ip for streaming, empty autodetect");
+
         addOption(ext_unt::InitOption::OPT_UNIT_GATEWAY_WORKER_THREAD_NUMBER, po::value< uint32_t >()->default_value(ext_unt::InitOption::OPT_UNIT_GATEWAY_WORKER_THREAD_NUMBER_DEFAULT), ext_unt::InitOption::OPT_UNIT_GATEWAY_WORKER_THREAD_NUMBER_DESC);
         addOption(ext_unt::InitOption::OPT_UNIT_GATEWAY_ADAPTER_KV_PARAM, po::value< std::vector<std::string> >(), ext_unt::InitOption::OPT_UNIT_GATEWAY_ADAPTER_KV_PARAM_DESC);
         

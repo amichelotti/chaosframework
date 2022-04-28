@@ -22,7 +22,7 @@ class MessagePSRDKafkaConsumer : public MessagePSRDKafka,public chaos::common::m
   int getMsgAsync(const std::string&key,uint32_t offset,const int32_t pnum=0);
   ele_uptr_t getMsg(int timeo);
   void poll();
-  int subscribe(const std::string& key);
+  int subscribe(const std::string& key,bool sub=true);
   int setOption(const std::string& key, const std::string& value);
 
 

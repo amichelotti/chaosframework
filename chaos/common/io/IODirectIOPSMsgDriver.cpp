@@ -106,13 +106,15 @@ void IODirectIOPSMsgDriver::defaultHandler(chaos::common::message::ele_t& data) 
   return;
 }
 
-int IODirectIOPSMsgDriver::subscribe(const std::string& key) {
+int IODirectIOPSMsgDriver::subscribe(const std::string& key,bool sub) {
   int ret = -1;
   if (cons.get() != NULL) {
-    ret = cons->subscribe(key);
-    if (ret == 0) {
-      cons->start();
-    }
+      ret = cons->subscribe(key,sub);
+      if (ret == 0) {
+        cons->start();
+      }
+    
+
   }
 
   return ret;

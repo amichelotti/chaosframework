@@ -169,7 +169,7 @@ namespace chaos{
                                                   const uint32_t        page = DEFAULT_PAGE_LEN) = 0;
 
                 virtual void releaseQuery(QueryCursor *query) = 0;
-                   virtual int subscribe(const std::string&key);
+                   virtual int subscribe(const std::string&key,bool sub=true);
                    /**
                     * @brief per key handler
                     * 

@@ -43,6 +43,8 @@ namespace chaos {
                     chaos::common::data::CDWUniquePtr simpleRegistration(chaos::common::data::CDWUniquePtr api_data);
 
                     chaos::common::data::CDWUniquePtr controlUnitRegistration(chaos::common::data::CDWUniquePtr api_data);
+                    chaos::common::data::CDWUniquePtr euRegistration(chaos::common::data::CDWUniquePtr api_data);
+
                 public:
                     NodeRegister();
                     ~NodeRegister();

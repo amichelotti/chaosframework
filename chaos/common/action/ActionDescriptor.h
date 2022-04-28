@@ -85,7 +85,9 @@ namespace chaos {
         
     public:
         ActionSharedLock actionAccessMutext;
-        
+        std::string getActionName()const {return actionName;}
+        std::string getActionDomain()const {return actionDomain;}
+
         typedef enum {
             ActionDomain,
             ActionName,

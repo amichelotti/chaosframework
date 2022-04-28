@@ -167,6 +167,17 @@ ChaosManager::~ChaosManager() {
   StartableService::stopImplementation(MDSBatchExecutor::getInstance(), "MDSBatchExecutor", __PRETTY_FUNCTION__);
   StartableService::deinitImplementation(MDSBatchExecutor::getInstance(), "MDSBatchExecutor", __PRETTY_FUNCTION__);
 }
+  int  ChaosManager::putLiveChannel(const std::string& key, const chaos::common::data::CDataWrapper& val){
+     if (cache_driver) {
+       BufferSPtr channel_data_injected(val.getBSONDataBuffer().release());
+    return cache_driver->putData(key,channel_data_injected);
+    
+  } else {
+      
+
+  }
+  return -1;
+  }
 
 int ChaosManager::init(const chaos::common::data::CDataWrapper& best_available_da_ptr) {
   CDWUniquePtr cs;

@@ -136,7 +136,7 @@ namespace chaos{
 
 
                chaos::common::data::CDataWrapper* updateConfiguration(chaos::common::data::CDataWrapper* newConfigration);
-                int subscribe(const std::string&key);
+                int subscribe(const std::string&key,bool sub=true);
   
                 int addHandler(const std::string&key,chaos::common::message::msgHandler cb);
                 int addHandler(chaos::common::message::msgHandler cb);

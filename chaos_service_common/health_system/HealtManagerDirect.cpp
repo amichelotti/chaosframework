@@ -20,7 +20,9 @@
  */
 #include "HealtManagerDirect.h"
 #include <chaos_service_common/DriverPoolManager.h>
+#include <chaos/common/io/SharedManagedDirecIoDataDriver.h>
 
+//#include <chaos_service_common/ChaosManager.h>
 #define HM_INFO INFO_LOG(HealtManagerDirect)
 #define HM_DBG DBG_LOG(HealtManagerDirect)
 #define HM_ERR ERR_LOG(HealtManagerDirect)
@@ -47,6 +49,8 @@ Int64HealtMetric *ts_tmp = static_cast<Int64HealtMetric*>(node_metrics_ptr->map_
 ts_tmp->value = TimingUtil::getTimeStamp();
 
 using namespace chaos::common::data;
+using namespace chaos::common::io;
+
 using namespace chaos::common::healt_system;
 namespace chaos {
     namespace service_common{
@@ -73,16 +77,16 @@ void HealtManagerDirect::_publish(const ChaosSharedPtr<NodeHealtSet>& heath_set,
                                                                                           */
         //store data on cache
           BufferSPtr channel_data_injected(data_pack->getBSONDataBuffer().release());
-    chaos::service_common::DriverPoolManager::getInstance()->getCacheDrv().putData(heath_set->node_publish_key,channel_data_injected);
-
-/*
-      err = SharedManagedDirecIoDataDriver::getInstance()->getSharedDriver()->storeHealthData(heath_set->node_publish_key,
+        if( chaos::service_common::DriverPoolManager::getInstance()->getCacheDrvPtr()){
+            chaos::service_common::DriverPoolManager::getInstance()->getCacheDrv().putData(heath_set->node_publish_key,channel_data_injected);
+        } else {
+            err = SharedManagedDirecIoDataDriver::getInstance()->getSharedDriver()->storeHealthData(heath_set->node_publish_key,
                                                                                           MOVE(data_pack),
                                                                                          DataServiceNodeDefinitionType::DSStorageTypeLive);
-                                                                                         
-  */   
-        if(err) {
-            HM_ERR << "Error pushing health datapack for node:" << heath_set->node_uid << " with code:" << err;
+                                                                        
+            if(err) {
+                HM_ERR << "Error pushing health datapack for node:" << heath_set->node_uid << " with code:" << err;
+            }
         }
     } else {
         HM_ERR << "Error allocating health datapack for node:" << heath_set->node_uid;

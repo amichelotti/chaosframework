@@ -372,7 +372,7 @@ void HealtManagerBase::addNodeMetricValue(const std::string& node_uid,
 CDWShrdPtr HealtManagerBase::prepareNodeDataPack(NodeHealtSet& node_health_set,
                                              uint64_t push_timestamp) {
     CDWShrdPtr node_data_pack = ChaosMakeSharedPtr<CDataWrapper>();
-    int64_t cur_ts_usec = TimingUtil::getTimeStampInMicroseconds();
+   // int64_t cur_ts_usec = TimingUtil::getTimeStampInMicroseconds();
     if(node_data_pack) {
         //add device unique id
         node_data_pack->addStringValue(DataPackCommonKey::DPCK_DEVICE_ID, node_health_set.node_uid);
@@ -384,7 +384,7 @@ CDWShrdPtr HealtManagerBase::prepareNodeDataPack(NodeHealtSet& node_health_set,
         node_data_pack->addInt64Value(ControlUnitDatapackCommonKey::RUN_ID, (int64_t)node_health_set.startup_time);
         
         //set sequence id to the timestamp microseconds
-        node_data_pack->addInt64Value(DataPackCommonKey::DPCK_HIGH_RESOLUTION_TIMESTAMP, cur_ts_usec);
+       // node_data_pack->addInt64Value(DataPackCommonKey::DPCK_HIGH_RESOLUTION_TIMESTAMP, cur_ts_usec);
         
         //set the push timestamp
         static_cast<Int64HealtMetric*>(node_health_set.map_metric[NodeHealtDefinitionKey::NODE_HEALT_TIMESTAMP].get())->value = push_timestamp;
