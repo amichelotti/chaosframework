@@ -57,6 +57,11 @@ void InfluxDBLogStorageDriver::init(void *init_data) throw (chaos::CException) {
     const std::string password = DriverPoolManager::logSetting.persistence_kv_param_map["pwd"];
     const std::string database = DriverPoolManager::logSetting.persistence_kv_param_map["db"];
     const std::string retention = DriverPoolManager::logSetting.persistence_kv_param_map["retention"];
+    const std::string max_measure_opt = DriverPoolManager::logSetting.persistence_kv_param_map["max_mesure"];
+    const std::string max_measure_ms_opt = DriverPoolManager::logSetting.persistence_kv_param_map["max_time_ms"];
+
+    int max_measure=1000;
+    int max_time_ms=10000;
 
     std::string servername="localhost";
     std::string funcpath="";
@@ -82,6 +87,12 @@ void InfluxDBLogStorageDriver::init(void *init_data) throw (chaos::CException) {
             port=atoi(ele[1].c_str());
         }*/
     }
+    if(max_measure_ms_opt.size()){
+        max_time_ms=atoi(max_measure_ms_opt.c_str());
+    }
+    if(max_measure_opt.size()){
+        max_measure=atoi(max_measure_opt.c_str());
+    }
     if(database.size()==0){
         ERR<<"You must specify a valid database name";
         throw chaos::CException(-1,"You must specify a valid database name",__FUNCTION__);
@@ -91,8 +102,10 @@ void InfluxDBLogStorageDriver::init(void *init_data) throw (chaos::CException) {
     }
     //influxdb_t  asyncdb = influxdb_t( new influxdb::async_api::simple_db(url_list[0], database));
    // asyncdb->with_authentication(user,password);
-    DBG<<"server:"<<servername<<"\nport:"<<port<<"\ndatabase:"<<database<<"\nuser:"<<user<<"\npassw:"<<password<<" retention:"<<exptime<<" path:"<<funcpath;
+    DBG<<"server:"<<servername<<"\nport:"<<port<<"\ndatabase:"<<database<<"\nuser:"<<user<<"\npassw:"<<password<<" retention:"<<exptime<<" path:"<<funcpath<<" max_measures:"<<max_measure;
     influxdb_cpp::server_info si(servername,port,database,user,password,"ms",exptime,funcpath);
+    si.max_mesurements=max_measure;
+    si.max_time_ms=max_time_ms;
     //register the data access implementations
     std::string resp;
     int ret;
