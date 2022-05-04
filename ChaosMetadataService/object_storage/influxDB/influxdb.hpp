@@ -41,8 +41,10 @@ namespace influxdb_cpp {
         std::string precision_;
         std::string retention_;
         std::string funcprefix;
+        int max_mesurements; //commit when n mesures reach max_measurement
+        int max_time_ms; // commit when expired max_time_ms
         server_info(const std::string& host, int port, const std::string& db = "", const std::string& usr = "", const std::string& pwd = "", const std::string& precision="ms", const std::string& retention="365d", const std::string& prefix="")
-            : host_(host), port_(port), db_(db), usr_(usr), pwd_(pwd), precision_(precision), retention_(retention),funcprefix(prefix) {}
+            : host_(host), port_(port), db_(db), usr_(usr), pwd_(pwd), precision_(precision), retention_(retention),funcprefix(prefix),max_mesurements(0),max_time_ms(1000) {}
     };
     namespace detail {
         struct meas_caller;

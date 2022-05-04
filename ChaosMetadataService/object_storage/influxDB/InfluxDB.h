@@ -69,13 +69,7 @@ public:
             static std::stringstream measurements;
             static uint32_t nmeas;
             ChaosMutex iolock;
-          
-#if CHAOS_PROMETHEUS
-    static chaos::common::metric::CounterUniquePtr counter_write_data_uptr;
-    static chaos::common::metric::CounterUniquePtr counter_read_data_uptr;
-    static chaos::common::metric::GaugeUniquePtr gauge_insert_time_uptr;
-    static chaos::common::metric::GaugeUniquePtr gauge_query_time_uptr;
-#endif
+            uint64_t last_insert;
 
 
                
