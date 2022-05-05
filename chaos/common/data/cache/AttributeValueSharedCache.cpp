@@ -77,19 +77,15 @@ AttributeCache& AttributeValueSharedCache::getSharedDomain(SharedCacheDomain dom
     switch(domain) {
         case DOMAIN_INPUT:
             return input_set;
-            break;
             
         case DOMAIN_OUTPUT:
             return output_set;
-            break;
             
         case DOMAIN_SYSTEM:
             return system_set;
-            break;
             
         case DOMAIN_CUSTOM:
             return custom_set;
-            break;
     }
     return output_set;
 }

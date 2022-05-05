@@ -75,6 +75,7 @@ namespace chaos{
                     
                     //!main buffer
                     void								*value_buffer;
+                    bool nocopy;
                     union oldData {
                         int32_t i32data;
                         int64_t i64data;

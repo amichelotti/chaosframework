@@ -48,6 +48,7 @@ name(_name),
 index(_index),
 buf_size(0),
 type(_type),
+nocopy(false),
 sub_type(_sub_type),
 sharedBitmapChangedAttribute(NULL){
     if(_type == DataType::TYPE_STRING) {
@@ -69,7 +70,9 @@ AttributeValue::~AttributeValue() {
     if(value_buffer) {
         buf_size =0;
         size=0;
-        free(value_buffer);
+        if(nocopy==false){
+            free(value_buffer);
+        }
         value_buffer=NULL;
     }
 }
@@ -181,14 +184,18 @@ bool AttributeValue::setValue(const void* value_ptr,
             
         
         default:
-            std::memcpy(value_buffer, value_ptr, value_size);
+            if(nocopy){
+                value_buffer=(void*)value_ptr;
+            } else {
+                std::memcpy(value_buffer, value_ptr, value_size);
+            }
 
             break;
     }
     
   
     //copy the new value
-    std::memcpy(value_buffer, value_ptr, value_size);
+    /////// std::memcpy(value_buffer, value_ptr, value_size);
     
     //set the relative field for set has changed
     if(tag_has_changed) sharedBitmapChangedAttribute->set(index);
@@ -383,6 +390,10 @@ bool AttributeValue::grow(uint32_t value_size) {
 bool AttributeValue::setNewSize(uint32_t _new_size,
                                 bool clear_mem) {
     bool result = true;
+    if(nocopy){
+        size =_new_size;
+        return true;
+    }
     if(_new_size<=buf_size){
         size =_new_size;
         return true;
