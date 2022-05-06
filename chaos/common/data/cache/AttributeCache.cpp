@@ -47,7 +47,7 @@ void AttributeCache::reset() {
 void AttributeCache::addAttribute(const string& name,
                                   uint32_t size,
                                   chaos::DataType::DataType type,
-                                  const std::vector<chaos::DataType::BinarySubtype>& sub_type) {
+                                  const std::vector<chaos::DataType::BinarySubtype>& sub_type,bool nocopy) {
     if(mapAttributeNameIndex.count(name))  {
         LDBG_<<__PRETTY_FUNCTION__<<" Attribute name '"<<name<<"' exists";
         return;
@@ -78,7 +78,7 @@ void AttributeCache::addAttribute(const string& name,
         default:
             break;
     }
-    ChaosSharedPtr<AttributeValue> tmpSP(new AttributeValue(name, tmpIndex, size, type, sub_type));
+    ChaosSharedPtr<AttributeValue> tmpSP(new AttributeValue(name, tmpIndex, size, type, sub_type,nocopy));
     
     //add the relative bit
     bitmapChangedAttribute.push_back(false);

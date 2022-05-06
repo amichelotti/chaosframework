@@ -75,6 +75,7 @@ namespace chaos{
                     
                     //!main buffer
                     void								*value_buffer;
+                    //flag of no copy
                     bool nocopy;
                     union oldData {
                         int32_t i32data;
@@ -95,6 +96,11 @@ namespace chaos{
                                    uint32_t _size,
                                    chaos::DataType::DataType type,
                                    const std::vector<chaos::DataType::BinarySubtype>& _sub_type);
+                    AttributeValue(const std::string& _name,
+                                   uint32_t _index,
+                                   uint32_t _size,
+                                   chaos::DataType::DataType type,
+                                   const std::vector<chaos::DataType::BinarySubtype>& _sub_type, bool nocopy);
 
                         //!private destrucotr
                     ~AttributeValue();
@@ -113,6 +119,8 @@ namespace chaos{
                                   uint32_t value_size,
                                   bool tag_has_changed = true);
                     
+                    bool setValueNoCopy(const void* value_ptr,
+                                  uint32_t value_size);
                     bool setValue(CDataWrapper& attribute_value,
                                   bool tag_has_changed = true);
                     bool setValue(const CDataVariant& attribute_value,
@@ -155,6 +163,8 @@ namespace chaos{
                     
                         //!return value as CDataVariant
                     CDataVariant getAsVariant();
+                    // deallocate space if nocopy
+                    inline void reset(){if(nocopy){free(value_buffer);size=0;buf_size=0;value_buffer=NULL;nocopy=false;}}
 
                 private:
                     inline void reallignPointer();

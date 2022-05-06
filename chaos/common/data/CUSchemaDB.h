@@ -284,7 +284,7 @@ namespace chaos {
                                                            const std::string& attributeName,
                                                            const std::string& attributeDescription,
                                                            const std::string& mime_type,
-                                                           DataType::DataSetAttributeIOAttribute  attributeDirection);
+                                                           DataType::DataSetAttributeIOAttribute  attributeDirection,bool nocopy=false);
                 //!Get al device id
                 /*!
                  Return all the setupped device id

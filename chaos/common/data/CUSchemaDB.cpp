@@ -401,7 +401,7 @@ void CUSchemaDB::addBinaryAttributeAsMIMETypeToDataSet(const std::string& node_u
                                                        const std::string& attribute_name,
                                                        const std::string& attribute_description,
                                                        const std::string& mime_type,
-                                                       DataType::DataSetAttributeIOAttribute attribute_direction) {
+                                                       DataType::DataSetAttributeIOAttribute attribute_direction,bool nocopy) {
     bool isChild = false;
     entity::Entity *device = getDeviceEntity(node_uid);
     

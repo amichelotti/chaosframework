@@ -41,14 +41,14 @@ AttributeValue::AttributeValue(const std::string& _name,
                                uint32_t _index,
                                uint32_t _size,
                                chaos::DataType::DataType _type,
-                               const std::vector<chaos::DataType::BinarySubtype>& _sub_type):
+                               const std::vector<chaos::DataType::BinarySubtype>& _sub_type,bool _nocopy):
 value_buffer(NULL),
 size(_size),
 name(_name),
 index(_index),
 buf_size(0),
 type(_type),
-nocopy(false),
+nocopy(_nocopy),
 sub_type(_sub_type),
 sharedBitmapChangedAttribute(NULL){
     if(_type == DataType::TYPE_STRING) {
@@ -62,7 +62,18 @@ sharedBitmapChangedAttribute(NULL){
         }
     }
 }
+AttributeValue::AttributeValue(const std::string& _name,
+                               uint32_t _index,
+                               uint32_t _size,
+                               chaos::DataType::DataType _type,
+                               const std::vector<chaos::DataType::BinarySubtype>& _sub_type):AttributeValue(_name,
+                                _index,
+                                _size,
+                               _type,
+                               _sub_type,
+                               false){
 
+                               }
 /*---------------------------------------------------------------------------------
  
  ---------------------------------------------------------------------------------*/
@@ -70,9 +81,7 @@ AttributeValue::~AttributeValue() {
     if(value_buffer) {
         buf_size =0;
         size=0;
-        if(nocopy==false){
-            free(value_buffer);
-        }
+        free(value_buffer);
         value_buffer=NULL;
     }
 }
@@ -80,6 +89,18 @@ AttributeValue::~AttributeValue() {
 /*---------------------------------------------------------------------------------
  
  ---------------------------------------------------------------------------------*/
+bool AttributeValue::setValueNoCopy(const void* value_ptr,
+                                  uint32_t value_size){
+    if(value_buffer){
+        free(value_buffer);
+    }
+    value_buffer= (void*)value_ptr;
+    buf_size=size=value_size;
+    nocopy=true;
+    sharedBitmapChangedAttribute->set(index);
+    return true;
+
+}
 bool AttributeValue::setValue(const void* value_ptr,
                               uint32_t value_size,
                               bool tag_has_changed) {

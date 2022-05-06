@@ -46,12 +46,12 @@ void AttributeSharedCacheWrapper::setInputDomainAsChanged() {
 // Set the value for a determinated variable in a determinate domain
 void AttributeSharedCacheWrapper::setOutputAttributeValue(const std::string& attribute_name,
 														  void * value,
-														  uint32_t size) {
+														  uint32_t size,bool nocopy) {
 	CHAOS_ASSERT(attribute_value_shared_cache)
 	attribute_value_shared_cache->setAttributeValue(DOMAIN_OUTPUT,
 													attribute_name,
 													value,
-													size);
+													size,nocopy);
 }
 
 // Set the value for a determinated variable in a determinate domain
