@@ -77,19 +77,15 @@ AttributeCache& AttributeValueSharedCache::getSharedDomain(SharedCacheDomain dom
     switch(domain) {
         case DOMAIN_INPUT:
             return input_set;
-            break;
             
         case DOMAIN_OUTPUT:
             return output_set;
-            break;
             
         case DOMAIN_SYSTEM:
             return system_set;
-            break;
             
         case DOMAIN_CUSTOM:
             return custom_set;
-            break;
     }
     return output_set;
 }
@@ -126,9 +122,9 @@ AttributeValue *AttributeValueSharedCache::getAttributeValue(SharedCacheDomain d
 void AttributeValueSharedCache::setAttributeValue(SharedCacheDomain domain,
                                                   const string& attribute_name,
                                                   void * value,
-                                                  uint32_t size) {
+                                                  uint32_t size,chaos::AllocationStrategy copy) {
     VariableIndexType index = getSharedDomain(domain).getIndexForName(attribute_name);
-    getSharedDomain(domain).setValueForAttribute(index, value, size);
+    getSharedDomain(domain).setValueForAttribute(index, value, size,copy);
 }
 
 /*---------------------------------------------------------------------------------
@@ -137,8 +133,8 @@ void AttributeValueSharedCache::setAttributeValue(SharedCacheDomain domain,
 void AttributeValueSharedCache::setAttributeValue(SharedCacheDomain domain,
                                                   VariableIndexType attribute_index,
                                                   void * value,
-                                                  uint32_t size) {
-    getSharedDomain(domain).setValueForAttribute(attribute_index, value, size);
+                                                  uint32_t size,chaos::AllocationStrategy copy) {
+    getSharedDomain(domain).setValueForAttribute(attribute_index, value, size,copy);
 }
 
 /*---------------------------------------------------------------------------------

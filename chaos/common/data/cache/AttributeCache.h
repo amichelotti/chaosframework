@@ -66,7 +66,7 @@ namespace chaos{
                     void addAttribute(const std::string& name,
                                       uint32_t size,
                                       chaos::DataType::DataType type,
-                                      const std::vector<chaos::DataType::BinarySubtype>& sub_type = std::vector<chaos::DataType::BinarySubtype>());
+                                      const std::vector<chaos::DataType::BinarySubtype>& sub_type = std::vector<chaos::DataType::BinarySubtype>(),chaos::AllocationStrategy copy=chaos::CHAOS_BUFFER_COPY);
                     
                     //!add a new attribute and fill it with the value of the variant
                     void addAttribute(const std::string& name,
@@ -74,13 +74,13 @@ namespace chaos{
                     
                     void setValueForAttribute(VariableIndexType n,
                                               const void * value,
-                                              uint32_t size);
+                                              uint32_t size,chaos::AllocationStrategy copy=chaos::CHAOS_BUFFER_COPY);
                     
                     void setValueForAttribute(VariableIndexType n, CDataWrapper& value);
                     
                     void setValueForAttribute(const std::string& name,
                                               const void * value,
-                                              uint32_t size);
+                                              uint32_t size,chaos::AllocationStrategy copy=chaos::CHAOS_BUFFER_COPY);
                     
                     bool hasName(const std::string& name);
                     

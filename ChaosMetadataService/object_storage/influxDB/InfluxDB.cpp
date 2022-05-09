@@ -378,8 +378,10 @@ void InfluxDB::push_process() {
 
     if ((nmeas >= si.max_mesurements) || ((nmeas > 0) && ((now - last_insert) > si.max_time_ms))) {
       ChaosLockGuard ll(iolock);
+      std::string sret;
+       int ret=influxdb_cpp::push_db( sret, measurements.str(), si);
 
-      int ret = influxdb_cpp::detail::inner::http_request("POST", "write", "", measurements.str(), si, NULL);
+      //int ret = influxdb_cpp::detail::inner::http_request("POST", "write", "", measurements.str(), si, NULL);
       if (ret == 0) {
         if((nmeas >= si.max_mesurements)){
           DBG << "exeeded measurements "<<si.max_mesurements<<" sending " << nmeas << " measurements, " << measurements.str().size() << " bytes, " << nmeas * 1000 / (now - last_insert) << " mesure/s";

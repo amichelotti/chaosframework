@@ -75,6 +75,8 @@ namespace chaos{
                     
                     //!main buffer
                     void								*value_buffer;
+                    //flag of no copy
+                    chaos::AllocationStrategy copy;
                     union oldData {
                         int32_t i32data;
                         int64_t i64data;
@@ -84,6 +86,7 @@ namespace chaos{
                     } old_value;
                     std::string old_string;
                     CDataWrapper						cdvalue;
+                    chaos::common::data::Buffer         *bufobj;
 
                         //global index bitmap for infom that this value(using index) has been changed
                     boost::dynamic_bitset<BitBlockDimension> * sharedBitmapChangedAttribute;
@@ -94,6 +97,11 @@ namespace chaos{
                                    uint32_t _size,
                                    chaos::DataType::DataType type,
                                    const std::vector<chaos::DataType::BinarySubtype>& _sub_type);
+                    AttributeValue(const std::string& _name,
+                                   uint32_t _index,
+                                   uint32_t _size,
+                                   chaos::DataType::DataType type,
+                                   const std::vector<chaos::DataType::BinarySubtype>& _sub_type, chaos::AllocationStrategy copy);
 
                         //!private destrucotr
                     ~AttributeValue();
@@ -109,9 +117,13 @@ namespace chaos{
                      \param value_size the sie of the new value
                      */
                     bool setValue(const void* value_ptr,
-                                  uint32_t value_size,
+                                  uint32_t value_size,chaos::AllocationStrategy copy=chaos::CHAOS_BUFFER_COPY,
                                   bool tag_has_changed = true);
                     
+                    bool setValue(chaos::common::data::Buffer*ptr,chaos::AllocationStrategy copy=chaos::CHAOS_BUFFER_COPY,
+                                  bool tag_has_changed = true);
+                    
+                   
                     bool setValue(CDataWrapper& attribute_value,
                                   bool tag_has_changed = true);
                     bool setValue(const CDataVariant& attribute_value,
@@ -154,6 +166,8 @@ namespace chaos{
                     
                         //!return value as CDataVariant
                     CDataVariant getAsVariant();
+                    // deallocate space if nocopy
+                    inline void reset(){if(copy==chaos::CHAOS_BUFFER_OWN_CALLEE){free(value_buffer);size=0;buf_size=0;value_buffer=NULL;}if(bufobj){delete(bufobj);bufobj=NULL;}copy=chaos::CHAOS_BUFFER_COPY;}
 
                 private:
                     inline void reallignPointer();

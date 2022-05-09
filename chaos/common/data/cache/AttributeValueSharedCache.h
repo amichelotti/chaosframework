@@ -82,13 +82,13 @@ namespace chaos{
                     void setAttributeValue(SharedCacheDomain domain,
                                            const std::string& attribute_name,
                                            void * value,
-                                           uint32_t size);
+                                           uint32_t size,chaos::AllocationStrategy copy=chaos::CHAOS_BUFFER_COPY);
                     
                     //! Set the value for a determinated Attribute in a determinate domain
                     void setAttributeValue(SharedCacheDomain domain,
                                            VariableIndexType attribute_index,
                                            void * value,
-                                           uint32_t size);
+                                           uint32_t size,chaos::AllocationStrategy copy=chaos::CHAOS_BUFFER_COPY);
                     
                     //! Get the index of the changed attribute
                     void getChangedAttributeIndex(SharedCacheDomain domain,

@@ -210,6 +210,15 @@ static const unsigned int MDSHistoryQueuePushTimeoutinMSec = 60000;
 }  // namespace constants
 
 }  // namespace common
+
+/*!
+  Some functions allow to choose the allocation strategy, mainly to reduce copies and latency on data intensive process
+*/
+enum AllocationStrategy {
+  CHAOS_BUFFER_COPY,     // the data is copied, caller must  deallocate space (default safest, slower method)
+  CHAOS_BUFFER_OWN_CALLER, // the data is not copied, the buffer must be deallocated by caller
+  CHAOS_BUFFER_OWN_CALLEE // the data is not copied, the buffer is deallocated in the callee
+};
 /** @defgroup NodeDefinitionKey !CHAOS node key description
      *  This is the collection of the key for the general node information
      *  @{
@@ -1772,6 +1781,8 @@ static const char* const ALL_DATASET_ID       = "all";     // all datasets
 static const char* const ALL_DATASET_STATUS   = "status";  // health + system + alarms
 
 }  // namespace DataPackID
+
+
 /** @} */  // end of DataPackPrefixID
 #define DPCK_LAST_DATASET_INDEX 6
 /** @} */  // end of DataPackCommonKey

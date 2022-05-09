@@ -47,7 +47,7 @@ void AttributeCache::reset() {
 void AttributeCache::addAttribute(const string& name,
                                   uint32_t size,
                                   chaos::DataType::DataType type,
-                                  const std::vector<chaos::DataType::BinarySubtype>& sub_type) {
+                                  const std::vector<chaos::DataType::BinarySubtype>& sub_type,chaos::AllocationStrategy copy) {
     if(mapAttributeNameIndex.count(name))  {
         LDBG_<<__PRETTY_FUNCTION__<<" Attribute name '"<<name<<"' exists";
         return;
@@ -78,7 +78,7 @@ void AttributeCache::addAttribute(const string& name,
         default:
             break;
     }
-    ChaosSharedPtr<AttributeValue> tmpSP(new AttributeValue(name, tmpIndex, size, type, sub_type));
+    ChaosSharedPtr<AttributeValue> tmpSP(new AttributeValue(name, tmpIndex, size, type, sub_type,copy));
     
     //add the relative bit
     bitmapChangedAttribute.push_back(false);
@@ -150,27 +150,33 @@ void AttributeCache::getAttributeNames(std::vector<std::string>& names) {
 
 void AttributeCache::setValueForAttribute(VariableIndexType n,
                                           const void * value,
-                                          uint32_t size) {
+                                          uint32_t size,chaos::AllocationStrategy copy) {
     CHAOS_ASSERT(n<vector_attribute_value.size());
     CHAOS_ASSERT(vector_attribute_value[n].get());
-    vector_attribute_value[n]->setValue(value, size);
+  
+    vector_attribute_value[n]->setValue(value, size,copy);
+    
 }
 
 void AttributeCache::setValueForAttribute(VariableIndexType n,
                                           CDataWrapper& value) {
     CHAOS_ASSERT(n<vector_attribute_value.size());
     CHAOS_ASSERT(vector_attribute_value[n].get());
+
     vector_attribute_value[n]->setValue(value);
 }
 
 void AttributeCache::setValueForAttribute(const std::string& name,
                                           const void * value,
-                                          uint32_t size) {
+                                          uint32_t size,chaos::AllocationStrategy copy) {
     if(mapAttributeNameIndex.count(name)==0){
         throw chaos::CFatalException(-1, boost::str(boost::format("No name '%1%' present in Attribute cache") %name), __PRETTY_FUNCTION__);
         
     }
-    vector_attribute_value[mapAttributeNameIndex[name]]->setValue(value, size);
+   
+    vector_attribute_value[mapAttributeNameIndex[name]]->setValue(value, size,copy);
+
+    
 }
 
 VariableIndexType AttributeCache::getIndexForName(const std::string& name ) {
