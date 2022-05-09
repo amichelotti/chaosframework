@@ -40,13 +40,18 @@ namespace chaos {
                     int setAttributeValue(const std::string&  ds_name,
                                           const std::string&  attr_name,
                                           void * value,
-                                          uint32_t size);
+                                          uint32_t size,chaos::AllocationStrategy copy=chaos::CHAOS_BUFFER_COPY);
+                                          
+                     //! Set the value for a determinated attribute of a dataset
+                    int setAttributeValue(const std::string&  ds_name,
+                                          const std::string&  attr_name,
+                                          chaos::common::data::Buffer * buf,chaos::AllocationStrategy copy=chaos::CHAOS_BUFFER_COPY);
                     
                     //! Set the value for a determinated attribute of a dataset
                     int setAttributeValue(const std::string& ds_name,
                                           const unsigned int attr_index,
                                           void * value,
-                                          uint32_t size);
+                                          uint32_t size,chaos::AllocationStrategy copy=chaos::CHAOS_BUFFER_COPY);
                     
                     //! Return the value object for the domain and the string key
                     template<typename T>

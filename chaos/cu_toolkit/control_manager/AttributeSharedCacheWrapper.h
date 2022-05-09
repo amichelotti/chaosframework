@@ -169,6 +169,9 @@ namespace chaos{
 				void setOutputAttributeValue(const std::string& attribute_name,
 											 void * value,
 											 uint32_t size,chaos::AllocationStrategy copy=chaos::CHAOS_BUFFER_COPY);
+				//! Set the value for a determinated variable in a determinate domain
+				void setOutputAttributeValue(const std::string& attribute_name,
+											 chaos::common::data::Buffer * buf,chaos::AllocationStrategy copy=chaos::CHAOS_BUFFER_COPY);
 
 				//! Set the value for a determinated variable in a determinate domain
 				void setInputAttributeValue(const std::string& attribute_name,

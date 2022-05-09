@@ -33,7 +33,7 @@ namespace chaos {
             class IODirectIOPSMsgDriver;
             
             
-            
+#undef DEFAULT_PAGE_LEN         
 #define DEFAULT_PAGE_LEN 1000
             class QueryCursorRPC :public QueryCursor{
                 friend class IODirectIOPSMsgDriver;
