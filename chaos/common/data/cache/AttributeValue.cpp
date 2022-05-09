@@ -41,15 +41,16 @@ AttributeValue::AttributeValue(const std::string& _name,
                                uint32_t _index,
                                uint32_t _size,
                                chaos::DataType::DataType _type,
-                               const std::vector<chaos::DataType::BinarySubtype>& _sub_type,bool _nocopy):
+                               const std::vector<chaos::DataType::BinarySubtype>& _sub_type,chaos::AllocationStrategy _nocopy):
 value_buffer(NULL),
 size(_size),
 name(_name),
 index(_index),
 buf_size(0),
 type(_type),
-nocopy(_nocopy),
+copy(_nocopy),
 sub_type(_sub_type),
+bufobj(NULL),
 sharedBitmapChangedAttribute(NULL){
     if(_type == DataType::TYPE_STRING) {
         size += 1;
@@ -71,7 +72,7 @@ AttributeValue::AttributeValue(const std::string& _name,
                                 _size,
                                _type,
                                _sub_type,
-                               false){
+                               chaos::CHAOS_BUFFER_COPY){
 
                                }
 /*---------------------------------------------------------------------------------
@@ -84,27 +85,43 @@ AttributeValue::~AttributeValue() {
         free(value_buffer);
         value_buffer=NULL;
     }
+    if(bufobj){
+        delete bufobj;
+    }
 }
 
 /*---------------------------------------------------------------------------------
  
  ---------------------------------------------------------------------------------*/
-bool AttributeValue::setValueNoCopy(const void* value_ptr,
-                                  uint32_t value_size){
-    if(value_buffer){
-        free(value_buffer);
-    }
-    value_buffer= (void*)value_ptr;
-    buf_size=size=value_size;
-    nocopy=true;
-    sharedBitmapChangedAttribute->set(index);
-    return true;
 
+bool AttributeValue::setValue(chaos::common::data::Buffer*ptr,chaos::AllocationStrategy _copy,
+                                  bool tag_has_changed){
+    if(bufobj){
+        delete(bufobj);
+    }
+    bufobj= ptr;
+
+    return setValue(ptr->data(),ptr->size(),_copy,tag_has_changed);
 }
 bool AttributeValue::setValue(const void* value_ptr,
-                              uint32_t value_size,
+                              uint32_t value_size,chaos::AllocationStrategy _copy,
                               bool tag_has_changed) {
     
+    if(_copy==chaos::CHAOS_BUFFER_OWN_CALLEE){
+        if(bufobj==NULL){
+            free(value_buffer);
+        }
+    }
+    if(_copy!=chaos::CHAOS_BUFFER_COPY){
+        value_buffer= (void*)value_ptr;
+        buf_size=size=value_size;
+        
+        sharedBitmapChangedAttribute->set(index);
+        copy=_copy;
+
+        return true;
+
+    }
     if(!grow(value_size)) return false;
     
     if(value_size==0)
@@ -205,10 +222,11 @@ bool AttributeValue::setValue(const void* value_ptr,
             
         
         default:
-            if(nocopy){
-                value_buffer=(void*)value_ptr;
-            } else {
+            if(copy==chaos::CHAOS_BUFFER_COPY){
                 std::memcpy(value_buffer, value_ptr, value_size);
+
+            } else {
+                value_buffer=(void*)value_ptr;
             }
 
             break;
@@ -411,8 +429,8 @@ bool AttributeValue::grow(uint32_t value_size) {
 bool AttributeValue::setNewSize(uint32_t _new_size,
                                 bool clear_mem) {
     bool result = true;
-    if(nocopy){
-        size =_new_size;
+    if(copy!=chaos::CHAOS_BUFFER_COPY){
+     //   size =_new_size;
         return true;
     }
     if(_new_size<=buf_size){
