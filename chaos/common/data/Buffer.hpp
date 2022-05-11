@@ -216,7 +216,7 @@ namespace chaos {
                 data_ = 0;
                 size_ = 0;
                 capacity_ = 0;
-                
+                free_=false;
                 return r;
             }
             

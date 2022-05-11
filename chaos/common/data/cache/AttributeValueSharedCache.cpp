@@ -63,11 +63,11 @@ void AttributeValueSharedCache::deinit() {
   // reset the output channel setting
   output_set.reset();
 
-  // reset the output channel setting
-  output_set.reset();
+  // reset the system channel setting
+  system_set.reset();
 
   // reset the custom channel setting
-  output_set.reset();
+  custom_set.reset();
 }
 
 /*---------------------------------------------------------------------------------

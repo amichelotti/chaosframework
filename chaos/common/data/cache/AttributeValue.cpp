@@ -79,7 +79,9 @@ AttributeValue::AttributeValue(const std::string& _name,
  
  ---------------------------------------------------------------------------------*/
 AttributeValue::~AttributeValue() {
-    if(value_buffer) {
+    AVLDBG_<<" destroy attribute '"<<name<<"' buf:"<<static_cast<void*>(value_buffer)<<" bufobj:"<<static_cast<void*>(bufobj)<<" copy: "<<copy;
+
+    if( (copy==chaos::CHAOS_BUFFER_COPY) &&( value_buffer)) {
         buf_size =0;
         size=0;
         free(value_buffer);
@@ -98,13 +100,22 @@ bool AttributeValue::setValue(chaos::common::data::Buffer*ptr,chaos::AllocationS
                                   bool tag_has_changed){
  //   AVLDBG_<<" SET BUFFER:"<<static_cast<void*>(ptr)<<" size:"<<ptr->size();
                                   
-    if(bufobj){
+   
+    bool ret=setValue(ptr->data(),ptr->size(),_copy,tag_has_changed);
+     if(bufobj){
 
         delete(bufobj);
+        bufobj=NULL;
     }
-    bufobj= ptr;
+    if(_copy==chaos::CHAOS_BUFFER_COPY){
+        delete ptr;
+        bufobj=NULL;
+    } else {
+        bufobj= ptr;
 
-    return setValue(ptr->data(),ptr->size(),_copy,tag_has_changed);
+    }
+
+    return ret;
 }
 bool AttributeValue::setValue(const void* value_ptr,
                               uint32_t value_size,chaos::AllocationStrategy _copy,
