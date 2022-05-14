@@ -96,7 +96,7 @@ AttributeValue::~AttributeValue() {
  
  ---------------------------------------------------------------------------------*/
 
-bool AttributeValue::setValue(chaos::common::data::Buffer*ptr,chaos::AllocationStrategy _copy,
+bool AttributeValue::setValue(const chaos::common::data::Buffer*ptr,chaos::AllocationStrategy _copy,
                                   bool tag_has_changed){
  //   AVLDBG_<<" SET BUFFER:"<<static_cast<void*>(ptr)<<" size:"<<ptr->size();
                                   
@@ -111,7 +111,7 @@ bool AttributeValue::setValue(chaos::common::data::Buffer*ptr,chaos::AllocationS
         delete ptr;
         bufobj=NULL;
     } else {
-        bufobj= ptr;
+        bufobj= (chaos::common::data::Buffer*)ptr;
 
     }
 

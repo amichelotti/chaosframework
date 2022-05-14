@@ -157,7 +157,7 @@ void AttributeCache::setValueForAttribute(VariableIndexType         n,
   vector_attribute_value[n]->setValue(value, size, copy);
 }
 void AttributeCache::setValueForAttribute(VariableIndexType            n,
-                                          chaos::common::data::Buffer* value,
+                                          const chaos::common::data::Buffer* value,
                                           chaos::AllocationStrategy    copy) {
   CHAOS_ASSERT(n < vector_attribute_value.size());
   CHAOS_ASSERT(vector_attribute_value[n].get());
@@ -183,7 +183,7 @@ void AttributeCache::setValueForAttribute(const std::string&        name,
   vector_attribute_value[mapAttributeNameIndex[name]]->setValue(value, size, copy);
 }
 void AttributeCache::setValueForAttribute(const std::string&        name,
-                                          chaos::common::data::Buffer*               value,
+                                          const chaos::common::data::Buffer*               value,
                                           chaos::AllocationStrategy copy) {
   if (mapAttributeNameIndex.count(name) == 0) {
     throw chaos::CFatalException(-1, boost::str(boost::format("No name '%1%' present in Attribute cache") % name), __PRETTY_FUNCTION__);

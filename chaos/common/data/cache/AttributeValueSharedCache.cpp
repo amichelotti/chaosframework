@@ -121,7 +121,7 @@ AttributeValue* AttributeValueSharedCache::getAttributeValue(SharedCacheDomain d
  ---------------------------------------------------------------------------------*/
 void AttributeValueSharedCache::setAttributeValue(SharedCacheDomain         domain,
                                                   const string&             attribute_name,
-                                                  void*                     value,
+                                                  const void*                     value,
                                                   uint32_t                  size,
                                                   chaos::AllocationStrategy copy) {
   VariableIndexType index = getSharedDomain(domain).getIndexForName(attribute_name);
@@ -130,7 +130,7 @@ void AttributeValueSharedCache::setAttributeValue(SharedCacheDomain         doma
 
 void AttributeValueSharedCache::setAttributeValue(SharedCacheDomain            domain,
                                                   const std::string&           attribute_name,
-                                                  chaos::common::data::Buffer* buf,
+                                                  const chaos::common::data::Buffer* buf,
                                                   chaos::AllocationStrategy    copy) {
   VariableIndexType index = getSharedDomain(domain).getIndexForName(attribute_name);
   getSharedDomain(domain).setValueForAttribute(index, buf, copy);
@@ -140,7 +140,7 @@ void AttributeValueSharedCache::setAttributeValue(SharedCacheDomain            d
  ---------------------------------------------------------------------------------*/
 void AttributeValueSharedCache::setAttributeValue(SharedCacheDomain         domain,
                                                   VariableIndexType         attribute_index,
-                                                  void*                     value,
+                                                  const void*                     value,
                                                   uint32_t                  size,
                                                   chaos::AllocationStrategy copy) {
   getSharedDomain(domain).setValueForAttribute(attribute_index, value, size, copy);
@@ -148,7 +148,7 @@ void AttributeValueSharedCache::setAttributeValue(SharedCacheDomain         doma
 
 void AttributeValueSharedCache::setAttributeValue(SharedCacheDomain         domain,
                                                   VariableIndexType         attribute_index,
-                                                  chaos::common::data::Buffer* buf,
+                                                  const chaos::common::data::Buffer* buf,
                                                   chaos::AllocationStrategy copy) {
   getSharedDomain(domain).setValueForAttribute(attribute_index, buf, copy);
 }

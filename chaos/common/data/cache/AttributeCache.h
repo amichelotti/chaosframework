@@ -76,8 +76,8 @@ namespace chaos{
                                               const void * value,
                                               uint32_t size,chaos::AllocationStrategy copy=chaos::CHAOS_BUFFER_COPY);
                      void setValueForAttribute(VariableIndexType n,
-                                              chaos::common::data::Buffer* value,
-                                              chaos::AllocationStrategy copy=chaos::CHAOS_BUFFER_COPY);
+                                              const chaos::common::data::Buffer* value,
+                                              chaos::AllocationStrategy copy);
                     
                     void setValueForAttribute(VariableIndexType n, CDataWrapper& value);
                     
@@ -85,8 +85,8 @@ namespace chaos{
                                               const void * value,
                                               uint32_t size,chaos::AllocationStrategy copy=chaos::CHAOS_BUFFER_COPY);
                     void setValueForAttribute(const std::string& name,
-                                              chaos::common::data::Buffer* value,
-                                              chaos::AllocationStrategy copy=chaos::CHAOS_BUFFER_COPY);
+                                              const chaos::common::data::Buffer* value,
+                                              chaos::AllocationStrategy copy);
                                               
                     bool hasName(const std::string& name);
                     

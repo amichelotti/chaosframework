@@ -120,7 +120,7 @@ namespace chaos{
                                   uint32_t value_size,chaos::AllocationStrategy copy=chaos::CHAOS_BUFFER_COPY,
                                   bool tag_has_changed = true);
                     
-                    bool setValue(chaos::common::data::Buffer*ptr,chaos::AllocationStrategy copy=chaos::CHAOS_BUFFER_COPY,
+                    bool setValue(const chaos::common::data::Buffer*ptr,chaos::AllocationStrategy copy,
                                   bool tag_has_changed = true);
                     
                    
