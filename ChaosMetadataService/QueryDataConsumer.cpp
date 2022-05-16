@@ -143,7 +143,6 @@ int QueryDataConsumer::consumePutEvent(const std::string&                 key,
     err                     = cache_slot.putData(key,
                              channel_data_injected);
   }
-  data_pack.removeKey(DataPackCommonKey::DPCK_DATASET_TYPE);
 
   if (storage_type & DataServiceNodeDefinitionType::DSStorageLogHisto) {
     //protected access to cached driver
@@ -161,6 +160,8 @@ int QueryDataConsumer::consumePutEvent(const std::string&                 key,
       }
     }
   }
+  data_pack.removeKey(DataPackCommonKey::DPCK_DATASET_TYPE);
+
   if (!err && (storage_type & (DataServiceNodeDefinitionType::DSStorageTypeHistory | DataServiceNodeDefinitionType::DSStorageTypeFile))) {
     //compute the index to use for the data worker
     uint32_t index_to_use;
