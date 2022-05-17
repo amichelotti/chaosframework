@@ -94,7 +94,7 @@ int QueryCursorRPC::fetchData() {
     } else {
         result_page.current_fetched = 0;
         last_end_ts=result_page.last_record_found_seq.ts;
-        DBG<<"retrieved:"<<result_page.found_element_page.size() <<" Page:"<<page_len<< " last ts:"<<last_end_ts;
+        DBG<<"retrieved:"<<result_page.found_element_page.size() <<" Page:"<<page_len<< " last ts:"<<last_end_ts << " ("<<chaos::common::utility::TimingUtil::toString(last_end_ts)<<")";
 
         if(result_page.found_element_page.size() < page_len) {
             phase = QueryPhaseEnded;

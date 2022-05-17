@@ -83,11 +83,16 @@ CDWUniquePtr QueryDataCloud::execute(CDWUniquePtr api_data) {
     last_record_found_seq.run_id=runid;
     last_record_found_seq.datapack_counter=start_seq;
 
-    DBG<<node_uid<<" start:"<<start_ts<<" end:"<<end_ts<<" page:"<<page<<" runid:"<<last_record_found_seq.run_id<<" seq:"<<last_record_found_seq.datapack_counter<<"tag:"<<((meta_tags.size())?*meta_tags.begin():"");
+    DBG<<node_uid<<" start:"<<start_ts<<"("<<chaos::common::utility::TimingUtil::toString(start_ts)<<" end:"<<end_ts<<"("<<chaos::common::utility::TimingUtil::toString(end_ts)<<" page:"<<page<<" runid:"<<last_record_found_seq.run_id<<" seq:"<<last_record_found_seq.datapack_counter<<"tag:"<<((meta_tags.size())?*meta_tags.begin():"");
 
     int res=execute(node_uid,meta_tags,projection_keys,start_ts,end_ts,page,last_record_found_seq,found_object_page);
     if(res==0){
-        DBG<<node_uid<<" RETURNED:"<<found_object_page.size()<<" ELEMENTS";
+        if(last_record_found_seq.ts>end_ts){
+            ERR<<node_uid<<" BAD last timestamp RETURNED:"<<found_object_page.size()<<" ELEMENTS, runid:"<<last_record_found_seq.run_id<<" seq:"<<last_record_found_seq.datapack_counter<< "ts:"<<last_record_found_seq.ts<<"("<<chaos::common::utility::TimingUtil::toString(last_record_found_seq.ts)<<") > "<<end_ts<<"("<<chaos::common::utility::TimingUtil::toString(end_ts)<<")";
+
+        } else {
+            DBG<<node_uid<<" RETURNED:"<<found_object_page.size()<<" ELEMENTS, runid:"<<last_record_found_seq.run_id<<" seq:"<<last_record_found_seq.datapack_counter<< "ts:"<<last_record_found_seq.ts<<"("<<chaos::common::utility::TimingUtil::toString(last_record_found_seq.ts)<<")";
+        }
 
         for(VectorObject::iterator i=found_object_page.begin();i!=found_object_page.end();i++){
              result->appendCDataWrapperToArray(*(i->get()));   

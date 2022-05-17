@@ -29,7 +29,7 @@ using namespace std;
 
 NamedService::NamedService(const string & _service_name):
 service_name(_service_name){
-	NamedService_LDBG_ << "Allocated Named Service for " << service_name;
+//	NamedService_LDBG_ << "Allocated Named Service for " << service_name;
 }
 
 /*

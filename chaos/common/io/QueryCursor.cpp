@@ -193,7 +193,7 @@ int QueryCursor::fetchNewPage() {
         case QueryPhaseNotStarted:
 //            std::memset(&result_page.last_record_found_seq, 0, sizeof(direct_io::channel::opcode_headers::SearchSequence));
 //            result_page.last_record_found_seq.datapack_counter = -1;
-            DBG << "["<<node_id<<"] start search "<<start_ts<<"-"<<end_ts<<" page_len:"<<page_len<<" data pack counter:"<< result_page.last_record_found_seq.datapack_counter<<"run id:"<< result_page.last_record_found_seq.run_id ;
+            DBG << "["<<node_id<<"] start search "<<start_ts<<"("<<chaos::common::utility::TimingUtil::toString(start_ts)<<") -"<<end_ts<<" ("<<chaos::common::utility::TimingUtil::toString(end_ts)<<") page_len:"<<page_len<<" data pack counter:"<< result_page.last_record_found_seq.datapack_counter<<"run id:"<< result_page.last_record_found_seq.run_id ;
 
             //change to the next phase
             phase = QueryPhaseStarted;
@@ -202,15 +202,22 @@ int QueryCursor::fetchNewPage() {
             //increase data pack count of last recod found that will be used has next counter id to fetch
             result_page.last_record_found_seq.datapack_counter++;
 
-            DBG << "["<<node_id<<"] continue search  "<<start_ts<<" ("<<last_end_ts<<") -"<<end_ts<<" page_len:"<<page_len<<" data pack counter:"<< result_page.last_record_found_seq.datapack_counter<<"run id:"<< result_page.last_record_found_seq.run_id ;
-            if(last_end_ts>start_ts){
+            if((last_end_ts>start_ts)&&(last_end_ts<=end_ts)){
+
                 start_ts=last_end_ts;
+                DBG << "["<<node_id<<"] continue search  "<<start_ts<<"("<<chaos::common::utility::TimingUtil::toString(start_ts)<<") - "<<end_ts<<"("<<chaos::common::utility::TimingUtil::toString(end_ts)<<") page_len:"<<page_len<<" data pack counter:"<< result_page.last_record_found_seq.datapack_counter<<"run id:"<< result_page.last_record_found_seq.run_id ;
+
+            }
+            if(last_end_ts>end_ts) {
+                ERR<< "["<<node_id<<"] BAD last TS "<<last_end_ts<<"("<<chaos::common::utility::TimingUtil::toString(last_end_ts)<<") > "<<end_ts<<"("<<chaos::common::utility::TimingUtil::toString(end_ts)<<") page_len:"<<page_len<<" data pack counter:"<< result_page.last_record_found_seq.datapack_counter<<"run id:"<< result_page.last_record_found_seq.run_id ;            
+                phase = QueryPhaseEnded;
+                return -1;
             }
             break;
             
         case QueryPhaseEnded:
 
-            ERR << "["<<node_id<<"] end search "<<start_ts<<"-"<<end_ts<<" page_len:"<<page_len<<" data pack counter:"<< result_page.last_record_found_seq.datapack_counter<<"run id:"<< result_page.last_record_found_seq.run_id ;
+            ERR << "["<<node_id<<"] end search "<<start_ts<<"("<<chaos::common::utility::TimingUtil::toString(start_ts)<<")- "<<end_ts<<"("<<chaos::common::utility::TimingUtil::toString(end_ts)<<") page_len:"<<page_len<<" data pack counter:"<< result_page.last_record_found_seq.datapack_counter<<"run id:"<< result_page.last_record_found_seq.run_id ;
 
 
             return 0;
@@ -242,7 +249,7 @@ int QueryCursor::fetchData() {
     } else {
         result_page.current_fetched = 0;
         last_end_ts=result_page.last_record_found_seq.ts;
-        DBG<<"retrieved:"<<result_page.found_element_page.size() <<" Page:"<<page_len<< " last ts:"<<last_end_ts;
+        DBG<<"retrieved:"<<result_page.found_element_page.size() <<" Page:"<<page_len<< " last ts:"<<last_end_ts<<" ("<<chaos::common::utility::TimingUtil::toString(last_end_ts)<<")";
 
         if(result_page.found_element_page.size() < page_len) {
             phase = QueryPhaseEnded;
