@@ -61,13 +61,18 @@ namespace chaos{
 					//! Set the value for a determinated variable in a determinate domain
 					virtual void setAttributeValue(SharedCacheDomain domain,
 												  const std::string& variable_name,
-												  void * value, uint32_t size,chaos::AllocationStrategy copy=chaos::CHAOS_BUFFER_COPY) = 0;
+												  const void * value, uint32_t size,chaos::AllocationStrategy copy=chaos::CHAOS_BUFFER_COPY) = 0;
+					virtual void setAttributeValue(SharedCacheDomain domain,
+												  const std::string& variable_name,
+												  const chaos::common::data::Buffer * value,chaos::AllocationStrategy copy) = 0;
 					
 					//! Set the value for a determinated variable in a determinate domain
 					virtual void setAttributeValue(SharedCacheDomain domain,
 												  VariableIndexType variable_index,
-												  void * value, uint32_t size,chaos::AllocationStrategy copy=chaos::CHAOS_BUFFER_COPY) = 0;
-					
+												  const void * value, uint32_t size,chaos::AllocationStrategy copy=chaos::CHAOS_BUFFER_COPY) = 0;
+					virtual void setAttributeValue(SharedCacheDomain domain,
+												  VariableIndexType variable_index,
+												  const chaos::common::data::Buffer * value,chaos::AllocationStrategy copy) = 0;
 					//! Get the index of the changed attribute
 					virtual void getChangedAttributeIndex(SharedCacheDomain domain,
 														 std::vector<VariableIndexType>& changed_index) = 0;

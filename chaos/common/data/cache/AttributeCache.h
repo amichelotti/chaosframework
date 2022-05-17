@@ -75,13 +75,19 @@ namespace chaos{
                     void setValueForAttribute(VariableIndexType n,
                                               const void * value,
                                               uint32_t size,chaos::AllocationStrategy copy=chaos::CHAOS_BUFFER_COPY);
+                     void setValueForAttribute(VariableIndexType n,
+                                              const chaos::common::data::Buffer* value,
+                                              chaos::AllocationStrategy copy);
                     
                     void setValueForAttribute(VariableIndexType n, CDataWrapper& value);
                     
                     void setValueForAttribute(const std::string& name,
                                               const void * value,
                                               uint32_t size,chaos::AllocationStrategy copy=chaos::CHAOS_BUFFER_COPY);
-                    
+                    void setValueForAttribute(const std::string& name,
+                                              const chaos::common::data::Buffer* value,
+                                              chaos::AllocationStrategy copy);
+                                              
                     bool hasName(const std::string& name);
                     
                     VariableIndexType getIndexForName(const std::string& name );

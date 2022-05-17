@@ -2598,6 +2598,9 @@ void AbstractControlUnit::setHigResolutionAcquistionTimestamp(uint64_t high_reso
     *timestamp_hw_acq_cached_value->getValuePtr<uint64_t>() = high_resolution_timestamp;
   
 }
+  void AbstractControlUnit::setOutputTimestamp(uint64_t timestamp){
+    *timestamp_acq_cached_value->getValuePtr<uint64_t>()=timestamp;
+  }
 
 void AbstractControlUnit::_updateRunScheduleDelay(uint64_t new_scehdule_delay) {
   if (*thread_schedule_daly_cached_value->getValuePtr<uint64_t>() == new_scehdule_delay) return;
@@ -3018,7 +3021,7 @@ int AbstractControlUnit::pushOutputDataset() {
   }*/
 
   output_attribute_dataset->addInt64Value(ControlUnitDatapackCommonKey::RUN_ID, run_id);
-  output_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_TIMESTAMP,*timestamp_acq_cached_value->getValuePtr<uint64_t>());
+  output_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_TIMESTAMP,tscor);
   output_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_HIGH_RESOLUTION_TIMESTAMP, *timestamp_hw_acq_cached_value->getValuePtr<uint64_t>());
   //ACULDBG_<<"TIME DIFF:"<<(tscor-(*timestamp_hw_acq_cached_value->getValuePtr<uint64_t>()/1000));
 

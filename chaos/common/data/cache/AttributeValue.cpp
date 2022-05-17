@@ -79,7 +79,9 @@ AttributeValue::AttributeValue(const std::string& _name,
  
  ---------------------------------------------------------------------------------*/
 AttributeValue::~AttributeValue() {
-    if(value_buffer) {
+    AVLDBG_<<" destroy attribute '"<<name<<"' buf:"<<static_cast<void*>(value_buffer)<<" bufobj:"<<static_cast<void*>(bufobj)<<" copy: "<<copy;
+
+    if( (copy==chaos::CHAOS_BUFFER_COPY) &&( value_buffer)) {
         buf_size =0;
         size=0;
         free(value_buffer);
@@ -94,14 +96,26 @@ AttributeValue::~AttributeValue() {
  
  ---------------------------------------------------------------------------------*/
 
-bool AttributeValue::setValue(chaos::common::data::Buffer*ptr,chaos::AllocationStrategy _copy,
+bool AttributeValue::setValue(const chaos::common::data::Buffer*ptr,chaos::AllocationStrategy _copy,
                                   bool tag_has_changed){
-    if(bufobj){
-        delete(bufobj);
-    }
-    bufobj= ptr;
+ //   AVLDBG_<<" SET BUFFER:"<<static_cast<void*>(ptr)<<" size:"<<ptr->size();
+                                  
+   
+    bool ret=setValue(ptr->data(),ptr->size(),_copy,tag_has_changed);
+     if(bufobj){
 
-    return setValue(ptr->data(),ptr->size(),_copy,tag_has_changed);
+        delete(bufobj);
+        bufobj=NULL;
+    }
+    if(_copy==chaos::CHAOS_BUFFER_COPY){
+        delete ptr;
+        bufobj=NULL;
+    } else {
+        bufobj= (chaos::common::data::Buffer*)ptr;
+
+    }
+
+    return ret;
 }
 bool AttributeValue::setValue(const void* value_ptr,
                               uint32_t value_size,chaos::AllocationStrategy _copy,
@@ -110,7 +124,7 @@ bool AttributeValue::setValue(const void* value_ptr,
     if(_copy==chaos::CHAOS_BUFFER_OWN_CALLEE){
         if(bufobj==NULL){
             free(value_buffer);
-        }
+        } 
     }
     if(_copy!=chaos::CHAOS_BUFFER_COPY){
         value_buffer= (void*)value_ptr;

@@ -26,7 +26,7 @@ namespace chaos {
                 
                 static const size_type npos = static_cast<size_type> (-1);
                 
-                ~Buffer ();
+                virtual ~Buffer ();
                 
                 explicit Buffer (size_type size = 0);
                 Buffer (size_type size, size_type capacity);
@@ -216,7 +216,7 @@ namespace chaos {
                 data_ = 0;
                 size_ = 0;
                 capacity_ = 0;
-                
+                free_=false;
                 return r;
             }
             

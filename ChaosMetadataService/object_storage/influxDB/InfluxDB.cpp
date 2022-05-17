@@ -95,15 +95,50 @@ int InfluxDB::pushObject(const std::string&                       key,
   size_t      buflen;
   int64_t     seq, runid;
   std::string tag;
-
-  std::string meas = stored_object.getStringValue(chaos::DataPackCommonKey::DPCK_DEVICE_ID);
+static const unsigned int DPCK_DATASET_TYPE_INPUT = 1;
+//! the constant that represent the custom dataset type
+static const unsigned int DPCK_DATASET_TYPE_CUSTOM = 2;
+//! the constant that represent the system dataset type
+static const unsigned int DPCK_DATASET_TYPE_SYSTEM = 3;
+//! the constant that represent the health dataset type
+static const unsigned int DPCK_DATASET_TYPE_HEALTH = 4;
+//! the constant that represent the alarm dataset type
+static const unsigned int DPCK_DATASET_TYPE_DEV_ALARM = 5;
+//! the constant that represent the alarm dataset type
+static const unsigned int DPCK_DATASET_TYPE_CU_ALARM = 6;
+//! the last log dataset
+static const unsigned int DPCK_DATASET_TYPE_LOG = 7;
+  int typ=0;
+  if(stored_object.hasKey(DataPackCommonKey::DPCK_DATASET_TYPE)){
+    typ =stored_object.getInt32Value(DataPackCommonKey::DPCK_DATASET_TYPE);
+  }
 
   ChaosStringVector contained_key;
   stored_object.getAllKey(contained_key);
 
   ChaosLockGuard ll(iolock);
-
   measurements << stored_object.getStringValue(chaos::DataPackCommonKey::DPCK_DEVICE_ID);
+  std::string pref;
+
+  switch(typ){
+    case DPCK_DATASET_TYPE_INPUT:
+      pref="inp.";
+      break;
+    case DPCK_DATASET_TYPE_CU_ALARM:
+    case DPCK_DATASET_TYPE_DEV_ALARM:
+      pref="alm.";
+      break;
+    case DPCK_DATASET_TYPE_SYSTEM:
+      pref="sys.";
+      break;
+    case DPCK_DATASET_TYPE_CUSTOM:
+      pref="cst.";
+      break;
+    default:
+      break;
+
+  }
+  
   if ((meta_tags.get()) && (meta_tags->size() > 0)) {
     // tag=std::accumulate(meta_tags->begin(),meta_tags->end(),std::string("_"));
     measurements << ",tag=" << *(meta_tags->begin());
@@ -114,7 +149,7 @@ int InfluxDB::pushObject(const std::string&                       key,
       char c = (first == 0) ? ' ' : ',';
       switch (stored_object.getValueType(*i)) {
         case DataType::TYPE_BOOLEAN:
-          measurements << c << *i << "=" << ((stored_object.getBoolValue(*i)) ? 't' : 'f');
+          measurements << c << pref<<*i << "=" << ((stored_object.getBoolValue(*i)) ? 't' : 'f');
           nmeas++;
           first++;
           break;
@@ -122,7 +157,7 @@ int InfluxDB::pushObject(const std::string&                       key,
         case DataType::TYPE_INT64:
         case DataType::TYPE_UINT64:
 
-          measurements << c << *i << "=" << stored_object.getStringValue(*i) << 'i';
+          measurements << c <<pref<< *i << "=" << stored_object.getStringValue(*i) << 'i';
           nmeas++;
           first++;
 
@@ -130,7 +165,7 @@ int InfluxDB::pushObject(const std::string&                       key,
         case DataType::TYPE_DOUBLE: {
           double d = stored_object.getDoubleValue(*i);
           if (std::isfinite(d)) {
-            measurements << c << *i << "=" << d;
+            measurements << c << pref<<*i << "=" << d;
             nmeas++;
             first++;
           }
@@ -140,7 +175,7 @@ int InfluxDB::pushObject(const std::string&                       key,
         case DataType::TYPE_STRING: {
           std::string val = stored_object.getStringValue(*i);
           if ((val.size() > 0) && (val.size() < (1024 * 64))) {
-            measurements << c << *i << "=\"" << val << "\"";
+            measurements << c << pref<<*i << "=\"" << val << "\"";
             first++;
             nmeas++;
           }
@@ -151,7 +186,7 @@ int InfluxDB::pushObject(const std::string&                       key,
           const bool* ptr  = (const bool*)stored_object.getBinaryValue(*i, size);
           if (ptr) {
             for (int cnt = 0; (cnt < size / sizeof(bool)) && (cnt < MAX_ARRAY_POINTS); cnt++) {
-              measurements << c << *i + "." << cnt << "=" << ((ptr[cnt]) ? 't' : 'f');
+              measurements << c <<pref<< *i + "." << cnt << "=" << ((ptr[cnt]) ? 't' : 'f');
               first++;
               nmeas++;
             }
@@ -163,7 +198,7 @@ int InfluxDB::pushObject(const std::string&                       key,
           const int32_t* ptr  = (const int32_t*)stored_object.getBinaryValue(*i, size);
           if (ptr) {
             for (int cnt = 0; (cnt < size / sizeof(int32_t)) && (cnt < MAX_ARRAY_POINTS); cnt++) {
-              measurements << c << *i + "." << cnt << "=" << ptr[cnt] << "i";
+              measurements << c << pref<<*i + "." << cnt << "=" << ptr[cnt] << "i";
               first++;
               nmeas++;
             }
@@ -175,7 +210,7 @@ int InfluxDB::pushObject(const std::string&                       key,
           const uint32_t* ptr  = (const uint32_t*)stored_object.getBinaryValue(*i, size);
           if (ptr) {
             for (int cnt = 0; (cnt < size / sizeof(int32_t)) && (cnt < MAX_ARRAY_POINTS); cnt++) {
-              measurements << c << *i + "." << cnt << "=" << ptr[cnt] << "i";
+              measurements << c <<pref<< *i + "." << cnt << "=" << ptr[cnt] << "i";
               first++;
               nmeas++;
             }
@@ -187,7 +222,7 @@ int InfluxDB::pushObject(const std::string&                       key,
           const uint8_t* ptr  = (const uint8_t*)stored_object.getBinaryValue(*i, size);
           if (ptr) {
             for (int cnt = 0; (cnt < size / sizeof(uint8_t)) && (cnt < MAX_ARRAY_POINTS); cnt++) {
-              measurements << c << *i + "." << cnt << "=" << ptr[cnt] << "i";
+              measurements << c <<pref<< *i + "." << cnt << "=" << ptr[cnt] << "i";
               first++;
               nmeas++;
             }
@@ -199,7 +234,7 @@ int InfluxDB::pushObject(const std::string&                       key,
           const uint16_t* ptr  = (const uint16_t*)stored_object.getBinaryValue(*i, size);
           if (ptr) {
             for (int cnt = 0; (cnt < size / sizeof(uint16_t)) && (cnt < MAX_ARRAY_POINTS); cnt++) {
-              measurements << c << *i + "." << cnt << "=" << ptr[cnt] << "i";
+              measurements << c << pref<<*i + "." << cnt << "=" << ptr[cnt] << "i";
               first++;
               nmeas++;
             }
@@ -211,7 +246,7 @@ int InfluxDB::pushObject(const std::string&                       key,
           const int16_t* ptr  = (const int16_t*)stored_object.getBinaryValue(*i, size);
           if (ptr) {
             for (int cnt = 0; (cnt < size / sizeof(int16_t)) && (cnt < MAX_ARRAY_POINTS); cnt++) {
-              measurements << c << *i + "." << cnt << "=" << ptr[cnt] << "i";
+              measurements << c <<pref<< *i + "." << cnt << "=" << ptr[cnt] << "i";
               first++;
               nmeas++;
             }
@@ -223,7 +258,7 @@ int InfluxDB::pushObject(const std::string&                       key,
           const int8_t* ptr  = (const int8_t*)stored_object.getBinaryValue(*i, size);
           if (ptr) {
             for (int cnt = 0; (cnt < size / sizeof(int8_t)) && (cnt < MAX_ARRAY_POINTS); cnt++) {
-              measurements << c << *i + "." << cnt << "=" << ptr[cnt] << "i";
+              measurements << c << pref<<*i + "." << cnt << "=" << ptr[cnt] << "i";
               first++;
               nmeas++;
             }
@@ -235,7 +270,7 @@ int InfluxDB::pushObject(const std::string&                       key,
           const int64_t* ptr  = (const int64_t*)stored_object.getBinaryValue(*i, size);
           if (ptr) {
             for (int cnt = 0; (cnt < size / sizeof(int64_t)) && (cnt < MAX_ARRAY_POINTS); cnt++) {
-              measurements << c << *i + "." << cnt << "=" << ptr[cnt] << "i";
+              measurements << c << pref<<*i + "." << cnt << "=" << ptr[cnt] << "i";
               first++;
               nmeas++;
             }
@@ -248,7 +283,7 @@ int InfluxDB::pushObject(const std::string&                       key,
           if (ptr) {
             for (int cnt = 0; (cnt < size / sizeof(double)) && (cnt < MAX_ARRAY_POINTS); cnt++) {
               if (std::isfinite(ptr[cnt])) {
-                measurements << c << *i + "." << cnt << "=" << ptr[cnt];
+                measurements << c << pref<<*i + "." << cnt << "=" << ptr[cnt];
                 first++;
                 nmeas++;
               }
@@ -263,7 +298,7 @@ int InfluxDB::pushObject(const std::string&                       key,
           if (ptr) {
             for (int cnt = 0; (cnt < size / sizeof(float)) && (cnt < MAX_ARRAY_POINTS); cnt++) {
               if (std::isfinite(ptr[cnt])) {
-                measurements << c << *i + "." << cnt << "=" << ptr[cnt];
+                measurements << c << pref<<*i + "." << cnt << "=" << ptr[cnt];
                 first++;
                 nmeas++;
               }

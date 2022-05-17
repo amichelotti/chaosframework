@@ -621,6 +621,8 @@ class AbstractControlUnit : public DeclareAction,
 
   void useCustomHigResolutionTimestamp(bool _use_custom_high_resolution_timestamp);
   void setHigResolutionAcquistionTimestamp(uint64_t high_resolution_timestamp);
+  void setOutputTimestamp(uint64_t timestamp);
+
   //! Abstract Method that need to be used by the sublcass to define the dataset
   /*!
                  Subclass, in this method can call the api to create the dataset, after this method

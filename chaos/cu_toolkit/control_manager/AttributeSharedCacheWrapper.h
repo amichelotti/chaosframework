@@ -146,16 +146,19 @@ namespace chaos{
 						*value_ptr = (const T**)&value_setting->value_buffer;
 					}
 				}
-				
+				//! Set the value for a determinated variable in a determinate domain
+				void setOutputAttributeValue(const std::string& attribute_name,
+											 chaos::common::data::Buffer * buf,chaos::AllocationStrategy copy);
+
 				template <typename T>
 				void setOutputAttributeValue(const std::string& attribute_name,
 											 T value){
-												 setOutputAttributeValue(attribute_name,&value,sizeof(T));
+												 setOutputAttributeValue(attribute_name,(void*)&value,sizeof(T));
 											 }
 				template <typename T>
 				void setInputAttributeValue(const std::string& attribute_name,
 											 T value){
-												 setInputAttributeValue(attribute_name,&value,sizeof(T));
+												 setInputAttributeValue(attribute_name,(void*)&value,sizeof(T));
 											 }
 				void setOutputAttributeValue(const std::string& attribute_name,
 											 const std::string& value){
@@ -169,6 +172,7 @@ namespace chaos{
 				void setOutputAttributeValue(const std::string& attribute_name,
 											 void * value,
 											 uint32_t size,chaos::AllocationStrategy copy=chaos::CHAOS_BUFFER_COPY);
+				
 
 				//! Set the value for a determinated variable in a determinate domain
 				void setInputAttributeValue(const std::string& attribute_name,

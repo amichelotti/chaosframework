@@ -64,6 +64,15 @@ void AttributeSharedCacheWrapper::setOutputAttributeValue(VariableIndexType attr
 												   value,
 												   size,copy);
 }
+void AttributeSharedCacheWrapper::setOutputAttributeValue(const std::string& attribute_name,
+											 chaos::common::data::Buffer * buf,chaos::AllocationStrategy copy){
+												 CHAOS_ASSERT(attribute_value_shared_cache)
+	attribute_value_shared_cache->setAttributeValue(DOMAIN_OUTPUT,
+												   attribute_name,
+												   buf,copy);
+
+}
+
 void AttributeSharedCacheWrapper::setInputAttributeValue(const std::string& attribute_name,
 																void * value,
 																uint32_t size) {
