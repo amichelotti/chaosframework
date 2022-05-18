@@ -23,7 +23,6 @@
 #define __CHAOSFramework__CE8768D_5BB0_4EF2_A186_7685A0C31B3F_QueryCursorRPC_h
 
 #include <chaos/common/chaos_types.h>
-#include <chaos/common/exception/CException.h>
 #include "QueryCursor.h"
 #include <stdint.h>
 

@@ -23,7 +23,6 @@
 #define __CHAOSFramework__CE8768D_5BB0_4EF2_A186_7685A0C31B3F_QueryCursor_h
 
 #include <chaos/common/chaos_types.h>
-#include <chaos/common/exception/CException.h>
 #include <chaos/common/network/URLServiceFeeder.h>
 #include <chaos/common/direct_io/channel/DirectIODeviceClientChannel.h>
 
@@ -55,7 +54,7 @@ namespace chaos {
                     ~ResultPage();
                     const bool hasNext() const;
                     uint32_t size() const;
-                    ChaosSharedPtr<chaos::common::data::CDataWrapper> next()  ;
+                    chaos::common::data::CDWShrdPtr next()  ;
                 };
                 
                 const std::string query_id;
@@ -111,19 +110,19 @@ namespace chaos {
                             uint32_t page_len=DEFAULT_PAGE_LEN);
                 ~QueryCursor();
                 
-                int fetchNewPage();
                 virtual int fetchData();
             public:
                 const std::string& queryID() const;
-                
-                const bool hasNext();
+                int fetchNewPage();
+
+                bool hasNext();
                 const int32_t getError();
-                ChaosSharedPtr<chaos::common::data::CDataWrapper> next();
+                chaos::common::data::CDWShrdPtr next();
                 uint32_t size()const;
                 const uint32_t getPageLen() const;
                 
                 void setPageDimension(uint32_t new_page_len);
-                void getIndexes(uint64_t& runid,uint64_t& seqid);
+                void getIndexes(uint64_t& runid,uint64_t& seqid,uint64_t& ts);
             };
             
         }

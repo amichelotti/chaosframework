@@ -1304,7 +1304,7 @@ int PosixFile::findObject(const std::string&                                    
       //tag=std::accumulate(meta_tags.begin(),meta_tags.end(),std::string("_"));
       tag = boost::algorithm::join(meta_tags, "_");
     }
-    DBG << "Search " << key << " from: " << timestamp_from << "[" << chaos::common::utility::TimingUtil::toString(timestamp_from) << "] to:" << timestamp_to << "[" << chaos::common::utility::TimingUtil::toString(timestamp_to) << "] tags:" << tag << " seqid:" << seqid << " runid:" << runid<< chaos::common::utility::TimingUtil::toString(runid);
+    DBG << "Search " << key << " from: " << timestamp_from << "[" << chaos::common::utility::TimingUtil::toString(timestamp_from) << "] to:" << timestamp_to << "[" << chaos::common::utility::TimingUtil::toString(timestamp_to) << "] tags:" << tag << " seqid:" << seqid << " runid:" << runid<< " ("<<chaos::common::utility::TimingUtil::toString(runid)<<")";
 
     // align to minute
     uint64_t start_aligned = timestamp_from - (timestamp_from % (60 * 1000));
