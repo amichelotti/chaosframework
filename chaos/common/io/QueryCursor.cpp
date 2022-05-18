@@ -143,6 +143,7 @@ connection_feeder(_connection_feeder),
 node_id(_node_id),
 start_ts(_start_ts),
 end_ts(_end_ts),
+last_end_ts(0),
 page_len(default_page_len),
 phase(QueryPhaseNotStarted),
 start_seq(_sequid),
@@ -151,7 +152,6 @@ meta_tags(_meta_tags),
 projection_keys(_projection_keys),
 api_error(0){
     if(_sequid>0){
-        phase = QueryPhaseStarted;
         result_page.last_record_found_seq.run_id=_runid;
         result_page.last_record_found_seq.datapack_counter=_sequid-1;
     }
