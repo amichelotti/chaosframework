@@ -2398,9 +2398,10 @@ void AbstractControlUnit::completeOutputAttribute() {
   //add timestamp
   domain_attribute_setting.addAttribute(DataPackCommonKey::DPCK_TIMESTAMP, sizeof(uint64_t), DataType::TYPE_INT64);
   timestamp_acq_cached_value = domain_attribute_setting.getValueSettingForIndex(domain_attribute_setting.getIndexForName(DataPackCommonKey::DPCK_TIMESTAMP));
-
-  domain_attribute_setting.addAttribute(DataPackCommonKey::DPCK_HIGH_RESOLUTION_TIMESTAMP, sizeof(uint64_t), DataType::TYPE_INT64);
-  timestamp_hw_acq_cached_value = domain_attribute_setting.getValueSettingForIndex(domain_attribute_setting.getIndexForName(DataPackCommonKey::DPCK_HIGH_RESOLUTION_TIMESTAMP));
+  if(use_custom_high_resolution_timestamp){
+    domain_attribute_setting.addAttribute(DataPackCommonKey::DPCK_HIGH_RESOLUTION_TIMESTAMP, sizeof(uint64_t), DataType::TYPE_INT64);
+    timestamp_hw_acq_cached_value = domain_attribute_setting.getValueSettingForIndex(domain_attribute_setting.getIndexForName(DataPackCommonKey::DPCK_HIGH_RESOLUTION_TIMESTAMP));
+  }
 }
 
 void AbstractControlUnit::completeInputAttribute() {
@@ -2585,7 +2586,7 @@ CDWUniquePtr AbstractControlUnit::_getInfo(CDWUniquePtr getStatedParam) {
 
 void AbstractControlUnit::_updateAcquistionTimestamp(uint64_t alternative_ts) {
   *timestamp_acq_cached_value->getValuePtr<uint64_t>() = alternative_ts / 1000;
-  if (!use_custom_high_resolution_timestamp) {
+  if (use_custom_high_resolution_timestamp) {
     *timestamp_hw_acq_cached_value->getValuePtr<uint64_t>() = alternative_ts;
   }
 }
@@ -2595,7 +2596,10 @@ void AbstractControlUnit::useCustomHigResolutionTimestamp(bool _use_custom_high_
 }
 
 void AbstractControlUnit::setHigResolutionAcquistionTimestamp(uint64_t high_resolution_timestamp) {
-    *timestamp_hw_acq_cached_value->getValuePtr<uint64_t>() = high_resolution_timestamp;
+    if (timestamp_hw_acq_cached_value) {
+
+      *timestamp_hw_acq_cached_value->getValuePtr<uint64_t>() = high_resolution_timestamp;
+    }
   
 }
   void AbstractControlUnit::setOutputTimestamp(uint64_t timestamp){
@@ -3021,18 +3025,17 @@ int AbstractControlUnit::pushOutputDataset() {
   }*/
 
   output_attribute_dataset->addInt64Value(ControlUnitDatapackCommonKey::RUN_ID, run_id);
-  output_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_TIMESTAMP,tscor);
-  output_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_HIGH_RESOLUTION_TIMESTAMP, *timestamp_hw_acq_cached_value->getValuePtr<uint64_t>());
+ // output_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_TIMESTAMP,tscor);
+  //output_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_HIGH_RESOLUTION_TIMESTAMP, *timestamp_hw_acq_cached_value->getValuePtr<uint64_t>());
   //ACULDBG_<<"TIME DIFF:"<<(tscor-(*timestamp_hw_acq_cached_value->getValuePtr<uint64_t>()/1000));
 
   //add all other output channel
   for (int idx = 0;
-       idx < ((int)cache_output_attribute_vector.size()) - 1;  //the device id and timestamp in added out of this list
+       idx < ((int)cache_output_attribute_vector.size());  //the device id and timestamp in added out of this list
        idx++) {
     //
     AttributeValue* value_set = cache_output_attribute_vector[idx];
     assert(value_set);
-
     switch (value_set->type) {
       case DataType::TYPE_BOOLEAN:
         output_attribute_dataset->addBoolValue(value_set->name, *value_set->getValuePtr<bool>());
