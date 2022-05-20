@@ -22,6 +22,7 @@
 #include <chaos/common/chaos_constants.h>
 #include <chaos/common/io/QueryCursor.h>
 #include <chaos/common/io/IODirectIODriver.h>
+#include <chaos/common/exception/CException.h>
 
 using namespace chaos::common::io;
 using namespace chaos::common::data;
@@ -51,9 +52,12 @@ const bool QueryCursor::ResultPage::hasNext() const {
 uint32_t QueryCursor::ResultPage::size() const {
     return (uint32_t)found_element_page.size();
 }
-ChaosSharedPtr<chaos::common::data::CDataWrapper> QueryCursor::ResultPage::next() {
-    if(hasNext() == false) {throw CException(-1, "Cursor endend", __PRETTY_FUNCTION__);}
-    return found_element_page[current_fetched++];
+CDWShrdPtr QueryCursor::ResultPage::next() {
+    if(current_fetched < found_element_page.size()){
+        return found_element_page[current_fetched++];
+    }
+    ERR<<"No data elems:"<<current_fetched;
+    return CDWShrdPtr();
 }
 
 #pragma mark QueryCursor
@@ -139,6 +143,7 @@ connection_feeder(_connection_feeder),
 node_id(_node_id),
 start_ts(_start_ts),
 end_ts(_end_ts),
+last_end_ts(0),
 page_len(default_page_len),
 phase(QueryPhaseNotStarted),
 start_seq(_sequid),
@@ -147,13 +152,15 @@ meta_tags(_meta_tags),
 projection_keys(_projection_keys),
 api_error(0){
     if(_sequid>0){
-        phase = QueryPhaseStarted;
         result_page.last_record_found_seq.run_id=_runid;
         result_page.last_record_found_seq.datapack_counter=_sequid-1;
     }
 }
 
-QueryCursor::~QueryCursor() {}
+QueryCursor::~QueryCursor() {
+        DBG <<"DEALLOCATE phase :"<<phase<<" last seq:"<<result_page.last_record_found_seq.datapack_counter<<" runid:"<<result_page.last_record_found_seq.run_id<<" ts:"<<result_page.last_record_found_seq.ts;
+
+}
 
 const std::string& QueryCursor::queryID() const {
     return query_id;
@@ -163,29 +170,11 @@ uint32_t  QueryCursor::size()const{
 }
 
 const int32_t QueryCursor::getError(){return (int32_t)api_error;}
-const bool QueryCursor::hasNext() {
-    switch(phase) {
-        case QueryPhaseNotStarted:
-        case QueryPhaseStarted:
-            if(result_page.hasNext() == false) {
-                if(fetchNewPage()!=0){
-                	ERR <<" Fetch returned error:"<<api_error;
-                	return false;
-                }
-            }
-            return result_page.hasNext();
-            break;
-        case QueryPhaseEnded:
-            return result_page.hasNext();
-    }
-    return false;
-}
 
 ChaosSharedPtr<chaos::common::data::CDataWrapper>  QueryCursor::next()  {
     return result_page.next();
 }
 
-#pragma mark private methods
 int QueryCursor::fetchNewPage() {
     result_page.found_element_page.clear();
     //fetch the new page
@@ -193,7 +182,7 @@ int QueryCursor::fetchNewPage() {
         case QueryPhaseNotStarted:
 //            std::memset(&result_page.last_record_found_seq, 0, sizeof(direct_io::channel::opcode_headers::SearchSequence));
 //            result_page.last_record_found_seq.datapack_counter = -1;
-            DBG << "["<<node_id<<"] start search "<<start_ts<<"-"<<end_ts<<" page_len:"<<page_len<<" data pack counter:"<< result_page.last_record_found_seq.datapack_counter<<"run id:"<< result_page.last_record_found_seq.run_id ;
+            DBG << "["<<node_id<<"] start search "<<start_ts<<"("<<chaos::common::utility::TimingUtil::toString(start_ts)<<") -"<<end_ts<<" ("<<chaos::common::utility::TimingUtil::toString(end_ts)<<") page_len:"<<page_len<<" data pack counter:"<< result_page.last_record_found_seq.datapack_counter<<"run id:"<< result_page.last_record_found_seq.run_id ;
 
             //change to the next phase
             phase = QueryPhaseStarted;
@@ -202,15 +191,22 @@ int QueryCursor::fetchNewPage() {
             //increase data pack count of last recod found that will be used has next counter id to fetch
             result_page.last_record_found_seq.datapack_counter++;
 
-            DBG << "["<<node_id<<"] continue search  "<<start_ts<<" ("<<last_end_ts<<") -"<<end_ts<<" page_len:"<<page_len<<" data pack counter:"<< result_page.last_record_found_seq.datapack_counter<<"run id:"<< result_page.last_record_found_seq.run_id ;
-            if(last_end_ts>start_ts){
+            if((last_end_ts>start_ts)&&(last_end_ts<=end_ts)){
+
                 start_ts=last_end_ts;
+                DBG << "["<<node_id<<"] continue search  "<<start_ts<<"("<<chaos::common::utility::TimingUtil::toString(start_ts)<<") - "<<end_ts<<"("<<chaos::common::utility::TimingUtil::toString(end_ts)<<") page_len:"<<page_len<<" data pack counter:"<< result_page.last_record_found_seq.datapack_counter<<"run id:"<< result_page.last_record_found_seq.run_id ;
+
+            }
+            if(last_end_ts>end_ts) {
+                ERR<< "["<<node_id<<"] BAD last TS "<<last_end_ts<<"("<<chaos::common::utility::TimingUtil::toString(last_end_ts)<<") > "<<end_ts<<"("<<chaos::common::utility::TimingUtil::toString(end_ts)<<") page_len:"<<page_len<<" data pack counter:"<< result_page.last_record_found_seq.datapack_counter<<"run id:"<< result_page.last_record_found_seq.run_id ;            
+                phase = QueryPhaseEnded;
+                return -1;
             }
             break;
             
         case QueryPhaseEnded:
 
-            ERR << "["<<node_id<<"] end search "<<start_ts<<"-"<<end_ts<<" page_len:"<<page_len<<" data pack counter:"<< result_page.last_record_found_seq.datapack_counter<<"run id:"<< result_page.last_record_found_seq.run_id ;
+            ERR << "["<<node_id<<"] end search "<<start_ts<<"("<<chaos::common::utility::TimingUtil::toString(start_ts)<<")- "<<end_ts<<"("<<chaos::common::utility::TimingUtil::toString(end_ts)<<") page_len:"<<page_len<<" data pack counter:"<< result_page.last_record_found_seq.datapack_counter<<"run id:"<< result_page.last_record_found_seq.run_id ;
 
 
             return 0;
@@ -242,7 +238,7 @@ int QueryCursor::fetchData() {
     } else {
         result_page.current_fetched = 0;
         last_end_ts=result_page.last_record_found_seq.ts;
-        DBG<<"retrieved:"<<result_page.found_element_page.size() <<" Page:"<<page_len<< " last ts:"<<last_end_ts;
+        DBG<<"retrieved:"<<result_page.found_element_page.size() <<" Page:"<<page_len<< " last ts:"<<last_end_ts<<" ("<<chaos::common::utility::TimingUtil::toString(last_end_ts)<<")";
 
         if(result_page.found_element_page.size() < page_len) {
             phase = QueryPhaseEnded;
@@ -257,9 +253,10 @@ int QueryCursor::fetchData() {
     return api_error;
 }
 
-void QueryCursor::getIndexes(uint64_t& runid,uint64_t& seqid){
+void QueryCursor::getIndexes(uint64_t& runid,uint64_t& seqid,uint64_t& ts){
     runid = result_page.last_record_found_seq.run_id;
     seqid =result_page.last_record_found_seq.datapack_counter;
+    ts=result_page.last_record_found_seq.ts;
 }
 
 const uint32_t QueryCursor::getPageLen() const {
@@ -269,3 +266,22 @@ const uint32_t QueryCursor::getPageLen() const {
 void QueryCursor::setPageDimension(uint32_t new_page_len) {
     page_len = new_page_len;
 }
+bool QueryCursor::hasNext() {
+    DBG <<"phase :"<<phase<<" result_page has next:"<<result_page.hasNext();
+
+    switch(phase) {
+        case QueryPhaseNotStarted:
+        case QueryPhaseStarted:
+            if(result_page.hasNext() == false) {
+                if(fetchNewPage()!=0){
+                	ERR <<" Fetch returned error:"<<api_error;
+                	return false;
+                }
+            }
+            return result_page.hasNext();
+        case QueryPhaseEnded:
+            return result_page.hasNext();
+    }
+    return false;
+}
+

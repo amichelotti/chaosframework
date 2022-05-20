@@ -483,6 +483,7 @@ throw chaos::CException(-2, ss.str(), __PRETTY_FUNCTION__);
                 const char* getBSONRawData(int& size) const;
                 const char* getBSONRawData() const;
                 const int getBSONRawSize() const;
+                chaos::common::data::ChaosBsonShrdPtr getBSONShrPtr() const { return bson;}
                 //return the json data
                 //SerializationBuffer* getJSONData();
                 //return the json representation for this data wrapper

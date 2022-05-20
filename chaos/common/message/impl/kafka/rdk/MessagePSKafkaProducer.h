@@ -15,6 +15,7 @@ namespace rdk {
 class MessagePSKafkaProducer : public MessagePSRDKafka, public chaos::common::message::MessagePSProducer {
  protected:
   bool        running;
+  std::map<void*,chaos::common::data::ChaosBsonShrdPtr> todestroy; 
   public:
 
   void HandleRequest(rd_kafka_t*               rk,

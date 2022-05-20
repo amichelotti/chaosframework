@@ -16,13 +16,23 @@ static void dr_msg_cb(rd_kafka_t*               rk,
                       const rd_kafka_message_t* rkmessage,
                       void*                     opaque) {
     
-     MessagePSKafkaProducer* mp=(MessagePSKafkaProducer*)opaque;
-     mp->HandleRequest(rk,rkmessage);                   
+     MessagePSKafkaProducer* mp=(MessagePSKafkaProducer*)rkmessage->_private;
+     if(mp){
+      mp->HandleRequest(rk,rkmessage);
+     }                   
 }
 void MessagePSKafkaProducer::HandleRequest(rd_kafka_t*               rk,
                       const rd_kafka_message_t* rkmessage){
 /**/
-  
+  if(msg_opt==MSG_NOCOPY){
+    if(todestroy.count(rkmessage->payload)){
+  //MRDDBG_<<"Erasing Payload "<<std::hex<<(void*)rkmessage->payload;
+
+      todestroy.erase(rkmessage->payload);
+    } else {
+        MRDERR_<<" Payload "<<std::hex<<(void*)rkmessage->payload<<" not found, in queue:"<<todestroy.size();
+    }
+  }
   if (rkmessage->err){
 
     stats.last_err=1;
@@ -35,6 +45,8 @@ void MessagePSKafkaProducer::HandleRequest(rd_kafka_t*               rk,
   stats.counter++;
   stats.last_err=0;
   stats.oks++;
+  if (handlers.size()) {
+  }
 
 
     //fprintf(stderr, "%% Message delivery failed: %s\n", rd_kafka_err2str(rkmessage->err));
@@ -42,7 +54,7 @@ void MessagePSKafkaProducer::HandleRequest(rd_kafka_t*               rk,
 }
 MessagePSKafkaProducer::~MessagePSKafkaProducer() {
     MRDDBG_<<" DESTROY PRODUCER";
-
+  todestroy.clear();
   MessagePublishSubscribeBase::stop();
   flush(60*1000);
 
@@ -70,6 +82,7 @@ if (rd_kafka_outq_len(rk) > 0){
     return -1;
 }
  // MRDDBG_ << "Flushing...done ";
+  todestroy.clear();
 
 return 0;
 
@@ -106,14 +119,15 @@ int MessagePSKafkaProducer::applyConfiguration() {
     if(rk==NULL){
       MRDDBG_ << "create new producer";
       setMaxMsgSize(16*1024*1024);
+      rd_kafka_conf_set_dr_msg_cb(conf, dr_msg_cb);
+
       if (!(rk = rd_kafka_new(RD_KAFKA_PRODUCER, conf, ers, sizeof(ers)))) {
         errstr=ers;
         MRDERR_ << "Failed to create new producer: " << errstr;
         return -10;
       }
-      if (handlers.size()) {
-       rd_kafka_conf_set_dr_msg_cb(conf, dr_msg_cb);
-      }
+     // if (handlers.size()) {
+      //}
     }
     
   }
@@ -123,7 +137,7 @@ int MessagePSKafkaProducer::applyConfiguration() {
 
 int MessagePSKafkaProducer::pushMsgAsync(const chaos::common::data::CDataWrapper& data, const std::string& key,const int32_t pnum) {
   rd_kafka_resp_err_t err;
-  int                 size  = data.getBSONRawSize();
+  int32_t                size;
   std::string         topic = key;
   std::replace(topic.begin(), topic.end(), '/', '.');
   std::replace(topic.begin(), topic.end(), ':', '.');
@@ -138,24 +152,27 @@ int MessagePSKafkaProducer::pushMsgAsync(const chaos::common::data::CDataWrapper
 //MRDDBG_ << "pushing: " << size<<" d:"<<data.getJSONString();
 retry:
 //int32_t siz;
-//  int32_t *bslen=(int32_t *)data.getBSONRawData(siz);
+//  int32_t *bslen=(int32_t *);
   //MRDDBG_ <<"NOTIFY:("<<data.getBSONRawSize()<<","<<*bslen<<","<<siz<<"):"<<data.getJSONString();
-  
+    void* ptr=(void*)data.getBSONRawData(size);
+
   err = rd_kafka_producev(
       /* Producer handle */
       rk,
       /* Topic name */
       RD_KAFKA_V_TOPIC(topic.c_str()),
       /* Make a copy of the payload. */
-      RD_KAFKA_V_MSGFLAGS(RD_KAFKA_MSG_F_COPY),
+    //  RD_KAFKA_V_MSGFLAGS(((synchronous)?0:RD_KAFKA_MSG_F_COPY)),
+      RD_KAFKA_V_MSGFLAGS(((msg_opt==chaos::common::message::MessagePublishSubscribeBase::MSG_COPY)?RD_KAFKA_MSG_F_COPY:0)), // let the caller deallocate
       /* Message value and length */
-      RD_KAFKA_V_VALUE((void*)data.getBSONRawData(), size),
+      RD_KAFKA_V_VALUE(ptr, size),
       /* Per-Message opaque, provided in
                          * delivery report callback as
                          * msg_opaque. */
       RD_KAFKA_V_OPAQUE(this),
       /* End sentinel */
       RD_KAFKA_V_END);
+
 
   if (err) {
     /*
@@ -180,8 +197,16 @@ retry:
       goto retry;
     }
   }
-  rd_kafka_poll(rk, 0 /*non-blocking*/);
-  stats.counter++;
+  if(msg_opt==chaos::common::message::MessagePublishSubscribeBase::MSG_SYNCH){
+    err= rd_kafka_flush	(rk,1000);
+  } else {
+    if((err==0)&&(msg_opt==chaos::common::message::MessagePublishSubscribeBase::MSG_NOCOPY)){
+      todestroy[ptr]=data.getBSONShrPtr();
+    }
+
+    rd_kafka_poll(rk, 0 /*non-blocking*/);
+  }
+    stats.counter++;
 
   if(err==0){
     stats.oks++;

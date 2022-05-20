@@ -139,13 +139,7 @@ namespace driver{
                 new_dataset->setValue(chaos::DataPackCommonKey::DPCK_TIMESTAMP, (int64_t)ts);
                 
             }
-            if(!new_dataset->hasKey((chaos::DataPackCommonKey::DPCK_HIGH_RESOLUTION_TIMESTAMP))){
-                // add timestamp of the datapack
-                new_dataset->addInt64Value(chaos::DataPackCommonKey::DPCK_HIGH_RESOLUTION_TIMESTAMP, tsh);
-            } else {
-                new_dataset->setValue(chaos::DataPackCommonKey::DPCK_HIGH_RESOLUTION_TIMESTAMP, (int64_t)tsh);
-                
-            }
+         
             if(!new_dataset->hasKey(chaos::DataPackCommonKey::DPCK_SEQ_ID)){
                 new_dataset->addInt64Value(chaos::DataPackCommonKey::DPCK_SEQ_ID,pkids[type]++ );
             } else {

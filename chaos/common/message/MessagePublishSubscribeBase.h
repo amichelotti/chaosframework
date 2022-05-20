@@ -49,8 +49,14 @@ namespace chaos {
                     ONARRIVE,
                     ONERROR
                 };
+                enum msgOpt{
+                    MSG_COPY=0,
+                    MSG_NOCOPY=1,
+                    MSG_SYNCH=2
+                };
                 protected:
                 bool        running;
+                msgOpt msg_opt;
                 std::string errstr;
                 std::set<std::string> servers;
                 std::string id;
@@ -65,7 +71,7 @@ namespace chaos {
                 uint64_t    counter,oks,errs;
 
                 public:
-                MessagePublishSubscribeBase(const std::string& _id):data_ready(false),running(false),id(_id){};
+                MessagePublishSubscribeBase(const std::string& _id):data_ready(false),running(false),id(_id),msg_opt(MSG_COPY){};
 
                 msgstats_t getStats() const{ return stats;}
 
@@ -81,6 +87,13 @@ namespace chaos {
                     handlers[ev]=cb;
                     return 0;
                 }
+                /**
+                 * @brief Enable synchronous if supported
+                 * 
+                 * @param sync enable/disable
+                 */
+        
+                void setMsgOpt(msgOpt opt){msg_opt=opt;}
                 /**
                  * @brief Add an handler to the message
                  * 

@@ -1247,7 +1247,7 @@ int PosixFile::getFromPath(const std::string& dir, const uint64_t timestamp_from
   if (i == searchWorkers.end()) {
     if (searchWorkers[dir].search(dir, timestamp_from, timestamp_to, 0, 0) == 0) {
       int ret = searchWorkers[dir].getData(found_object_page, page_len, timestamp_from, timestamp_to, last_record_found_seq);
-      DBG << "1- RETURNED:" << ret << "/" << i->second.elements << " buf size:" << found_object_page.size() << " last runid:" << last_record_found_seq.run_id << " last seq:" << last_record_found_seq.datapack_counter;
+      DBG << "1- RETURNED:" << ret << "/" << i->second.elements << " buf size:" << found_object_page.size() << " last runid:" << last_record_found_seq.run_id << " last seq:" << last_record_found_seq.datapack_counter << " last ts:"<<last_record_found_seq.ts<< "("<<chaos::common::utility::TimingUtil::toString(last_record_found_seq.ts)<<")" ;
 
       return ret;
     } else {
@@ -1260,7 +1260,7 @@ int PosixFile::getFromPath(const std::string& dir, const uint64_t timestamp_from
     if (i->second.isTemp()) {
       if (i->second.search(dir, timestamp_from, timestamp_to, 0, 0) == 0) {
         int ret = i->second.getData(found_object_page, page_len, timestamp_from, timestamp_to, last_record_found_seq);
-        DBG << "RETURNED:" << ret << "/" << i->second.elements << " buf size:" << found_object_page.size() << " last runid:" << last_record_found_seq.run_id << " last seq:" << last_record_found_seq.datapack_counter;
+        DBG << "RETURNED:" << ret << "/" << i->second.elements << " buf size:" << found_object_page.size() << " last runid:" << last_record_found_seq.run_id << " last seq:" << last_record_found_seq.datapack_counter<< " last ts:"<<last_record_found_seq.ts<< "("<<chaos::common::utility::TimingUtil::toString(last_record_found_seq.ts)<<")";
         return ret;
       } else {
         ERR << " Something wrong in search again.. removing";
@@ -1269,7 +1269,7 @@ int PosixFile::getFromPath(const std::string& dir, const uint64_t timestamp_from
       }
     }
     int ret = i->second.getData(found_object_page, page_len, timestamp_from, timestamp_to, last_record_found_seq);
-    DBG << "RETURNED2:" << ret << "/" << i->second.elements << " buf size:" << found_object_page.size() << " last runid:" << last_record_found_seq.run_id << " last seq:" << last_record_found_seq.datapack_counter;
+    DBG << "RETURNED2:" << ret << "/" << i->second.elements << " buf size:" << found_object_page.size() << " last runid:" << last_record_found_seq.run_id << " last seq:" << last_record_found_seq.datapack_counter<< " last ts:"<<last_record_found_seq.ts<< "("<<chaos::common::utility::TimingUtil::toString(last_record_found_seq.ts)<<")";
     return ret;
 
     // int ret = i->second.getData(found_object_page, page_len, timestamp_from,timestamp_to,last_record_found_seq.run_id, last_record_found_seq.datapack_counter);
@@ -1304,7 +1304,7 @@ int PosixFile::findObject(const std::string&                                    
       //tag=std::accumulate(meta_tags.begin(),meta_tags.end(),std::string("_"));
       tag = boost::algorithm::join(meta_tags, "_");
     }
-    DBG << "Search " << key << " from: " << timestamp_from << "[" << chaos::common::utility::TimingUtil::toString(timestamp_from) << "] to:" << timestamp_to << "[" << chaos::common::utility::TimingUtil::toString(timestamp_to) << "] tags:" << tag << " seqid:" << seqid << " runid:" << runid;
+    DBG << "Search " << key << " from: " << timestamp_from << "[" << chaos::common::utility::TimingUtil::toString(timestamp_from) << "] to:" << timestamp_to << "[" << chaos::common::utility::TimingUtil::toString(timestamp_to) << "] tags:" << tag << " seqid:" << seqid << " runid:" << runid<< " ("<<chaos::common::utility::TimingUtil::toString(runid)<<")";
 
     // align to minute
     uint64_t start_aligned = timestamp_from - (timestamp_from % (60 * 1000));
@@ -1342,14 +1342,14 @@ int PosixFile::findObject(const std::string&                                    
 
               elements += getFromPath(dir, timestamp_from, timestamp_to, (page_len - elements), found_object_page, last_record_found_seq);
               if (elements >= page_len) {
-                DBG << "[" << dir << "] FOUND " << elements << " page:" << page_len << " last runid:" << last_record_found_seq.run_id << " last seq:" << last_record_found_seq.datapack_counter << " last ts:" << last_record_found_seq.ts;
+                DBG << "[" << dir << "] FOUND " << elements << " page:" << page_len << " last runid:" << last_record_found_seq.run_id << " last seq:" << last_record_found_seq.datapack_counter << " last ts:" << last_record_found_seq.ts<<"("<<chaos::common::utility::TimingUtil::toString(last_record_found_seq.ts)<<")";
 #if CHAOS_PROMETHEUS
 
                 (*gauge_query_time_uptr) = (chaos::common::utility::TimingUtil::getTimeStamp() - ts);
 #endif
                 return 0;
               } else if (elements == 0) {
-                DBG << "[" << dir << "] NO ELEMENTS FOUND last runid:" << last_record_found_seq.run_id << " last seq:" << last_record_found_seq.datapack_counter << " last ts:" << last_record_found_seq.ts;
+                DBG << "[" << dir << "] NO ELEMENTS FOUND last runid:" << last_record_found_seq.run_id << " last seq:" << last_record_found_seq.datapack_counter << " last ts:" << last_record_found_seq.ts<<"("<<chaos::common::utility::TimingUtil::toString(last_record_found_seq.ts)<<")";
               }
               //   old_hour = tinfo.tm_min;
               //   }
