@@ -3296,6 +3296,9 @@ void AbstractControlUnit::manageBurstQueue() {
 
       attribute_value_shared_cache->getSharedDomain(DOMAIN_SYSTEM).markAllAsChanged();
       pushSystemDataset();
+      // mark also setpoints
+      attribute_value_shared_cache->getSharedDomain(DOMAIN_INPUT).markAllAsChanged();
+      pushInputDataset();
     }
   } else {
     int64_t tim = *timestamp_acq_cached_value->getValuePtr<int64_t>();
