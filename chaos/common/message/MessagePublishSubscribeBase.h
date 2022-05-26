@@ -94,6 +94,7 @@ namespace chaos {
                  */
         
                 void setMsgOpt(msgOpt opt){msg_opt=opt;}
+                msgOpt getMsgOpt()const {return msg_opt;}
                 /**
                  * @brief Add an handler to the message
                  * 
