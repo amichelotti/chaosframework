@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.9)
 project(ChaosAgent)
 IF (DEFINED ENV{CHAOS_BUNDLE} )
 include($ENV{CHAOS_BUNDLE}/tools/project_template/CMakeChaos.txt)
