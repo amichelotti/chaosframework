@@ -47,7 +47,7 @@ CDWUniquePtr SendStorageBurst::execute(CDWUniquePtr api_data) {
     db_sdw.deserialize(api_data.get());
     CHECK_ASSERTION_THROW_AND_LOG(db_sdw().tag.size() != 0, CU_RNU_ERR, -4, "The tag of burst is mandatory");
     CHECK_ASSERTION_THROW_AND_LOG(db_sdw().type != chaos::ControlUnitNodeDefinitionType::DSStorageBurstTypeUndefined, CU_RNU_ERR, -5, "The type of burst is mandatory");
-    CHECK_ASSERTION_THROW_AND_LOG(db_sdw().value.isValid(), CU_RNU_ERR, -6, "The value ofburst is mandatory");
+    CHECK_ASSERTION_THROW_AND_LOG(db_sdw().value.isValid(), CU_RNU_ERR, -6, "The value of burst is mandatory");
     
     GET_DATA_ACCESS(ControlUnitDataAccess, cu_da, -7)
     
