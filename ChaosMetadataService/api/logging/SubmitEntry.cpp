@@ -107,6 +107,21 @@ void SubmitEntry::completeLogEntry(CDataWrapper& api_data,
             new_log_entry.map_double_value.insert(make_pair(*it,api_data.getDoubleValue(*it)));
         } else if(api_data.isStringValue(*it)) {
             new_log_entry.map_string_value.insert(make_pair(*it,api_data.getStringValue(*it)));
-        }
+        } else if(api_data.isVector(*it)){
+            CMultiTypeDataArrayWrapperSPtr ret=api_data.getVectorValue(*it);
+            if(ret->size()&&ret->isStringElementAtIndex(0)){
+                std::stringstream ss;
+                for(int cnt=0;cnt<ret->size();cnt++){
+                    ss<<ret->getStringElementAtIndex(cnt);
+                    if(cnt<(ret->size()-1)){
+                        ss<<",";
+                    }
+                }
+                new_log_entry.map_string_value.insert(make_pair(*it,ss.str()));
+
+            }
+        } else if(api_data.isCDataWrapperValue(*it)){
+            new_log_entry.map_string_value.insert(make_pair(*it,api_data.getCompliantJSONString()));
+        } 
     }
 }
