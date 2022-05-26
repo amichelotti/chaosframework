@@ -71,7 +71,7 @@ MessagePSKafkaProducer::~MessagePSKafkaProducer() {
 }
 int MessagePSKafkaProducer::flush(const int timeo){
   //MRDDBG_ << "Flushing... ";
-  ChaosLockGuard ll(io);
+  //ChaosLockGuard ll(io);
 
     rd_kafka_flush(rk, timeo);
 if (rd_kafka_outq_len(rk) > 0){
