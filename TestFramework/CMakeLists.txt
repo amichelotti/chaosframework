@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.9)
 project(TestFramework)
 #find_package(GTest REQUIRED)
 IF( CHAOS_SANITIZER MATCHES ${PROJECT_NAME} )

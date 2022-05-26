@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.9)
 MESSAGE("framework CMakeLists")
 
 # workaround for issues with MacOS 10.15 Catalina and stack_not_16_byte_aligned_error issues
