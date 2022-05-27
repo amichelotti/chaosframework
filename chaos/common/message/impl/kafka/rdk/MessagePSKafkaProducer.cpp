@@ -25,12 +25,14 @@ void MessagePSKafkaProducer::HandleRequest(rd_kafka_t*               rk,
                       const rd_kafka_message_t* rkmessage){
 /**/
   if(msg_opt==MSG_NOCOPY){
+    std::lock_guard<std::recursive_mutex> ll(io);
+
     if(todestroy.count(rkmessage->payload)){
   //MRDDBG_<<"Erasing Payload "<<std::hex<<(void*)rkmessage->payload;
 
       todestroy.erase(rkmessage->payload);
     } else {
-        MRDERR_<<" Payload "<<std::hex<<(void*)rkmessage->payload<<" not found, in queue:"<<todestroy.size();
+        MRDERR_<<" Payload "<<std::hex<<(void*)rkmessage->payload<<" len:"<<rkmessage->len<<", key:"<<rkmessage->key<<"  off:"<<rkmessage->offset<<" partition:"<<rkmessage->partition <<" not found, in queue:"<<todestroy.size();
     }
   }
   if (rkmessage->err){
@@ -71,7 +73,7 @@ MessagePSKafkaProducer::~MessagePSKafkaProducer() {
 }
 int MessagePSKafkaProducer::flush(const int timeo){
   //MRDDBG_ << "Flushing... ";
-  ChaosLockGuard ll(io);
+  std::lock_guard<std::recursive_mutex> ll(io);
 
     rd_kafka_flush(rk, timeo);
 if (rd_kafka_outq_len(rk) > 0){
@@ -82,7 +84,7 @@ if (rd_kafka_outq_len(rk) > 0){
     return -1;
 }
  // MRDDBG_ << "Flushing...done ";
-  todestroy.clear();
+  //todestroy.clear();
 
 return 0;
 
@@ -113,7 +115,7 @@ int MessagePSKafkaProducer::applyConfiguration() {
   MRDDBG_ << "Apply configuration";
         
 
-  ChaosLockGuard ll(io);
+  std::lock_guard<std::recursive_mutex> ll(io);
   
   if ((ret = MessagePSRDKafka::init(servers)) == 0) {
     if(rk==NULL){
@@ -147,7 +149,7 @@ int MessagePSKafkaProducer::pushMsgAsync(const chaos::common::data::CDataWrapper
       errstr="Not applied configuration";
       return -11;
   }
- // ChaosLockGuard ll(io);
+ std::lock_guard<std::recursive_mutex> ll(io);
 
 //MRDDBG_ << "pushing: " << size<<" d:"<<data.getJSONString();
 retry:
@@ -201,7 +203,11 @@ retry:
     err= rd_kafka_flush	(rk,1000);
   } else {
     if((err==0)&&(msg_opt==chaos::common::message::MessagePublishSubscribeBase::MSG_NOCOPY)){
-      todestroy[ptr]=data.getBSONShrPtr();
+      todestroy.insert(std::make_pair(ptr,data.getBSONShrPtr()));
+      if(todestroy.size()>100){
+            MRDERR_ << "too much messages in queue " <<todestroy.size() ;
+          
+      }
     }
 
     rd_kafka_poll(rk, 0 /*non-blocking*/);

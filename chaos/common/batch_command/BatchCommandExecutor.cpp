@@ -117,10 +117,11 @@ AbstractSharedDomainCache *BatchCommandExecutor::getAttributeSharedCache() {
 //! Add a number of sandobx to this instance of executor
 void BatchCommandExecutor::addSandboxInstance(unsigned int _sandbox_number) {
     //lock for map modification
-    WriteLock lock(sandbox_map_mutex);
     
     //! add new instances
     for(unsigned int idx = 0; idx < _sandbox_number; idx++) {
+        WriteLock lock(sandbox_map_mutex);
+
         addNewSandboxInstance();
     }
 }
