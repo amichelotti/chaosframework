@@ -21,7 +21,7 @@
 
 #include "SendStorageBurst.h"
 #include "../../batch/node/SendRpcCommand.h"
-
+#include "../logging/SubmitEntry.h"
 #include <chaos/common/chaos_constants.h>
 #include <chaos/common/data/structured/Dataset.h>
 
@@ -47,7 +47,7 @@ CDWUniquePtr SendStorageBurst::execute(CDWUniquePtr api_data) {
     db_sdw.deserialize(api_data.get());
     CHECK_ASSERTION_THROW_AND_LOG(db_sdw().tag.size() != 0, CU_RNU_ERR, -4, "The tag of burst is mandatory");
     CHECK_ASSERTION_THROW_AND_LOG(db_sdw().type != chaos::ControlUnitNodeDefinitionType::DSStorageBurstTypeUndefined, CU_RNU_ERR, -5, "The type of burst is mandatory");
-    CHECK_ASSERTION_THROW_AND_LOG(db_sdw().value.isValid(), CU_RNU_ERR, -6, "The value ofburst is mandatory");
+    CHECK_ASSERTION_THROW_AND_LOG(db_sdw().value.isValid(), CU_RNU_ERR, -6, "The value of burst is mandatory");
     
     GET_DATA_ACCESS(ControlUnitDataAccess, cu_da, -7)
     
@@ -56,7 +56,6 @@ CDWUniquePtr SendStorageBurst::execute(CDWUniquePtr api_data) {
     bool                presence            = false;
     std::string         temp_node_uid;
     ChaosStringVector   control_unit_to_recover;
-    
     if(api_data->isVector(chaos::NodeDefinitionKey::NODE_UNIQUE_ID)) {
         CMultiTypeDataArrayWrapperSPtr control_unit_ids = api_data->getVectorValue(chaos::NodeDefinitionKey::NODE_UNIQUE_ID);
         for(int idx = 0; idx < control_unit_ids->size(); idx++) {
@@ -65,6 +64,8 @@ CDWUniquePtr SendStorageBurst::execute(CDWUniquePtr api_data) {
                 CU_RNU_ERR << "Error checking the presence of control unit" << temp_node_uid << "with code:"<<err;
             } else if(presence){
                 control_unit_to_recover.push_back(temp_node_uid);
+                
+
             } else {
                 CU_RNU_ERR << "The control unit" << temp_node_uid << "is not present";
             }
@@ -96,5 +97,40 @@ CDWUniquePtr SendStorageBurst::execute(CDWUniquePtr api_data) {
         command_id = getBatchExecutor()->submitCommand(std::string(GET_MDS_COMMAND_ALIAS(batch::node::SendRpcCommand)),
                                                        batch_data.release());
     }
+    GET_DATA_ACCESS(LoggingDataAccess, l_da, -8);
+    
+    //crete entry
+    LogEntry new_log_entry;
+    if(api_data->hasKey(MetadataServerLoggingDefinitionKeyRPC::PARAM_NODE_LOGGING_LOG_SOURCE_IDENTIFIER)){
+        new_log_entry.source_identifier = api_data->getStringValue(MetadataServerLoggingDefinitionKeyRPC::PARAM_NODE_LOGGING_LOG_SOURCE_IDENTIFIER);
+    } else {
+        new_log_entry.source_identifier = db_sdw().tag;
+
+    }
+    if(api_data->hasKey(MetadataServerLoggingDefinitionKeyRPC::PARAM_NODE_LOGGING_LOG_TIMESTAMP)){
+        new_log_entry.ts = api_data->getUInt64Value(MetadataServerLoggingDefinitionKeyRPC::PARAM_NODE_LOGGING_LOG_TIMESTAMP);
+
+    } else {
+        new_log_entry.ts = chaos::common::utility::TimingUtil::getTimeStamp();
+    }
+    if(api_data->hasKey(MetadataServerLoggingDefinitionKeyRPC::PARAM_NODE_LOGGING_LOG_DOMAIN)){
+        new_log_entry.domain = api_data->getStringValue(MetadataServerLoggingDefinitionKeyRPC::PARAM_NODE_LOGGING_LOG_DOMAIN);
+
+    } else {
+        new_log_entry.domain = "tag";
+    }
+    if(api_data->hasKey(MetadataServerLoggingDefinitionKeyRPC::PARAM_NODE_LOGGING_LOG_SUBJECT)){
+        new_log_entry.subject = api_data->getStringValue(MetadataServerLoggingDefinitionKeyRPC::PARAM_NODE_LOGGING_LOG_SUBJECT);
+
+    } else {
+        new_log_entry.subject = db_sdw().tag;
+    }
+    chaos::metadata_service::api::logging::SubmitEntry::completeLogEntry(*api_data,
+                     new_log_entry);
+    //insert the log entry
+    if((err = l_da->insertNewEntry(new_log_entry))){
+        LOG_AND_TROW(CU_RNU_ERR, -9, "Error creating new log entry");
+    }
+    
     return CDWUniquePtr();
 }

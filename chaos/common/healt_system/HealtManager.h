@@ -140,7 +140,8 @@ namespace chaos {
                 
                 //! the map of the nodes healt
                 HealtNodeMap                                        map_node;
-                boost::shared_mutex                                 map_node_mutex;
+               // boost::shared_mutex                                 map_node_mutex;
+               ChaosMutex                                           map_node_mutex;
                 
                 //! network broker and channel for comunicate with mds
                 chaos::common::message::MultiAddressMessageChannel  *mds_message_channel;

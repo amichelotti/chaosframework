@@ -98,7 +98,7 @@ static void err_cb (rd_kafka_t *rk, int err, const char *reason, void *opaque) {
 int MessagePSRDKafkaConsumer::applyConfiguration() {
   char ers[512];
   int  ret = 0;
-  ChaosLockGuard ll(io);
+  std::lock_guard<std::recursive_mutex> ll(io);
 
   if ((ret = MessagePSRDKafka::init(servers)) == 0) {
     /* If there is no previously committed offset for a partition

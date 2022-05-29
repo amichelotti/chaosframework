@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.9)
 project(ChaosMetadataService)
 
 #add module path for permi to find lirary

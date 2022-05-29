@@ -71,7 +71,11 @@ int MongoDBLoggingDataAccess::insertNewEntry(LogEntry& log_entry) {
     mongo::BSONObjBuilder builder;
     CHAOS_ASSERT(utility_data_access)
     try {
-        if(!log_entry.source_identifier.size()) return -1;
+        if(!log_entry.source_identifier.size()) {
+            MDBLDA_ERR << "No source identifier for log";
+
+            return -1;
+        }
         
        /* if(utility_data_access->getNextSequenceValue("logging", log_entry.sequence)) {
             MDBLDA_ERR << "Error getting new sequence for log";
