@@ -204,9 +204,10 @@ retry:
   } else {
     if((err==0)&&(msg_opt==chaos::common::message::MessagePublishSubscribeBase::MSG_NOCOPY)){
       todestroy.insert(std::make_pair(ptr,data.getBSONShrPtr()));
-      if(todestroy.size()>100){
-            MRDERR_ << "too much messages in queue " <<todestroy.size() ;
-          
+      if(todestroy.size()>1000){
+           // MRDERR_ << "too much messages in queue " <<todestroy.size() ;
+            err= rd_kafka_flush	(rk,10);
+
       }
     }
 
