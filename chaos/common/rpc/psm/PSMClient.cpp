@@ -147,7 +147,9 @@ bool PSMClient::submitMessage(NFISharedPtr forwardInfo,
         if(prod->pushMsgAsync(*forwardInfo->message.get(),key)!=0){
             return false;
         }
-        prod->flush();
+        if(prod->getMsgOpt()!=chaos::common::message::MessagePublishSubscribeBase::MSG_SYNCH){
+            prod->flush(1000);
+        }
 
     } catch(CException& ex){
         //in this case i need to delete the memory

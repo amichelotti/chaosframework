@@ -1299,12 +1299,12 @@ int PosixFile::findObject(const std::string&                                    
   int elements = 0;
   try {
     std::string tag;
-
-    if ((meta_tags.size() > 0)) {
-      //tag=std::accumulate(meta_tags.begin(),meta_tags.end(),std::string("_"));
-      tag = boost::algorithm::join(meta_tags, "_");
+    ChaosStringSet::iterator itag=meta_tags.begin();
+    if (itag !=meta_tags.end()) {
+          //tag=std::accumulate(meta_tags.begin(),meta_tags.end(),std::string("_"));
+          tag = *itag;
     }
-    DBG << "Search " << key << " from: " << timestamp_from << "[" << chaos::common::utility::TimingUtil::toString(timestamp_from) << "] to:" << timestamp_to << "[" << chaos::common::utility::TimingUtil::toString(timestamp_to) << "] tags:" << tag << " seqid:" << seqid << " runid:" << runid<< chaos::common::utility::TimingUtil::toString(runid);
+    DBG << "Search " << key << " from: " << timestamp_from << "[" << chaos::common::utility::TimingUtil::toString(timestamp_from) << "] to:" << timestamp_to << "[" << chaos::common::utility::TimingUtil::toString(timestamp_to) << "] tag:" << tag << " seqid:" << seqid << " runid:" << runid<< " ("<<chaos::common::utility::TimingUtil::toString(runid)<<")";
 
     // align to minute
     uint64_t start_aligned = timestamp_from - (timestamp_from % (60 * 1000));
@@ -1322,46 +1322,46 @@ int PosixFile::findObject(const std::string&                                    
       time_t    start_s = years_timestamp / 1000;
       localtime_r(&start_s, &info);
 
-      if (existYear(basedatapath, key, tag, years_timestamp)) {
-        for (uint64_t day_timestamp = years_timestamp; day_timestamp < timestamp_to; day_timestamp += POSIX_DAY_MS) {
-          if (existYearMonthDay(basedatapath, key, tag, day_timestamp)) {
-            // Since I cut precision to 1 sec I've to look 1 sec more,
-            for (uint64_t start = day_timestamp; start < (stop_aligned); start += POSIX_MINUTES_MS) {
-              //    time_t t = (start / 1000);
-              //struct tm* tinfo = localtime(&t);
-              //      struct tm tinfo;
-              //       localtime_r(&t, &tinfo);
-              //    if ((tinfo.tm_min != old_hour)) {
-              calcFileDir(basedatapath, key, tag, start, seqid, runid, dir, f);
-              // boost::filesystem::path p(dir);
-              if (!boost::filesystem::exists(dir)) {
-                //   DBG << "[" << chaos::common::utility::TimingUtil::toString(start) << "] Looking in \"" << dir << "\" seq:" << seqid << " runid:" << runid << " NOT EXISTS";
-                continue;
-              }
-              DBG << "[" << chaos::common::utility::TimingUtil::toString(start) << "-" << chaos::common::utility::TimingUtil::toString(timestamp_to) << "->" << chaos::common::utility::TimingUtil::toString(stop_aligned) << " ] Looking in \"" << dir << "\" seq:" << seqid << " runid:" << runid;
+        if (existYear(basedatapath, key, tag, years_timestamp)) {
+          for (uint64_t day_timestamp = years_timestamp; day_timestamp < timestamp_to; day_timestamp += POSIX_DAY_MS) {
+            if (existYearMonthDay(basedatapath, key, tag, day_timestamp)) {
+              // Since I cut precision to 1 sec I've to look 1 sec more,
+              for (uint64_t start = day_timestamp; start < (stop_aligned); start += POSIX_MINUTES_MS) {
+                //    time_t t = (start / 1000);
+                //struct tm* tinfo = localtime(&t);
+                //      struct tm tinfo;
+                //       localtime_r(&t, &tinfo);
+                //    if ((tinfo.tm_min != old_hour)) {
+                calcFileDir(basedatapath, key, tag, start, seqid, runid, dir, f);
+                // boost::filesystem::path p(dir);
+                if (!boost::filesystem::exists(dir)) {
+                  //   DBG << "[" << chaos::common::utility::TimingUtil::toString(start) << "] Looking in \"" << dir << "\" seq:" << seqid << " runid:" << runid << " NOT EXISTS";
+                  continue;
+                }
+                DBG << "[" << chaos::common::utility::TimingUtil::toString(start) << "-" << chaos::common::utility::TimingUtil::toString(timestamp_to) << "->" << chaos::common::utility::TimingUtil::toString(stop_aligned) << " ] Looking in \"" << dir << "\" seq:" << seqid << " runid:" << runid;
 
-              elements += getFromPath(dir, timestamp_from, timestamp_to, (page_len - elements), found_object_page, last_record_found_seq);
-              if (elements >= page_len) {
-                DBG << "[" << dir << "] FOUND " << elements << " page:" << page_len << " last runid:" << last_record_found_seq.run_id << " last seq:" << last_record_found_seq.datapack_counter << " last ts:" << last_record_found_seq.ts<<"("<<chaos::common::utility::TimingUtil::toString(last_record_found_seq.ts)<<")";
-#if CHAOS_PROMETHEUS
+                elements += getFromPath(dir, timestamp_from, timestamp_to, (page_len - elements), found_object_page, last_record_found_seq);
+                if (elements >= page_len) {
+                  DBG << "[" << dir << "] FOUND " << elements << " page:" << page_len << " last runid:" << last_record_found_seq.run_id << " last seq:" << last_record_found_seq.datapack_counter << " last ts:" << last_record_found_seq.ts<<"("<<chaos::common::utility::TimingUtil::toString(last_record_found_seq.ts)<<")";
+  #if CHAOS_PROMETHEUS
 
-                (*gauge_query_time_uptr) = (chaos::common::utility::TimingUtil::getTimeStamp() - ts);
-#endif
-                return 0;
-              } else if (elements == 0) {
-                DBG << "[" << dir << "] NO ELEMENTS FOUND last runid:" << last_record_found_seq.run_id << " last seq:" << last_record_found_seq.datapack_counter << " last ts:" << last_record_found_seq.ts<<"("<<chaos::common::utility::TimingUtil::toString(last_record_found_seq.ts)<<")";
+                  (*gauge_query_time_uptr) = (chaos::common::utility::TimingUtil::getTimeStamp() - ts);
+  #endif
+                  return 0;
+                } else if (elements == 0) {
+                  DBG << "[" << dir << "] NO ELEMENTS FOUND last runid:" << last_record_found_seq.run_id << " last seq:" << last_record_found_seq.datapack_counter << " last ts:" << last_record_found_seq.ts<<"("<<chaos::common::utility::TimingUtil::toString(last_record_found_seq.ts)<<")";
+                }
+                //   old_hour = tinfo.tm_min;
+                //   }
               }
-              //   old_hour = tinfo.tm_min;
-              //   }
             }
           }
         }
-      }
-      if (((info.tm_year + 1900) % 4) == 0) {
-        years_timestamp += POSIX_YEARB_MS;
-      } else {
-        years_timestamp += POSIX_YEAR_MS;
-      }
+        if (((info.tm_year + 1900) % 4) == 0) {
+          years_timestamp += POSIX_YEARB_MS;
+        } else {
+          years_timestamp += POSIX_YEAR_MS;
+        }
     }
   } catch (const chaos::CException& e) {
     ERR << "Chaos Exception :" << e.errorMessage;

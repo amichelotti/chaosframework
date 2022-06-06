@@ -114,6 +114,7 @@ static const char* const OPT_REST_POLL_TIME_US = "rest-poll-us";
 //!data directory for storage and checkpoint of nodes
 static const char* const OPT_DATA_DIR = "data-dir";
 
+static const char* const OPT_MSG_OPT = "msgopt-send";
 static const char* const OPT_MSG_PRODUCER_KVP = "msgopt-producer-kvp";
 static const char* const OPT_MSG_CONSUMER_KVP = "msgopt-consumer-kvp";
 static const char* const OPT_DIRECT_HTTP_STREAM_HOST= "http-stream-host";

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.9)
 project(chaos_metadata_service_client)
 
 IF (NOT  BUILD_FORCE_STATIC)

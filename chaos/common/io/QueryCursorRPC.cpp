@@ -20,6 +20,8 @@
  */
 
 #include <chaos/common/chaos_constants.h>
+#include <chaos/common/exception/CException.h>
+
 #include <chaos/common/io/QueryCursorRPC.h>
 #include <chaos/common/network/NetworkBroker.h>
 #include <chaos/common/message/MDSMessageChannel.h>
@@ -94,7 +96,7 @@ int QueryCursorRPC::fetchData() {
     } else {
         result_page.current_fetched = 0;
         last_end_ts=result_page.last_record_found_seq.ts;
-        DBG<<"retrieved:"<<result_page.found_element_page.size() <<" Page:"<<page_len<< " last ts:"<<last_end_ts << " ("<<chaos::common::utility::TimingUtil::toString(last_end_ts)<<")";
+        DBG<<"retrieved:"<<result_page.found_element_page.size() <<" Page:"<<page_len<< "last seq:"<<result_page.last_record_found_seq.datapack_counter<<" last ts:"<<last_end_ts << " ("<<chaos::common::utility::TimingUtil::toString(last_end_ts)<<")";
 
         if(result_page.found_element_page.size() < page_len) {
             phase = QueryPhaseEnded;

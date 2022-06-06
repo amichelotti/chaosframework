@@ -15,7 +15,7 @@ namespace chaos {
             
             }
                 void MessagePublishSubscribeBase::addServer(const std::string&url){
-                    ChaosLockGuard ll(io);
+                    std::lock_guard<std::recursive_mutex> ll(io);
 
                     MRDDBG_<<"["<<servers.size()<<"] adding server:"<<url;
                     servers.insert(url);
@@ -87,7 +87,7 @@ namespace chaos {
          }
 
          void MessagePublishSubscribeBase::start(){
-             ChaosLockGuard ll(io);
+             std::lock_guard<std::recursive_mutex> ll(io);
             if(running==true){
                  MRDDBG_<<"Already running";
                 return;
@@ -97,7 +97,7 @@ namespace chaos {
 
          }
         void MessagePublishSubscribeBase::stop(){
-            ChaosLockGuard ll(io);
+            std::lock_guard<std::recursive_mutex> ll(io);
             if(running==false){
                 MRDDBG_<<"Already stopped";
 

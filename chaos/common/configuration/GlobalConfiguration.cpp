@@ -109,6 +109,8 @@ void GlobalConfiguration::preParseStartupParameters()  {
         addOption(InitOption::OPT_METADATASERVER_AUTO_CONF, po::value< bool >()->zero_tokens(), "Enable auto configuration for metadataserver endpoints");
         #if defined(KAFKA_RDK_ENABLE) || defined(KAFKA_ASIO_ENABLE)
         addOption(InitOption::OPT_DATA_IO_IMPL, po::value< string >()->default_value(std::string("IODirectIOPSMsgDriver")), "Specify the data io implementation");
+        addOption(InitOption::OPT_MSG_OPT, po::value< int >()->default_value(0), "0=copy,1=zero,2=synchronous");
+
         addOption(InitOption::OPT_MSG_PRODUCER_KVP, po::value< std::vector<std::string> >(), "K:V message producer options");
         addOption(InitOption::OPT_MSG_CONSUMER_KVP, po::value< std::vector<std::string> >(), "K:V message consumer options");
         //disable directio

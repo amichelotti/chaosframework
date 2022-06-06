@@ -11,7 +11,7 @@ namespace kafka {
 namespace rdk {
 
 MessagePSRDKafka::~MessagePSRDKafka() {
-  ChaosLockGuard ll(io);
+  std::lock_guard<std::recursive_mutex> ll(io);
 
   MRDDBG_<<" DESTROY KAFKA";
   // rd_kafka_new deallocate conf
