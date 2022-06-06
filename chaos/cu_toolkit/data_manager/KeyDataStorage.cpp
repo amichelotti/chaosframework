@@ -178,7 +178,7 @@ CDWShrdPtr KeyDataStorage::getNewDataPackForDomain(const KeyDataStorageDomain do
 }
 
 int KeyDataStorage::pushDataWithControlOnHistoryTime(const std::string& key,
-                                                     CDWShrdPtr dataset,
+                                                     CDWShrdPtr& dataset,
                                                      DataServiceNodeDefinitionType::DSStorageType storage_type) {
     
     uint64_t now = TimingUtil::getTimeStampInMicroseconds();
@@ -227,15 +227,14 @@ int KeyDataStorage::pushDataSet(KeyDataStorageDomain domain,
     switch(domain) {
         case KeyDataStorageDomainOutput:
             err=pushDataWithControlOnHistoryTime(output_key,
-                                                 MOVE(dataset),
+                                                 dataset,
                                                  storage_type);
             break;
         case KeyDataStorageDomainInput:
             //input channel need to be push ever either in live and in history
-            err=io_data_driver->storeData(input_key,
+            err=pushDataWithControlOnHistoryTime(input_key,
                                           dataset,
-                                          storage_type,
-                                          current_tags());
+                                          storage_type);
             break;
         case KeyDataStorageDomainSystem:
             //system channel need to be push ever either in live and in history
@@ -267,7 +266,7 @@ int KeyDataStorage::pushDataSet(KeyDataStorageDomain domain,
             break;
         case KeyDataStorageDomainCustom:
             err=pushDataWithControlOnHistoryTime(custom_key,
-                                                 MOVE(dataset),
+                                                 dataset,
                                                  storage_type);
             break;
     }
