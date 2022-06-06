@@ -250,37 +250,39 @@ for dir in ${on_dir[@]}; do
 		usage
 		exit 1
 	    fi
-	    info_mesg "[$dir] merging " "\"$1\"=>\"$2\" ($overall_mesg) "
-	    
-	    if [ -z "$overall_mesg" ];then
-		info_mesg_n "[$dir] empty comment to skip:"
-		read mesg
-	    else
-		mesg=$overall_mesg
-	    fi
+		if ! git diff $1 origin/$2;then
+			info_mesg "[$dir] merging " "\"$1\"=>\"$2\" ($overall_mesg) "
+			
+			if [ -z "$overall_mesg" ];then
+			info_mesg_n "[$dir] empty comment to skip:"
+			read mesg
+			else
+			mesg=$overall_mesg
+			fi
 
 
-	    if [ -n "$mesg" ]; then
-		if git_checkout $dir $2; then
-		    
-		    if git merge -m "$mesg" --no-ff $1;then
-			info_mesg "[$dir] merge " "done"
-		    else
-			error_mesg "[$dir] error merging $1 -> $2, skipping merge"
-		    fi
-		    if git push origin $2;then
-			info_mesg "[$dir] push origin $2 " "done"
-		    else
-			error_mesg "[$dir] error pushing $2 -> origin, skipping merge"
-		    fi
-		    if git checkout $1;then
-			info_mesg "[$dir] back into branch $1 " "done"
-		    else
-			error_mesg "[$dir] error back into branch $1 , skipping merge"
-		    fi
+			if [ -n "$mesg" ]; then
+			if git_checkout $dir $2; then
+				
+				if git merge -m "$mesg" --no-ff $1;then
+				info_mesg "[$dir] merge " "done"
+				else
+				error_mesg "[$dir] error merging $1 -> $2, skipping merge"
+				fi
+				if git push origin $2;then
+				info_mesg "[$dir] push origin $2 " "done"
+				else
+				error_mesg "[$dir] error pushing $2 -> origin, skipping merge"
+				fi
+				if git checkout $1;then
+				info_mesg "[$dir] back into branch $1 " "done"
+				else
+				error_mesg "[$dir] error back into branch $1 , skipping merge"
+				fi
 
+			fi
+			fi
 		fi
-	    fi
 	    ;;
   b)
 
