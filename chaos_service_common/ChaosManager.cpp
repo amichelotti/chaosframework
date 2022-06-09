@@ -534,7 +534,7 @@ chaos::common::data::CDWUniquePtr ChaosManager::killCurrentCommand(const std::st
 
 chaos::common::data::CDWUniquePtr ChaosManager::checkAgentHostedProcess(const std::string& name) {
   CDWUniquePtr res;
-  ChaosLockGuard l(iomutex);
+  //ChaosLockGuard l(iomutex);
 
   if (persistence_driver) {
     CALC_EXEC_START;
@@ -550,7 +550,7 @@ chaos::common::data::CDWUniquePtr ChaosManager::checkAgentHostedProcess(const st
 
 chaos::common::data::CDWUniquePtr ChaosManager::loadAgentDescription(const std::string& agent_uid, bool loaddata) {
   CDWUniquePtr res;
-  ChaosLockGuard l(iomutex);
+  //ChaosLockGuard l(iomutex);
 
   if (persistence_driver) {
     CALC_EXEC_START;
@@ -567,7 +567,7 @@ chaos::common::data::CDWUniquePtr ChaosManager::loadAgentDescription(const std::
 
 chaos::common::data::CDWUniquePtr ChaosManager::listNodeForAgent(const std::string& agent_uid) {
   CDWUniquePtr res;
-  ChaosLockGuard l(iomutex);
+//  ChaosLockGuard l(iomutex);
 
   if (persistence_driver) {
     CALC_EXEC_START;
@@ -582,7 +582,7 @@ chaos::common::data::CDWUniquePtr ChaosManager::listNodeForAgent(const std::stri
 }
 chaos::common::data::CDWUniquePtr ChaosManager::removeNodeAssociation(const std::string&name,const std::string&association){
    CDWUniquePtr res;
-  ChaosLockGuard l(iomutex);
+  //ChaosLockGuard l(iomutex);
 
   if (persistence_driver) {
     CALC_EXEC_START;
@@ -599,7 +599,7 @@ chaos::common::data::CDWUniquePtr ChaosManager::removeNodeAssociation(const std:
 
 chaos::common::data::CDWUniquePtr ChaosManager::loadNodeAssociation(const std::string& agent_uid, const std::string& node_association) {
   CDWUniquePtr res;
-  ChaosLockGuard l(iomutex);
+  //ChaosLockGuard l(iomutex);
 
   if (persistence_driver) {
     CALC_EXEC_START;
@@ -616,7 +616,7 @@ chaos::common::data::CDWUniquePtr ChaosManager::loadNodeAssociation(const std::s
 
 chaos::common::data::CDWUniquePtr ChaosManager::saveNodeAssociation(const std::string& agent_uid, const chaos::common::data::CDataWrapper& node_association) {
   CDWUniquePtr res;
-  ChaosLockGuard l(iomutex);
+  //ChaosLockGuard l(iomutex);
 
   if (persistence_driver) {
     CALC_EXEC_START;
@@ -633,7 +633,7 @@ chaos::common::data::CDWUniquePtr ChaosManager::saveNodeAssociation(const std::s
 
 chaos::common::data::CDWUniquePtr ChaosManager::getSnapshotDatasetForNode(const std::string& snapname, const std::string& node_uid) {
   CDWUniquePtr res;
-  ChaosLockGuard l(iomutex);
+ // ChaosLockGuard l(iomutex);
 
   if (persistence_driver) {
     CALC_EXEC_START;
@@ -670,7 +670,7 @@ chaos::common::data::CDWUniquePtr ChaosManager::getSnapshotDatasetForNode(const 
 }
 chaos::common::data::CDWUniquePtr ChaosManager::setSnapshotDatasetsForNode(const std::string& snapshot_name,const std::string& uid,chaos::common::data::VectorCDWShrdPtr& datasets_value_vec){
   CDWUniquePtr res;
-  ChaosLockGuard l(iomutex);
+  //ChaosLockGuard l(iomutex);
 
     CDWUniquePtr message(new CDataWrapper());
     message->addStringValue(chaos::NodeDefinitionKey::NODE_UNIQUE_ID, uid);
