@@ -143,10 +143,14 @@ bool PSMClient::submitMessage(NFISharedPtr forwardInfo,
         forwardInfo->message->addInt64Value(RPC_TS_KEY, chaos::common::utility::TimingUtil::getTimeStamp());
 
         std::string key=forwardInfo->destinationAddr;
-        PSMC_LDBG<<seq_id<<"] Reqid:"<<forwardInfo->sender_request_id<<" "<<forwardInfo->sender_node_id<<" Sends message to:"<<forwardInfo->destinationAddr<<" size:"<<forwardInfo->message->getBSONRawSize();//<<":"<<forwardInfo->message->getJSONString();
-        if(prod->pushMsgAsync(*forwardInfo->message.get(),key)!=0){
+        int ret;
+        if((ret=prod->pushMsgAsync(*forwardInfo->message.get(),key))!=0){
+            PSMC_LERR<<seq_id<<"] Reqid:"<<forwardInfo->sender_request_id<<" "<<forwardInfo->sender_node_id<<" Sending message to:"<<forwardInfo->destinationAddr<<" size:"<<forwardInfo->message->getBSONRawSize()<<" returned error:"<<ret;//<<":"<<forwardInfo->message->getJSONString();
+
             return false;
         }
+        PSMC_LDBG<<seq_id<<"] Reqid:"<<forwardInfo->sender_request_id<<" "<<forwardInfo->sender_node_id<<" Sends message to:"<<forwardInfo->destinationAddr<<" size:"<<forwardInfo->message->getBSONRawSize();//<<":"<<forwardInfo->message->getJSONString();
+
         if(prod->getMsgOpt()!=chaos::common::message::MessagePublishSubscribeBase::MSG_SYNCH){
             prod->flush(1000);
         }

@@ -340,7 +340,7 @@ void ZMQClient::processBufferElement(NFISharedPtr messageInfo) {
         if(socket_info == NULL){
             ZMQC_LERR << "GetSocketForNFI failed";
             forwadSubmissionResultError(MOVE(messageInfo),
-                                        ErrorRpcCoce::EC_RPC_NO_SOCKET,
+                                        ErrorRpcCode::EC_RPC_NO_SOCKET,
                                         "GetSocketForNFI failed",
                                         __PRETTY_FUNCTION__);
             (*counter_zmqerror_uptr)++;
@@ -350,7 +350,7 @@ void ZMQClient::processBufferElement(NFISharedPtr messageInfo) {
         if(!socket_info->resource_pooled) {
             ZMQC_LERR << "Socket creation error";
             forwadSubmissionResultError(MOVE(messageInfo),
-                                        ErrorRpcCoce::EC_RPC_NO_SOCKET,
+                                        ErrorRpcCode::EC_RPC_NO_SOCKET,
                                         "Socket creation error",
                                         __PRETTY_FUNCTION__);
             deleteSocket(socket_info);
@@ -371,7 +371,7 @@ void ZMQClient::processBufferElement(NFISharedPtr messageInfo) {
              (*counter_zmqerror_uptr)++;
             if(messageInfo->is_request) {
                 forwadSubmissionResultError(MOVE(messageInfo),
-                                            (ErrorRpcCoce::EC_RPC_IMPL_ERR-1),
+                                            (ErrorRpcCode::EC_RPC_IMPL_ERR-1),
                                             "Error initializiend rcp message",
                                             __PRETTY_FUNCTION__);
             }
@@ -390,7 +390,7 @@ void ZMQClient::processBufferElement(NFISharedPtr messageInfo) {
                  (*counter_zmqerror_uptr)++;
                 if(messageInfo->is_request) {
                     forwadSubmissionResultError(MOVE(messageInfo),
-                                                ErrorRpcCoce::EC_RPC_SENDING_DATA,
+                                                ErrorRpcCode::EC_RPC_SENDING_DATA,
                                                 error_message,
                                                 __PRETTY_FUNCTION__);
                 }
@@ -414,7 +414,7 @@ void ZMQClient::processBufferElement(NFISharedPtr messageInfo) {
                      (*counter_zmqerror_uptr)++;
                     if(messageInfo->is_request) {
                         forwadSubmissionResultError(MOVE(messageInfo),
-                                                    ErrorRpcCoce::EC_RPC_GETTING_ACK_DATA,
+                                                    ErrorRpcCode::EC_RPC_GETTING_ACK_DATA,
                                                     CHAOS_FORMAT("%1%[%2%]",%error_message%sent_error),
                                                     __PRETTY_FUNCTION__);
                     }
@@ -450,7 +450,7 @@ void ZMQClient::processBufferElement(NFISharedPtr messageInfo) {
                         } else {
                             ZMQC_LDBG << "Bad ACK received for request:"<<loc_seq_id<<" @"<<messageInfo->sender_node_id;
                             forwadSubmissionResultError(MOVE(messageInfo),
-                                                        ErrorRpcCoce::EC_RPC_GETTING_ACK_DATA,
+                                                        ErrorRpcCode::EC_RPC_GETTING_ACK_DATA,
                                                         "bad ack received",
                                                         __PRETTY_FUNCTION__);
                         }

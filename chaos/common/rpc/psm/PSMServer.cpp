@@ -137,11 +137,15 @@ void PSMServer::messageHandler( chaos::common::message::ele_t& data) {
 
     if(result_data_pack.get() && src.size()){
      //   PSMS_LDBG << "Something to send back:"<<seq_id << "to node:"<<src;
-        prod->pushMsgAsync(*result_data_pack.get(),src);
+        if(prod->pushMsgAsync(*result_data_pack.get(),src)==false){
+                 PSMS_LERR << "Error sending packet back:"<<result_data_pack->getJSONString();
+
+        } 
         if(prod->getMsgOpt()!=chaos::common::message::MessagePublishSubscribeBase::MSG_SYNCH){
 
             prod->flush(1000);
         }
+        
     }
                     
 }

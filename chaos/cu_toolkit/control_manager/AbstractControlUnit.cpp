@@ -3286,7 +3286,7 @@ void AbstractControlUnit::manageBurstQueue() {
       }
       old_ts = 0;
       //set the tag for burst
-      ACULDBG_ << "======= Start Burst tag:'" << current_burst->dataset_burst->tag << "' =======";
+      ACULDBG_ << "======= Start Burst tag:'" << current_burst->dataset_burst->tag << "' info:"<<current_burst->dataset_burst->loginfo<<" =======";
       key_data_storage->addTag(current_burst->dataset_burst->tag);
       key_data_storage->setTimingConfigurationBehaviour(false);
       key_data_storage->setOverrideStorageType(DataServiceNodeDefinitionType::DSStorageTypeHistory);
@@ -3295,16 +3295,28 @@ void AbstractControlUnit::manageBurstQueue() {
       *attribute_value_shared_cache->getAttributeValue(DOMAIN_SYSTEM, ControlUnitDatapackSystemKey::BURST_CNT_DOWN)->getValuePtr<int32_t>() = current_burst->remaining();
 
       attribute_value_shared_cache->getSharedDomain(DOMAIN_SYSTEM).markAllAsChanged();
+      if(current_burst->dataset_burst->loginfo!=""){
+        std::stringstream ss;
+        ss<<"Start Tagging '"<<current_burst->dataset_burst->tag<<"' :"<<current_burst->dataset_burst->loginfo;
+        
+        metadataLogging(chaos::common::metadata_logging::StandardLoggingChannel::LogLevelInfo,ss.str());
+      }
       pushSystemDataset();
       // mark also setpoints
       attribute_value_shared_cache->getSharedDomain(DOMAIN_INPUT).markAllAsChanged();
       pushInputDataset();
+      
     }
   } else {
     int64_t tim = *timestamp_acq_cached_value->getValuePtr<int64_t>();
     if (!current_burst->active(tim)) {
       //remove the tag for the burst
       ACULDBG_ << "======= End Burst tag:'" << current_burst->dataset_burst->tag << "' =======";
+      if(current_burst->dataset_burst->loginfo!=""){
+        std::stringstream ss;
+        ss<<"End Tagging '"<<current_burst->dataset_burst->tag<<"'";
+        metadataLogging(chaos::common::metadata_logging::StandardLoggingChannel::LogLevelInfo,ss.str());
+      }
       key_data_storage->removeTag(current_burst->dataset_burst->tag);
       key_data_storage->setTimingConfigurationBehaviour(true);
       key_data_storage->setOverrideStorageType(DataServiceNodeDefinitionType::DSStorageTypeUndefined);
