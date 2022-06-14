@@ -301,6 +301,20 @@ void SharedCommandDispatcher::processBufferElement(CDWShrdPtr action_description
         if (ret) {
           response_pack->addCSDataValue(RpcActionDefinitionKey::CS_CMDM_ACTION_MESSAGE, *remote_action_result.get());
         } else {
+          // probably failed for too much data, just notify send error
+          chaos::common::data::CDataWrapper cd, cd2,cd3;
+          cd2.addInt32Value(RpcActionDefinitionKey::CS_CMDM_ACTION_SUBMISSION_ERROR_CODE, (int)ErrorRpcCode::EC_RPC_IMPL_ERR);
+          if (remote_action_result->hasKey("act_msg_id")) {
+            cd2.addInt32Value("act_msg_id", remote_action_result->getInt32Value("act_msg_id"));
+          }
+          if (remote_action_result->hasKey("error")) {
+            cd2.addInt32Value("error", remote_action_result->getInt32Value("error"));
+          }
+
+          cd2.addCSDataValue("act_msg", cd3);
+
+          response_pack->addCSDataValue(RpcActionDefinitionKey::CS_CMDM_ACTION_MESSAGE, cd2);
+
           response_pack->addInt32Value(RpcActionDefinitionKey::CS_CMDM_ACTION_SUBMISSION_ERROR_CODE, ErrorRpcCode::EC_RPC_IMPL_ERR);
         }
         // in any case this result must be LOG
@@ -346,18 +360,18 @@ CDWUniquePtr SharedCommandDispatcher::dispatchCommand(CDWUniquePtr rpc_call_data
 
     if (map_domain_actions()[actionDomain]->hasActionName(actionName) == false) throw CException(ErrorRpcCode::EC_RPC_NO_ACTION_FOUND_IN_MESSAGE, "Action \"" + actionName + "\" not found (cmd pack \"" + rpc_call_data->getJSONString() + "\")", __PRETTY_FUNCTION__);
 
-    int errcode=ErrorCode::EC_NO_ERROR;
-    if(rpc_call_data->hasKey(RpcActionDefinitionKey::CS_CMDM_ACTION_SUBMISSION_ERROR_CODE)){
-      errcode=rpc_call_data->getInt32Value(RpcActionDefinitionKey::CS_CMDM_ACTION_SUBMISSION_ERROR_CODE);
-      LDBG_<<"FORWARDING ERROR "<<errcode;
+    int errcode = ErrorCode::EC_NO_ERROR;
+    if (rpc_call_data->hasKey(RpcActionDefinitionKey::CS_CMDM_ACTION_SUBMISSION_ERROR_CODE)) {
+      errcode = rpc_call_data->getInt32Value(RpcActionDefinitionKey::CS_CMDM_ACTION_SUBMISSION_ERROR_CODE);
+      LDBG_ << "FORWARDING ERROR " << errcode;
     }
 
     // submit the action(Thread Safe)
     processBufferElement(MOVE(CDWShrdPtr(rpc_call_data.release())));
-   
+
     // tag message has submitted
     result_pack->addInt32Value(RpcActionDefinitionKey::CS_CMDM_ACTION_SUBMISSION_ERROR_CODE, errcode);
-    
+
   } catch (CException& ex) {
     DECODE_CHAOS_EXCEPTION_IN_CDATAWRAPPERPTR(result_pack, ex)
   } catch (...) {

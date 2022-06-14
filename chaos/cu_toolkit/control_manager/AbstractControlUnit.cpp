@@ -3550,11 +3550,15 @@ void AbstractControlUnit::metadataLogging(const std::string&                    
                                           const chaos::common::metadata_logging::StandardLoggingChannel::LogLevel log_level,
                                           const std::string&                                                      message) {
   if (standard_logging_channel == NULL) return;
-
+  //also messages must be tagged
+  std::string tag;
+  if (current_burst.get()&&current_burst->dataset_burst.get()) {
+    tag =current_burst->dataset_burst->tag;
+  }
   standard_logging_channel->logMessage(getCUID(),
                                        subject,
                                        log_level,
-                                       message);
+                                       message,tag);
   switch (log_level) {
     case StandardLoggingChannel::LogLevelInfo:
       ACULDBG_ << "LOGINFO"

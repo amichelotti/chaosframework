@@ -45,7 +45,7 @@ void StandardLoggingChannel::setLogLevel(LogLevel new_log_level) {
 int StandardLoggingChannel::logMessage( std::string node_uid,
                                         std::string log_subject,
                                         LogLevel log_level,
-                                        std::string message) {
+                                        std::string message,const std::string&tag) {
     if(loggable(log_level) == false) return 0;
     
     std::string log_description;
@@ -73,6 +73,10 @@ int StandardLoggingChannel::logMessage( std::string node_uid,
     log_entry->addInt32Value(MetadataServerLoggingDefinitionKeyRPC::StandardLogging::PARAM_NODE_LOGGING_LOG_LEVEL_CODE, log_level);
     log_entry->addStringValue(MetadataServerLoggingDefinitionKeyRPC::StandardLogging::PARAM_NODE_LOGGING_LOG_LEVEL_DESCRIPTION, log_description);
     log_entry->addStringValue(MetadataServerLoggingDefinitionKeyRPC::StandardLogging::PARAM_NODE_LOGGING_LOG_MESSAGE, message);
+    if(tag.size()){
+        log_entry->addStringValue(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_TAG, tag);
+  
+    }
     return sendLog(log_entry,
                    0);
 }

@@ -153,7 +153,7 @@ projection_keys(_projection_keys),
 api_error(0){
     if(_sequid>0){
         result_page.last_record_found_seq.run_id=_runid;
-        result_page.last_record_found_seq.datapack_counter=_sequid-1;
+        result_page.last_record_found_seq.datapack_counter=_sequid;
     }
 }
 
@@ -182,7 +182,7 @@ int QueryCursor::fetchNewPage() {
         case QueryPhaseNotStarted:
 //            std::memset(&result_page.last_record_found_seq, 0, sizeof(direct_io::channel::opcode_headers::SearchSequence));
 //            result_page.last_record_found_seq.datapack_counter = -1;
-            DBG << "["<<node_id<<"] start search "<<start_ts<<"("<<chaos::common::utility::TimingUtil::toString(start_ts)<<") -"<<end_ts<<" ("<<chaos::common::utility::TimingUtil::toString(end_ts)<<") page_len:"<<page_len<<" data pack counter:"<< result_page.last_record_found_seq.datapack_counter<<"run id:"<< result_page.last_record_found_seq.run_id ;
+            DBG << "["<<node_id<<"] start search "<<start_ts<<"("<<chaos::common::utility::TimingUtil::toString(start_ts)<<") -"<<end_ts<<" ("<<chaos::common::utility::TimingUtil::toString(end_ts)<<") page_len:"<<page_len<<" data pack counter:"<< result_page.last_record_found_seq.datapack_counter<<" run id:"<< result_page.last_record_found_seq.run_id ;
 
             //change to the next phase
             phase = QueryPhaseStarted;
@@ -194,7 +194,7 @@ int QueryCursor::fetchNewPage() {
             if((last_end_ts>start_ts)&&(last_end_ts<=end_ts)){
 
                 start_ts=last_end_ts;
-                DBG << "["<<node_id<<"] continue search  "<<start_ts<<"("<<chaos::common::utility::TimingUtil::toString(start_ts)<<") - "<<end_ts<<"("<<chaos::common::utility::TimingUtil::toString(end_ts)<<") page_len:"<<page_len<<" data pack counter:"<< result_page.last_record_found_seq.datapack_counter<<"run id:"<< result_page.last_record_found_seq.run_id ;
+                DBG << "["<<node_id<<"] continue search  "<<start_ts<<"("<<chaos::common::utility::TimingUtil::toString(start_ts)<<") - "<<end_ts<<"("<<chaos::common::utility::TimingUtil::toString(end_ts)<<") page_len:"<<page_len<<" data pack counter:"<< result_page.last_record_found_seq.datapack_counter<<" run id:"<< result_page.last_record_found_seq.run_id ;
 
             }
             if(last_end_ts>end_ts) {
@@ -274,7 +274,7 @@ bool QueryCursor::hasNext() {
         case QueryPhaseStarted:
             if(result_page.hasNext() == false) {
                 if(fetchNewPage()!=0){
-                	ERR <<" Fetch returned error:"<<api_error;
+                	ERR <<" Fetch returned error:"<<getError();
                 	return false;
                 }
             }
