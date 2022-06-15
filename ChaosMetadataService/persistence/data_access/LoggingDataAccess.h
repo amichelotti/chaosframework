@@ -124,7 +124,7 @@ namespace chaos {
                                                     uint64_t start_timestamp,
                                                     uint64_t end_timestamp,
                                                     uint64_t start_sequence_id,
-                                                    uint32_t page_length) = 0;
+                                                    uint32_t page_length, int sort=-1) = 0;
                     
                     //!Return all log domain found for a determinated source
                     /*!

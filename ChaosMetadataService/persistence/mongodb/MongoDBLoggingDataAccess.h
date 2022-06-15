@@ -71,7 +71,7 @@ namespace chaos {
                                             uint64_t start_timestamp,
                                             uint64_t end_timestamp,
                                             uint64_t start_sequence_id,
-                                            uint32_t page_length);
+                                            uint32_t page_length,int sort=-1);
                     //! Inherited method
                     int getLogDomainsForSource(data_access::LogDomainList& entry_list,
                                                const data_access::LogSourceList& source_uids);

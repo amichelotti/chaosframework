@@ -781,7 +781,7 @@ chaos::common::data::CDWUniquePtr ChaosManager::loadUnloadControlUnit(const std:
   }
   return res;
 }
-chaos::common::data::CDWUniquePtr ChaosManager::searchLogEntry(const std::string& search_string, const std::vector<std::string>& domain_list, uint64_t start_ts, uint64_t end_ts, uint64_t last_sequence_id, uint32_t page_length) {
+chaos::common::data::CDWUniquePtr ChaosManager::searchLogEntry(const std::string& search_string, const std::vector<std::string>& domain_list, uint64_t start_ts, uint64_t end_ts, uint64_t last_sequence_id, uint32_t page_length,int sort) {
   CDWUniquePtr res;
   if (persistence_driver) {
     SearchLogEntry node;
@@ -797,6 +797,8 @@ chaos::common::data::CDWUniquePtr ChaosManager::searchLogEntry(const std::string
     if (end_ts) {
       pack->addInt64Value("end_ts", end_ts);
     }
+    pack->addInt32Value("sort", sort);
+
     if (domain_list.size()) {
       for (ChaosStringVector::const_iterator it = domain_list.begin();
            it != domain_list.end();

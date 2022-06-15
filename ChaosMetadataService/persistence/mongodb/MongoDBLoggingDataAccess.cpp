@@ -240,7 +240,8 @@ int MongoDBLoggingDataAccess::searchEntryAdvanced(LogEntryList& entry_list,
                                                   uint64_t start_timestamp,
                                                   uint64_t end_timestamp,
                                                   uint64_t start_sequence_id,
-                                                  uint32_t page_length) {
+                                                  uint32_t page_length,
+                                                  int sort) {
     int err = 0;
     SearchResult paged_result;
     std::string token_for_mongo;
@@ -296,7 +297,7 @@ int MongoDBLoggingDataAccess::searchEntryAdvanced(LogEntryList& entry_list,
     if(query_arr.isEmpty() == false) {
         q = BSON("$and" << query_arr);
     }
-    q = q.sort(BSON(MetadataServerLoggingDefinitionKeyRPC::PARAM_NODE_LOGGING_LOG_TIMESTAMP<<(int)-1));
+    q = q.sort(BSON(MetadataServerLoggingDefinitionKeyRPC::PARAM_NODE_LOGGING_LOG_TIMESTAMP<<sort));
     
     //remove search field from result
     mongo::BSONObj p = BSON("advanced_search"<< 0);

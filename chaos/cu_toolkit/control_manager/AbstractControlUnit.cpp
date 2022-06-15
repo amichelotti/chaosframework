@@ -3297,7 +3297,7 @@ void AbstractControlUnit::manageBurstQueue() {
       attribute_value_shared_cache->getSharedDomain(DOMAIN_SYSTEM).markAllAsChanged();
       if(current_burst->dataset_burst->loginfo!=""){
         std::stringstream ss;
-        ss<<"Start Tagging '"<<current_burst->dataset_burst->tag<<"' :"<<current_burst->dataset_burst->loginfo;
+        ss<<"Start Tagging '"<<current_burst->dataset_burst->tag<<"'\n"<<current_burst->dataset_burst->loginfo;
         
         metadataLogging(chaos::common::metadata_logging::StandardLoggingChannel::LogLevelInfo,ss.str());
       }
