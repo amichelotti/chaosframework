@@ -538,8 +538,36 @@ void AbstractControlUnit::setAlarmMask(const std::string& name, uint32_t mask) {
     alarmv->setMask(mask);
   }
 }
+  int AbstractControlUnit::clearData(const std::string& keyname){
+     ChaosSharedPtr<SharedCacheLockDomain> w_lock = attribute_value_shared_cache->getLockOnDomain((SharedCacheDomain)DOMAIN_CUSTOM, true);
+    w_lock->lock();
+
+    std::string fname = control_unit_id;
+    replace(fname.begin(), fname.end(), '/', '_');
+    std::stringstream ss;
+    ss << "/tmp/"<<fname;
+    boost::filesystem::path p(ss.str());
+    if ((boost::filesystem::exists(p))) {
+      boost::filesystem::remove(p);
+    }
+    /* no still possible
+    if(getAttributeCache()->exist(DOMAIN_CUSTOM,keyname)){
+        getAttributeCache()->removeCustomAttribute(keyname);
+        fillCachedValueVector(attribute_value_shared_cache->getSharedDomain(DOMAIN_CUSTOM),
+                                  cache_custom_attribute_vector);
+        getAttributeCache()->setCustomDomainAsChanged();
+      pushCustomDataset();
+      
+    }
+    */
+
+
+  }
 
   int AbstractControlUnit::saveData(const std::string& keyname,const chaos::common::data::CDataWrapper& d){
+    ChaosSharedPtr<SharedCacheLockDomain> w_lock = attribute_value_shared_cache->getLockOnDomain((SharedCacheDomain)DOMAIN_CUSTOM, true);
+    w_lock->lock();
+
     std::string fname = control_unit_id;
     replace(fname.begin(), fname.end(), '/', '_');
     std::stringstream ss;
@@ -573,10 +601,12 @@ void AbstractControlUnit::setAlarmMask(const std::string& name, uint32_t mask) {
       getAttributeCache()->addCustomAttribute(keyname, d);
       ACULDBG_ << "CREATE custom attribute:'"<<keyname<<"'";
 
-    }
+    } 
+    getAttributeCache()->setCustomAttributeValue(keyname, d);
+
+    
     ACULDBG_ << keyname<<" wrote " <<ss.str()<<" size:"<<d.getJSONString().size();
 
-    getAttributeCache()->setCustomAttributeValue(keyname, d);
     fillCachedValueVector(attribute_value_shared_cache->getSharedDomain(DOMAIN_CUSTOM),
                                   cache_custom_attribute_vector);
     getAttributeCache()->setCustomDomainAsChanged();
@@ -585,6 +615,8 @@ void AbstractControlUnit::setAlarmMask(const std::string& name, uint32_t mask) {
   }
   
   chaos::common::data::CDWUniquePtr AbstractControlUnit::loadData(const std::string& keyname){
+    ChaosSharedPtr<SharedCacheLockDomain> w_lock = attribute_value_shared_cache->getLockOnDomain((SharedCacheDomain)DOMAIN_CUSTOM, true);
+    w_lock->lock();
     chaos::common::data::CDWUniquePtr ret;
     std::string fname = control_unit_id;
     replace(fname.begin(), fname.end(), '/', '_');
@@ -600,11 +632,19 @@ void AbstractControlUnit::setAlarmMask(const std::string& name, uint32_t mask) {
         try {
           w->setSerializedJsonData(buffer.str().c_str());
           ret.reset(w);
-        /*  getAttributeCache()->addCustomAttribute(keyname, *w);
-          getAttributeCache()->setCustomAttributeValue(keyname, *w);
+          if(!getAttributeCache()->exist(DOMAIN_CUSTOM,keyname)){
+              ACULDBG_ << "CREATE custom attribute:'"<<keyname<<"' "<<w->getJSONString();
 
-          getAttributeCache()->setCustomDomainAsChanged();
-          pushCustomDataset();*/
+            getAttributeCache()->addCustomAttribute(keyname, *w);
+          } 
+            getAttributeCache()->setCustomAttributeValue(keyname, *w);
+
+            getAttributeCache()->setCustomDomainAsChanged();
+
+           fillCachedValueVector(attribute_value_shared_cache->getSharedDomain(DOMAIN_CUSTOM),
+                                  cache_custom_attribute_vector);
+           pushCustomDataset();
+      
           ACULDBG_ << keyname<<" read: " <<ss.str()<<" size:"<<buffer.str().size();
         } catch(...){
             ACULERR_ << " parsing JSON " << buffer.str();
@@ -781,7 +821,7 @@ void AbstractControlUnit::unitDefineCustomAttribute() {
     cnt++;
   }
 
-  if (cnt) {
+ /* if (cnt) {
     //        drv.finalizeArrayForKey(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_INFO);
     ACULDBG_ << " Adding driver properties to custom dataset " << chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_INFO << ":" << drv.getJSONString();
 
@@ -791,7 +831,7 @@ void AbstractControlUnit::unitDefineCustomAttribute() {
     ACULDBG_ << " Adding driver info to custom dataset " << chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_CU_INFO << ":" << drv_info->getJSONString();
     getAttributeCache()->addCustomAttribute(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_CU_INFO, *drv_info.get());
     getAttributeCache()->setCustomAttributeValue(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_CU_INFO, *drv_info.get());
-  }
+  }*/
 }
 
 void AbstractControlUnit::_undefineActionAndDataset() {
@@ -856,7 +896,7 @@ void         AbstractControlUnit::doInitRpCheckList() {
       break;
     }
     CHAOS_CHECK_LIST_DONE(check_list_sub_service, "_init", INIT_RPC_PHASE_CALL_UNIT_DEFINE_ATTRIBUTE) {
-      std::string cu_load_param = getCUParam();
+    /*  std::string cu_load_param = getCUParam();
 
      if (isCUParamInJson()) {
         getAttributeCache()->addCustomAttribute(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_LOAD_PARAM, cu_load_param.size() + 1, chaos::DataType::TYPE_CLUSTER);
@@ -867,11 +907,13 @@ void         AbstractControlUnit::doInitRpCheckList() {
 
       //define the implementations custom variable
       AbstractControlUnit::unitDefineCustomAttribute();
+      */
       unitDefineCustomAttribute();
       getAttributeCache()->setCustomDomainAsChanged();
       fillCachedValueVector(attribute_value_shared_cache->getSharedDomain(DOMAIN_CUSTOM),
                                   cache_custom_attribute_vector);
       pushCustomDataset();
+      
       break;
     }
     CHAOS_CHECK_LIST_DONE(check_list_sub_service, "_init", INIT_RPC_PHASE_CREATE_FAST_ACCESS_CASCHE_VECTOR) {
@@ -917,7 +959,7 @@ void         AbstractControlUnit::doInitRpCheckList() {
         for (std::map<std::string, std::string>::iterator i = props.begin(); i != props.end(); i++) {
           ACULDBG_ << "Set CU property \"" << i->first << "\" to:" << i->second;
 
-          chaos::common::data::Property<AbstractControlUnit>::setProperty(i->first, i->second);
+          chaos::common::data::Property<AbstractControlUnit>::setProperty(i->first, i->second,true);
         }
       }
       // try to call handler as setdataset attribute
@@ -1252,7 +1294,13 @@ void AbstractControlUnit::dsInitSetFromReadout() {
 
                 break;
               }
+              case DataType::TYPE_STRING:{
+                char* val = cache_output_attribute_vector[cntt]->getValuePtr<char>();
+                ACULDBG_<< "Input '"<< name << "' Init TYPE_STRING to:" << val;
+                cache_input_attribute_vector[cnt]->setValue(cache_output_attribute_vector[cntt]->value_buffer,cache_output_attribute_vector[cntt]->size);
 
+                break;
+              }
               default:
                 ACULERR_ << name << " skipping initialization of complex type " << attr_info.valueType;
 
@@ -1907,6 +1955,7 @@ CDWUniquePtr AbstractControlUnit::_setDatasetAttribute(CDWUniquePtr dataset_attr
     if (SWEService::getServiceState() == CUStateKey::DEINIT) {
       throw MetadataLoggingCException(getCUID(), -3, "The Control Unit is in deinit state", __PRETTY_FUNCTION__);
     }
+    ACULDBG_<<"Setdataset:"<<dataset_attribute_values->getJSONString();
     //send dataset attribute change pack to control unit implementation
     result = setDatasetAttribute(MOVE(dataset_attribute_values));
   } catch (CException& ex) {
@@ -3156,7 +3205,7 @@ int AbstractControlUnit::pushCustomDataset() {
 
       //fill the dataset
       fillCDatawrapperWithCachedValue(cache_custom_attribute_vector, *custom_attribute_dataset);
-      //   ACULDBG_ << " Push custom:"<<custom_attribute_dataset->getJSONString();
+      ACULDBG_ << " Push custom:"<<custom_attribute_dataset->getJSONString();
 
       //push out the system dataset
       err = key_data_storage->pushDataSet(data_manager::KeyDataStorageDomainCustom, MOVE(custom_attribute_dataset));

@@ -132,7 +132,7 @@ void PSMServer::messageHandler( chaos::common::message::ele_t& data) {
         
         result_data_pack = command_handler->executeCommandSync(MOVE(data.cd));
     } else {
-        PSMS_LDBG<<"dispatch "<<data.cd->getJSONString();
+       // PSMS_LDBG<<"dispatch "<<data.cd->getJSONString();
         result_data_pack = command_handler->dispatchCommand(MOVE(data.cd));
     }
 

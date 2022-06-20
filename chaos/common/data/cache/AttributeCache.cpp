@@ -194,6 +194,7 @@ void AttributeCache::setValueForAttribute(const std::string&        name,
 
 VariableIndexType AttributeCache::getIndexForName(const std::string& name) {
   if (mapAttributeNameIndex.count(name) == 0) {
+    LERR_<<" NO NAME "<<name;
     throw chaos::CFatalException(-1, boost::str(boost::format("No name '%1%' present in Attribute cache") % name), __PRETTY_FUNCTION__);
   }
   return mapAttributeNameIndex[name];

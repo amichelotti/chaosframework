@@ -975,6 +975,15 @@ class AbstractControlUnit : public DeclareAction,
    * @return int 0 on success;
    */
   int saveData(const std::string& keyname,const chaos::common::data::CDataWrapper& d);
+
+  /**
+   * @brief Clear custom (configuration) Data as keyname
+   * 
+   * @param keyname 
+   * @param d data
+   * @return int 0 on success;
+   */
+  int clearData(const std::string& keyname);
   /**
    * @brief Load  custom (configuration) Data 
    * 
