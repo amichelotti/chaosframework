@@ -112,7 +112,7 @@ chaos::error::ChaosErrorCodeMapping::getInstance()->getErrorMessage(error_code)
      *  @{
      */
     //! Name space for grupping the definition of the rpc error code
-    namespace ErrorRpcCoce {
+    namespace ErrorRpcCode {
         typedef enum {
             //! rpc system has not been able to get a socket
             EC_RPC_NO_SOCKET = -1000,
@@ -125,22 +125,23 @@ chaos::error::ChaosErrorCodeMapping::getInstance()->getErrorMessage(error_code)
             EC_RPC_NO_DOMAIN_REGISTERED_ON_SERVER = -1005,
             EC_RPC_NO_MORE_SPACE_ON_DOMAIN_QUEUE = -1006,
             EC_RPC_UNMANAGED_ERROR_DURING_FORWARDING = -1007,
+            EC_RPC_MESSAGE_TO_BIG = -1008,
             EC_RPC_IMPL_ERR = -1100,
             EC_RPC_CHANNEL_OFFLINE = -1001,
             EC_RPC_REQUEST_FUTURE_NOT_AVAILABLE = -1002
-        } ErrorRpcCoce;
+        } ErrorRpcCode;
         static const std::string EC_RPC_ERROR_DOMAIN               = "RPC Error";
         static const std::string EC_REQUEST_FUTURE_NOT_AVAILABLE   = "No future available";
 #define CHAOS_IS_RPC_ERROR_CODE(x)\
-((x<= ErrorRpcCoce::EC_RPC_NO_SOCKET) && \
-(x>= ErrorRpcCoce::EC_RPC_IMPL_ERR))
+((x<= ErrorRpcCode::EC_RPC_NO_SOCKET) && \
+(x>= ErrorRpcCode::EC_RPC_IMPL_ERR))
         
 #define CHAOS_IS_RPC_SERVER_OFFLINE(x)\
-((x == ErrorRpcCoce::EC_RPC_GETTING_ACK_DATA) || \
-(x == ErrorRpcCoce::EC_RPC_NO_DOMAIN_REGISTERED_ON_SERVER) ||\
-(x == ErrorRpcCoce::EC_RPC_UNMANAGED_ERROR_DURING_FORWARDING) ||\
-(x == ErrorRpcCoce::EC_RPC_SENDING_DATA) ||\
-(x == ErrorRpcCoce::EC_RPC_NO_SOCKET))
+((x == ErrorRpcCode::EC_RPC_GETTING_ACK_DATA) || \
+(x == ErrorRpcCode::EC_RPC_NO_DOMAIN_REGISTERED_ON_SERVER) ||\
+(x == ErrorRpcCode::EC_RPC_UNMANAGED_ERROR_DURING_FORWARDING) ||\
+(x == ErrorRpcCode::EC_RPC_SENDING_DATA) ||\
+(x == ErrorRpcCode::EC_RPC_NO_SOCKET))
     }
     
     /** @defgroup ErrorDirectIOCoce

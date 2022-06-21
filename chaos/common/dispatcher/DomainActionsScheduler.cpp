@@ -199,7 +199,7 @@ void DomainActionsScheduler::processBufferElement(CDWShrdPtr rpc_call_action) {
                 }
                 */
             }
-          //  LDBG_<<__FUNCTION__<<" "<<rpc_call_action->getJSONString()<<" need answer:"<<needAnswer;
+          // LDBG_<<__FUNCTION__<<" "<<rpc_call_action->getJSONString()<<" need answer:"<<needAnswer;
             //synCronusly call the action in the current thread
             
             action_result = actionDescriptionPtr->call(MOVE(action_message));
@@ -222,14 +222,14 @@ void DomainActionsScheduler::processBufferElement(CDWShrdPtr rpc_call_action) {
                 remote_action_result->addInt32Value(RpcActionDefinitionKey::CS_CMDM_ACTION_SUBMISSION_ERROR_CODE, 0);
             }
         } catch (CException& ex) {
-            LERR_ << "Exception caught during action execution:"<<ex.what();
+            LERR_ <<__PRETTY_FUNCTION__<< " - Exception caught during action "<<rpc_call_action->getJSONString()<<" execution:"<<ex.what();
             DECODE_CHAOS_EXCEPTION(ex)
             //set error in response is it's needed
             if(needAnswer && remote_action_result.get()) {
                 DECODE_CHAOS_EXCEPTION_IN_CDATAWRAPPERPTR(remote_action_result, ex)
             }
         } catch(std::exception& ex){
-            LERR_ << "std Exception caught during action execution:"<<ex.what();
+            LERR_ <<__PRETTY_FUNCTION__ <<" - std Exception caught during action execution:"<<ex.what();
             if(needAnswer) remote_action_result->addInt32Value(RpcActionDefinitionKey::CS_CMDM_ACTION_SUBMISSION_ERROR_CODE, 1);
 
         } catch(...){
@@ -261,9 +261,7 @@ void DomainActionsScheduler::processBufferElement(CDWShrdPtr rpc_call_action) {
             response_pack->addCSDataValue(RpcActionDefinitionKey::CS_CMDM_ACTION_MESSAGE, *remote_action_result.get());
             //in any case this result must be LOG
             //the result of the action action is sent using this thread
-            if(remote_action_result.get()){
-                LERR_ <<" Sending back answer:"<<remote_action_result->getJSONString();
-            }
+          
             if(!dispatcher->submitMessage(answerIP,
                                           MOVE(response_pack),
                                           false)){

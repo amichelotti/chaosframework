@@ -128,18 +128,22 @@ const std::string& Dataset::getDatasetKey() const {
 DatasetBurst::DatasetBurst():
 tag(),
 value(),
+loginfo(),
 type(chaos::ControlUnitNodeDefinitionType::DSStorageBurstTypeUndefined){}
 
 DatasetBurst::DatasetBurst(const DatasetBurst& copy_src):
 tag(copy_src.tag),
 value(copy_src.value),
-type(copy_src.type){}
+type(copy_src.type),
+loginfo(copy_src.loginfo){}
 
 DatasetBurst& DatasetBurst::operator=(DatasetBurst const &rhs) {
     if(this != &rhs) {
         tag = rhs.tag;
         value = rhs.value;
         type = rhs.type;
+        loginfo = rhs.loginfo;
+
     }
     return *this;
 }

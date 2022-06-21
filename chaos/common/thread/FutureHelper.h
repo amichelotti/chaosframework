@@ -170,7 +170,7 @@ namespace chaos{
                 void timeout() {
                     LSetPromiseWriteLock wl = set_p.getWriteLockObject();
                     uint64_t current_check_ts = chaos::common::utility::TimingUtil::getTimeStamp();
-                    DEBUG_CODE(LDBG_ << DEFINE_LOG_HEADER(FutureHelper) << __FUNCTION__ << " - Start cleaning promises";);
+                  //  DEBUG_CODE(LDBG_ << DEFINE_LOG_HEADER(FutureHelper) << __FUNCTION__ << " - Start cleaning promises";);
                     unsigned int max_purge_check = 10;
                     try{
 

@@ -278,30 +278,37 @@ CDWUniquePtr DefaultCommandDispatcher::dispatchCommand(CDWUniquePtr command_pack
     try{
         if(!command_pack.get()) return result_pack;
         if(!command_pack->hasKey(RpcActionDefinitionKey::CS_CMDM_ACTION_DOMAIN))
-            throw CException(ErrorRpcCoce::EC_RPC_NO_DOMAIN_FOUND_IN_MESSAGE, "Action Call with no action domain", __PRETTY_FUNCTION__);
+            throw CException(ErrorRpcCode::EC_RPC_NO_DOMAIN_FOUND_IN_MESSAGE, "Action Call with no action domain", __PRETTY_FUNCTION__);
         
         if(!command_pack->hasKey(RpcActionDefinitionKey::CS_CMDM_ACTION_NAME))
-            throw CException(ErrorRpcCoce::EC_RPC_NO_ACTION_FOUND_IN_MESSAGE, "Action Call with no action name", __PRETTY_FUNCTION__);
+            throw CException(ErrorRpcCode::EC_RPC_NO_ACTION_FOUND_IN_MESSAGE, "Action Call with no action name", __PRETTY_FUNCTION__);
         string actionDomain = command_pack->getStringValue(RpcActionDefinitionKey::CS_CMDM_ACTION_DOMAIN);
         
         //RpcActionDefinitionKey::CS_CMDM_ACTION_NAME
-        if(das_map.count(actionDomain) == 0) throw CException(ErrorRpcCoce::EC_RPC_NO_DOMAIN_REGISTERED_ON_SERVER, "Action Domain \""+actionDomain+"\" not registered (cmd pack \""+command_pack->getJSONString()+"\")", __PRETTY_FUNCTION__);
+        if(das_map.count(actionDomain) == 0) throw CException(ErrorRpcCode::EC_RPC_NO_DOMAIN_REGISTERED_ON_SERVER, "Action Domain \""+actionDomain+"\" not registered (cmd pack \""+command_pack->getJSONString()+"\")", __PRETTY_FUNCTION__);
         
         //DEBUG_CODE(LDEF_CMD_DISPTC_DBG_ << "Received the message content:-----------------------START\n"<<command_pack->getJSONString() << "\nReceived the message content:-------------------------END";)
         
-        //submit the action(Thread Safe)
+        int errcode=ErrorCode::EC_NO_ERROR;
+
+        if(command_pack->hasKey(RpcActionDefinitionKey::CS_CMDM_ACTION_SUBMISSION_ERROR_CODE)){
+            errcode=command_pack->getInt32Value(RpcActionDefinitionKey::CS_CMDM_ACTION_SUBMISSION_ERROR_CODE);
+            LDEF_CMD_DISPTC_DBG_<<"FORWARDING ERROR "<<errcode;
+        }
+    //submit the action(Thread Safe)
+
         if(!(sent = das_map[actionDomain]->push(MOVE(command_pack)))) {
-            throw CException(ErrorRpcCoce::EC_RPC_NO_MORE_SPACE_ON_DOMAIN_QUEUE, "No more space in queue", __PRETTY_FUNCTION__);
+            throw CException(ErrorRpcCode::EC_RPC_NO_MORE_SPACE_ON_DOMAIN_QUEUE, "No more space in queue", __PRETTY_FUNCTION__);
         }
         
         //tag message has submitted
-        result_pack->addInt32Value(RpcActionDefinitionKey::CS_CMDM_ACTION_SUBMISSION_ERROR_CODE, ErrorCode::EC_NO_ERROR);
+        result_pack->addInt32Value(RpcActionDefinitionKey::CS_CMDM_ACTION_SUBMISSION_ERROR_CODE, errcode);
     }catch(CException& ex){
         LDEF_CMD_DISPTC_ERR_<<ex;
         DECODE_CHAOS_EXCEPTION_IN_CDATAWRAPPERPTR(result_pack, ex)
     } catch(...){
         //tag message has not submitted
-        result_pack->addInt32Value(RpcActionDefinitionKey::CS_CMDM_ACTION_SUBMISSION_ERROR_CODE, ErrorRpcCoce::EC_RPC_UNMANAGED_ERROR_DURING_FORWARDING);
+        result_pack->addInt32Value(RpcActionDefinitionKey::CS_CMDM_ACTION_SUBMISSION_ERROR_CODE, ErrorRpcCode::EC_RPC_UNMANAGED_ERROR_DURING_FORWARDING);
         //set error to general exception error
         result_pack->addStringValue(RpcActionDefinitionKey::CS_CMDM_ACTION_SUBMISSION_ERROR_MESSAGE, "Unmanaged error");
     }

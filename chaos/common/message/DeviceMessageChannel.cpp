@@ -243,7 +243,7 @@ int DeviceMessageChannel::recoverDeviceFromError(int32_t millisec_to_wait){
 //------------------------------------
 int DeviceMessageChannel::initDevice(CDWUniquePtr init_data,
                                      int32_t millisec_to_wait) {
-    CHECK_ONLINE_OR_RETURN(ErrorRpcCoce::EC_RPC_CHANNEL_OFFLINE);
+    CHECK_ONLINE_OR_RETURN(ErrorRpcCode::EC_RPC_CHANNEL_OFFLINE);
     ChaosUniquePtr<chaos::common::data::CDataWrapper> initResult(sendRequest(device_network_address->node_id,
                                                                              NodeDomainAndActionRPC::ACTION_NODE_INIT,
                                                                              MOVE(init_data),
@@ -253,7 +253,7 @@ int DeviceMessageChannel::initDevice(CDWUniquePtr init_data,
 
 
 int DeviceMessageChannel::initDeviceToDefaultSetting(int32_t millisec_to_wait) {
-    CHECK_ONLINE_OR_RETURN(ErrorRpcCoce::EC_RPC_CHANNEL_OFFLINE);
+    CHECK_ONLINE_OR_RETURN(ErrorRpcCode::EC_RPC_CHANNEL_OFFLINE);
     int err = ErrorCode::EC_NO_ERROR;
     CDWUniquePtr device_init_setting;
     if(local_mds_channel == NULL  || self_managed == false) return -100;
@@ -273,7 +273,7 @@ int DeviceMessageChannel::initDeviceToDefaultSetting(int32_t millisec_to_wait) {
 
 //------------------------------------
 int DeviceMessageChannel::deinitDevice(int32_t millisec_to_wait) {
-    CHECK_ONLINE_OR_RETURN(ErrorRpcCoce::EC_RPC_CHANNEL_OFFLINE);
+    CHECK_ONLINE_OR_RETURN(ErrorRpcCode::EC_RPC_CHANNEL_OFFLINE);
     CDWUniquePtr message_data(new CDataWrapper());
     message_data->addStringValue(NodeDefinitionKey::NODE_UNIQUE_ID, device_network_address->device_id);
     ChaosUniquePtr<chaos::common::data::CDataWrapper> result(sendRequest(device_network_address->node_id,
@@ -286,7 +286,7 @@ int DeviceMessageChannel::deinitDevice(int32_t millisec_to_wait) {
 
 //------------------------------------
 int DeviceMessageChannel::startDevice(int32_t millisec_to_wait) {
-    CHECK_ONLINE_OR_RETURN(ErrorRpcCoce::EC_RPC_CHANNEL_OFFLINE);
+    CHECK_ONLINE_OR_RETURN(ErrorRpcCode::EC_RPC_CHANNEL_OFFLINE);
     CDWUniquePtr message_data(new CDataWrapper());
     message_data->addStringValue(NodeDefinitionKey::NODE_UNIQUE_ID, device_network_address->device_id);
     ChaosUniquePtr<chaos::common::data::CDataWrapper> result(sendRequest(device_network_address->node_id,
@@ -299,7 +299,7 @@ int DeviceMessageChannel::startDevice(int32_t millisec_to_wait) {
 
 //------------------------------------
 int DeviceMessageChannel::stopDevice(int32_t millisec_to_wait) {
-    CHECK_ONLINE_OR_RETURN(ErrorRpcCoce::EC_RPC_CHANNEL_OFFLINE);
+    CHECK_ONLINE_OR_RETURN(ErrorRpcCode::EC_RPC_CHANNEL_OFFLINE);
     CDWUniquePtr message_data(new CDataWrapper());
     message_data->addStringValue(NodeDefinitionKey::NODE_UNIQUE_ID, device_network_address->device_id);
     ChaosUniquePtr<chaos::common::data::CDataWrapper> result(sendRequest(device_network_address->node_id,
@@ -312,7 +312,7 @@ int DeviceMessageChannel::stopDevice(int32_t millisec_to_wait) {
 
 //------------------------------------
 int DeviceMessageChannel::restoreDeviceToTag(const std::string& restore_tag, int32_t millisec_to_wait) {
-    CHECK_ONLINE_OR_RETURN(ErrorRpcCoce::EC_RPC_CHANNEL_OFFLINE);
+    CHECK_ONLINE_OR_RETURN(ErrorRpcCode::EC_RPC_CHANNEL_OFFLINE);
     CDWUniquePtr message_data(new CDataWrapper());
     message_data->addStringValue(NodeDefinitionKey::NODE_UNIQUE_ID, device_network_address->device_id);
     message_data->addStringValue(NodeDomainAndActionRPC::ACTION_NODE_RESTORE_PARAM_TAG, restore_tag);
@@ -326,7 +326,7 @@ int DeviceMessageChannel::restoreDeviceToTag(const std::string& restore_tag, int
 
 //------------------------------------
 int DeviceMessageChannel::getType(std::string& control_unit_type, int32_t millisec_to_wait) {
-    CHECK_ONLINE_OR_RETURN(ErrorRpcCoce::EC_RPC_CHANNEL_OFFLINE);
+    CHECK_ONLINE_OR_RETURN(ErrorRpcCode::EC_RPC_CHANNEL_OFFLINE);
     ChaosUniquePtr<chaos::common::data::CDataWrapper> result(sendRequest(device_network_address->node_id,
                                                                          NodeDomainAndActionRPC::ACTION_CU_GET_INFO,
                                                                          CDWUniquePtr(),
@@ -342,7 +342,7 @@ int DeviceMessageChannel::getType(std::string& control_unit_type, int32_t millis
 
 //------------------------------------
 int DeviceMessageChannel::getState(chaos::CUStateKey::ControlUnitState& deviceState, int32_t millisec_to_wait) {
-    CHECK_ONLINE_OR_RETURN(ErrorRpcCoce::EC_RPC_CHANNEL_OFFLINE);
+    CHECK_ONLINE_OR_RETURN(ErrorRpcCode::EC_RPC_CHANNEL_OFFLINE);
     CDWUniquePtr message_data(new CDataWrapper());
     deviceState=CUStateKey::UNDEFINED;
     message_data->addStringValue(NodeDefinitionKey::NODE_UNIQUE_ID, device_network_address->device_id);
@@ -363,7 +363,7 @@ int DeviceMessageChannel::getState(chaos::CUStateKey::ControlUnitState& deviceSt
 int DeviceMessageChannel::setAttributeValue(CDWUniquePtr attribute_values,
                                             bool noWait,
                                             int32_t millisec_to_wait) {
-    CHECK_ONLINE_OR_RETURN(ErrorRpcCoce::EC_RPC_CHANNEL_OFFLINE);
+    CHECK_ONLINE_OR_RETURN(ErrorRpcCode::EC_RPC_CHANNEL_OFFLINE);
     //create the pack
     attribute_values->addStringValue(NodeDefinitionKey::NODE_UNIQUE_ID,
                                      device_network_address->device_id);
@@ -384,7 +384,7 @@ int DeviceMessageChannel::setAttributeValue(CDWUniquePtr attribute_values,
 //------------------------------------
 int DeviceMessageChannel::setScheduleDelay(uint64_t scheduledDealy,
                                            int32_t millisec_to_wait) {
-    CHECK_ONLINE_OR_RETURN(ErrorRpcCoce::EC_RPC_CHANNEL_OFFLINE);
+    CHECK_ONLINE_OR_RETURN(ErrorRpcCode::EC_RPC_CHANNEL_OFFLINE);
     CDWUniquePtr message_data(new CDataWrapper());
     message_data->addStringValue(NodeDefinitionKey::NODE_UNIQUE_ID, device_network_address->device_id);
     message_data->addInt64Value(ControlUnitDatapackSystemKey::THREAD_SCHEDULE_DELAY, scheduledDealy);
@@ -400,7 +400,7 @@ int DeviceMessageChannel::setScheduleDelay(uint64_t scheduledDealy,
 //------------------------------------
 int DeviceMessageChannel::sendCustomMessage(const std::string& action_name,
                                             CDWUniquePtr message_data) {
-    CHECK_ONLINE_OR_RETURN(ErrorRpcCoce::EC_RPC_CHANNEL_OFFLINE);
+    CHECK_ONLINE_OR_RETURN(ErrorRpcCode::EC_RPC_CHANNEL_OFFLINE);
     sendMessage(device_network_address->node_id,
                 action_name,
                 MOVE(message_data));
@@ -412,7 +412,7 @@ int DeviceMessageChannel::sendCustomRequest(const std::string& action_name,
                                             CDWUniquePtr message_data,
                                             CDWUniquePtr& result_data,
                                             uint32_t millisec_to_wait) {
-    CHECK_ONLINE_OR_RETURN(ErrorRpcCoce::EC_RPC_CHANNEL_OFFLINE);
+    CHECK_ONLINE_OR_RETURN(ErrorRpcCode::EC_RPC_CHANNEL_OFFLINE);
     result_data = sendRequest(device_network_address->node_id,
                               action_name,
                               MOVE(message_data),

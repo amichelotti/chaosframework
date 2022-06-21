@@ -24,5 +24,6 @@
 #define RPC_SEQ_KEY "seq_id"
 #define RPC_SRC_UID "src_uid"
 #define RPC_TS_KEY "ts"
+#define RPC_ERR "rpc_err"
 
 #endif

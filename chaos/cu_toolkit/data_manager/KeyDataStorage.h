@@ -100,7 +100,7 @@ namespace chaos{
                 ChaosMutex mutex_push_data;
                 // \return 0 if success
                 int pushDataWithControlOnHistoryTime(const std::string& key,
-                                                      chaos::common::data::CDWShrdPtr dataset,
+                                                      chaos::common::data::CDWShrdPtr& dataset,
                                                       chaos::DataServiceNodeDefinitionType::DSStorageType storage_type);
                 
                 inline std::string getDomainString(const KeyDataStorageDomain dataset_domain);

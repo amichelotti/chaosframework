@@ -1,5 +1,7 @@
 #include "MessagePSKafkaProducer.h"
 #include <chaos/common/global.h>
+#include <chaos/common/chaos_errors.h>
+
 #include <librdkafka/rdkafka.h>
 #include <signal.h>
 #define MRDAPP_ INFO_LOG(MessagePSKafkaProducer)
@@ -191,6 +193,12 @@ int MessagePSKafkaProducer::pushMsgAsync(const chaos::common::data::CDataWrapper
          * configuration property
          * queue.buffering.max.messages */
         rd_kafka_poll(rk, 100 /*block for max 1000ms*/);
+        stats.errs++;
+
+      } else if(err == RD_KAFKA_RESP_ERR_MSG_SIZE_TOO_LARGE){
+        //avoid unuseful retry
+        stats.errs++;
+        return chaos::ErrorRpcCode::EC_RPC_MESSAGE_TO_BIG;
       }
     }
   } while ((err != 0) && (nretry-- > 0));
@@ -217,6 +225,10 @@ int MessagePSKafkaProducer::pushMsgAsync(const chaos::common::data::CDataWrapper
     return stats.last_err;
   } else {
     stats.errs++;
+  }
+  if(err==RD_KAFKA_RESP_ERR__QUEUE_FULL){
+    return chaos::ErrorRpcCode::EC_RPC_NO_MORE_SPACE_ON_DOMAIN_QUEUE;
+
   }
   return err;
 }

@@ -132,16 +132,21 @@ void PSMServer::messageHandler( chaos::common::message::ele_t& data) {
         
         result_data_pack = command_handler->executeCommandSync(MOVE(data.cd));
     } else {
+       // PSMS_LDBG<<"dispatch "<<data.cd->getJSONString();
         result_data_pack = command_handler->dispatchCommand(MOVE(data.cd));
     }
 
     if(result_data_pack.get() && src.size()){
      //   PSMS_LDBG << "Something to send back:"<<seq_id << "to node:"<<src;
-        prod->pushMsgAsync(*result_data_pack.get(),src);
+        if(prod->pushMsgAsync(*result_data_pack.get(),src)==false){
+                 PSMS_LERR << "Error sending packet back:"<<result_data_pack->getJSONString();
+
+        } 
         if(prod->getMsgOpt()!=chaos::common::message::MessagePublishSubscribeBase::MSG_SYNCH){
 
             prod->flush(1000);
         }
+        
     }
                     
 }

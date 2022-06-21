@@ -275,7 +275,7 @@ CDWUniquePtr SCAbstractControlUnit::setDatasetAttribute(CDWUniquePtr dataset_att
   ChaosUniquePtr<chaos::common::data::CDataWrapper> result_for_command;
 
   //cal first the superclass method because the dataset_attribute_values is not detached
-  CDWUniquePtr result = AbstractControlUnit::setDatasetAttribute(MOVE(dataset_attribute_values->clone()));
+  CDWUniquePtr result;
 
   //check if we have a command
   if (dataset_attribute_values->hasKey(chaos_batch::BatchCommandAndParameterDescriptionkey::BC_ALIAS)) {
@@ -293,6 +293,9 @@ CDWUniquePtr SCAbstractControlUnit::setDatasetAttribute(CDWUniquePtr dataset_att
     }
     //add command id into the result
     result->addInt64Value(chaos_batch::BatchCommandExecutorRpcActionKey::RPC_GET_COMMAND_STATE_CMD_ID_UI64, command_id);
+  } else {
+    // or command or setAttribute not both 
+    result= AbstractControlUnit::setDatasetAttribute(MOVE(dataset_attribute_values->clone()));
   }
   return result;
 }

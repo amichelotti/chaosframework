@@ -154,19 +154,19 @@ int MultiAddressMessageRequestFuture::getError() const {
     if (current_future.get())
         return current_future->getError();
     else
-        return ErrorRpcCoce::EC_RPC_REQUEST_FUTURE_NOT_AVAILABLE;
+        return ErrorRpcCode::EC_RPC_REQUEST_FUTURE_NOT_AVAILABLE;
 }
 
 const std::string& MultiAddressMessageRequestFuture::getErrorDomain() const {
     if (current_future.get())
         return current_future->getErrorDomain();
     else
-        return ErrorRpcCoce::EC_RPC_ERROR_DOMAIN;
+        return ErrorRpcCode::EC_RPC_ERROR_DOMAIN;
 }
 
 const std::string& MultiAddressMessageRequestFuture::getErrorMessage() const {
     if (current_future.get())
         return current_future->getErrorMessage();
     else
-        return ErrorRpcCoce::EC_REQUEST_FUTURE_NOT_AVAILABLE;
+        return ErrorRpcCode::EC_REQUEST_FUTURE_NOT_AVAILABLE;
 }

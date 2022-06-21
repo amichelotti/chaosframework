@@ -1004,6 +1004,7 @@ static const char* const CONTROL_UNIT_DATASET_HISTORY_BURST_TYPE = "dsndk_histor
 static const char* const CONTROL_UNIT_DATASET_HISTORY_BURST_VALUE = "dsndk_history_burst_value";
 //! is the tag associated to the burst
 static const char* const CONTROL_UNIT_DATASET_HISTORY_BURST_TAG = "dsndk_history_burst_tag";
+static const char* const CONTROL_UNIT_DATASET_HISTORY_BURST_LOGINFO = "dsndk_history_burst_linfo";
 
 static const char* const CONTROL_UNIT_DATASET_TAG = "dsndk_tag";
 
