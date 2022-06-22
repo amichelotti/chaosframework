@@ -250,7 +250,7 @@ for dir in ${on_dir[@]}; do
 		usage
 		exit 1
 	    fi
-		if ! git diff $1 origin/$2;then
+		if ! git diff $1 origin/$2 --exit-code > /dev/null ;then
 			info_mesg "[$dir] merging " "\"$1\"=>\"$2\" ($overall_mesg) "
 			
 			if [ -z "$overall_mesg" ];then
