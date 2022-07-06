@@ -59,6 +59,9 @@ public:
     std::string getUID() const {return accessor->getUID();}
     std::string getDriverName() const{return accessor->getDriverName();}
     std::string getLastError();
+    void lock();
+    void unlock();
+    int try_lock();
 };
 }
 }

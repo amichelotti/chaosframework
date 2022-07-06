@@ -459,3 +459,23 @@ MsgManagmentResultType::MsgManagmentResult AbstractDriver::execOpcode(DrvMsgPtr 
   ADLERR_<<"OPCODE:"<<cmd->opcode<< " NOT IMPLEMENTED";
   return MsgManagmentResultType::MMR_ERROR;
 }
+ void AbstractDriver::lock(){
+    ADLDBG_<<"locking @"<<std::hex<<(void*)&lock_driver;
+
+  lock_driver.lock();
+
+ }
+void AbstractDriver::unlock(){
+  ADLDBG_<<"unlocking @"<<std::hex<<(void*)&lock_driver;
+
+  lock_driver.unlock();
+
+}
+
+int AbstractDriver::try_lock(){
+  ADLDBG_<<"try lock @"<<std::hex<<(void*)&lock_driver;
+
+  int ret=lock_driver.try_lock();
+  return ret;
+
+}

@@ -131,6 +131,7 @@ namespace chaos{
                      */
                     void scanForMessage();
 					bool started;
+                    ChaosMutex lock_driver;
                 protected:
                     std::string lastError;
                     //!Private constructor
@@ -183,6 +184,11 @@ namespace chaos{
                      */
                     virtual MsgManagmentResultType::MsgManagmentResult execOpcode(DrvMsgPtr cmd);
                     std::string getUid(){return driver_uuid;}
+
+                    void lock();
+                    void unlock();
+                    int try_lock();
+
                     /**
                      * @brief return a CDataWrapper (JSON) with the optional properties of a driver
                      * 
