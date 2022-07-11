@@ -27,7 +27,7 @@
 
 using namespace chaos::common::data;
 using namespace chaos::common::utility;
-//namespace chaos_thread_ns = chaos::common::thread;
+// namespace chaos_thread_ns = chaos::common::thread;
 using namespace chaos::cu::driver_manager::driver;
 
 #define ADLAPP_ INFO_LOG_1_P(AbstractDriver, driver_uuid)
@@ -35,13 +35,13 @@ using namespace chaos::cu::driver_manager::driver;
 #define ADLERR_ ERR_LOG_1_P(AbstractDriver, driver_uuid)
 
 /*------------------------------------------------------
- 
+
  ------------------------------------------------------*/
 AbstractDriver::AbstractDriver(BaseBypassShrdPtr custom_bypass_driver)
-    : accessor_count(0), bypass_driver(MOVE(custom_bypass_driver)), o_exe(this), is_json_param(false), driver_need_to_deinitialize(false), driver_uuid(UUIDUtil::generateUUIDLite()), command_queue(new DriverQueueType()) {}
+    : accessor_count(0), exclusive(false), bypass_driver(MOVE(custom_bypass_driver)), o_exe(this), is_json_param(false), driver_need_to_deinitialize(false), driver_uuid(UUIDUtil::generateUUIDLite()), command_queue(new DriverQueueType()) {}
 
 /*------------------------------------------------------
- 
+
  ------------------------------------------------------*/
 AbstractDriver::~AbstractDriver() {}
 
@@ -50,45 +50,49 @@ void AbstractDriver::init(void *init_param) {
   driver_need_to_deinitialize = false;
   CDataWrapper parm;
 
-  //!try to decode parameter string has json document
+  //! try to decode parameter string has json document
   is_json_param = parm.isJsonValue((const char *)init_param);
 #ifdef DETACHED_DRIVER
 
   ADLDBG_ << "Start in driver thread";
-  started=false;
-  //start interna thread for the waithing of the message
+  started = false;
+  // start interna thread for the waithing of the message
   thread_message_receiver.reset(new boost::thread(boost::bind(&AbstractDriver::scanForMessage, this)));
-  
-  //set the scheduler thread priority
+
+  // set the scheduler thread priority
 #if defined(__linux__) || defined(__APPLE__)
   int                policy;
   struct sched_param param;
   pthread_t          threadID = (pthread_t)thread_message_receiver->native_handle();
   if (!pthread_getschedparam(threadID, &policy, &param)) {
     DEBUG_CODE(ADLAPP_ << "Default thread scheduler policy";)
-    DEBUG_CODE(ADLAPP_ << "policy=" << ((policy == SCHED_FIFO) ? "SCHED_FIFO" : (policy == SCHED_RR) ? "SCHED_RR" : (policy == SCHED_OTHER) ? "SCHED_OTHER" : "???");)
+    DEBUG_CODE(ADLAPP_ << "policy=" << ((policy == SCHED_FIFO) ? "SCHED_FIFO" : (policy == SCHED_RR)  ? "SCHED_RR"
+                                                                            : (policy == SCHED_OTHER) ? "SCHED_OTHER"
+                                                                                                      : "???");)
     DEBUG_CODE(ADLAPP_ << "priority " << param.sched_priority;)
 
     policy               = SCHED_RR;
     param.sched_priority = sched_get_priority_max(SCHED_RR);
     if (!pthread_setschedparam(threadID, policy, &param)) {
-      //successfull setting schedule priority to the thread
+      // successfull setting schedule priority to the thread
       DEBUG_CODE(ADLAPP_ << "new thread scheduler policy";)
-      DEBUG_CODE(ADLAPP_ << "policy=" << ((policy == SCHED_FIFO) ? "SCHED_FIFO" : (policy == SCHED_RR) ? "SCHED_RR" : (policy == SCHED_OTHER) ? "SCHED_OTHER" : "???");)
+      DEBUG_CODE(ADLAPP_ << "policy=" << ((policy == SCHED_FIFO) ? "SCHED_FIFO" : (policy == SCHED_RR)  ? "SCHED_RR"
+                                                                              : (policy == SCHED_OTHER) ? "SCHED_OTHER"
+                                                                                                        : "???");)
       DEBUG_CODE(ADLAPP_ << "priority " << param.sched_priority;)
     }
   }
 #endif
-  if(thread_message_receiver.get()){
+  if (thread_message_receiver.get()) {
     // wait scan thread is running
-    while(started==false){
+    while (started == false) {
       usleep(100);
     }
   }
   ADLAPP_ << "Call custom driver initialization";
 
   DrvMsg              init_msg;
-  int retry=3;
+  int                 retry = 3;
   ResponseMessageType id_to_read;
   AccessorQueueType   result_queue;
   init_msg.opcode        = OpcodeType::OP_INIT_DRIVER;
@@ -96,60 +100,55 @@ void AbstractDriver::init(void *init_param) {
   init_msg.inputData     = init_param;
   init_msg.drvResponseMQ = &result_queue;
   int ret;
-  do{
-  ret=command_queue->push(&init_msg,10*chaos::common::constants::CUTimersTimeoutinMSec);
-  if(ret>=0){
-    ret=result_queue.wait_and_pop(id_to_read,10*chaos::common::constants::CUTimersTimeoutinMSec);
-    if (init_msg.ret) {
-      //in case we have error throw the exception
-      throw CException(init_msg.ret, init_msg.err_msg, init_msg.err_dom);
-    }
-    if(ret<0) {
+  do {
+    ret = command_queue->push(&init_msg, 10 * chaos::common::constants::CUTimersTimeoutinMSec);
+    if (ret >= 0) {
+      ret = result_queue.wait_and_pop(id_to_read, 10 * chaos::common::constants::CUTimersTimeoutinMSec);
+      if (init_msg.ret) {
+        // in case we have error throw the exception
+        throw CException(init_msg.ret, init_msg.err_msg, init_msg.err_dom);
+      }
+      if (ret < 0) {
         ADLERR_ << "Timeout on init";
-
+      }
+    } else {
+      ADLERR_ << "Error pushing init";
     }
-  } else {
-        ADLERR_ << "Error pushing init";
 
-  } 
-    
-  
-  
-  } while((ret<0) && (retry--));
-  #else
-      int isjson=0;
-ChaosUniquePtr<CDataWrapper> p;
+  } while ((ret < 0) && (retry--));
+#else
+  int                          isjson = 0;
+  ChaosUniquePtr<CDataWrapper> p;
 
   try {
-        p  = CDataWrapper::instanceFromJson((const char*)init_param);
-              isjson = (p->isEmpty() == false);
-     } catch (...) {
-              isjson = 0;
+    p      = CDataWrapper::instanceFromJson((const char *)init_param);
+    isjson = (p->isEmpty() == false);
+  } catch (...) {
+    isjson = 0;
+  }
+  if (isjson && p.get()) {
+    ADLDBG_ << "JSON PARMS:" << p->getJSONString();
+    if (p->hasKey(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_PROP) && p->isCDataWrapperValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_PROP)) {
+      CDataWrapper cd;
+      p->getCSDataValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_PROP, cd);
+      importKeysAsProperties(cd);
+      //      config.getCSDataValue(CAMERA_CUSTOM_PROPERTY,camera_custom_props);
+      ADLDBG_ << "driver properties" << getProperties()->getJSONString();
     }
-    if (isjson&&p.get()) {
-      ADLDBG_ << "JSON PARMS:" << p->getJSONString();
-      if(p->hasKey(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_PROP)&&p->isCDataWrapperValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_PROP)){
-        CDataWrapper cd;
-        p->getCSDataValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_PROP,cd);
-        importKeysAsProperties(cd);
-    //      config.getCSDataValue(CAMERA_CUSTOM_PROPERTY,camera_custom_props);
-          ADLDBG_<<"driver properties"<<getProperties()->getJSONString();
+    driverInit(*p);
+  } else {
+    ADLDBG_ << "STRING PARMS:" << static_cast<const char *>(init_param);
+    driverInit(static_cast<const char *>(init_param));
+  }
 
-        }
-      driverInit(*p);
-    } else {
-      ADLDBG_ << "STRING PARMS:" << static_cast<const char *>(init_param);
-      driverInit(static_cast<const char *>(init_param));
-    }
-  
-  #endif
+#endif
 }
 
 // Deinit the implementation
 void AbstractDriver::deinit() {
   ADLAPP_ << "Call custom driver deinitialization";
-  // driverDeinit();
-  #ifdef DETACHED_DRIVER
+// driverDeinit();
+#ifdef DETACHED_DRIVER
 
   DrvMsg              deinit_msg;
   ResponseMessageType id_to_read;
@@ -158,18 +157,18 @@ void AbstractDriver::deinit() {
   //  std::memset(&deinit_msg, 0, sizeof(DrvMsg));
   deinit_msg.opcode        = OpcodeType::OP_DEINIT_DRIVER;
   deinit_msg.drvResponseMQ = &result_queue;
-  //send opcode to driver implemetation
+  // send opcode to driver implemetation
   driver_need_to_deinitialize = true;
-  int ret=command_queue->push(&deinit_msg,10*chaos::common::constants::CUTimersTimeoutinMSec);
-  if(ret>=0){
-  //wait for completition
-    result_queue.wait_and_pop(id_to_read,10*chaos::common::constants::CUTimersTimeoutinMSec);
+  int ret                     = command_queue->push(&deinit_msg, 10 * chaos::common::constants::CUTimersTimeoutinMSec);
+  if (ret >= 0) {
+    // wait for completition
+    result_queue.wait_and_pop(id_to_read, 10 * chaos::common::constants::CUTimersTimeoutinMSec);
   }
-  //now join to  the thread if joinable
+  // now join to  the thread if joinable
   if (thread_message_receiver->joinable()) {
     thread_message_receiver->join();
   }
-  #endif
+#endif
 }
 
 const bool AbstractDriver::isDriverParamInJson() const {
@@ -181,18 +180,18 @@ const bool AbstractDriver::isDriverParamInJson() const {
 }*/
 
 /*------------------------------------------------------
- 
+
  ------------------------------------------------------*/
-bool AbstractDriver::getNewAccessor(DriverAccessor **newAccessor,const std::string& owner) {
-  //allocate new accessor;
+bool AbstractDriver::getNewAccessor(DriverAccessor **newAccessor, const std::string &owner) {
+  // allocate new accessor;
   DriverAccessor *result = new DriverAccessor(accessor_count++);
   if (result) {
-    //set the parent uuid
+    // set the parent uuid
     result->driver_uuid = driver_uuid;
     result->driverName  = driverName;
     result->owner.push_back(owner);
     result->command_queue = command_queue.get();
-    result->impl=this;
+    result->impl          = this;
     boost::unique_lock<boost::shared_mutex> lock(accesso_list_shr_mux);
     accessors.push_back(result);
     lock.unlock();
@@ -203,7 +202,7 @@ bool AbstractDriver::getNewAccessor(DriverAccessor **newAccessor,const std::stri
 }
 
 /*------------------------------------------------------
- 
+
  ------------------------------------------------------*/
 bool AbstractDriver::releaseAccessor(DriverAccessor *accessor) {
   if (!accessor) {
@@ -224,45 +223,45 @@ bool AbstractDriver::releaseAccessor(DriverAccessor *accessor) {
 }
 
 /*------------------------------------------------------
- 
+
  ------------------------------------------------------*/
 void AbstractDriver::scanForMessage() {
   ADLAPP_ << "Scanner thread started for driver[" << driver_uuid << "]";
   MsgManagmentResultType::MsgManagmentResult opcode_submission_result = MsgManagmentResultType::MMR_ERROR;
-  started=true;
+  started                                                             = true;
   DrvMsgPtr current_message_ptr;
-  int ret;
+  int       ret;
   do {
-   // boost::unique_lock<boost::shared_mutex> lock(accesso_list_shr_mux);
-    current_message_ptr=NULL;
-    //wait for the new command
-    ret=command_queue->wait_and_pop(current_message_ptr,chaos::common::constants::CUTimersTimeoutinMSec);
-    if(ret<0){
-        ADLDBG_ << "Scanner thread Timeout nothing received yet [" << driver_uuid << "]";
-        current_message_ptr=NULL;
+    // boost::unique_lock<boost::shared_mutex> lock(accesso_list_shr_mux);
+    current_message_ptr = NULL;
+    // wait for the new command
+    ret = command_queue->wait_and_pop(current_message_ptr, chaos::common::constants::CUTimersTimeoutinMSec);
+    if (ret < 0) {
+      ADLDBG_ << "Scanner thread Timeout nothing received yet [" << driver_uuid << "]";
+      current_message_ptr = NULL;
 
-        continue;
-    } 
-    //check i opcode pointer is valid
+      continue;
+    }
+    // check i opcode pointer is valid
     if (current_message_ptr == NULL) {
       continue;
     }
 
     try {
-      //clean error message and domain
+      // clean error message and domain
 
       //! check if we need to execute the private driver's opcode
       switch (current_message_ptr->opcode) {
         case OpcodeType::OP_GET_LASTERROR:
           current_message_ptr->resultData       = NULL;
           current_message_ptr->resultDataLength = 0;
-          if(lastError.size()>0){
+          if (lastError.size() > 0) {
             current_message_ptr->resultData       = strdup(lastError.c_str());
-            current_message_ptr->resultDataLength = lastError.size()+1;
-            lastError=""; // clear last error
+            current_message_ptr->resultDataLength = lastError.size() + 1;
+            lastError                             = "";  // clear last error
           }
 
-        break;
+          break;
         case OpcodeType::OP_SET_BYPASS:
           ADLDBG_ << "Switch to bypass driver";
           setBypass(true);
@@ -285,14 +284,13 @@ void AbstractDriver::scanForMessage() {
             }
             if (isjson) {
               ADLDBG_ << "JSON PARMS:" << p->getJSONString();
-               if(p->hasKey(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_PROP)&&p->isCDataWrapperValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_PROP)){
-                 CDataWrapper cd;
-                 p->getCSDataValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_PROP,cd);
-                 importKeysAsProperties(cd);
-            //      config.getCSDataValue(CAMERA_CUSTOM_PROPERTY,camera_custom_props);
-                  ADLDBG_<<"driver properties"<<getProperties()->getJSONString();
-        
-                }
+              if (p->hasKey(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_PROP) && p->isCDataWrapperValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_PROP)) {
+                CDataWrapper cd;
+                p->getCSDataValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_PROP, cd);
+                importKeysAsProperties(cd);
+                //      config.getCSDataValue(CAMERA_CUSTOM_PROPERTY,camera_custom_props);
+                ADLDBG_ << "driver properties" << getProperties()->getJSONString();
+              }
               driverInit(*p);
             } else {
               ADLDBG_ << "STRING PARMS:" << static_cast<const char *>(current_message_ptr->inputData);
@@ -324,11 +322,11 @@ void AbstractDriver::scanForMessage() {
         }
         case OpcodeType::OP_SET_PROPERTIES: {
           chaos::common::data::CDWUniquePtr inp(new chaos::common::data::CDataWrapper());
-          if(current_message_ptr->inputData){
-            inp->setSerializedData((const char*)current_message_ptr->inputData);
+          if (current_message_ptr->inputData) {
+            inp->setSerializedData((const char *)current_message_ptr->inputData);
             chaos::common::data::CDWUniquePtr ret   = setDrvProperties(inp);
             int                               sizeb = 0;
-            const char *                      ptr   = NULL;
+            const char                       *ptr   = NULL;
             if (ret.get()) {
               ptr = ret->getBSONRawData(sizeb);
             }
@@ -351,7 +349,7 @@ void AbstractDriver::scanForMessage() {
         }
 
         default: {
-          //for custom opcode we call directly the driver implementation of execOpcode
+          // for custom opcode we call directly the driver implementation of execOpcode
           opcode_submission_result = o_exe->execOpcode(current_message_ptr);
           switch (opcode_submission_result) {
             case MsgManagmentResultType::MMR_ERROR:
@@ -367,7 +365,7 @@ void AbstractDriver::scanForMessage() {
         }
       }
     } catch (CException &ex) {
-      //chaos exception
+      // chaos exception
 
       ADLERR_ << "an error has been catched code: " << ex.errorCode << " msg:" << ex.errorMessage.c_str() << " dom:" << ex.errorDomain.c_str() << " executing opcode:" << current_message_ptr->opcode;
       current_message_ptr->ret = ex.errorCode;
@@ -381,39 +379,41 @@ void AbstractDriver::scanForMessage() {
       strncpy(current_message_ptr->err_msg, ss.str().c_str(), DRVMSG_ERR_MSG_SIZE);
       strncpy(current_message_ptr->err_dom, __PRETTY_FUNCTION__, DRVMSG_ERR_DOM_SIZE);
     } catch (...) {
-      //unkonwn exception
+      // unkonwn exception
       ADLERR_ << "an unknown exception executing opcode:" << current_message_ptr->opcode;
       opcode_submission_result = MsgManagmentResultType::MMR_ERROR;
       strncpy(current_message_ptr->err_msg, "Unexpected exception:", DRVMSG_ERR_MSG_SIZE);
       strncpy(current_message_ptr->err_dom, __PRETTY_FUNCTION__, DRVMSG_ERR_DOM_SIZE);
     }
 
-    //notify the caller
+    // notify the caller
     if (current_message_ptr->drvResponseMQ) {
-      if(current_message_ptr->drvResponseMQ->empty()==false){
-          ADLERR_ << current_message_ptr->id<<"] WARNING SOME ANSWER ALREADY, opcode:" << current_message_ptr->opcode<<" ret:"<<ret<<" qlen:"<<current_message_ptr->drvResponseMQ->length() ;
+      if (current_message_ptr->drvResponseMQ->empty() == false) {
+        ADLERR_ << current_message_ptr->id << "] WARNING SOME ANSWER ALREADY, opcode:" << current_message_ptr->opcode << " ret:" << ret << " qlen:" << current_message_ptr->drvResponseMQ->length();
 
       } else {
-        int ret=current_message_ptr->drvResponseMQ->push(current_message_ptr->id,chaos::common::constants::CUTimersTimeoutinMSec);
-        if(ret<0){
-                ADLERR_ << current_message_ptr->id<<"] Timeout on answer, opcode:" << current_message_ptr->opcode<<" ret:"<<ret<< " qlen:"<<current_message_ptr->drvResponseMQ->length();
-
+        int ret = current_message_ptr->drvResponseMQ->push(current_message_ptr->id, chaos::common::constants::CUTimersTimeoutinMSec);
+        if (ret < 0) {
+          ADLERR_ << current_message_ptr->id << "] Timeout on answer, opcode:" << current_message_ptr->opcode << " ret:" << ret << " qlen:" << current_message_ptr->drvResponseMQ->length();
         }
       }
     }
 
   } while (current_message_ptr == NULL ||
-           ((!driver_need_to_deinitialize)&&(current_message_ptr->opcode != OpcodeType::OP_DEINIT_DRIVER) ));
+           ((!driver_need_to_deinitialize) && (current_message_ptr->opcode != OpcodeType::OP_DEINIT_DRIVER)));
   ADLAPP_ << "Scanner thread terminated for driver[" << driver_uuid << "]";
 }
 
 void AbstractDriver::driverInit(const chaos::common::data::CDataWrapper &data) {
+  if (data.hasKey("exclusive") && data.isBoolValue("exclusive")) {
+    exclusive = data.getBoolValue("exclusive");
+  }
   ADLERR_ << "driver " << identification_string << " has json parameters you should implement driverInit(const chaos::common::data::CDataWrapper& data) initialization";
   driverInit(data.getCompliantJSONString().c_str());
 }
 
 void AbstractDriver::driverDeinit() {
-  ADLDBG_ << "base driver " << identification_string <<" DEINIT";
+  ADLDBG_ << "base driver " << identification_string << " DEINIT";
 }
 
 const bool AbstractDriver::isBypass() const {
@@ -421,16 +421,16 @@ const bool AbstractDriver::isBypass() const {
 }
 
 void AbstractDriver::setBypass(bool bypass) {
-   // boost::unique_lock<boost::shared_mutex> lock(accesso_list_shr_mux);
+  // boost::unique_lock<boost::shared_mutex> lock(accesso_list_shr_mux);
 
   if (bypass) {
     LBypassDriverUnqPtrReadLock rl = bypass_driver.getReadLockObject();
     o_exe                          = bypass_driver().get();
   } else {
-/*      DrvMsgPtr              msg;
-    while(command_queue->pop(msg)){
-        ADLDBG_ << "removing messages on bypass id:" << msg->id <<" message opcode:"<<msg->opcode;
-    }*/
+    /*      DrvMsgPtr              msg;
+        while(command_queue->pop(msg)){
+            ADLDBG_ << "removing messages on bypass id:" << msg->id <<" message opcode:"<<msg->opcode;
+        }*/
     o_exe = this;
   }
 }
@@ -440,42 +440,45 @@ int AbstractDriver::setDrvProperty(const std::string &key, const std::string &va
 }
 
 chaos::common::data::CDWUniquePtr AbstractDriver::getDrvProperties() {
-chaos::common::data::CDWUniquePtr ret=getProperties(true);
-//  LDBG_<<"Properties:"<<ret->getJSONString();
+  chaos::common::data::CDWUniquePtr ret = getProperties(true);
+  //  LDBG_<<"Properties:"<<ret->getJSONString();
   return ret;
 }
-void AbstractDriver::setLastError(const std::string&str){
-  lastError=str;
+void AbstractDriver::setLastError(const std::string &str) {
+  lastError = str;
 }
 
-chaos::common::data::CDWUniquePtr AbstractDriver::setDrvProperties(chaos::common::data::CDWUniquePtr& drv) {
-  if(drv.get()){
-    return setProperties(*drv.get(),true);
-
+chaos::common::data::CDWUniquePtr AbstractDriver::setDrvProperties(chaos::common::data::CDWUniquePtr &drv) {
+  if (drv.get()) {
+    return setProperties(*drv.get(), true);
   }
- return chaos::common::data::CDWUniquePtr();
+  return chaos::common::data::CDWUniquePtr();
 }
-MsgManagmentResultType::MsgManagmentResult AbstractDriver::execOpcode(DrvMsgPtr cmd){
-  ADLERR_<<"OPCODE:"<<cmd->opcode<< " NOT IMPLEMENTED";
+MsgManagmentResultType::MsgManagmentResult AbstractDriver::execOpcode(DrvMsgPtr cmd) {
+  ADLERR_ << "OPCODE:" << cmd->opcode << " NOT IMPLEMENTED";
   return MsgManagmentResultType::MMR_ERROR;
 }
- void AbstractDriver::lock(){
-    ADLDBG_<<"locking @"<<std::hex<<(void*)&lock_driver;
+void AbstractDriver::lock() {
+  if (exclusive) {
+    ADLDBG_ << "locking @" << std::hex << (void *)&lock_driver;
 
-  lock_driver.lock();
+    lock_driver.lock();
+  }
+}
+void AbstractDriver::unlock() {
+  if (exclusive) {
+    ADLDBG_ << "unlocking @" << std::hex << (void *)&lock_driver;
 
- }
-void AbstractDriver::unlock(){
-  ADLDBG_<<"unlocking @"<<std::hex<<(void*)&lock_driver;
-
-  lock_driver.unlock();
-
+    lock_driver.unlock();
+  }
 }
 
-int AbstractDriver::try_lock(){
-  ADLDBG_<<"try lock @"<<std::hex<<(void*)&lock_driver;
+int AbstractDriver::try_lock() {
+  int ret;
+  if (exclusive) {
+    ADLDBG_ << "try lock @" << std::hex << (void *)&lock_driver;
 
-  int ret=lock_driver.try_lock();
+    ret = lock_driver.try_lock();
+  }
   return ret;
-
 }

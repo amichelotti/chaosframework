@@ -154,7 +154,8 @@ namespace chaos{
                      * */
                     void setBypass(bool val);
                     
-
+                    //enable lock/unlock mutex handling
+                    bool exclusive;
                  //   const Json::Value& getDriverParamJsonRootElement() const;
                 public:
 
