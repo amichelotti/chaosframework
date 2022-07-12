@@ -22,6 +22,16 @@ namespace driver{
     std::string AbstractDriverInterface::getLastError(){return accessor->getLastError();}
     AbstractDriverInterface::~AbstractDriverInterface(){
     }
+void AbstractDriverInterface::lock(){
+    accessor->getImpl()->lock();
+}
+void AbstractDriverInterface::unlock(){
+        accessor->getImpl()->unlock();
 
+}
+int AbstractDriverInterface::try_lock(){
+    return accessor->getImpl()->try_lock();
+
+}
 
 }}}}

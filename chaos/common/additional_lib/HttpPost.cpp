@@ -10,7 +10,7 @@ namespace common {
 namespace http {
 static int s_exit_flag = 0, counter = 0;
 //     static std::stringstream bufres;
-
+std::map<std::string,uint64_t> HttpPost::off_line;
 static void ev_handler(struct mg_connection *nc, int ev, void *ev_data) {
   struct http_message *hm = (struct http_message *)ev_data;
   int                  connect_status;
@@ -67,13 +67,15 @@ int HttpPost::post(const std::string &server, const std::string &api, const std:
   int  ret;
  // DBG << "before mutex offline:" << off_line.size();
 
-  ChaosLockGuard l(devio_mutex);
- if (off_line.count(server) && (chaos::common::utility::TimingUtil::getTimeStamp() - off_line[server]) < retry_offline_ms) {
+ 
+ if (off_line.count(server) &&
+  ((chaos::common::utility::TimingUtil::getTimeStamp() - off_line[server]) < retry_offline_ms)) {
     ERR << "server " << server << " has put offline for " << (retry_offline_ms - (chaos::common::utility::TimingUtil::getTimeStamp() - off_line[server])) << " ms";
 
     return 503;  // SERVICE UNAVAILABLE
   }
- 
+  ChaosLockGuard l(devio_mutex);
+
   mg_mgr_init((struct mg_mgr *)mgr, (void *)&res);
 
   snprintf(s_url, sizeof(s_url), "%s/%s", server.c_str(), api.c_str());
@@ -85,16 +87,18 @@ int HttpPost::post(const std::string &server, const std::string &api, const std:
  // DBG << "connecting " << s_url;
 
   mg_connect_http(p, ev_handler, s_url, "Content-Type:application/json\r\n", body.c_str());
-  while ((s_exit_flag == 0) && (counter < timeo)) {
+  do {
     mg_mgr_poll(p, 1);
     counter++;
-  }
+  } while ((s_exit_flag == 0) && (counter < timeo));
 
   //DBG << "exit polling " << s_exit_flag << " counter:" << counter;
+  mg_mgr_free(p);
 
   if (counter == timeo) {
     off_line[server] = chaos::common::utility::TimingUtil::getTimeStamp();
-    ERR << server << " timeout of:" << timeo << " at:" << off_line[server] << " put offline for:" << retry_offline_ms << " ms";
+    
+    ERR << server << " timeout of:" << timeo << " at:" << off_line[server] << " putting offline for:" << retry_offline_ms << " ms";
 
     return 504;  // REQUEST GATEWAY TIMEOUT
   }
@@ -106,7 +110,9 @@ int HttpPost::post(const std::string &server, const std::string &api, const std:
     }
   } else if (s_exit_flag == -1) {
     off_line[server] = chaos::common::utility::TimingUtil::getTimeStamp();
-    ERR << "server " << server << " connection error at:" << off_line[server] << " put offline for:" << retry_offline_ms << " ms";
+  
+
+    ERR << "Error server " << server << " put offline for:" << (retry_offline_ms - (chaos::common::utility::TimingUtil::getTimeStamp() - off_line[server])) << " ms";
 
     return 502;
   }

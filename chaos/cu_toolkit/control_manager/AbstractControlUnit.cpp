@@ -561,6 +561,8 @@ void AbstractControlUnit::setAlarmMask(const std::string& name, uint32_t mask) {
     }
     */
 
+    w_lock->unlock();
+    return 0;
 
   }
 

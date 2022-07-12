@@ -79,7 +79,7 @@ AttributeValue::AttributeValue(const std::string& _name,
  
  ---------------------------------------------------------------------------------*/
 AttributeValue::~AttributeValue() {
-    AVLDBG_<<" destroy attribute '"<<name<<"' buf:"<<static_cast<void*>(value_buffer)<<" bufobj:"<<static_cast<void*>(bufobj)<<" copy: "<<copy;
+   // AVLDBG_<<" destroy attribute '"<<name<<"' buf:"<<static_cast<void*>(value_buffer)<<" bufobj:"<<static_cast<void*>(bufobj)<<" copy: "<<copy;
 
     if( (copy==chaos::CHAOS_BUFFER_COPY) &&( value_buffer)) {
         buf_size =0;
