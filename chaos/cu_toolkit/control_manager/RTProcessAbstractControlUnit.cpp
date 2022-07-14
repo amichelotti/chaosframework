@@ -209,7 +209,7 @@ void RTProcessAbstractControlUnit::consumer_handler(chaos::common::message::ele_
     pushOutputDataset();
 }
 void RTProcessAbstractControlUnit::unitProcessData(std::string& key,chaos::common::data::CDWUniquePtr& cd){
-    RTCULAPP_ <<" Must be overloaded, data from "<<key<<" ds size:"<<cd->getBSONRawSize();
+    RTCULDBG_ <<" Must be overloaded, data from "<<key<<" ds size:"<<cd->getBSONRawSize();
 }
 /*!
  Init the  RT Control Unit scheduling for device
@@ -220,7 +220,7 @@ void RTProcessAbstractControlUnit::init(void *initData) {
     
     scheduler_run = false;
     
-    RTCULAPP_ << "Initializing shared attribute cache " << DatasetDB::getDeviceID();
+    RTCULDBG_ << "Initializing shared attribute cache " << DatasetDB::getDeviceID();
     InizializableService::initImplementation((AttributeValueSharedCache*)attribute_value_shared_cache, (void*)NULL, "attribute_value_shared_cache", __PRETTY_FUNCTION__);
     std::string msgbrokerdrv = GlobalConfiguration::getInstance()->getOption<std::string>(InitOption::OPT_MSG_BROKER_DRIVER);
 
@@ -230,10 +230,12 @@ void RTProcessAbstractControlUnit::init(void *initData) {
     consumer = chaos::common::message::MessagePSDriver::getNewConsumerDriver(msgbrokerdrv, gid);
     if(consumer.get()){
         consumer->addServer(msgbroker);
-        RTCULAPP_ << "New Consumer Broker:" << msgbroker<<" gid:"<<gid;
+        RTCULDBG_ << "New Consumer Broker:" << msgbroker<<" gid:"<<gid;
 
         consumer->addHandler(chaos::common::message::MessagePublishSubscribeBase::ONARRIVE, boost::bind(&RTProcessAbstractControlUnit::consumer_handler, this, _1));
-        
+         if (consumer->applyConfiguration() != 0) {
+            throw chaos::CException(-1, "cannot initialize Publish Subscribe:" + consumer->getLastError(), __PRETTY_FUNCTION__);
+        }
     }
     
 }
@@ -246,14 +248,12 @@ void RTProcessAbstractControlUnit::start() {
     //call parent impl
     AbstractControlUnit::start();
     for(std::set<std::string>::iterator i =subscribe_nodes.begin();i!=subscribe_nodes.end();i++){
-        RTCULAPP_ << "Subscribing to:" << *i;
+        RTCULDBG_ << "Subscribing to:" << *i;
 
         consumer->subscribe(*i,true);
 
     }
-    if (consumer->applyConfiguration() != 0) {
-            throw chaos::CException(-1, "cannot initialize Publish Subscribe:" + consumer->getLastError(), __PRETTY_FUNCTION__);
-    }
+   
     consumer->start();
 }
 
@@ -283,4 +283,24 @@ void RTProcessAbstractControlUnit::deinit() {
     InizializableService::deinitImplementation((AttributeValueSharedCache*)attribute_value_shared_cache, "attribute_value_shared_cache", __PRETTY_FUNCTION__);
 }
 
+void RTProcessAbstractControlUnit::unitInit(){
+    RTCULDBG_ << "Init";
+
+
+}
+void RTProcessAbstractControlUnit::unitStart(){
+        RTCULDBG_ << "Start";
+
+
+}
+void RTProcessAbstractControlUnit::unitStop(){
+            RTCULDBG_ << "Stop";
+
+
+}
+void RTProcessAbstractControlUnit::unitDeinit(){
+            RTCULDBG_ << "unitDeinit";
+
+
+}
 

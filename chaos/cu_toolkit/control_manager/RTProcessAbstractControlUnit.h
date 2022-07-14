@@ -98,7 +98,6 @@ namespace chaos {
                                       const ControlUnitDriverList& _control_unit_drivers);
                 
 				//! schdule a run of the rt control unit
-				virtual void unitRun() = 0;
 				
 				//! set the dafult run schedule time intervall
 				void setDefaultScheduleDelay(uint64_t _defaultScheduleDelay);
@@ -136,6 +135,10 @@ namespace chaos {
 				 * @param cd data
 				 */
 				virtual void unitProcessData(std::string& key,chaos::common::data::CDWUniquePtr& cd);
+				void unitInit();
+				void unitStart();
+				void unitStop();
+				void unitDeinit();
 			};
 		}
     }
