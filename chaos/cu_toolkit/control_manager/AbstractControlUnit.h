@@ -143,6 +143,8 @@ class AbstractControlUnit : public DeclareAction,
   friend class AbstractExecutionUnit;
   friend class SCAbstractControlUnit;
   friend class RTAbstractControlUnit;
+  friend class RTProcessAbstractControlUnit;
+
   friend class slow_command::SlowCommand;
   friend class slow_command::SlowCommandExecutor;
 

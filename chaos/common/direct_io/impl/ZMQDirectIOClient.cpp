@@ -22,10 +22,6 @@
 #include <chaos/common/utility/InetUtility.h>
 #include <chaos/common/direct_io/impl/ZMQDirectIOClient.h>
 #include <chaos/common/data/cache/FastHash.h>
-
-#include <boost/algorithm/string.hpp>
-#include <boost/format.hpp>
-
 #include <string.h>
 #include <assert.h>     /* assert */
 

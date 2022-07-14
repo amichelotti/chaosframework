@@ -24,7 +24,6 @@
 #include <chaos/common/data/CDataWrapper.h>
 #include <chaos/common/direct_io/DirectIODataPack.h>
 #include <chaos/common/direct_io/impl/ZMQDirectIOServer.h>
-#include <boost/format.hpp>
 
 
 #define ZMQDIO_SRV_LOG_HEAD "["<<getName()<<"] - "
