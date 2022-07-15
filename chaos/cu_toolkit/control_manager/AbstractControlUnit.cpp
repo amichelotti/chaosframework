@@ -119,6 +119,8 @@ bool MSecStorageBurst::active(int64_t now) {
 
 #pragma mark AbstractControlUnit
 //! Contructor with type and id
+std::string AbstractControlUnit::base_data_path;
+
 AbstractControlUnit::AbstractControlUnit(const std::string& _control_unit_type,
                                          const std::string& _control_unit_id,
                                          const std::string& _control_unit_param)
@@ -156,8 +158,12 @@ AbstractControlUnit::AbstractControlUnit(const std::string& _control_unit_type,
   //!try to decode parameter string has json document
   is_control_unit_json_param = CDataWrapper::isJSON(control_unit_param);
   //initialize check list
+if(base_data_path==""){
+      base_data_path=GlobalConfiguration::getInstance()->getOption< std::string>(InitOption::OPT_DATA_DIR);
 
+  }
   _initChecklist();
+  
 }
 
 //! Contructor with driver
@@ -196,7 +202,10 @@ AbstractControlUnit::AbstractControlUnit(const std::string&           _control_u
   _initPropertyGroup();
   //!try to decode parameter string has json document
   is_control_unit_json_param = CDataWrapper::isJSON(control_unit_param);
+  if(base_data_path==""){
+      base_data_path=GlobalConfiguration::getInstance()->getOption< std::string>(InitOption::OPT_DATA_DIR);
 
+  }
   //copy array
   for (int idx = 0; idx < _control_unit_drivers.size(); idx++) {
     control_unit_drivers.push_back(_control_unit_drivers[idx]);
@@ -545,7 +554,7 @@ void AbstractControlUnit::setAlarmMask(const std::string& name, uint32_t mask) {
     std::string fname = control_unit_id;
     replace(fname.begin(), fname.end(), '/', '_');
     std::stringstream ss;
-    ss << "/tmp/"<<fname;
+    ss << base_data_path<<"/"<<fname;
     boost::filesystem::path p(ss.str());
     if ((boost::filesystem::exists(p))) {
       boost::filesystem::remove(p);
@@ -573,7 +582,7 @@ void AbstractControlUnit::setAlarmMask(const std::string& name, uint32_t mask) {
     std::string fname = control_unit_id;
     replace(fname.begin(), fname.end(), '/', '_');
     std::stringstream ss;
-    ss << "/tmp/"<<fname;
+    ss << base_data_path<<"/"<<fname;
     boost::filesystem::path p(ss.str());
     if ((boost::filesystem::exists(p) == false)) {
           try {
@@ -607,7 +616,7 @@ void AbstractControlUnit::setAlarmMask(const std::string& name, uint32_t mask) {
     getAttributeCache()->setCustomAttributeValue(keyname, d);
 
     
-    ACULDBG_ << keyname<<" wrote " <<ss.str()<<" size:"<<d.getJSONString().size();
+    ACULDBG_ << keyname<<" wrote " <<ss.str()<<" size:"<<d.getJSONString().size() << "in "<<ss.str().c_str();
 
     fillCachedValueVector(attribute_value_shared_cache->getSharedDomain(DOMAIN_CUSTOM),
                                   cache_custom_attribute_vector);
@@ -623,7 +632,7 @@ void AbstractControlUnit::setAlarmMask(const std::string& name, uint32_t mask) {
     std::string fname = control_unit_id;
     replace(fname.begin(), fname.end(), '/', '_');
     std::stringstream ss;
-    ss << "/tmp/"<<fname<<"/"+keyname;
+    ss <<base_data_path <<"/"<<fname<<"/"+keyname;
     std::ifstream fs;
     fs.open(ss.str().c_str());
     if(fs.is_open()){
@@ -1985,11 +1994,16 @@ void AbstractControlUnit::init(void* init_data) {
 
 // Startable Service method
 void AbstractControlUnit::start() {
+  setStateVariableSeverity(StateVariableTypeAlarmDEV,chaos::common::alarm::MultiSeverityAlarmLevelClear);
+  setStateVariableSeverity(StateVariableTypeAlarmCU,chaos::common::alarm::MultiSeverityAlarmLevelClear);
   doStartSMCheckList();
 }
 
 // Startable Service method
 void AbstractControlUnit::stop() {
+
+  setStateVariableSeverity(StateVariableTypeAlarmDEV,chaos::common::alarm::MultiSeverityAlarmLevelClear);
+  setStateVariableSeverity(StateVariableTypeAlarmCU,chaos::common::alarm::MultiSeverityAlarmLevelClear);
   redoStartSMCheckList();
 }
 
@@ -2676,11 +2690,11 @@ void AbstractControlUnit::_updatePushRateMetric() {
 
   HealtManager::getInstance()->addNodeMetricValue(control_unit_id,
                                                   ControlUnitHealtDefinitionValue::CU_HEALT_OUTPUT_ALARM_LEVEL,
-                                                  std::max(map_variable_catalog[StateVariableTypeAlarmCU].maxLevel(), map_variable_catalog[StateVariableTypeAlarmDEV].maxLevel()));
+                                                  std::max((map_variable_catalog.count(StateVariableTypeAlarmCU)?map_variable_catalog[StateVariableTypeAlarmCU].maxLevel():0), (map_variable_catalog.count(StateVariableTypeAlarmDEV)?map_variable_catalog[StateVariableTypeAlarmDEV].maxLevel():0)));
 
   HealtManager::getInstance()->addNodeMetricValue(control_unit_id,
                                                   ControlUnitHealtDefinitionValue::CU_HEALT_OUTPUT_ALARM_MASKED,
-                                                  map_variable_catalog[StateVariableTypeAlarmCU].countMask()+ map_variable_catalog[StateVariableTypeAlarmDEV].countMask());
+                                                  (map_variable_catalog.count(StateVariableTypeAlarmCU)?map_variable_catalog[StateVariableTypeAlarmCU].countMask():0)+ (map_variable_catalog.count(StateVariableTypeAlarmDEV)?map_variable_catalog[StateVariableTypeAlarmDEV].countMask():0));
 
   HealtManager::getInstance()->addNodeMetricValue(control_unit_id,
                                                   ControlUnitHealtDefinitionValue::CU_HEALT_OUTPUT_DATASET_TSOFF,
@@ -2701,6 +2715,8 @@ void AbstractControlUnit::_updatePushRateMetric() {
   HealtManager::getInstance()->addNodeMetricValue(control_unit_id,
                                                   ControlUnitHealtDefinitionValue::CU_HEALT_OUTPUT_TOT_PUSH_KSIZE,
                                                   (int32_t)(push_tot_size / 1024));
+  setStateVariableSeverity(StateVariableTypeAlarmCU, "packet_lost", chaos::common::alarm::MultiSeverityAlarmLevelClear);
+  setStateVariableSeverity(StateVariableTypeAlarmCU, "packet_send_error", chaos::common::alarm::MultiSeverityAlarmLevelClear);
 
   //keep track of acquire timestamp
   last_push_rate_grap_ts = rate_acq_ts;

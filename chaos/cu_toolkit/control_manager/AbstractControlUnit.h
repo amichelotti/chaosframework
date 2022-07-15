@@ -149,7 +149,7 @@ class AbstractControlUnit : public DeclareAction,
   friend class slow_command::SlowCommandExecutor;
 
   void setCUClass(const std::string& cl);
-
+  static std::string base_data_path;
  public:
   CHAOS_DEFINE_VECTOR_FOR_TYPE(chaos::cu::driver_manager::driver::DrvRequestInfo, ControlUnitDriverList);
   //! Default Contructor

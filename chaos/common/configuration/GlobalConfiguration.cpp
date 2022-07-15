@@ -341,6 +341,8 @@ void GlobalConfiguration::checkDefaultOption()  {
     configuration->addStringValue(InitOption::OPT_RPC_IMPLEMENTATION, rpcImpl);
 
     CHECK_AND_DEFINE_CONFIG_OPTION(std::string,InitOption::OPT_MSG_BROKER_SERVER);
+    CHECK_AND_DEFINE_CONFIG_OPTION(std::string,InitOption::OPT_DATA_DIR);
+
     CHECK_AND_DEFINE_CONFIG_OPTION(std::string,InitOption::OPT_NODE_DESC);
     CHECK_AND_DEFINE_CONFIG_OPTION(std::string,chaos::InitOption::OPT_NODEUID);
     CHECK_AND_DEFINE_CONFIG_OPTION(std::string,InitOption::OPT_MSG_BROKER_DRIVER);
