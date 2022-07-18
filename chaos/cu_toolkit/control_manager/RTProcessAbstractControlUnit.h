@@ -133,8 +133,9 @@ namespace chaos {
 				 * 
 				 * @param key source of the message
 				 * @param cd data
+				 * @return >0 if processed, 0 if none, <0 if error
 				 */
-				virtual void unitProcessData(std::string& key,chaos::common::data::CDWUniquePtr& cd);
+				virtual int unitProcessData(std::string& key,chaos::common::data::CDWUniquePtr& cd);
 				void unitInit();
 				void unitStart();
 				void unitStop();
