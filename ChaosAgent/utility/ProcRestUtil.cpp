@@ -114,6 +114,9 @@ chaos::common::data::CDataWrapper* conf=GlobalConfiguration::getInstance()->getC
         if(conf->hasKey(InitOption::OPT_MSG_BROKER_DRIVER)){
             init_file_stream <<CHAOS_FORMAT("%1%=%2%",%std::string(InitOption::OPT_MSG_BROKER_DRIVER)%conf->getStringValue(InitOption::OPT_MSG_BROKER_DRIVER)) << std::endl;
         }
+        if(conf->hasKey(InitOption::OPT_DATA_DIR)){
+            init_file_stream <<CHAOS_FORMAT("%1%=%2%",%std::string(InitOption::OPT_DATA_DIR)%conf->getStringValue(InitOption::OPT_DATA_DIR)) << std::endl;
+        }
         std::vector<std::string> prod_opt,cons_opt;
         if(conf->hasKey(InitOption::OPT_MSG_PRODUCER_KVP)){
             chaos::common::data::CMultiTypeDataArrayWrapperSPtr r=conf->getVectorValue(InitOption::OPT_MSG_PRODUCER_KVP);
