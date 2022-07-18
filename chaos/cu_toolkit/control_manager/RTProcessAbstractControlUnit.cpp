@@ -176,23 +176,31 @@ AbstractSharedDomainCache *RTProcessAbstractControlUnit::_getAttributeCache() {
 }
 
 void RTProcessAbstractControlUnit::consumer_handler(chaos::common::message::ele_t&data){
+    int ret;
+    
     if(data.cd.get()==NULL){
         RTCULERR_<<"Empty packet from key:"<<data.key<<" off:"<<data.off<<" partition:"<<data.par;
         return;
     }
+    int64_t devt=0,diff=0;
     if((discard_too_old>0) && data.cd->hasKey(DataPackCommonKey::DPCK_TIMESTAMP)){
         int64_t now=chaos::common::utility::TimingUtil::getTimeStamp();
-        int64_t devt=data.cd->getInt64Value(DataPackCommonKey::DPCK_TIMESTAMP) ;
-        int64_t diff=now - devt;
+        devt=data.cd->getInt64Value(DataPackCommonKey::DPCK_TIMESTAMP) ;
+        diff=now - devt;
         if(diff>discard_too_old){
             // skip packet
             RTCULDBG_<<"skip packet of "<<data.key<<" of "<<diff<<" ms ago ("<<chaos::common::utility::TimingUtil::toString(devt)<< "), older than "<<discard_too_old<< " ms";
             return;
         }
     }
+    if(hasStopped()){
+        RTCULDBG_<<"CU is STOPPED skip packet of "<<data.key<<" of "<<diff<<" ms ago ("<<chaos::common::utility::TimingUtil::toString(devt)<< ") ms";
+        return;
+
+    }
     try{
             //! exec the control unit step
-            unitProcessData(data.key,data.cd);
+            ret= unitProcessData(data.key,data.cd);
         } catch(CException& ex) {
             //go in recoverable error
             boost::thread(boost::bind(&AbstractControlUnit::_goInRecoverableError, this, ex)).detach();
@@ -203,13 +211,15 @@ void RTProcessAbstractControlUnit::consumer_handler(chaos::common::message::ele_
             boost::thread(boost::bind(&AbstractControlUnit::_goInRecoverableError, this, ex)).detach();
             boost::this_thread::sleep_for(boost::chrono::seconds(2));
         }
-
+    if(ret!=0){
         //udpate output dataset timestamp tag
-    _updateAcquistionTimestamp((uint64_t)TimingUtil::getTimeStampInMicroseconds());
-    pushOutputDataset();
+        _updateAcquistionTimestamp((uint64_t)TimingUtil::getTimeStampInMicroseconds());
+        pushOutputDataset();
+    }
 }
-void RTProcessAbstractControlUnit::unitProcessData(std::string& key,chaos::common::data::CDWUniquePtr& cd){
+int RTProcessAbstractControlUnit::unitProcessData(std::string& key,chaos::common::data::CDWUniquePtr& cd){
     RTCULDBG_ <<" Must be overloaded, data from "<<key<<" ds size:"<<cd->getBSONRawSize();
+    return 0;
 }
 /*!
  Init the  RT Control Unit scheduling for device
@@ -280,7 +290,8 @@ void RTProcessAbstractControlUnit::deinit() {
     }
     consumer->stop();
 
-    InizializableService::deinitImplementation((AttributeValueSharedCache*)attribute_value_shared_cache, "attribute_value_shared_cache", __PRETTY_FUNCTION__);
+   // InizializableService::deinitImplementation((AttributeValueSharedCache*)attribute_value_shared_cache, "attribute_value_shared_cache", __PRETTY_FUNCTION__);
+    consumer.reset();
 }
 
 void RTProcessAbstractControlUnit::unitInit(){
