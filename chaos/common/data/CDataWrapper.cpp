@@ -701,6 +701,7 @@ void CDataWrapper::append(const std::string&key,DataType::DataType typ,const cha
             }
             break;
         case DataType::TYPE_DOUBLE:
+        case DataType::TYPE_FLOAT:
              for( i=0;i<len/sizeof(double);i++){
                 appendDoubleToArray(((double*)buf)[i]);
             }
@@ -730,6 +731,7 @@ void CDataWrapper::addVariantValue(const std::string& key,
             addUInt64Value(key, variant_value.asUInt64());
             break;
         case DataType::TYPE_DOUBLE:
+        case DataType::TYPE_FLOAT:
             addDoubleValue(key, variant_value.asDouble());
             break;
         case DataType::TYPE_CLUSTER:{
@@ -1155,6 +1157,10 @@ CDataVariant CDataWrapper::getVariantValue(const std::string& key) const{
             return CDataVariant(getUInt64Value(key));
         case  chaos::DataType::TYPE_DOUBLE:{
             double val=getDoubleValue(key);
+            return CDataVariant(val);
+        }
+        case  chaos::DataType::TYPE_FLOAT:{
+            float val=getDoubleValue(key);
             return CDataVariant(val);
         }
         case chaos::DataType::TYPE_STRING:

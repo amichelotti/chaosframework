@@ -214,6 +214,19 @@ bool AttributeValue::setValue(const void* value_ptr,
            
             break;
         }
+        case DataType::TYPE_FLOAT: {
+            float dv = *(float*)value_ptr;
+             if(old_value.ddata!=dv){
+                *(float*)value_buffer=dv;
+                tag_has_changed =true;
+                old_value.ddata=dv;
+            }else {
+                tag_has_changed =false;
+
+            }
+           
+            break;
+        }
         case DataType::TYPE_CLUSTER:
 
         case DataType::TYPE_STRING: {
@@ -544,7 +557,8 @@ void AttributeValue::writeToCDataWrapper( CDataWrapper& data_wrapper) {
             break;
         }
             
-        case chaos::DataType::TYPE_DOUBLE:{
+        case chaos::DataType::TYPE_DOUBLE:
+        case chaos::DataType::TYPE_FLOAT:{
             data_wrapper.addDoubleValue(name, *getValuePtr<double>());
             break;
         }
@@ -585,6 +599,9 @@ std::string AttributeValue::toString() {
             
         case chaos::DataType::TYPE_DOUBLE:{
             return ChaosToString(*getValuePtr<double>());
+        }
+        case chaos::DataType::TYPE_FLOAT:{
+            return ChaosToString(*getValuePtr<float>());
         }
             
         case chaos::DataType::TYPE_INT32:{
@@ -627,7 +644,11 @@ std::string AttributeValue::toString(int double_precision) {
             f << "%." <<double_precision<< "f";
             return CHAOS_FORMAT(f.str(), %*getValuePtr<double>());
         }
-            
+        case chaos::DataType::TYPE_FLOAT:{
+            stringstream f;
+            f << "%." <<double_precision<< "f";
+            return CHAOS_FORMAT(f.str(), %*getValuePtr<float>());
+        }   
         case chaos::DataType::TYPE_INT32:{
             return ChaosToString(*getValuePtr<int32_t>());
         }

@@ -224,6 +224,7 @@ int CUController::getAttributeStrValue(string attribute_name, string& attribute_
                     break;
                     
                 case DataType::TYPE_DOUBLE:
+                case DataType::TYPE_FLOAT:
                     attribute_value = boost::lexical_cast<string>(dataWrapper->getDoubleValue(attribute_name.c_str()));
                     break;
                     
@@ -394,6 +395,11 @@ int CUController::setAttributeToValue(const char *attributeName, const char *att
             attributeValuePack->addDoubleValue(attributeName, doubleValuePtr);
             break;
         }
+        case DataType::TYPE_FLOAT:{
+            float doubleValuePtr = lexical_cast<float>(attributeValue);
+            attributeValuePack->addDoubleValue(attributeName, doubleValuePtr);
+            break;
+        }
         case DataType::TYPE_INT32:{
             int32_t i32ValuePtr = lexical_cast<int32_t>(attributeValue);
             attributeValuePack->addInt32Value(attributeName, i32ValuePtr);
@@ -448,6 +454,11 @@ int CUController::setAttributeToValue(const char *attributeName, DataType::DataT
         }
         case DataType::TYPE_DOUBLE:{
             double *doubleValuePtr = static_cast<double*>(attributeValue);
+            attributeValuePack->addDoubleValue(attributeName, *doubleValuePtr);
+            break;
+        }
+        case DataType::TYPE_FLOAT:{
+            float *doubleValuePtr = static_cast<float*>(attributeValue);
             attributeValuePack->addDoubleValue(attributeName, *doubleValuePtr);
             break;
         }
@@ -723,6 +734,7 @@ int CUController::setAttributeValue(string& attributeName, const char* attribute
             return deviceChannel->setAttributeValue(MOVE(attributeValuePack),millisecToWait);
             
         case DataType::TYPE_DOUBLE:
+        case DataType::TYPE_FLOAT:
             attributeValuePack->addDoubleValue(attrname, boost::lexical_cast<double>(attributeValue));
             return deviceChannel->setAttributeValue(MOVE(attributeValuePack),millisecToWait);
             
@@ -804,7 +816,8 @@ void CUController::allocateNewLiveBufferForAttributeAndType(string& attributeNam
             }
                 break;
                 
-            case DataType::TYPE_DOUBLE:{
+            case DataType::TYPE_DOUBLE:
+            case DataType::TYPE_FLOAT:{
                 SingleBufferCircularBuffer<double_t> *newBuffer = new SingleBufferCircularBuffer<double_t>(30);
                 doubleAttributeLiveBuffer.insert(make_pair(attributeName, newBuffer));
             }
@@ -842,6 +855,7 @@ UIDataBuffer *CUController::getBufferForAttribute(string& attributeName) {
             break;
             
         case DataType::TYPE_DOUBLE:
+        case DataType::TYPE_FLOAT:
             result = doubleAttributeLiveBuffer[attributeName];
             break;
      default:
@@ -1067,6 +1081,7 @@ void CUController::fetchCurrentDeviceValue() {
                 break;
                 
             case DataType::TYPE_DOUBLE:
+            case DataType::TYPE_FLOAT:
                 doubleAttributeLiveBuffer[*iter]->addValue(tmpPtr->getDoubleValue(key));
                 break;
                 

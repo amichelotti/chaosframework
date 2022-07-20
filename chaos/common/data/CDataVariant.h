@@ -109,6 +109,8 @@ namespace chaos {
                 explicit CDataVariant(int64_t int64_value);
                 explicit CDataVariant(uint64_t int64_value);
                 explicit CDataVariant(double double_value);
+                explicit CDataVariant(float double_value);
+
                 explicit CDataVariant(bool boolvalue);
                 explicit CDataVariant(const std::string& string_value);
                 explicit CDataVariant(const char * string_value);
@@ -143,6 +145,9 @@ namespace chaos {
     
                 double asDouble() const;
                 operator double() const;
+
+                float asFloat() const;
+                operator float() const;
                 
                 bool asBool() const;
                 operator bool() const;
