@@ -183,6 +183,7 @@ void HealtManagerBase::addNodeMetric(const std::string&        node_uid,
       metric.reset(new Int64HealtMetric(node_metric));
       break;
     case chaos::DataType::TYPE_DOUBLE:
+    case chaos::DataType::TYPE_FLOAT:
       metric.reset(new DoubleHealtMetric(node_metric));
       break;
     case chaos::DataType::TYPE_STRING:

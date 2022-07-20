@@ -166,6 +166,10 @@ CDataVariant::CDataVariant(double double_value):
 type(DataType::TYPE_DOUBLE),
 _internal_variant(double_value) { }
 
+CDataVariant::CDataVariant(float fvalue):
+type(DataType::TYPE_FLOAT),
+_internal_variant(fvalue) { }
+
 CDataVariant::CDataVariant(bool bool_value):
 type(DataType::TYPE_BOOLEAN),
 _internal_variant(bool_value) { }
@@ -230,6 +234,10 @@ type(_type){
         }
         case DataType::TYPE_DOUBLE:{
             _internal_variant = *static_cast<const double*>(_value_pointer);
+            break;
+        }
+        case DataType::TYPE_FLOAT:{
+            _internal_variant = *static_cast<const float*>(_value_pointer);
             break;
         }
         case DataType::TYPE_CLUSTER:{
@@ -313,8 +321,16 @@ double CDataVariant::asDouble() const {
     return  boost::apply_visitor(double_visitor(), _internal_variant );
 }
 
+float CDataVariant::asFloat() const {
+    return  boost::apply_visitor(double_visitor(), _internal_variant );
+}
+
 CDataVariant::operator double() const {
     return asDouble();
+}
+
+CDataVariant::operator float() const {
+    return asFloat();
 }
 
 bool CDataVariant::asBool() const {

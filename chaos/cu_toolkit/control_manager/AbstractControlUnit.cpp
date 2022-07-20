@@ -1018,6 +1018,7 @@ void         AbstractControlUnit::doInitRpCheckList() {
                 cdw_unique_ptr->addUInt64Value(attrName, (uint64_t)strtoll(attrValue.c_str(), 0, 0));
                 break;
               case DataType::TYPE_DOUBLE:
+              case DataType::TYPE_FLOAT:
                 cdw_unique_ptr->addDoubleValue(attrName, CDataVariant(attrValue).asDouble());
                 break;
               case DataType::TYPE_STRING:
@@ -1287,6 +1288,13 @@ void AbstractControlUnit::dsInitSetFromReadout() {
               case DataType::TYPE_DOUBLE: {
                 double val = *cache_output_attribute_vector[cntt]->getValuePtr<double>();
                 ACULDBG_<< "Input '"<< name << "' Init TYPE_DOUBLE to:" << val;
+                cache_input_attribute_vector[cnt]->setValue(cache_output_attribute_vector[cntt]->value_buffer,cache_output_attribute_vector[cntt]->size);
+
+                break;
+              }
+              case DataType::TYPE_FLOAT: {
+                float val = *cache_output_attribute_vector[cntt]->getValuePtr<float>();
+                ACULDBG_<< "Input '"<< name << "' Init TYPE_FLOAT to:" << val;
                 cache_input_attribute_vector[cnt]->setValue(cache_output_attribute_vector[cntt]->value_buffer,cache_output_attribute_vector[cntt]->size);
 
                 break;
@@ -2332,6 +2340,15 @@ int AbstractControlUnit::checkStdAlarms() {
 
         break;
       }
+      case DataType::TYPE_FLOAT: {
+        float sval = *(inp->getValuePtr<float>());
+        float rval = *(out->getValuePtr<float>());
+        //      ACULDBG_ << "INPUT:"<<inp->name<<" val:"<<sval;
+
+        level = checkFn(sval, rval, i->second.range);
+
+        break;
+      }
       default:
         break;
     }
@@ -2368,6 +2385,12 @@ int AbstractControlUnit::checkStdAlarms() {
         }
         case DataType::TYPE_DOUBLE: {
           double sval = *(val->getValuePtr<double>());
+          level       = checkLimFn(sval, i->second.range, dir);
+
+          break;
+        }
+        case DataType::TYPE_FLOAT: {
+          float sval = *(val->getValuePtr<float>());
           level       = checkLimFn(sval, i->second.range, dir);
 
           break;
@@ -2414,6 +2437,12 @@ void AbstractControlUnit::initAttributeOnSharedAttributeCache(SharedCacheDomain 
           double val = boost::lexical_cast<double>(attributeInfo.defaultValue);
           attribute_setting.setValueForAttribute(idx, &val, sizeof(double));
           ACULDBG_ << domain << " Init TYPE_DOUBLE attribute:'" << attribute_names[idx] << "' to:" << val;
+          break;
+        }
+        case DataType::TYPE_FLOAT: {
+          float val = boost::lexical_cast<float>(attributeInfo.defaultValue);
+          attribute_setting.setValueForAttribute(idx, &val, sizeof(float));
+          ACULDBG_ << domain << " Init TYPE_FLOAT attribute:'" << attribute_names[idx] << "' to:" << val;
           break;
         }
         case DataType::TYPE_INT32: {
@@ -2940,6 +2969,12 @@ CDWUniquePtr AbstractControlUnit::setDatasetAttribute(CDWUniquePtr dataset_attri
               attribute_cache_value->setValue(&dv, sizeof(double));
               break;
             }
+            case DataType::TYPE_FLOAT: {
+              float dv = dataset_attribute_values->getValue<float>(attr_name);  //dataset_attribute_values->getDoubleValue(attr_name);
+              CHECK_FOR_RANGE_VALUE(float, dv, attr_name)
+              attribute_cache_value->setValue(&dv, sizeof(float));
+              break;
+            }
 
             case DataType::TYPE_CLUSTER: {
               // ChaosUniquePtr<CDataWrapper> str = dataset_attribute_values->getCSDataValue(attr_name);
@@ -3118,6 +3153,9 @@ int AbstractControlUnit::pushOutputDataset() {
         break;
       case DataType::TYPE_DOUBLE:
         output_attribute_dataset->addDoubleValue(value_set->name, *value_set->getValuePtr<double>());
+        break;
+       case DataType::TYPE_FLOAT:
+        output_attribute_dataset->addDoubleValue(value_set->name, *value_set->getValuePtr<float>());
         break;
       case DataType::TYPE_CLUSTER: {
         try {

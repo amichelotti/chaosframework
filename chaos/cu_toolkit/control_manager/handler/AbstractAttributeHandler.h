@@ -62,7 +62,8 @@ namespace chaos {
                            range_info.valueType == chaos::DataType::TYPE_INT64 ||
                            range_info.valueType == chaos::DataType::TYPE_UINT64 ||
 
-                           range_info.valueType == chaos::DataType::TYPE_DOUBLE) {
+                           range_info.valueType == chaos::DataType::TYPE_DOUBLE ||
+                           range_info.valueType == chaos::DataType::TYPE_FLOAT) {
                             min = boost::lexical_cast<T>(range_info.minRange);
                             max = boost::lexical_cast<T>(range_info.maxRange);
                         }

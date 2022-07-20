@@ -66,6 +66,9 @@ void AttributeCache::addAttribute(const string&                                 
     case chaos::DataType::TYPE_DOUBLE:
       size = sizeof(double);
       break;
+    case chaos::DataType::TYPE_FLOAT:
+      size = sizeof(float);
+    break;
     case chaos::DataType::TYPE_INT32:
       size = sizeof(int32_t);
       break;
@@ -107,6 +110,9 @@ void AttributeCache::addAttribute(const std::string&                       name,
       break;
     case chaos::DataType::TYPE_DOUBLE:
       size = sizeof(double);
+      break;
+     case chaos::DataType::TYPE_FLOAT:
+      size = sizeof(float);
       break;
     case chaos::DataType::TYPE_INT32:
       size = sizeof(int32_t);
