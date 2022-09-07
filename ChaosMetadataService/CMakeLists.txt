@@ -476,10 +476,10 @@ ENDIF (BUILD_FORCE_STATIC)
 ADD_EXECUTABLE(${PROJECT_NAME} main.cpp )
 
 #add dependency
-add_dependencies(chaos_cds mongo-cxx-driver)
-add_dependencies(chaos_cds couchbase-c-driver)
+# add_dependencies(chaos_cds mongo-cxx-driver)
+# add_dependencies(chaos_cds couchbase-c-driver)
 
-add_dependencies(${PROJECT_NAME} mongo-cxx-driver)
+# add_dependencies(${PROJECT_NAME} mongo-cxx-driver)
 # add_dependencies(${PROJECT_NAME} cassandra-driver)
 
 FILE(GLOB files "../chaos_service_common/data/node/*.h")
