@@ -87,7 +87,9 @@ IF(CHAOS_EPICS_SUPPORT)
     GIT_TAG origin/7.0
       GIT_PROGRESS 1
       BUILD_IN_SOURCE 1
-      UPDATE_COMMAND ""
+      PREFIX "${CMAKE_BINARY_DIR}/ext_dep/epics-prefix"
+      SOURCE_DIR "${CMAKE_BINARY_DIR}/ext_dep/epics-src"
+      PATCH_COMMAND sed -i "s/\#COMMANDLINE_LIBRARY = EPICS/COMMANDLINE_LIBRARY = EPICS/" ${CMAKE_BINARY_DIR}/ext_dep/epics-src/configure/os/CONFIG_SITE.Common.linux-x86_64
       CONFIGURE_COMMAND ""
 	    UPDATE_COMMAND    ""
 	    INSTALL_COMMAND   ""
