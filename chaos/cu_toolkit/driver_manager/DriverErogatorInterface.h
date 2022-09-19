@@ -9,8 +9,8 @@
 #ifndef CHAOSFramework_DriverErogatorInterface_h
 #define CHAOSFramework_DriverErogatorInterface_h
 
-#include <chaos/cu_toolkit/driver_manager/driver/DriverTypes.h>
-#include <chaos/cu_toolkit/driver_manager/driver/DriverAccessor.h>
+#include "driver/DriverTypes.h"
+#include "driver/DriverAccessor.h"
 
 namespace chaos {
 	namespace cu {

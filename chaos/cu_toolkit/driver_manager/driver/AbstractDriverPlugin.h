@@ -23,7 +23,7 @@
 #define CHAOSFramework_DriverWrapperPlugin_h
 
 #include <chaos/common/plugin/PluginDefinition.h>
-#include <chaos/cu_toolkit/driver_manager/driver/AbstractDriver.h>
+#include "AbstractDriver.h"
 
 namespace chaos{
     namespace cu {

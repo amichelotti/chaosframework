@@ -30,12 +30,9 @@
 #include <chaos/common/utility/StartableService.h>
 #include <chaos/common/plugin/PluginInspector.h>
 
-#include <chaos/cu_toolkit/driver_manager/driver/AbstractDriver.h>
-#include <chaos/cu_toolkit/driver_manager/driver/DriverAccessor.h>
+#include "driver/AbstractDriver.h"
+#include "driver/DriverAccessor.h"
 
-#include <boost/thread.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/ptr_container/ptr_vector.hpp>
 
 namespace chaos {
 	namespace cu {

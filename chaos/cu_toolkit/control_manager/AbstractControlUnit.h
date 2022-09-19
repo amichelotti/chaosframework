@@ -230,6 +230,16 @@ class AbstractControlUnit : public DeclareAction,
     return chaos::ControlUnitDatapackSystemKey::CU_ALRM_LEVEL;
   }
 
+  //! set the value on the busy flag
+  void setBusyFlag(bool state);
+
+
+  //! set the value on the bypass flag
+  void setBypassFlag(bool state);
+
+  //!return the current value of the busi flag
+  const bool getBusyFlag() const;
+
   inline int stateVariableNameToEnum(const std::string& name) {
     if (name.compare(chaos::ControlUnitDatapackSystemKey::CU_ALRM_LEVEL) == 0) {
       return chaos::cu::control_manager::StateVariableTypeAlarmCU;
@@ -855,16 +865,6 @@ class AbstractControlUnit : public DeclareAction,
    */
   void setState(const std::string& state,bool update=false);
   
-  //! set the value on the busy flag
-  void setBusyFlag(bool state);
-
-
-  //! set the value on the bypass flag
-  void setBypassFlag(bool state);
-
-  //!return the current value of the busi flag
-  const bool getBusyFlag() const;
-
   //!called when an alarm has been modified in his severity
   void alarmChanged(const std::string& state_variable_tag,
                     const std::string& state_variable_name,

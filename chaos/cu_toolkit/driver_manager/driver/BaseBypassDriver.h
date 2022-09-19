@@ -21,7 +21,7 @@
 #ifndef __CHAOSFramework_ECA49652_F22D_45D5_A82E_7A29B3D410F6_BaseBypassDriver_h
 #define __CHAOSFramework_ECA49652_F22D_45D5_A82E_7A29B3D410F6_BaseBypassDriver_h
 
-#include <chaos/cu_toolkit/driver_manager/driver/DriverTypes.h>
+#include "DriverTypes.h"
 
 namespace chaos{
     namespace cu {

@@ -2806,7 +2806,8 @@ void AbstractControlUnit::_setBypassState(bool bypass_stage,
                                   end = accessor_instances.end();
        it != end;
        it++) {
-    (*it)->send(&cmd, chaos::common::constants::CUTimersTimeoutinMSec);
+   // (*it)->send(&cmd, chaos::common::constants::CUTimersTimeoutinMSec);
+  (*it)->setBypass(bypass_stage);
   }
    ACULDBG_ << "BYPASS COMMAND:"<<bypass_stage;
   setBypassFlag(bypass_stage);

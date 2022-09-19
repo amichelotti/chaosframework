@@ -49,7 +49,9 @@ CDWUniquePtr NodeGetDescription::execute(CDWUniquePtr api_data) {
             LOG_AND_TROW(USRA_ERR, err, "Error fetching node  '"+   api_data->getStringValue(NodeDefinitionKey::NODE_UNIQUE_ID)+"' decription")
         }
     } else {
-        LOG_AND_TROW(USRA_ERR, -3, "Node '"+   api_data->getStringValue(NodeDefinitionKey::NODE_UNIQUE_ID)+"' not found")
+       // LOG_AND_TROW(USRA_ERR, -3, "Node '"+   api_data->getStringValue(NodeDefinitionKey::NODE_UNIQUE_ID)+"' not found")
+
+       LERR_<< "Node '"+   api_data->getStringValue(NodeDefinitionKey::NODE_UNIQUE_ID)+"' not found";
     }
     return CDWUniquePtr(result);
 }

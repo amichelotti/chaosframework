@@ -274,3 +274,10 @@ std::string DriverAccessor::getLastError() {
 
 #endif
 }
+void DriverAccessor::setBypass(bool val){
+  impl->setBypass(val);
+
+}
+const bool DriverAccessor::isBypass() const{
+  return impl->isBypass();
+}

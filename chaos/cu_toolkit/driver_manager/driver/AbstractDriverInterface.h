@@ -20,7 +20,7 @@
 #ifndef __ASTRACTDRIVERINTERFACE_H__
 #define __ASTRACTDRIVERINTERFACE_H__
 #include <chaos/common/data/CDataWrapper.h>
-#include <chaos/cu_toolkit/driver_manager/driver/DriverAccessor.h>
+#include "DriverAccessor.h"
 namespace chaos_driver=::chaos::cu::driver_manager::driver;
 
 namespace chaos {

@@ -29,13 +29,14 @@
 #include <chaos/common/thread/FutureHelper.h>
 #include <chaos/common/utility/LockableObject.h>
 
-#include <chaos/cu_toolkit/driver_manager/driver/AbstractDriverPlugin.h>
+#include "AbstractDriverPlugin.h"
 
+/*
 #include <boost/multi_index/member.hpp>
 #include <boost/multi_index_container.hpp>
 #include <boost/multi_index/ordered_index.hpp>
 #include <boost/multi_index/hashed_index.hpp>
-
+*/
 #define AUTHORIZATION_KEY           "message_data"
 #define INIT_HARDWARE_PARAM         "driver_param"
 #define OPCODE_HARDWARE_PARAM       "device_param"
