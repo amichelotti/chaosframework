@@ -153,6 +153,10 @@ int IODirectIOPSMsgDriver::storeData(const std::string&                         
     IODirectIOPSMsgDriver_LERR_ << "Packet not allocated";
     return -100;
   }
+  if (prod.get() == NULL) {
+    IODirectIOPSMsgDriver_LERR_ << "Producer not allocated";
+    return -101;
+  }
   if (storage_type != DataServiceNodeDefinitionType::DSStorageTypeUndefined) {
     if (!data_to_store->hasKey(DataServiceNodeDefinitionKey::DS_STORAGE_TYPE)) {
       data_to_store->addInt32Value(DataServiceNodeDefinitionKey::DS_STORAGE_TYPE, storage_type);
@@ -168,8 +172,12 @@ int IODirectIOPSMsgDriver::storeData(const std::string&                         
       }
     }
   }
+ // IODirectIOPSMsgDriver_DLDBG_<<"PUSH STORE3 "<<key<<" pointer:"<<std::hex<<prod.get();
+
   if (data_to_store->hasKey(NodeDefinitionKey::NODE_UNIQUE_ID)) {
-    if ((err = prod->pushMsgAsync(*data_to_store.get(), data_to_store->getStringValue(NodeDefinitionKey::NODE_UNIQUE_ID))) != 0) {
+    std::string uid=data_to_store->getStringValue(NodeDefinitionKey::NODE_UNIQUE_ID);
+
+    if ((err = prod->pushMsgAsync(*data_to_store.get(), uid)) != 0) {
       DEBUG_CODE(IODirectIOPSMsgDriver_LERR_ << "Error pushing " << prod->getLastError());
     }
   } else {

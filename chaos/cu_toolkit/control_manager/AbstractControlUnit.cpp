@@ -266,8 +266,10 @@ void AbstractControlUnit::_initPropertyGroup() {
   PropertyGroup& pg_abstract_cu = addGroup(chaos::ControlUnitPropertyKey::P_GROUP_NAME);
   pg_abstract_cu.addProperty(ControlUnitDatapackSystemKey::BYPASS_STATE, "Put control unit in bypass state", DataType::TYPE_BOOLEAN, 0, CDataVariant((bool)false));
   pg_abstract_cu.addProperty(DataServiceNodeDefinitionKey::DS_STORAGE_TYPE, "Set the control unit storage type", DataType::TYPE_INT32, 0, CDataVariant((int32_t)0));
-  pg_abstract_cu.addProperty(DataServiceNodeDefinitionKey::DS_STORAGE_LIVE_TIME, "Set the control unit storage type", DataType::TYPE_INT64, 0, CDataVariant((int64_t)0));
-  pg_abstract_cu.addProperty(DataServiceNodeDefinitionKey::DS_STORAGE_HISTORY_TIME, "Set the control unit storage type", DataType::TYPE_INT64, 0, CDataVariant((int64_t)0));
+  pg_abstract_cu.addProperty(DataServiceNodeDefinitionKey::DS_STORAGE_LIVE_TIME, "Set the interval time between two live packets", DataType::TYPE_INT64, 0, CDataVariant((int64_t)0));
+  pg_abstract_cu.addProperty(DataServiceNodeDefinitionKey::DS_STORAGE_HISTORY_TIME, "Set the interval time between two history packets", DataType::TYPE_INT64, 0, CDataVariant((int64_t)0));
+  pg_abstract_cu.addProperty(DataServiceNodeDefinitionKey::DS_STORAGE_LOG_TIME, "Set the interval time between two log packets", DataType::TYPE_INT64, 0, CDataVariant((int64_t)0));
+
   pg_abstract_cu.addProperty(DataServiceNodeDefinitionKey::DS_UPDATE_ANYWAY, "Update the dataset anyway (ms)", DataType::TYPE_INT32, 0, CDataVariant((int32_t)DS_UPDATE_ANYWAY_DEF));
   pg_abstract_cu.addProperty(ControlUnitDatapackSystemKey::CU_LOG_MAX_MS, "Maximum log rate (ms) 0 always", DataType::TYPE_INT32, 0, CDataVariant((int32_t)CONTROL_UNIT_LOG_MAX_MS_DEF));
   busy=false;bypass=false;
@@ -2554,6 +2556,7 @@ void AbstractControlUnit::initSystemAttributeOnSharedAttributeCache() {
 
   //add history time
   domain_attribute_setting.addAttribute(DataServiceNodeDefinitionKey::DS_STORAGE_HISTORY_TIME, 0, DataType::TYPE_INT64);
+  domain_attribute_setting.addAttribute(DataServiceNodeDefinitionKey::DS_STORAGE_LOG_TIME, 0, DataType::TYPE_INT64);
 
   //add update anyway
   domain_attribute_setting.addAttribute(DataServiceNodeDefinitionKey::DS_UPDATE_ANYWAY, DS_UPDATE_ANYWAY_DEF, DataType::TYPE_INT32);
@@ -3010,6 +3013,8 @@ CDWUniquePtr AbstractControlUnit::setDatasetAttribute(CDWUniquePtr dataset_attri
           }
         }
       }
+      w_lock->unlock();
+
       //push the input attribute dataset
       pushInputDataset();
     }
@@ -3073,6 +3078,8 @@ void AbstractControlUnit::propertyUpdatedHandler(const std::string&  group_name,
       *attribute_value_shared_cache->getAttributeValue(DOMAIN_SYSTEM, DataServiceNodeDefinitionKey::DS_STORAGE_LIVE_TIME)->getValuePtr<uint64_t>() = new_value.asUInt64();
     } else if (property_name.compare(DataServiceNodeDefinitionKey::DS_STORAGE_HISTORY_TIME) == 0) {
       *attribute_value_shared_cache->getAttributeValue(DOMAIN_SYSTEM, DataServiceNodeDefinitionKey::DS_STORAGE_HISTORY_TIME)->getValuePtr<uint64_t>() = new_value.asUInt64();
+    }  else if (property_name.compare(DataServiceNodeDefinitionKey::DS_STORAGE_LOG_TIME) == 0) {
+      *attribute_value_shared_cache->getAttributeValue(DOMAIN_SYSTEM, DataServiceNodeDefinitionKey::DS_STORAGE_LOG_TIME)->getValuePtr<uint64_t>() = new_value.asUInt64();
     } else if (property_name.compare(DataServiceNodeDefinitionKey::DS_UPDATE_ANYWAY) == 0) {
       *attribute_value_shared_cache->getAttributeValue(DOMAIN_SYSTEM, DataServiceNodeDefinitionKey::DS_UPDATE_ANYWAY)->getValuePtr<int32_t>() = new_value.asInt32();
       ds_update_anyway                                                                                                                        = new_value.asInt32();
@@ -3144,6 +3151,8 @@ int AbstractControlUnit::pushOutputDataset() {
         output_attribute_dataset->addBoolValue(value_set->name, *value_set->getValuePtr<bool>());
         break;
       case DataType::TYPE_INT32:
+        //ACULDBG_ << value_set->name << " <="<<*value_set->getValuePtr<int32_t>();
+
         output_attribute_dataset->addInt32Value(value_set->name, *value_set->getValuePtr<int32_t>());
         break;
       case DataType::TYPE_INT64:
@@ -3804,7 +3813,7 @@ void AbstractControlUnit::updateDatasetFromDriverProperty() {
       }
     }
   }
-  getAttributeCache()->setInputDomainAsChanged();
+ // getAttributeCache()->setInputDomainAsChanged();
   getAttributeCache()->setOutputDomainAsChanged();
 }
 

@@ -788,11 +788,14 @@ static const char* const DS_STORAGE_HISTORY_AGEING = "dsndk_storage_history_agei
          store another datapack into the history system[uint64]
          */
 static const char* const DS_STORAGE_HISTORY_TIME = "dsndk_storage_history_time";
+
 /*!
          storage time [in msecods uint64] the time that need to pass before
          store another datapack into the live system[uint64]
          */
 static const char* const DS_STORAGE_LIVE_TIME   = "dsndk_storage_live_time";
+static const char* const DS_STORAGE_LOG_TIME   = "dsndk_storage_log_time";
+
 static const char* const DS_BROKER_ADDRESS_LIST = "dsndk_broker_list";
 static const char* const DS_SUBSCRIBE_KEY_LIST  = "dsndk_subkey_list";
 

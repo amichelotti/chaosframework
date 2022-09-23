@@ -21,9 +21,8 @@
 #ifndef __CHAOSFramework__SetInstanceDescription__
 #define __CHAOSFramework__SetInstanceDescription__
 
-#include <chaos_metadata_service_client/api_proxy/ApiProxy.h>
+#include "../../api_proxy/ApiProxy.h"
 
-#include <boost/ptr_container/ptr_vector.hpp>
 
 namespace chaos {
     namespace metadata_service_client {
@@ -104,6 +103,10 @@ namespace chaos {
                      the time that need to pass before store another datapack into the live system
                      */
                     uint64_t live_time;
+                     /*!
+                     the time that need to pass before store another datapack into the log system
+                     */
+                    uint64_t log_time;
                     
                     //! the string is passed to the control unit for the load phase
                     std::string load_parameter;

@@ -44,11 +44,11 @@
 #include <chaos/common/utility/AggregatedCheckList.h>
 #include <chaos/common/utility/ArrayPointer.h>
 #include <chaos/common/utility/SWEService.h>
-#include <chaos/cu_toolkit/control_manager/AttributeSharedCacheWrapper.h>
-#include <chaos/cu_toolkit/control_manager/ControlUnitTypes.h>
-#include <chaos/cu_toolkit/control_manager/handler/handler.h>
-#include <chaos/cu_toolkit/data_manager/KeyDataStorage.h>
-#include <chaos/cu_toolkit/driver_manager/DriverErogatorInterface.h>
+#include "AttributeSharedCacheWrapper.h"
+#include "ControlUnitTypes.h"
+#include "handler/handler.h"
+#include "../data_manager/KeyDataStorage.h"
+#include "../driver_manager/DriverErogatorInterface.h"
 #define CUINFO LAPP_ << "[" << __FUNCTION__ << " - " << getDeviceID() << "]"
 #define CUDBG LDBG_ << "[- " << __FUNCTION__ << " - " << getDeviceID() << "]"
 #define CUERR LERR_ << "[" << __PRETTY_FUNCTION__ << " - " << getDeviceID() << "]"

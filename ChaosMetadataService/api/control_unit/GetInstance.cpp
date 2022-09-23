@@ -76,6 +76,9 @@ CDWUniquePtr GetInstance::execute(CDWUniquePtr api_data) {
         if(pg.hasProperty(DataServiceNodeDefinitionKey::DS_STORAGE_LIVE_TIME)) {
             result->addVariantValue(DataServiceNodeDefinitionKey::DS_STORAGE_LIVE_TIME, pg.getProperty(DataServiceNodeDefinitionKey::DS_STORAGE_LIVE_TIME).getPropertyValue());
         }
+         if(pg.hasProperty(DataServiceNodeDefinitionKey::DS_STORAGE_LOG_TIME)) {
+            result->addVariantValue(DataServiceNodeDefinitionKey::DS_STORAGE_LOG_TIME, pg.getProperty(DataServiceNodeDefinitionKey::DS_STORAGE_LOG_TIME).getPropertyValue());
+        }
         if(pg.hasProperty(DataServiceNodeDefinitionKey::DS_UPDATE_ANYWAY)) {
             result->addVariantValue(DataServiceNodeDefinitionKey::DS_UPDATE_ANYWAY, pg.getProperty(DataServiceNodeDefinitionKey::DS_UPDATE_ANYWAY).getPropertyValue());
         }

@@ -125,7 +125,7 @@ class TLockFreeQueue {
       return size;
     }
     
-    LERR_ << "Queue Error popping size:"<<size;
+   // LERR_ << "Queue Error popping size:"<<size;
 
     return -2;
   }

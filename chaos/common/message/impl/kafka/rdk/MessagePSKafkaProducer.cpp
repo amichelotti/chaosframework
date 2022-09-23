@@ -137,7 +137,11 @@ int MessagePSKafkaProducer::applyConfiguration() {
 int MessagePSKafkaProducer::pushMsgAsync(const chaos::common::data::CDataWrapper& data, const std::string& key, const int32_t pnum) {
   rd_kafka_resp_err_t err;
   int32_t             size;
+
+  std::lock_guard<std::recursive_mutex> ll(io);
+
   std::string         topic = key;
+
   std::replace(topic.begin(), topic.end(), '/', '.');
   std::replace(topic.begin(), topic.end(), ':', '.');
 
@@ -149,13 +153,12 @@ int MessagePSKafkaProducer::pushMsgAsync(const chaos::common::data::CDataWrapper
   int   nretry = 3;
   void* ptr    = (void*)data.getBSONRawData(size);
 
-  // MRDDBG_ << "pushing: " << size<<" d:"<<data.getJSONString();
+   //MRDDBG_ << key<<" pushing: " << size<<"B d:"<<data.getJSONString();
   do {
     // int32_t siz;
     //   int32_t *bslen=(int32_t *);
     // MRDDBG_ <<"NOTIFY:("<<data.getBSONRawSize()<<","<<*bslen<<","<<siz<<"):"<<data.getJSONString();
     {
-      std::lock_guard<std::recursive_mutex> ll(io);
 
       err = rd_kafka_producev(
           /* Producer handle */
