@@ -46,7 +46,7 @@ namespace chaos {
                 ChaosUniqueLock guard(mutex_cond);
                 MRDDBG_<<"wating operation";
                 if(data_ready) return stats.last_err;
-                if(!CHAOS_WAIT(cond,guard,timeout_ms)){
+                if(!CHAOS_WAIT_MS(cond,guard,timeout_ms)){
                 MRDERR_<<"Timeout";
                 return -100;
                 }

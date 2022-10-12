@@ -22,6 +22,7 @@
 #define CObjectProcessingQueue_H
 
 #include <chaos/common/global.h>
+#include <chaos/common/chaos_constants.h>
 #include <chaos/common/utility/UUIDUtil.h>
 #include <chaos/common/exception/exception.h>
 
@@ -122,7 +123,7 @@ namespace chaos {
                 if(waithForEmptyQueue){
                     COPQUEUE_LDBG_ << " wait until queue is empty";
                     while(!buffer_queue.empty()){
-                        CHAOS_WAIT(emptyQueueConditionLock,lock,500);
+                        CHAOS_WAIT_MS(emptyQueueConditionLock,lock,chaos::common::constants::ProcessingQueueTimeoutMSec);
                                         
                         
                     }
@@ -196,7 +197,7 @@ namespace chaos {
             void waitForEmpty() {
                 ChaosUniqueLock lock(qMutex);
                 while(!buffer_queue.empty()){
-                    CHAOS_WAIT(emptyQueueConditionLock,lock,500);
+                    CHAOS_WAIT_MS(emptyQueueConditionLock,lock,chaos::common::constants::ProcessingQueueTimeoutMSec);
                                                     
                 }
                 return buffer_queue.empty();

@@ -23,7 +23,6 @@
 #define CHAOSFramework_chaos_types_h
 
 #include <boost/ptr_container/ptr_container.hpp>
-
 #include <boost/thread.hpp>
 
 #include <set>
@@ -68,7 +67,9 @@ typedef std::chrono::microseconds ChaosCronoMicroseconds;
 #define ChaosUniqueLock std::unique_lock<std::mutex>
 #define ChaosConditionVariable std::condition_variable 
 #define ChaosConditionVariableAny std::condition_variable_any 
-#define CHAOS_WAIT(condvar,lock,duration_ms) (condvar.wait_for(lock,std::chrono::milliseconds(duration_ms))==std::cv_status::no_timeout)
+#define CHAOS_WAIT(condvar,lock) condvar.wait(lock)
+#define CHAOS_WAIT_MS(condvar,lock,duration_ms) (condvar.wait_for(lock,std::chrono::milliseconds(duration_ms))==std::cv_status::no_timeout)
+
 #define CHAOS_WAIT_US(condvar,lock,duration_us) (condvar.wait_for(lock,std::chrono::microseconds(duration_us))==std::cv_status::no_timeout)
 
 #define CHAOS_DEFER_LOCK std::defer_lock
@@ -127,7 +128,9 @@ using ChaosFunction = std::function< R >;
 #define ChaosUniqueLock boost::unique_lock<boost::mutex> 
 #define ChaosConditionVariable boost::condition_variable
 #define ChaosConditionVariableAny boost::condition_variable_any
-#define CHAOS_WAIT(condvar,lock,duration_ms) condvar.timed_wait(lock,boost::posix_time::milliseconds(duration_ms))
+#define CHAOS_WAIT(condvar,lock) condvar.wait(lock,boost::posix_time::milliseconds(duration_ms))
+#define CHAOS_WAIT_MS(condvar,lock,duration_ms) condvar.wait(lock,boost::posix_time::milliseconds(duration_ms))
+
 #define CHAOS_WAIT_US(condvar,lock,duration_us) condvar.timed_wait(lock,boost::posix_time::microseconds(duration_us))
 #define ChaosToString boost::lexical_cast<std::string>
 

@@ -70,7 +70,7 @@ class TLockFreeQueue {
       if (timeout_ms > 0) {
         /*boost::system_time const tim =
             boost::get_system_time() + boost::posix_time::milliseconds(timeout_ms);*/
-        if (CHAOS_WAIT(some_read,lock, timeout_ms) == false) {
+        if (CHAOS_WAIT_MS(some_read,lock, timeout_ms) == false) {
           return chaos::ErrorCode::EC_GENERIC_TIMEOUT;
         }
 
@@ -109,7 +109,7 @@ class TLockFreeQueue {
       if (timeout_ms > 0) {
        /* boost::system_time const tim =
             boost::get_system_time() + boost::posix_time::milliseconds(timeout_ms);*/
-        if (CHAOS_WAIT(the_condition_variable,lock, timeout_ms)) {
+        if (CHAOS_WAIT_MS(the_condition_variable,lock, timeout_ms)) {
           if (pop(popped_value)) {
             return size;
           }

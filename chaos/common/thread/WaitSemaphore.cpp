@@ -29,21 +29,21 @@ namespace chaos {
            
             if(inWait) return;
             inWait = true;
-            while((!answered)){ ChaosUniqueLock lock( wait_answer_mutex );wait_answer_condition.wait(lock);};
+            while((!answered)){ ChaosUniqueLock lock( wait_answer_mutex );CHAOS_WAIT(wait_answer_condition,lock);};
             inWait = false;
             answered = false;
         }
     void WaitSemaphore::waitRaw() {
            
             ChaosUniqueLock lock( wait_answer_mutex );
-            wait_answer_condition.wait(lock);
+            CHAOS_WAIT(wait_answer_condition,lock);
         }
        
     void WaitSemaphore::wait(unsigned long millisecToWait) {
             ChaosUniqueLock lock( wait_answer_mutex );
             if(inWait) return;
             inWait = true;
-            do {} while(CHAOS_WAIT(wait_answer_condition,lock,millisecToWait) && !answered);
+            do {} while(CHAOS_WAIT_MS(wait_answer_condition,lock,millisecToWait) && !answered);
             inWait = false;
             answered = false;
         }

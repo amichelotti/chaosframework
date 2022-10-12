@@ -816,7 +816,7 @@ bool SearchWorker::waitData(int timeo) {
   //   boost::chrono::system_clock::time_point wakeUpTime =
   //   boost::chrono::system_clock::now() + period;
   DBG << "waiting for data available.." << elements;
-  bool ret = CHAOS_WAIT(wait_data,lock, timeo);
+  bool ret = CHAOS_WAIT_MS(wait_data,lock, timeo);
   DBG << "data available:" << elements;
 
   return ret;

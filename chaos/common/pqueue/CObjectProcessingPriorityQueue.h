@@ -175,7 +175,7 @@ namespace chaos {
                         if(waithForEmptyQueue){
                             COPPQUEUE_LAPP_ << "wait until queue is empty";
                             while(!bufferQueue.empty()){
-                                CHAOS_WAIT(emptyQueueConditionLock,lock,500);
+                                CHAOS_WAIT_MS(emptyQueueConditionLock,lock,chaos::common::constants::ProcessingQueueTimeoutMSec);
                             }
                             COPPQUEUE_LAPP_ << "queue is empty";
                         }
@@ -242,7 +242,7 @@ namespace chaos {
                     void waitForEmpty() {
                         ChaosUniqueLock  lock(qMutex);
                         while( bufferQueue.empty()){
-                            bool tim=CHAOS_WAIT(emptyQueueConditionLock,lock,500);
+                            bool tim=CHAOS_WAIT_MS(emptyQueueConditionLock,lock,chaos::common::constants::ProcessingQueueTimeoutMSec);
                         }
                     }
                     

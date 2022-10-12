@@ -199,7 +199,7 @@ static const unsigned int CacheTimeoutinMSec          = 5000;
 static const unsigned int MetricCollectorTimeoutinMSec = 1000;
 static const unsigned int RefreshEndpointMSec          = 60000;
 static const unsigned int SkipDatasetOlderThan         = 5*60000;
-
+static const unsigned int ProcessingQueueTimeoutMSec = 500; //ms
 //!time to wait for queue can accept new data to push in object storage
 /*!
              Mds when receive a new dataset to store on history, it is push on hst sublayer
