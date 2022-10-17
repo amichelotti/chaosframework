@@ -37,7 +37,7 @@
 namespace epics{
     namespace pvData{
         class Structure;
-        typedef std::shared_ptr<const Structure> StructureConstPtr;
+        typedef ChaosSharedPtr<const Structure> StructureConstPtr;
 
     }
 }
