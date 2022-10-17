@@ -133,7 +133,7 @@ using ChaosFunction = std::function< R >;
 #define ChaosConditionVariable boost::condition_variable
 #define ChaosConditionVariableAny boost::condition_variable_any
 #define CHAOS_WAIT(condvar,lock) condvar.wait(lock,boost::posix_time::milliseconds(duration_ms))
-#define CHAOS_WAIT_MS(condvar,lock,duration_ms) condvar.wait(lock,boost::posix_time::milliseconds(duration_ms))
+#define CHAOS_WAIT_MS(condvar,lock,duration_ms) condvar.timed_wait(lock,boost::posix_time::milliseconds(duration_ms))
 
 #define CHAOS_WAIT_US(condvar,lock,duration_us) condvar.timed_wait(lock,boost::posix_time::microseconds(duration_us))
 #define ChaosToString boost::lexical_cast<std::string>
