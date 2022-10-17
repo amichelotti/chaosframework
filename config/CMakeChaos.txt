@@ -64,7 +64,7 @@ option(GPUFIT "Fast Fitting libraries (needs CUDA toolkit)" OFF)
 IF(CHAOS_EPICS_SUPPORT)
   add_definitions(-DEPICS)
   INCLUDE_DIRECTORIES(${CMAKE_INSTALL_PREFIX}/include/compiler/gcc ${CMAKE_INSTALL_PREFIX}/include/os/Linux )
-
+  LINK_DIRECTORIES(${CMAKE_INSTALL_PREFIX}/lib/linux-x86_64)
 ENDIF()
 IF(NOT CHAOS_VERSION_MAJOR)
 	 SET(CHAOS_VERSION_MAJOR "1")

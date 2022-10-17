@@ -645,7 +645,8 @@ ENDIF()
 
 IF(CHAOS_EPICS_SUPPORT)
   foreach(elib libpvData.a libCom.a)
-      SET(BUILD_LIBRARY ${BUILD_LIBRARY} ${CMAKE_INSTALL_PREFIX}/lib/linux-x86_64/${elib})
+      #${CMAKE_INSTALL_PREFIX}/lib/linux-x86_64/${elib}
+      SET(BUILD_LIBRARY ${BUILD_LIBRARY} ${elib})
   endforeach()
    MESG("Adding Epics support ${BUILD_LIBRARY}")
 ENDIF()
