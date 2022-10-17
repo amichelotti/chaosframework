@@ -22,6 +22,9 @@
 #include <chaos/common/data/CDataWrapper.h>
 #include <chaos/common/utility/Base64Util.h>
 #include <boost/lexical_cast.hpp>
+#ifdef EPICS
+#include <pv/pvData.h>
+#endif
 using namespace chaos;
 using namespace chaos::common::data;
 
@@ -1524,6 +1527,59 @@ int CDataWrapper::setBson(const bson_iter_t *v ,const CDataWrapper* val){
     }
     return -1;
 }
+#ifdef EPICS
+    void CDataWrapper::setSerializedData(epics::pvData::StructureConstPtr ptr){
+        	std::string id= ptr->getID();
+            addStringValue("type",id);
+             size_t numberFields = ptr->getNumberFields();
+            for(size_t i=0; i<numberFields; i++) {
+             epics::pvData::FieldConstPtr pfield = ptr->getField(i);
+             CDataWrapper cs;
+            cs.addStringValue(ptr->getFieldName(i),pfield->getID());
+
+            switch(pfield->getType()) {
+            case epics::pvData::Type::scalar:
+            case epics::pvData::Type::scalarArray:
+                break;
+            case epics::pvData::Type::structure:
+            {
+                epics::pvData::Field const *xxx = pfield.get();
+                epics::pvData::Structure const *pstruct = static_cast<epics::pvData::Structure const*>(xxx);
+                cs.setSerializedData(epics::pvData::StructureConstPtr(pstruct));
+                break;
+            }
+           /* case epics::pvData::Type::structureArray:
+            {
+                format::indent_scope s(o);
+                Field const *xxx = pfield.get();
+                StructureArray const *pstructureArray = static_cast<StructureArray const*>(xxx);
+                o << *pstructureArray->getStructure();
+                break;
+            }
+            case epics::pvData::Type::union_:
+            {
+                Field const *xxx = pfield.get();
+                Union const *punion = static_cast<Union const*>(xxx);
+                format::indent_scope s(o);
+                punion->dumpFields(o);
+                break;
+            }
+            case epics::pvData::Type::unionArray:
+            {
+                format::indent_scope s(o);
+                Field const *xxx = pfield.get();
+                UnionArray const *punionArray = static_cast<UnionArray const*>(xxx);
+                o << *punionArray->getUnion();
+                break;
+            }*/
+            default:
+                break;
+        }
+    }
+          
+    }
+
+#endif
 
 #pragma mark CMultiTypeDataArrayWrapper
 CMultiTypeDataArrayWrapper::CMultiTypeDataArrayWrapper(const ChaosBsonShrdPtr& _document_shrd_ptr,
@@ -1721,3 +1777,4 @@ ChaosUniquePtr<CDataWrapper> CMultiTypeDataArrayWrapper::getCDataWrapperElementA
 size_t CMultiTypeDataArrayWrapper::size() const{
     return values.size();
 }
+ 

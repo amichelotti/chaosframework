@@ -217,6 +217,7 @@ IF (CHAOS_PROMETHEUS)
   add_definitions(-DCHAOS_PROMETHEUS=1)
 ENDIF()
 
+
 IF (CLING_VIRTUAL_MACHINE_ENABLE)
   MESG("Using ${CMAKE_BINARY_DIR}/ext_dep/cling-src for download cling")
   IF(NOT EXISTS ${CMAKE_BINARY_DIR}/ext_dep/cling-src)
@@ -261,6 +262,20 @@ ENDIF()
 
 
 SET(BUILD_LIBRARY )
+
+IF(CHAOS_EPICS_SUPPORT)
+  foreach(elib libpvData.a libCom.a)
+    find_library(epicslibs_${elib} ${elib} HINTS "${CMAKE_INSTALL_PREFIX}/lib/linux-x86_64")
+    if(NOT epicslibs_${elib})
+      message(FATAL_ERROR "EPICS LIBRARY ${elib} NOT FOUND")
+    else()
+      SET(BUILD_LIBRARY ${BUILD_LIBRARY} ${epicslibs_${elib}})
+    endif()
+  endforeach()
+  MESG("Adding Epics support ${BUILD_LIBRARY}")
+ 
+ENDIF(CHAOS_EPICS_SUPPORT)
+
 #add_subdirectory(libbson)
 
 # ExternalProject_Add(

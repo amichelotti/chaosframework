@@ -67,7 +67,7 @@ namespace chaos {
                 ChaosConditionVariable cond;
                 boost::thread th;
                 void thfunc();
-                std::recursive_mutex io;
+                ChaosRecursiveMutex io;
                 uint64_t    counter,oks,errs;
 
                 public:

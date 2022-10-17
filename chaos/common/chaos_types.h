@@ -63,6 +63,8 @@ typedef std::chrono::seconds ChaosCronoSeconds;
 typedef std::chrono::milliseconds ChaosCronoMilliseconds;
 typedef std::chrono::microseconds ChaosCronoMicroseconds;
 #define ChaosMutex std::mutex 
+#define ChaosRecursiveMutex std::recursive_mutex 
+
 #define ChaosLockGuard std::lock_guard<std::mutex> 
 #define ChaosUniqueLock std::unique_lock<std::mutex>
 #define ChaosConditionVariable std::condition_variable 
@@ -123,7 +125,9 @@ using ChaosFunction = std::function< R >;
 #include <boost/thread/future.hpp>
 #include <boost/chrono.hpp>
 #include <boost/function.hpp>
-#define ChaosMutex boost::mutex 
+#define ChaosMutex boost::mutex
+#define ChaosRecursiveMutex boost::recursive_mutex 
+
 #define ChaosLockGuard boost::lock_guard<boost::mutex> 
 #define ChaosUniqueLock boost::unique_lock<boost::mutex> 
 #define ChaosConditionVariable boost::condition_variable

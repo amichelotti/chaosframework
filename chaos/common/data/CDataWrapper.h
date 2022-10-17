@@ -33,6 +33,15 @@
 #define __PRETTY_FUNCTION__  __FUNCSIG__
 #endif
 #endif
+#ifdef EPICS
+namespace epics{
+    namespace pvData{
+        class Structure;
+        typedef std::shared_ptr<const Structure> StructureConstPtr;
+
+    }
+}
+#endif
 
 #if defined(__GNUC__) && (__GNUC__ >= 6) && !defined(__clang__)
 // See libmongoc.hh for details on this diagnostic suppression
@@ -207,6 +216,10 @@ namespace chaos {
                 //get a projection of a vector of keys
                 ChaosUniquePtr<chaos::common::data::CDataWrapper> getCSProjection(const std::vector<std::string>&) const;
 
+                #ifdef EPICS
+                    void setSerializedData(epics::pvData::StructureConstPtr ptr);
+
+                #endif
                 //add a string value
                 //void addStringValue(const char *, const char *); 
                 /**
@@ -484,6 +497,7 @@ throw chaos::CException(-2, ss.str(), __PRETTY_FUNCTION__);
                 const char* getBSONRawData() const;
                 const int getBSONRawSize() const;
                 chaos::common::data::ChaosBsonShrdPtr getBSONShrPtr() const { return bson;}
+
                 //return the json data
                 //SerializationBuffer* getJSONData();
                 //return the json representation for this data wrapper
