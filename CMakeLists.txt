@@ -78,26 +78,7 @@ if(CHAOS_MDS)
 ENDIF()
 endif()
 
-IF(CHAOS_EPICS_SUPPORT)
-  MESG("Add EPICS SUPPORT")
 
- ExternalProject_Add(
- 	 epics
- 	 GIT_REPOSITORY https://github.com/epics-base/epics-base.git
-    GIT_TAG origin/7.0
-      GIT_PROGRESS 1
-      BUILD_IN_SOURCE 1
-      PREFIX "${CMAKE_BINARY_DIR}/ext_dep/epics-prefix"
-      SOURCE_DIR "${CMAKE_BINARY_DIR}/ext_dep/epics-src"
-      PATCH_COMMAND sed -i "s/\#COMMANDLINE_LIBRARY = EPICS/COMMANDLINE_LIBRARY = EPICS/" ${CMAKE_BINARY_DIR}/ext_dep/epics-src/configure/os/CONFIG_SITE.Common.linux-x86_64
-      CONFIGURE_COMMAND ""
-	    UPDATE_COMMAND    ""
-	    INSTALL_COMMAND   ""
-#      CONFIGURE_COMMAND "make -j 3 INSTALL_LOCATION=${CMAKE_INSTALL_PREFIX} install"
-#      BUILD_COMMAND "make -j 3 INSTALL_LOCATION=${CMAKE_INSTALL_PREFIX} install"
-      BUILD_COMMAND make -j 3  INSTALL_LOCATION=${CMAKE_INSTALL_PREFIX} install
-  )
-ENDIF()
 #########
 
 #IF(CHAOS_ARCHITECTURE_TEST)

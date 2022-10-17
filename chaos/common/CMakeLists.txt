@@ -264,15 +264,25 @@ ENDIF()
 SET(BUILD_LIBRARY )
 
 IF(CHAOS_EPICS_SUPPORT)
-  foreach(elib libpvData.a libCom.a)
-    find_library(epicslibs_${elib} ${elib} HINTS "${CMAKE_INSTALL_PREFIX}/lib/linux-x86_64")
-    if(NOT epicslibs_${elib})
-      message(FATAL_ERROR "EPICS LIBRARY ${elib} NOT FOUND")
-    else()
-      SET(BUILD_LIBRARY ${BUILD_LIBRARY} ${epicslibs_${elib}})
-    endif()
-  endforeach()
-  MESG("Adding Epics support ${BUILD_LIBRARY}")
+  MESG("Add EPICS SUPPORT")
+
+ ExternalProject_Add(
+ 	 epics
+ 	 GIT_REPOSITORY https://github.com/epics-base/epics-base.git
+    GIT_TAG origin/7.0
+      GIT_PROGRESS 1
+      BUILD_IN_SOURCE 1
+      PREFIX "${CMAKE_BINARY_DIR}/ext_dep/epics-prefix"
+      SOURCE_DIR "${CMAKE_BINARY_DIR}/ext_dep/epics-src"
+      PATCH_COMMAND sed -i "s/\#COMMANDLINE_LIBRARY = EPICS/COMMANDLINE_LIBRARY = EPICS/" ${CMAKE_BINARY_DIR}/ext_dep/epics-src/configure/os/CONFIG_SITE.Common.linux-x86_64
+      CONFIGURE_COMMAND ""
+	    UPDATE_COMMAND    ""
+	    INSTALL_COMMAND   ""
+#      CONFIGURE_COMMAND "make -j 3 INSTALL_LOCATION=${CMAKE_INSTALL_PREFIX} install"
+#      BUILD_COMMAND "make -j 3 INSTALL_LOCATION=${CMAKE_INSTALL_PREFIX} install"
+      BUILD_COMMAND make -j 3  INSTALL_LOCATION=${CMAKE_INSTALL_PREFIX} install
+  )
+
  
 ENDIF(CHAOS_EPICS_SUPPORT)
 
@@ -633,8 +643,12 @@ ENDIF()
 
 
 
-
-
+IF(CHAOS_EPICS_SUPPORT)
+  foreach(elib libpvData.a libCom.a)
+      SET(BUILD_LIBRARY ${BUILD_LIBRARY} ${CMAKE_INSTALL_PREFIX}/lib/linux-x86_64/${elib})
+  endforeach()
+   MESG("Adding Epics support ${BUILD_LIBRARY}")
+ENDIF()
 
 IF(WIN32)
 MESSAGE("WIN32 CMAKE_INSTALL_PREFIX" ${CMAKE_INSTALL_PREFIX} )
@@ -672,6 +686,9 @@ IF (CHAOS_PROMETHEUS)
 add_dependencies(${PROJECT_NAME} prometheus)
 endif()
 
+IF(CHAOS_EPICS_SUPPORT)
+add_dependencies(${PROJECT_NAME} epics)
+ENDIF()
 
 IF (CLING_VIRTUAL_MACHINE)
   add_dependencies(${PROJECT_NAME} cling)
