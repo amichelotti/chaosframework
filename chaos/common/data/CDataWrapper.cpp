@@ -1538,17 +1538,17 @@ int CDataWrapper::setBson(const bson_iter_t *v ,const CDataWrapper* val){
             cs.addStringValue(ptr->getFieldName(i),pfield->getID());
 
             switch(pfield->getType()) {
-            case epics::pvData::Type::scalar:
-            case epics::pvData::Type::scalarArray:
+            case epics::pvData::scalar:
+            case epics::pvData::scalarArray:
                 break;
-            case epics::pvData::Type::structure:
+            case epics::pvData::structure:
             {
                 epics::pvData::Field const *xxx = pfield.get();
                 epics::pvData::Structure const *pstruct = static_cast<epics::pvData::Structure const*>(xxx);
                 cs.setSerializedData(epics::pvData::StructureConstPtr(pstruct));
                 break;
             }
-           /* case epics::pvData::Type::structureArray:
+           /* case epics::pvData::structureArray:
             {
                 format::indent_scope s(o);
                 Field const *xxx = pfield.get();
@@ -1556,7 +1556,7 @@ int CDataWrapper::setBson(const bson_iter_t *v ,const CDataWrapper* val){
                 o << *pstructureArray->getStructure();
                 break;
             }
-            case epics::pvData::Type::union_:
+            case epics::pvData::union_:
             {
                 Field const *xxx = pfield.get();
                 Union const *punion = static_cast<Union const*>(xxx);
@@ -1564,7 +1564,7 @@ int CDataWrapper::setBson(const bson_iter_t *v ,const CDataWrapper* val){
                 punion->dumpFields(o);
                 break;
             }
-            case epics::pvData::Type::unionArray:
+            case epics::pvData::unionArray:
             {
                 format::indent_scope s(o);
                 Field const *xxx = pfield.get();
