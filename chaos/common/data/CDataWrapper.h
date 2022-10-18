@@ -35,6 +35,7 @@
 #endif
 #ifdef EPICS
 #include <pv/pvData.h>
+namespace pvd = epics::pvData;
 #endif
 /*
 #ifdef EPICS
@@ -225,7 +226,7 @@ namespace chaos {
                 ChaosUniquePtr<chaos::common::data::CDataWrapper> getCSProjection(const std::vector<std::string>&) const;
 
                 #ifdef EPICS
-                    void setSerializedData(epics::pvData::StructureConstPtr ptr);
+                    void setSerializedData(pvd::PVStructure::const_shared_pointer& ptr);
 
                 #endif
                 //add a string value
