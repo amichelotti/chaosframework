@@ -22,9 +22,7 @@
 #include <chaos/common/data/CDataWrapper.h>
 #include <chaos/common/utility/Base64Util.h>
 #include <boost/lexical_cast.hpp>
-#ifdef EPICS
-#include <pv/pvData.h>
-#endif
+
 using namespace chaos;
 using namespace chaos::common::data;
 

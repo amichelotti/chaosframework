@@ -34,6 +34,10 @@
 #endif
 #endif
 #ifdef EPICS
+#include <pv/pvData.h>
+#endif
+/*
+#ifdef EPICS
 namespace epics{
     namespace pvData{
         class Structure;
@@ -46,7 +50,7 @@ namespace epics{
     }
 }
 #endif
-
+*/
 #if defined(__GNUC__) && (__GNUC__ >= 6) && !defined(__clang__)
 // See libmongoc.hh for details on this diagnostic suppression
 #pragma GCC diagnostic push
