@@ -41,7 +41,7 @@ if(WIN32)
     BUILD_IN_SOURCE 1
     UPDATE_COMMAND ""
     CONFIGURE_COMMAND bootstrap.bat
-    BUILD_COMMAND b2 link=static cflags=-fPIC cxxflags=-fPIC install --prefix=${CMAKE_INSTALL_PREFIX}/boostinstall
+    BUILD_COMMAND b2 --link=static --without-python --without-mpi --disable-icu --variant=release --cflags=-fPIC --cxxflags=-fPIC install --prefix=${CMAKE_INSTALL_PREFIX}/boostinstall
     INSTALL_COMMAND b2 install --prefix=${CMAKE_INSTALL_PREFIX}/boostinstall
     LOG_DOWNLOAD 1
     LOG_UPDATE 1
