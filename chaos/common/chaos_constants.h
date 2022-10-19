@@ -1303,10 +1303,18 @@ typedef enum BinarySubtype {
   SUB_TYPE_UINT64,
   //!C string variable length
   //! no specific encoding
+  SUB_TYPE_SCALAR_INT8,
+  //!Integer 16 bit length
+  SUB_TYPE_SCALAR_INT16,
+  SUB_TYPE_SCALAR_UINT8,
+  //!Integer 16 bit length
+  SUB_TYPE_SCALAR_UINT16,
+  SUB_TYPE_SCALAR_UINT32,
   SUB_TYPE_NONE,
   //! unsigned flag
   SUB_TYPE_UNSIGNED = 0x200,
 } BinarySubtype;
+
 
 //subtype helper macro
 #define CHAOS_SUBTYPE_IS_UNSIGNED(s) ((s & chaos::DataType::SUB_TYPE_UNSIGNED) == chaos::DataType::SUB_TYPE_UNSIGNED)

@@ -25,8 +25,10 @@
 
 using namespace chaos;
 using namespace chaos::common::data;
-
 using namespace chaos::common::utility;
+#define DBG LDBG_ << __FUNCTION__ << " - "
+#define ERR LERR_ << __FUNCTION__ << " ## "
+
 #pragma mark Utility
 #define ADD_VECTOR(v, ctype, bsontype)                                          \
   {                                                                             \
@@ -557,7 +559,7 @@ void CDataWrapper::appendArray(const std::string& key, int32_t* arr, int count) 
   addBinaryValue(key, chaos::DataType::SUB_TYPE_INT32, (const char*)arr, count * sizeof(int32_t));
 }
 void CDataWrapper::appendArray(const std::string& key, uint32_t* arr, int count) {
-  addBinaryValue(key, chaos::DataType::SUB_TYPE_UINT32, (const char*)arr, count * sizeof(int32_t));
+  addBinaryValue(key, chaos::DataType::SUB_TYPE_UINT32, (const char*)arr, count * sizeof(uint32_t));
 }
 void CDataWrapper::appendArray(const std::string& key, double* arr, int count) {
   addBinaryValue(key, chaos::DataType::SUB_TYPE_DOUBLE, (const char*)arr, count * sizeof(double));
@@ -569,13 +571,13 @@ void CDataWrapper::appendArray(const std::string& key, int16_t* arr, int count) 
   addBinaryValue(key, chaos::DataType::SUB_TYPE_INT16, (const char*)arr, count * sizeof(int16_t));
 }
 void CDataWrapper::appendArray(const std::string& key, uint16_t* arr, int count) {
-  addBinaryValue(key, chaos::DataType::SUB_TYPE_UINT16, (const char*)arr, count * sizeof(int16_t));
+  addBinaryValue(key, chaos::DataType::SUB_TYPE_UINT16, (const char*)arr, count * sizeof(uint16_t));
 }
 void CDataWrapper::appendArray(const std::string& key, int8_t* arr, int count) {
-  addBinaryValue(key, chaos::DataType::SUB_TYPE_INT8, (const char*)arr, count * sizeof(int16_t));
+  addBinaryValue(key, chaos::DataType::SUB_TYPE_INT8, (const char*)arr, count * sizeof(int8_t));
 }
 void CDataWrapper::appendArray(const std::string& key, uint8_t* arr, int count) {
-  addBinaryValue(key, chaos::DataType::SUB_TYPE_UINT8, (const char*)arr, count * sizeof(int16_t));
+  addBinaryValue(key, chaos::DataType::SUB_TYPE_UINT8, (const char*)arr, count * sizeof(int8_t));
 }
 void CDataWrapper::appendArray(const std::string& key, int64_t* arr, int count) {
   addBinaryValue(key, chaos::DataType::SUB_TYPE_INT64, (const char*)arr, count * sizeof(int64_t));
@@ -689,6 +691,10 @@ void CDataWrapper::append(const std::string& key, const std::vector<int64_t>& va
 }
 void CDataWrapper::append(const std::string& key, const std::vector<double>& val) {
   ADD_VECTOR(val, double, Double);
+  finalizeArrayForKey(key);
+}
+void CDataWrapper::append(const std::string& key, const std::vector<bool>& val) {
+  ADD_VECTOR(val, bool, Double);
   finalizeArrayForKey(key);
 }
 
@@ -1520,82 +1526,322 @@ int CDataWrapper::setBson(const bson_iter_t* v, const CDataWrapper* val) {
 }
 #ifdef EPICS
 void CDataWrapper::setSerializedData(pvd::PVStructure::const_shared_pointer& ptr) {
-  pvd::StructureConstPtr structure_ptr=ptr->getStructure();
+  pvd::StructureConstPtr structure_ptr = ptr->getStructure();
 
   std::string id = structure_ptr->getID();
   addStringValue("type", id);
-  size_t numberFields = ptr->getNumberFields();
-  pvd::PVFieldPtrArray pv_fields=ptr->getPVFields();
-  for (pvd::PVFieldPtrArray::iterator i = pv_fields.begin(); i !=  pv_fields.end(); i++) {
-    //epics::pvData::FieldConstPtr pfield = structure_ptr->getField(i);
+  size_t               numberFields = ptr->getNumberFields();
+  pvd::PVFieldPtrArray pv_fields    = ptr->getPVFields();
 
-    CDataWrapper                 cs;
-    const std::string& fname=(*i)->getFieldName();
-    const epics::pvData::FieldConstPtr& field=(*i)->getField();
-    std::ostringstream ss;
-   
-    LDBG_<<"Adding field \""<<fname<< "\" type:\""<<field->getID();//<<"\" dump:"<<ss.str();
-    cs.addStringValue("type", field->getID());
+  for (pvd::PVFieldPtrArray::iterator i = pv_fields.begin(); i != pv_fields.end(); i++) {
+    // epics::pvData::FieldConstPtr pfield = structure_ptr->getField(i);
+
+    const std::string&                  fname = (*i)->getFieldName();
+    const epics::pvData::FieldConstPtr& field = (*i)->getField();
+    std::ostringstream                  ss;
+
+    DBG << "Adding field \"" << fname << "\" type:\"" << field->getID() << "\"";  //<<"\" dump:"<<ss.str();
 
     switch (field->getType()) {
-      case epics::pvData::scalar:
-      break;
-      case epics::pvData::scalarArray:
-          LDBG_<<"Adding Scalar/ScalarArray "<<fname;
-       /*   epics::pvData::Field const*     xxx     = pfield.get();
-            epics::pvData::Scalar const* value = static_cast<epics::pvData::Scalar const*>(xxx);
-            */
-         addCSDataValue(fname,cs);
-        break;
-      case epics::pvData::structure: {
-        LDBG_<<"Adding Structure "<<fname;
-        pvd::PVStructure::const_shared_pointer tmp=ptr->getSubField<pvd::PVStructure>(fname);
-       /* epics::pvData::Field const*     xxx     = pfield.get();
-        epics::pvData::Structure const* pstruct = static_cast<epics::pvData::Structure const*>(xxx);
-        epics::pvData::StructureConstPtr tmp=epics::pvData::StructureConstPtr(pstruct);
-        */
-        cs.setSerializedData(tmp);
-        addCSDataValue(fname,cs);
+      case epics::pvData::scalar: {
+        epics::pvData::Scalar const*   value  = static_cast<epics::pvData::Scalar const*>(field.get());
+        epics::pvData::PVScalar const* svalue = static_cast<epics::pvData::PVScalar const*>((*i).get());
+        //cs.addStringValue("type", value->getID());
+
+        switch (value->getScalarType()) {
+          case pvd::pvBoolean: {
+            bool tmp = svalue->getAs<pvd::boolean>();
+            DBG << value->getID() << " " << fname << "=" << tmp;
+
+            addBoolValue(fname, tmp);
+            break;
+          }
+          case pvd::pvString: {
+            std::string tmp = svalue->getAs<std::string>();
+            DBG << value->getID() << " " << fname << "=" << tmp;
+
+            addStringValue(fname, tmp);
+            break;
+          }
+          case pvd::pvByte: {
+            char tmp = svalue->getAs<pvd::int8>();
+            DBG << value->getID() << " " << fname << "=" << tmp;
+
+            addInt32Value(fname, tmp);
+            break;
+          }
+          case pvd::pvShort: {
+            int16_t tmp = svalue->getAs<pvd::int16>();
+            DBG << value->getID() << " " << fname << "=" << tmp;
+
+            addInt32Value(fname, tmp);
+            break;
+          }
+          case pvd::pvInt: {
+            int32_t tmp = svalue->getAs<pvd::int32>();
+            DBG << value->getID() << " " << fname << "=" << tmp;
+
+            addInt32Value(fname, tmp);
+            break;
+          }
+          case pvd::pvUByte: {
+            unsigned char tmp = svalue->getAs<pvd::uint8>();
+            DBG << value->getID() << " " << fname << "=" << tmp;
+
+            addInt32Value(fname, tmp);
+            break;
+          }
+          case pvd::pvUShort: {
+            uint16_t tmp = svalue->getAs<pvd::uint16>();
+            DBG << value->getID() << " " << fname << "=" << tmp;
+
+            addInt32Value(fname, tmp);
+            break;
+          }
+
+          case pvd::pvUInt: {
+            uint32_t tmp = svalue->getAs<pvd::uint32>();
+            DBG << value->getID() << " " << fname << "=" << tmp;
+
+            addUInt32Value(fname, tmp);
+
+            break;
+          }
+          case pvd::pvLong: {
+            int64_t tmp = svalue->getAs<pvd::int64>();
+            DBG << value->getID() << " " << fname << "=" << tmp;
+
+            addInt64Value(fname, tmp);
+
+            break;
+          }
+          case pvd::pvULong: {
+            uint64_t tmp = svalue->getAs<pvd::uint64>();
+            DBG << value->getID() << " " << fname << "=" << tmp;
+
+            addUInt64Value(fname, tmp);
+
+            break;
+          }
+          case pvd::pvDouble: {
+            double tmp = svalue->getAs<double>();
+            DBG << value->getID() << " " << fname << "=" << tmp;
+
+            addDoubleValue(fname, tmp);
+
+            break;
+          }
+          default:
+            ERR << fname << " Uknown scalar type " << value->getID();
+            break;
+        }
         break;
       }
-         case epics::pvData::structureArray:
-         {
-            LDBG_<<"Adding Structure Array "<<fname;
+      case epics::pvData::scalarArray:{
+        LDBG_ << "Adding ScalarArray " << fname;
+        const pvd::PVScalarArray* sarr = static_cast<const pvd::PVScalarArray*>((*i).get());
+        
+       // size_t elemsize = pvd::ScalarTypeFunc::elementSize(arr.original_type());
+        pvd::ScalarType ftype; // default for un-mapable types.
+        ftype = sarr->getScalarArray()->getElementType();
 
-             /*format::indent_scope s(o);
-             Field const *xxx = pfield.get();
-             StructureArray const *pstructureArray = static_cast<StructureArray const*>(xxx);
-             o << *pstructureArray->getStructure();*/
-             break;
-         }
-         case epics::pvData::union_:
-         {
-            LDBG_<<"Adding Union "<<fname;
+        switch (ftype) {
+          case pvd::pvBoolean: {
+            pvd::shared_vector<const pvd::boolean> arr;
+            sarr->getAs(arr);
+            std::vector<bool> src;
+            for(pvd::shared_vector<const pvd::boolean>::iterator i=arr.begin();i!=arr.end();i++){
+              src.push_back(*i?true:false);
+            }
+            append(fname, src);
+            break;
+          }
+          case pvd::pvString: {
+           pvd::shared_vector<const std::string> arr;
+            sarr->getAs(arr);
+            std::vector<std::string> src;
+            for(pvd::shared_vector<const std::string>::iterator i=arr.begin();i!=arr.end();i++){
+              src.push_back(*i);
+            }
+            append(fname, src);
+            break;
+          }
+          case pvd::pvByte: {
+           pvd::shared_vector<const pvd::int8> arr;
+            sarr->getAs(arr);
+            std::vector<std::int32_t> src;
+            for(pvd::shared_vector<const pvd::int8>::iterator i=arr.begin();i!=arr.end();i++){
+              src.push_back(*i);
+            }
+            append(fname, src);
+            break;
+          }
+          case pvd::pvShort: {
+            pvd::shared_vector<const pvd::int16> arr;
+            sarr->getAs(arr);
+            std::vector<std::int32_t> src;
+            for(pvd::shared_vector<const pvd::int16>::iterator i=arr.begin();i!=arr.end();i++){
+              src.push_back(*i);
+            }
+            append(fname, src);
+          
+            break;
+          }
+          case pvd::pvInt: {
+           pvd::shared_vector<const pvd::int32> arr;
+            sarr->getAs(arr);
+            std::vector<std::int32_t> src;
+            for(pvd::shared_vector<const pvd::int32>::iterator i=arr.begin();i!=arr.end();i++){
+              src.push_back(*i);
+            }
+            append(fname, src);
+            break;
+          }
+          case pvd::pvUByte: {
+            pvd::shared_vector<const pvd::uint8> arr;
+            sarr->getAs(arr);
+            std::vector<std::int32_t> src;
+            for(pvd::shared_vector<const pvd::uint8>::iterator i=arr.begin();i!=arr.end();i++){
+              src.push_back(*i);
+            }
+            append(fname, src);
+            break;
+          }
+          case pvd::pvUShort: {
+           pvd::shared_vector<const pvd::uint16> arr;
+            sarr->getAs(arr);
+            std::vector<std::int32_t> src;
+            for(pvd::shared_vector<const pvd::uint16>::iterator i=arr.begin();i!=arr.end();i++){
+              src.push_back(*i);
+            }
+            append(fname, src);
+            break;
+          }
 
-            /*Field const *xxx = pfield.get();
-             Union const *punion = static_cast<Union const*>(xxx);
-             format::indent_scope s(o);
-             punion->dumpFields(o);*/
-             break;
-         }
-         case epics::pvData::unionArray:
-         {
-            LDBG_<<"Adding Union Array "<<fname;
+          case pvd::pvUInt: {
+            pvd::shared_vector<const pvd::uint32> arr;
+            sarr->getAs(arr);
+            std::vector<std::int32_t> src;
+            for(pvd::shared_vector<const pvd::uint32>::iterator i=arr.begin();i!=arr.end();i++){
+              src.push_back(*i);
+            }
+            append(fname, src);
+            break;
+          }
+          case pvd::pvLong: {
+           pvd::shared_vector<const pvd::int64> arr;
+            sarr->getAs(arr);
+            std::vector<std::int64_t> src;
+            for(pvd::shared_vector<const pvd::int64>::iterator i=arr.begin();i!=arr.end();i++){
+              src.push_back(*i);
+            }
+            append(fname, src);
+            break;
+          }
+          case pvd::pvULong: {
+            pvd::shared_vector<const pvd::uint64> arr;
+            sarr->getAs(arr);
+            std::vector<std::int64_t> src;
+            for(pvd::shared_vector<const pvd::uint64>::iterator i=arr.begin();i!=arr.end();i++){
+              src.push_back(*i);
+            }
+            append(fname, src);
+            break;
+          }
+          case pvd::pvDouble: {
+            pvd::shared_vector<const double> arr;
+            sarr->getAs(arr);
+            std::vector<double> src;
+            for(pvd::shared_vector<const double>::iterator i=arr.begin();i!=arr.end();i++){
+              src.push_back(*i);
+            }
+            append(fname, src);
+            break;
 
-           /*  format::indent_scope s(o);
-             Field const *xxx = pfield.get();
-             UnionArray const *punionArray = static_cast<UnionArray const*>(xxx);
-             o << *punionArray->getUnion();*/
-             break;
-         }
+          }
+          default:
+            ERR << fname << " Uknown vector type " << ftype;
+            break;
+        }
+        break;
+      }
+       /* arr.slice(0, nreq*elemsize);
+        nreq = arr.size()/elemsize;
+
+        if(outdbf == DBF_STRING) {
+            char *outsbuf = (char*)outbuf;
+
+            // allocate a temp buffer of string[], ick...
+            pvd::shared_vector<std::string> strs(nreq); // alloc
+
+            pvd::castUnsafeV(nreq, pvd::pvString, strs.data(), arr.original_type(), arr.data());
+
+            for(long i =0; i<nreq; i++, outsbuf += MAX_STRING_SIZE) {
+                size_t slen = std::min(strs[i].size(), size_t(MAX_STRING_SIZE-1));
+                memcpy(outsbuf, strs[i].c_str(), slen);
+                outsbuf[slen] = '\0';
+            }
+
+        } else {
+            pvd::castUnsafeV(nreq, outpvd, outbuf, arr.original_type(), arr.data());
+        }
+
+        if(outnReq)
+            *outnReq = nreq;
+        return 0;
+
+           epics::pvData::Field const*     xxx     = pfield.get();
+             epics::pvData::Scalar const* value = static_cast<epics::pvData::Scalar const*>(xxx);
+             */
+       // addCSDataValue(fname, cs);
+        break;
+      case epics::pvData::structure: {
+        LDBG_ << "Adding Structure " << fname;
+        pvd::PVStructure::const_shared_pointer tmp = ptr->getSubField<pvd::PVStructure>(fname);
+        /* epics::pvData::Field const*     xxx     = pfield.get();
+         epics::pvData::Structure const* pstruct = static_cast<epics::pvData::Structure const*>(xxx);
+         epics::pvData::StructureConstPtr tmp=epics::pvData::StructureConstPtr(pstruct);
+         */
+        CDataWrapper                        cs;
+
+        cs.setSerializedData(tmp);
+        addCSDataValue(fname, cs);
+        break;
+      }
+      case epics::pvData::structureArray: {
+        LDBG_ << "Adding Structure Array " << fname;
+
+        /*format::indent_scope s(o);
+        Field const *xxx = pfield.get();
+        StructureArray const *pstructureArray = static_cast<StructureArray const*>(xxx);
+        o << *pstructureArray->getStructure();*/
+        break;
+      }
+      case epics::pvData::union_: {
+        LDBG_ << "Adding Union " << fname;
+
+        /*Field const *xxx = pfield.get();
+         Union const *punion = static_cast<Union const*>(xxx);
+         format::indent_scope s(o);
+         punion->dumpFields(o);*/
+        break;
+      }
+      case epics::pvData::unionArray: {
+        LDBG_ << "Adding Union Array " << fname;
+
+        /*  format::indent_scope s(o);
+          Field const *xxx = pfield.get();
+          UnionArray const *punionArray = static_cast<UnionArray const*>(xxx);
+          o << *punionArray->getUnion();*/
+        break;
+      }
       default:
-        LDBG_<<"Undefined "<<fname;
+        LDBG_ << fname << " Undefined pvdata";
 
         break;
     }
   }
 }
-
 #endif
 
 #pragma mark CMultiTypeDataArrayWrapper
