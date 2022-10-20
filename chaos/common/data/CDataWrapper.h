@@ -226,7 +226,10 @@ namespace chaos {
                 ChaosUniquePtr<chaos::common::data::CDataWrapper> getCSProjection(const std::vector<std::string>&) const;
 
                 #ifdef EPICS
-                    void setSerializedData(pvd::PVStructure::const_shared_pointer& ptr);
+                    void setSerializedData(pvd::PVStructure::const_shared_pointer ptr);
+                    void setSerializedData(const pvd::PVStructure* ptr);
+                    void setSerializedData(pvd::PVUnion::const_shared_pointer ptr);
+                    void decodePVField(const epics::pvData::PVFieldPtr);
 
                 #endif
                 //add a string value
