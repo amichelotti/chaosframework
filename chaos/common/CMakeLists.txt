@@ -644,7 +644,7 @@ ENDIF()
 
 
 IF(CHAOS_EPICS_SUPPORT)
-  foreach(elib libpvData libCom.a)
+  foreach(elib pvData libCom.a)
       #${CMAKE_INSTALL_PREFIX}/lib/linux-x86_64/${elib}
       SET(BUILD_LIBRARY ${BUILD_LIBRARY} ${elib})
   endforeach()
