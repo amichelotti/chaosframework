@@ -33,17 +33,22 @@
 #define __PRETTY_FUNCTION__  __FUNCSIG__
 #endif
 #endif
-#ifdef EPICS
-#include <pv/pvData.h>
-namespace pvd = epics::pvData;
-#endif
-/*
+
 #ifdef EPICS
 namespace epics{
     namespace pvData{
         class Structure;
+        class PVUnion;
+        class PVStructure;
+        class PVField;
 #if __cplusplus >= 201103L
         typedef std::shared_ptr<const Structure> StructureConstPtr;
+        typedef std::shared_ptr<const PVUnion> PVUnionConstPtr;
+        typedef std::shared_ptr<const PVStructure> PVStructureConstPtr;
+        typedef std::shared_ptr<const PVField> PVFieldConstPtr;
+
+
+
 #else
         typedef std::tr1::shared_ptr<const Structure> StructureConstPtr;
 
@@ -51,7 +56,7 @@ namespace epics{
     }
 }
 #endif
-*/
+
 #if defined(__GNUC__) && (__GNUC__ >= 6) && !defined(__clang__)
 // See libmongoc.hh for details on this diagnostic suppression
 #pragma GCC diagnostic push
@@ -226,10 +231,10 @@ namespace chaos {
                 ChaosUniquePtr<chaos::common::data::CDataWrapper> getCSProjection(const std::vector<std::string>&) const;
 
                 #ifdef EPICS
-                    void setSerializedData(pvd::PVStructure::const_shared_pointer ptr);
-                    void setSerializedData(const pvd::PVStructure* ptr);
-                    void setSerializedData(pvd::PVUnion::const_shared_pointer ptr);
-                    void decodePVField(const epics::pvData::PVFieldPtr);
+                    void setSerializedData(epics::pvData::PVStructureConstPtr ptr);
+                    void setSerializedData(const epics::pvData::PVStructure* ptr);
+                    void setSerializedData(epics::pvData::PVUnionConstPtr ptr);
+                    void decodePVField(epics::pvData::PVFieldConstPtr);
 
                 #endif
                 //add a string value

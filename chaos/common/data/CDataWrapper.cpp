@@ -21,14 +21,16 @@
 #include <chaos/common/data/CDataWrapper.h>
 #include <chaos/common/global.h>
 #include <chaos/common/utility/Base64Util.h>
-#include <boost/lexical_cast.hpp>
 
 using namespace chaos;
 using namespace chaos::common::data;
 using namespace chaos::common::utility;
 #define DBG LDBG_ << __FUNCTION__ << " - "
 #define ERR LERR_ << __FUNCTION__ << " ## "
-
+#ifdef EPICS
+#include <pv/pvData.h>
+namespace pvd=epics::pvData;
+#endif
 #pragma mark Utility
 #define ADD_VECTOR(v, ctype, bsontype)                                          \
   {                                                                             \
@@ -1525,11 +1527,11 @@ int CDataWrapper::setBson(const bson_iter_t* v, const CDataWrapper* val) {
   return -1;
 }
 #ifdef EPICS
-void CDataWrapper::setSerializedData(pvd::PVStructure::const_shared_pointer ptr) {
+void CDataWrapper::setSerializedData(pvd::PVStructureConstPtr ptr) {
   setSerializedData(ptr.get());
 
 }
-void CDataWrapper::setSerializedData(pvd::PVUnion::const_shared_pointer ptr){
+void CDataWrapper::setSerializedData(pvd::PVUnionConstPtr ptr){
  pvd::UnionConstPtr structure_ptr = ptr->getUnion();
 
   std::string id = structure_ptr->getID();
@@ -1589,7 +1591,7 @@ void CDataWrapper::setSerializedData(pvd::PVUnion::const_shared_pointer ptr){
 
 }
 
-void CDataWrapper::decodePVField(const epics::pvData::PVFieldPtr pv_field){
+void CDataWrapper::decodePVField(epics::pvData::PVFieldConstPtr pv_field){
     // epics::pvData::FieldConstPtr pfield = structure_ptr->getField(i);
     if(pv_field.get()==NULL){
           ERR<< "Invalid Field";
