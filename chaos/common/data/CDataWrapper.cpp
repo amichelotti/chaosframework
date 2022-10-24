@@ -1832,15 +1832,18 @@ void CDataWrapper::decodePVField(epics::pvData::PVFieldConstPtr pv_field){
       case epics::pvData::structure: {
         LDBG_ <<"\t"<< "Adding Structure " << fname;       
         CDataWrapper                        cs;
-        pvd::PVStructure::const_shared_pointer tmp((pvd::PVStructure*)pv_field.get());
 
+        //pvd::PVStructure::const_shared_pointer tmp((pvd::PVStructure*)pv_field.get());
+        pvd::PVStructure::const_shared_pointer tmp;
+        tmp=(*(pvd::PVStructure::const_shared_pointer*)&pv_field);
         cs.setSerializedData(tmp);
         addCSDataValue(fname, cs);
         break;
       }
       case epics::pvData::structureArray: {
         LDBG_ <<"\t"<< "Adding Structure Array " << fname;
-        pvd::PVStructureArray::const_shared_pointer tmp((pvd::PVStructureArray*)pv_field.get());
+        pvd::PVStructureArray::const_shared_pointer tmp;
+        tmp=(*(pvd::PVStructureArray::const_shared_pointer*)&pv_field);
       if (tmp->getLength() != 0){
         pvd::PVStructureArray::const_svector data = tmp->view();
         std::vector<CDataWrapper> vc;
@@ -1857,7 +1860,8 @@ void CDataWrapper::decodePVField(epics::pvData::PVFieldConstPtr pv_field){
       case epics::pvData::union_: {
         DBG <<"\t"<< fname <<"Adding Union ";
        
-       pvd::PVUnion::const_shared_pointer tmp((pvd::PVUnion*)pv_field.get());// = ptr->getSubField<pvd::PVUnion>(fname);
+       pvd::PVUnion::const_shared_pointer tmp;
+       tmp=*((pvd::PVUnion::const_shared_pointer*)&pv_field);// = ptr->getSubField<pvd::PVUnion>(fname);
        
         CDataWrapper                        cs;
 
@@ -1888,7 +1892,6 @@ void CDataWrapper::setSerializedData(pvd::PVStructureConstPtr ptr) {
 
   std::string id = structure_ptr->getID();
   addStringValue("type", id);
-  size_t               numberFields = ptr->getNumberFields();
   pvd::PVFieldPtrArray pv_fields    = ptr->getPVFields();
   for(pvd::PVFieldPtrArray::iterator i =pv_fields.begin();i!=pv_fields.end();i++){
     decodePVField(*i);
