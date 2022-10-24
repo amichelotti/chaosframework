@@ -1527,10 +1527,11 @@ int CDataWrapper::setBson(const bson_iter_t* v, const CDataWrapper* val) {
   return -1;
 }
 #ifdef EPICS
+/*
 void CDataWrapper::setSerializedData(pvd::PVStructureConstPtr ptr) {
   setSerializedData(ptr.get());
 
-}
+}*/
 void CDataWrapper::setSerializedData(pvd::PVUnionConstPtr ptr){
  pvd::UnionConstPtr structure_ptr = ptr->getUnion();
 
@@ -1882,7 +1883,7 @@ void CDataWrapper::decodePVField(epics::pvData::PVFieldConstPtr pv_field){
   }
 
 
-void CDataWrapper::setSerializedData(const pvd::PVStructure* ptr) {
+void CDataWrapper::setSerializedData(pvd::PVStructureConstPtr ptr) {
   pvd::StructureConstPtr structure_ptr = ptr->getStructure();
 
   std::string id = structure_ptr->getID();

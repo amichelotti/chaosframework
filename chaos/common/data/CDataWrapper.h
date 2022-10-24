@@ -232,7 +232,6 @@ namespace chaos {
 
                 #ifdef EPICS
                     void setSerializedData(epics::pvData::PVStructureConstPtr ptr);
-                    void setSerializedData(const epics::pvData::PVStructure* ptr);
                     void setSerializedData(epics::pvData::PVUnionConstPtr ptr);
                     void decodePVField(epics::pvData::PVFieldConstPtr);
 
