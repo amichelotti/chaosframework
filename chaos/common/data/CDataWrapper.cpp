@@ -1831,21 +1831,22 @@ void CDataWrapper::decodePVField(epics::pvData::PVFieldConstPtr pv_field){
       case epics::pvData::structure: {
         LDBG_ <<"\t"<< "Adding Structure " << fname;       
         CDataWrapper                        cs;
+        pvd::PVStructure::const_shared_pointer tmp((pvd::PVStructure*)pv_field.get());
 
-        cs.setSerializedData((pvd::PVStructure*)pv_field.get());
+        cs.setSerializedData(tmp);
         addCSDataValue(fname, cs);
         break;
       }
       case epics::pvData::structureArray: {
         LDBG_ <<"\t"<< "Adding Structure Array " << fname;
-        pvd::PVStructureArray::const_shared_pointer tmp((pvd::PVStructureArray*)pv_field.get());// = ptr->getSubField<pvd::PVStructureArray>(fname);
+        pvd::PVStructureArray::const_shared_pointer tmp((pvd::PVStructureArray*)pv_field.get());
       if (tmp->getLength() != 0){
         pvd::PVStructureArray::const_svector data = tmp->view();
         std::vector<CDataWrapper> vc;
 
         for (pvd::PVStructureArray::const_svector::const_iterator it = data.begin();it != data.end(); ++it ){
             CDataWrapper                        cs;
-            cs.setSerializedData((*it).get());
+            cs.setSerializedData((*it));
             vc.push_back(cs);
         }
         append(fname,vc);

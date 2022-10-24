@@ -644,13 +644,7 @@ ENDIF()
 
 
 
-IF(CHAOS_EPICS_SUPPORT)
-  foreach(elib libpvData.a libCom.a)
-      #${CMAKE_INSTALL_PREFIX}/lib/linux-x86_64/${elib}
-      SET(BUILD_LIBRARY ${BUILD_LIBRARY} ${elib})
-  endforeach()
-   MESG("Adding Epics support ${BUILD_LIBRARY}")
-ENDIF()
+
 
 IF(WIN32)
 MESSAGE("WIN32 CMAKE_INSTALL_PREFIX" ${CMAKE_INSTALL_PREFIX} )
@@ -672,7 +666,13 @@ ENDIF(WIN32)
 ENDIF()
 
 
-
+IF(CHAOS_EPICS_SUPPORT)
+  foreach(elib libCom.a libpvData.a )
+      #${CMAKE_INSTALL_PREFIX}/lib/linux-x86_64/${elib}
+      SET(BUILD_LIBRARY ${elib} ${BUILD_LIBRARY})
+  endforeach()
+   MESG("Adding Epics support ${BUILD_LIBRARY}")
+ENDIF()
 IF (BUILD_FORCE_STATIC  )
   ADD_LIBRARY(${PROJECT_NAME} STATIC ${common_lib_src})
   TARGET_LINK_LIBRARIES(${PROJECT_NAME} z lz4 ${FrameworkLib} ${BUILD_LIBRARY})
