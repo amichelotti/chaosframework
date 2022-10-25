@@ -1541,10 +1541,10 @@ void CDataWrapper::setSerializedData(pvd::PVUnionConstPtr ptr){
   //size_t               numberFields = ptr->getNumberFields();
   //pvd::PVFieldPtrArray pv_fields    = ptr->getPVFields();
   if(idx<0){
-    ERR<<"Union "<<id<<" no index selection";
+    ERR<<ptr->getFieldName()<<" Union \""<<id<<"\" no index selection";
     return;
   }
-  DBG<<"Union "<<id<< " select field:"<<ptr->getSelectedFieldName()<<" index:"<<idx<<" is variant:"<<structure_ptr->isVariant();
+ // DBG<<"Union "<<id<< " select field:"<<ptr->getSelectedFieldName()<<" index:"<<idx<<" is variant:"<<structure_ptr->isVariant();
   epics::pvData::FieldConstPtr info=structure_ptr->getFieldT(idx);
   switch (info->getType()) {
     case pvd::scalarArray:{
@@ -1601,7 +1601,7 @@ void CDataWrapper::decodePVField(epics::pvData::PVFieldConstPtr pv_field){
     const std::string&                  fname = pv_field->getFieldName();
     const epics::pvData::FieldConstPtr& field = pv_field->getField();
 
-    DBG << "Adding field \"" << fname << "\" type:\"" << field->getID() << "\"";  //<<"\" dump:"<<ss.str();
+   // DBG << "Adding field \"" << fname << "\" type:\"" << field->getID() << "\"";  //<<"\" dump:"<<ss.str();
 
     switch (field->getType()) {
       case epics::pvData::scalar: {
@@ -1612,49 +1612,49 @@ void CDataWrapper::decodePVField(epics::pvData::PVFieldConstPtr pv_field){
         switch (value->getScalarType()) {
           case pvd::pvBoolean: {
             bool tmp = svalue->getAs<pvd::boolean>();
-            DBG <<"\t"<< value->getID() << " " << fname << "=" << tmp;
+           // DBG <<"\t"<< value->getID() << " " << fname << "=" << tmp;
 
             addBoolValue(fname, tmp);
             break;
           }
           case pvd::pvString: {
             std::string tmp = svalue->getAs<std::string>();
-            DBG <<"\t"<< value->getID() << " " << fname << "=" << tmp;
+          //  DBG <<"\t"<< value->getID() << " " << fname << "=" << tmp;
 
             addStringValue(fname, tmp);
             break;
           }
           case pvd::pvByte: {
             char tmp = svalue->getAs<pvd::int8>();
-            DBG <<"\t"<< value->getID() << " " << fname << "=" << tmp;
+          //  DBG <<"\t"<< value->getID() << " " << fname << "=" << tmp;
 
             addInt32Value(fname, tmp);
             break;
           }
           case pvd::pvShort: {
             int16_t tmp = svalue->getAs<pvd::int16>();
-            DBG <<"\t"<< value->getID() << " " << fname << "=" << tmp;
+         //   DBG <<"\t"<< value->getID() << " " << fname << "=" << tmp;
 
             addInt32Value(fname, tmp);
             break;
           }
           case pvd::pvInt: {
             int32_t tmp = svalue->getAs<pvd::int32>();
-            DBG <<"\t"<< value->getID() << " " << fname << "=" << tmp;
+         //   DBG <<"\t"<< value->getID() << " " << fname << "=" << tmp;
 
             addInt32Value(fname, tmp);
             break;
           }
           case pvd::pvUByte: {
             unsigned char tmp = svalue->getAs<pvd::uint8>();
-            DBG <<"\t"<< value->getID() << " " << fname << "=" << tmp;
+         //   DBG <<"\t"<< value->getID() << " " << fname << "=" << tmp;
 
             addInt32Value(fname, tmp);
             break;
           }
           case pvd::pvUShort: {
             uint16_t tmp = svalue->getAs<pvd::uint16>();
-            DBG <<"\t"<< value->getID() << " " << fname << "=" << tmp;
+         //   DBG <<"\t"<< value->getID() << " " << fname << "=" << tmp;
 
             addInt32Value(fname, tmp);
             break;
@@ -1662,7 +1662,7 @@ void CDataWrapper::decodePVField(epics::pvData::PVFieldConstPtr pv_field){
 
           case pvd::pvUInt: {
             uint32_t tmp = svalue->getAs<pvd::uint32>();
-            DBG <<"\t"<< value->getID() << " " << fname << "=" << tmp;
+         //   DBG <<"\t"<< value->getID() << " " << fname << "=" << tmp;
 
             addUInt32Value(fname, tmp);
 
@@ -1670,7 +1670,7 @@ void CDataWrapper::decodePVField(epics::pvData::PVFieldConstPtr pv_field){
           }
           case pvd::pvLong: {
             int64_t tmp = svalue->getAs<pvd::int64>();
-            DBG <<"\t"<< value->getID() << " " << fname << "=" << tmp;
+          //  DBG <<"\t"<< value->getID() << " " << fname << "=" << tmp;
 
             addInt64Value(fname, tmp);
 
@@ -1678,7 +1678,7 @@ void CDataWrapper::decodePVField(epics::pvData::PVFieldConstPtr pv_field){
           }
           case pvd::pvULong: {
             uint64_t tmp = svalue->getAs<pvd::uint64>();
-            DBG <<"\t"<< value->getID() << " " << fname << "=" << tmp;
+        //    DBG <<"\t"<< value->getID() << " " << fname << "=" << tmp;
 
             addUInt64Value(fname, tmp);
 
@@ -1686,7 +1686,7 @@ void CDataWrapper::decodePVField(epics::pvData::PVFieldConstPtr pv_field){
           }
           case pvd::pvDouble: {
             double tmp = svalue->getAs<double>();
-            DBG <<"\t"<< value->getID() << " " << fname << "=" << tmp;
+         //   DBG <<"\t"<< value->getID() << " " << fname << "=" << tmp;
 
             addDoubleValue(fname, tmp);
 
@@ -1699,7 +1699,7 @@ void CDataWrapper::decodePVField(epics::pvData::PVFieldConstPtr pv_field){
         break;
       }
       case epics::pvData::scalarArray:{
-        LDBG_ <<"\t"<< "Adding ScalarArray " << fname;
+       // LDBG_ <<"\t"<< "Adding ScalarArray " << fname;
         const pvd::PVScalarArray* sarr = static_cast<const pvd::PVScalarArray*>(pv_field.get());
         
        // size_t elemsize = pvd::ScalarTypeFunc::elementSize(arr.original_type());
@@ -1722,7 +1722,7 @@ void CDataWrapper::decodePVField(epics::pvData::PVFieldConstPtr pv_field){
             std::vector<std::string> src;
             for(pvd::shared_vector<const std::string>::iterator i=arr.begin();i!=arr.end();i++){
               src.push_back(*i);
-              LDBG_ <<"\t\t"<< *i;
+         //     LDBG_ <<"\t\t"<< *i;
 
             }
             append(fname, src);
@@ -1830,7 +1830,7 @@ void CDataWrapper::decodePVField(epics::pvData::PVFieldConstPtr pv_field){
       
         break;
       case epics::pvData::structure: {
-        LDBG_ <<"\t"<< "Adding Structure " << fname;       
+      //  LDBG_ <<"\t"<< "Adding Structure " << fname;       
         CDataWrapper                        cs;
 
         //pvd::PVStructure::const_shared_pointer tmp((pvd::PVStructure*)pv_field.get());
@@ -1841,7 +1841,7 @@ void CDataWrapper::decodePVField(epics::pvData::PVFieldConstPtr pv_field){
         break;
       }
       case epics::pvData::structureArray: {
-        LDBG_ <<"\t"<< "Adding Structure Array " << fname;
+      //  LDBG_ <<"\t"<< "Adding Structure Array " << fname;
         pvd::PVStructureArray::const_shared_pointer tmp;
         tmp=(*(pvd::PVStructureArray::const_shared_pointer*)&pv_field);
       if (tmp->getLength() != 0){
@@ -1858,7 +1858,7 @@ void CDataWrapper::decodePVField(epics::pvData::PVFieldConstPtr pv_field){
       break;
       }
       case epics::pvData::union_: {
-        DBG <<"\t"<< fname <<"Adding Union ";
+       // DBG <<"\t"<< fname <<"Adding Union ";
        
        pvd::PVUnion::const_shared_pointer tmp;
        tmp=*((pvd::PVUnion::const_shared_pointer*)&pv_field);// = ptr->getSubField<pvd::PVUnion>(fname);
