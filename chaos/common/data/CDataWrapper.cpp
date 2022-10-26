@@ -1565,7 +1565,7 @@ void CDataWrapper::setSerializedData(pvd::PVUnionConstPtr ptr){
   pvd::StringArray names=structure_ptr->getFieldNames();
    for(pvd::StringArray::iterator i=names.begin();i!=names.end();i++){
     epics::pvData::FieldConstPtr info=structure_ptr->getFieldT(*i);
-     DBG << "Union field \""<<*i<<" "<<info->getID();
+    // DBG << "Union field \""<<*i<<" "<<info->getID();
 
    /* if(structure_ptr->isVariant()) {
             pvd::PVFieldPtr pvfield=ptr->select<pvd::PVScalarArrayPtr>(*i);
