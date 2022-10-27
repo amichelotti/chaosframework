@@ -265,6 +265,7 @@ SET(BUILD_LIBRARY )
 
 IF(CHAOS_EPICS_SUPPORT)
   MESG("Add EPICS SUPPORT")
+  set(ENV{EPICS_HOST_ARCH} "linux-x86_64")
 
  ExternalProject_Add(
  	 epics
@@ -275,7 +276,7 @@ IF(CHAOS_EPICS_SUPPORT)
       PREFIX "${CMAKE_BINARY_DIR}/ext_dep/epics-prefix"
       SOURCE_DIR "${CMAKE_BINARY_DIR}/ext_dep/epics-src"
       PATCH_COMMAND sed -i "s/\#COMMANDLINE_LIBRARY = EPICS/COMMANDLINE_LIBRARY = EPICS/" ${CMAKE_BINARY_DIR}/ext_dep/epics-src/configure/os/CONFIG_SITE.Common.linux-x86_64
-      CONFIGURE_COMMAND sed -i "s/FLAGS_YES += -g/FLAGS_YES += -g -O2 -fPIC/g" ${CMAKE_BINARY_DIR}/ext_dep/epics-src/configure/os/CONFIG_SITE.linux-x86_64.linux-x86_64
+      CONFIGURE_COMMAND sed -i "s/STATIC_BUILD=NO/STATIC_BUILD=YES/g" ${CMAKE_BINARY_DIR}/ext_dep/epics-src/configure/CONFIG_SITE
 
 	    UPDATE_COMMAND    ""
 	    INSTALL_COMMAND   ""
