@@ -101,7 +101,9 @@ chaos::error::ChaosErrorCodeMapping::getInstance()->getErrorMessage(error_code)
             //! node bad state machine state in response to mds ack event
             EC_MDS_NODE_BAD_SM_STATE,
             //!work unit is not self manageable and need to be loaded within an unit server
-            EC_MDS_NODE_ID_NOT_SELF_MANAGEABLE
+            EC_MDS_NODE_ID_NOT_SELF_MANAGEABLE,
+            EC_EPICS_SEVERITY=-0x10000
+
             
         } ErrorCode;
     }
