@@ -391,7 +391,10 @@ CDWUniquePtr CDataWrapper::getCSDataValue(const std::string& key) const {
                        &document);
     return CDWUniquePtr(new CDataWrapper((const char*)document, document_len));
   }
-  else {
+  else if(isStringValue(key)){
+    return instanceFromJson(getStringValue(key));
+  } else{
+    
     return CDWUniquePtr(new CDataWrapper());
   }
 }

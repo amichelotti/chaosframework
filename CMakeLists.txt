@@ -47,7 +47,7 @@ else (WIN32)
 option(CHAOS_MDS "Chaos Data Service" ON)
 option(CHAOS_AGENT "Chaos Agent Service" ON)
 option(CHAOS_DATA_EXPORT "Chaos Data Export" ON)
-option(CHAOS_EXAMPLES "Chaos Examples" ON)
+option(CHAOS_EXAMPLES "Chaos Examples" OFF)
 endif(WIN32)
 
 option(CHAOS_CCS "Chaos CCS Compile needs qt5.6-static-x86_64 installed" OFF)
