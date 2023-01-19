@@ -102,6 +102,16 @@ class TLockFreeQueue {
     }
     return ret;
   }
+  int clear(){
+    T* ele=NULL;
+    while(element_queue.pop(ele)){
+      if(ele){
+        delete ele;
+      }
+      size--;
+    }
+    return size;
+  }
   int wait_and_pop(T& popped_value, int timeout_ms = 0) {
     if (element_queue.empty()) {
       ChaosUniqueLock lock(the_mutex);
