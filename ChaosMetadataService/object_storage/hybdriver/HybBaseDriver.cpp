@@ -47,7 +47,7 @@ BaseMongoDBDriver(){}
 
 HybBaseDriver::~HybBaseDriver() {}
 
-void HybBaseDriver::init(void *init_data) throw (chaos::CException) {
+void HybBaseDriver::init(void *init_data)  {
     //call sublcass
     ChaosStringVector url_list = ChaosMetadataService::getInstance()->setting.object_storage_setting.url_list;
     const std::string user = ChaosMetadataService::getInstance()->setting.object_storage_setting.key_value_custom_param["user"];
@@ -80,7 +80,7 @@ void HybBaseDriver::init(void *init_data) throw (chaos::CException) {
     registerDataAccess<ObjectStorageDataAccess>(acc);
 }
 
-void HybBaseDriver::deinit() throw (chaos::CException) {
+void HybBaseDriver::deinit()  {
     //call sublcass
     AbstractPersistenceDriver::deinit();
 }

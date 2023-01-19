@@ -49,7 +49,7 @@ AbstractPersistenceDriver(name){}
 
 PosixFileObjectStorageDriver::~PosixFileObjectStorageDriver() {}
 
-void PosixFileObjectStorageDriver::init(void *init_data) throw (chaos::CException) {
+void PosixFileObjectStorageDriver::init(void *init_data)  {
     AbstractPersistenceDriver::init(init_data);
     std::string dir;
     bool removeTemp =false;
@@ -118,7 +118,7 @@ void PosixFileObjectStorageDriver::init(void *init_data) throw (chaos::CExceptio
     registerDataAccess<ObjectStorageDataAccess>(new PosixFile(basedatapath));
 }
 
-void PosixFileObjectStorageDriver::deinit() throw (chaos::CException) {
+void PosixFileObjectStorageDriver::deinit()  {
     //call sublcass
     AbstractPersistenceDriver::deinit();
 }

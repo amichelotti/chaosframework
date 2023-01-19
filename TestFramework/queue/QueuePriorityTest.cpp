@@ -28,7 +28,7 @@ max_priority(0),
 number_of_production(0){}
 QueuePriorityTest::~QueuePriorityTest(){}
 
-void QueuePriorityTest::processBufferElement(ChaosSharedPtr<TestPriorityElement> element) throw(chaos::CException) {
+void QueuePriorityTest::processBufferElement(ChaosSharedPtr<TestPriorityElement> element)  {
     if(last_priority != element->priority) {
         ASSERT_EQ(last_priority>=element->priority, true);
         last_priority = element->priority;

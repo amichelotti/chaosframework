@@ -129,7 +129,7 @@ namespace chaos {
             - CustomEventDescriptor
          */
         template <typename E, typename T, int N>
-        static EventDescriptor *initDataWithMemory(const unsigned char * const existingEventData) throw (CException) {
+        static EventDescriptor *initDataWithMemory(const unsigned char * const existingEventData)  {
             if(N != EVENT_DATA_BYTE_LENGTH)
                 throw CException(0, "Event memory need to be 1024 byte length", "EventDescriptor::initDataWithMemory");
                 

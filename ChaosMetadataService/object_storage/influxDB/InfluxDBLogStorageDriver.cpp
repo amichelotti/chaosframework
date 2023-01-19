@@ -49,7 +49,7 @@ AbstractPersistenceDriver(name){}
 
 InfluxDBLogStorageDriver::~InfluxDBLogStorageDriver() {}
 
-void InfluxDBLogStorageDriver::init(void *init_data) throw (chaos::CException) {
+void InfluxDBLogStorageDriver::init(void *init_data)  {
     AbstractPersistenceDriver::init(init_data);
 
     const ChaosStringVector url_list = DriverPoolManager::logSetting.persistence_server_list;
@@ -133,7 +133,7 @@ void InfluxDBLogStorageDriver::init(void *init_data) throw (chaos::CException) {
     registerDataAccess<ObjectStorageDataAccess>(new InfluxDB(si));
 }
 
-void InfluxDBLogStorageDriver::deinit() throw (chaos::CException) {
+void InfluxDBLogStorageDriver::deinit()  {
     //call sublcass
     AbstractPersistenceDriver::deinit();
 }

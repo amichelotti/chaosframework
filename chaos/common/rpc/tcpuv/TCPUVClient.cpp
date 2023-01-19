@@ -265,7 +265,7 @@ TCPUVClient::~TCPUVClient(){
 /*
  init the rpc adapter
  */
-void TCPUVClient::init(void *init_data) throw(CException) {
+void TCPUVClient::init(void *init_data) 
 	chaos::common::data::CDataWrapper *cfg = reinterpret_cast<chaos::common::data::CDataWrapper*>(init_data);
 	int32_t threadNumber = cfg->hasKey(InitOption::OPT_RPC_SERVER_THREAD_NUMBER)? cfg->getInt32Value(InitOption::OPT_RPC_SERVER_THREAD_NUMBER):1;
 	TCPUVClientLAPP << "ObjectProcessingQueue<CDataWrapper> initialization with "<< threadNumber <<" thread";
@@ -276,7 +276,7 @@ void TCPUVClient::init(void *init_data) throw(CException) {
 /*
  start the rpc adapter
  */
-void TCPUVClient::start() throw(CException) {
+void TCPUVClient::start() 
 	run = true;
 	
 	//initlize loop
@@ -297,7 +297,7 @@ void TCPUVClient::start() throw(CException) {
 /*
  start the rpc adapter
  */
-void TCPUVClient::stop() throw(CException) {
+void TCPUVClient::stop() 
 	run = false;
 	
 	uv_async_send(&async_shutdown_loop);
@@ -314,7 +314,7 @@ void TCPUVClient::stop() throw(CException) {
 /*
  deinit the rpc adapter
  */
-void TCPUVClient::deinit() throw(CException) {
+void TCPUVClient::deinit() 
 	TCPUVClientLAPP << "ObjectProcessingQueue<NetworkForwardInfo> stopping";
 	//  CObjectProcessingQueue<NetworkForwardInfo>::clear();
 	//  CObjectProcessingQueue<NetworkForwardInfo>::deinit();
@@ -342,7 +342,7 @@ void TCPUVClient::runLoop() {
  Submit the message to be send to a certain ip, the datawrapper must contains
  the key CS_CMDM_REMOTE_HOST_IP
  */
-bool TCPUVClient::submitMessage(NetworkForwardInfo *forwardInfo, bool onThisThread) throw(CException) {
+bool TCPUVClient::submitMessage(NetworkForwardInfo *forwardInfo, bool onThisThread) 
 	CHAOS_ASSERT(forwardInfo);
 	std::vector<std::string> server_desc_tokens;
 	try{
@@ -371,7 +371,7 @@ bool TCPUVClient::submitMessage(NetworkForwardInfo *forwardInfo, bool onThisThre
 	return true;
 }
 
-void TCPUVClient::processBufferElement(NetworkForwardInfo *messageInfo, ElementManagingPolicy& elementPolicy) throw(CException) {
+void TCPUVClient::processBufferElement(NetworkForwardInfo *messageInfo, ElementManagingPolicy& elementPolicy) 
 	elementPolicy.elementHasBeenDetached = true;
 	
 	if(map_addr_connection_info.count(messageInfo->destinationAddr)) {

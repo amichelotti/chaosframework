@@ -36,7 +36,7 @@ void QueueTest::SetUp() {
     job_to_do = 0;
     job_done = 0;
 }
-void QueueTest::processBufferElement(ChaosSharedPtr<TestJobPriorityStruct> job) throw(chaos::CException) {
+void QueueTest::processBufferElement(ChaosSharedPtr<TestJobPriorityStruct> job)  {
     assert(job);
     job_done++;
     if((--job->check_concurence) != 0) {

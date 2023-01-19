@@ -51,10 +51,10 @@ namespace chaos {
                     void deleteDataAccess(void *instance);
                 public:
                     //! Initialize the driver
-                    void init(void *init_data) throw (chaos::CException);
+                    void init(void *init_data) ;
                     
                     //!deinitialize the driver
-                    void deinit() throw (chaos::CException);
+                    void deinit() ;
                 };
             }
         }

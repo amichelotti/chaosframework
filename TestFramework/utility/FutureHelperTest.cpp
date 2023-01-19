@@ -33,14 +33,14 @@ using namespace chaos::common::data;
 using namespace chaos::common::utility;
 using namespace chaos::common::async_central;
 
-void CDWComsumerPromise::processBufferElement(ChaosSharedPtr<PromiseInfo_t> promises_info) throw(chaos::CException) {
+void CDWComsumerPromise::processBufferElement(ChaosSharedPtr<PromiseInfo_t> promises_info)  {
     promises_counter++;
     CDWShrdPtr result(new CDataWrapper());
     result->addInt32Value("pid", promises_info->promise_id);
     promises_info->future_helper->setDataForPromiseID(promises_info->promise_id, result);
 }
 
-void CDWComsumerFuture::processBufferElement(ChaosSharedPtr<FutureInfo_t> future_info) throw(chaos::CException) {
+void CDWComsumerFuture::processBufferElement(ChaosSharedPtr<FutureInfo_t> future_info)  {
     ChaosFutureStatus fret = ChaosFutureStatus::deferred;
     CDWShrdPtr result;
     do{
