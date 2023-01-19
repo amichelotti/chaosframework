@@ -38,18 +38,18 @@ namespace chaos {
             public chaos::CException {
                 explicit MetadataLoggingCException(int eCode,
                                                    const char * eMessage,
-                                                   const char * eDomain) throw();
+                                                   const char * eDomain);
             public:
 
                 
                 explicit MetadataLoggingCException(const std::string& log_source,
                                                    int error_code,
                                                    const std::string& error_message,
-                                                   const std::string& error_domain) throw();
+                                                   const std::string& error_domain);
                 
-                MetadataLoggingCException(const MetadataLoggingCException& _exception) throw();
+                MetadataLoggingCException(const MetadataLoggingCException& _exception);
                 
-                ~MetadataLoggingCException() throw();
+                ~MetadataLoggingCException();
                 
             };
             

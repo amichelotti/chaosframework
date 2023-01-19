@@ -23,21 +23,21 @@
 namespace chaos{
 CException::CException(int eCode,
                        const std::string& eMessage,
-                       const std::string& eDomain) throw():
+                       const std::string& eDomain):
 errorCode(eCode),
 errorMessage(eMessage),
 errorDomain(eDomain) {
     composeMsg();
 };
 
-CException::CException(const CException& _exception) throw() :
+CException::CException(const CException& _exception) :
 errorCode(_exception.errorCode),
 errorMessage(_exception.errorMessage),
 errorDomain(_exception.errorDomain) {
     composeMsg();
 };
 
-CException::~CException() throw() {
+CException::~CException() {
     
 };
 

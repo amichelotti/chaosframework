@@ -46,11 +46,11 @@ namespace chaos{
         //! identify the domain(ControlUnit, DataManager, ....)
         const std::string errorDomain;
 
-        CException(int eCode, const std::string& eMessage,  const std::string& eDomain) throw();
+        CException(int eCode, const std::string& eMessage,  const std::string& eDomain);
         
-        CException(const CException& _exception) throw();
+        CException(const CException& _exception);
         
-        virtual ~CException() throw();
+        virtual ~CException();
         
         virtual const char* what() const throw();
     };

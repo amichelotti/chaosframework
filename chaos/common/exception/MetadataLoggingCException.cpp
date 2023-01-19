@@ -51,9 +51,9 @@ CException(error_code,
     }
 }
 
-MetadataLoggingCException::MetadataLoggingCException(const MetadataLoggingCException& _exception) throw():
+MetadataLoggingCException::MetadataLoggingCException(const MetadataLoggingCException& _exception):
 CException(_exception){}
 
-MetadataLoggingCException::~MetadataLoggingCException() throw() {
+MetadataLoggingCException::~MetadataLoggingCException() {
     
 }
