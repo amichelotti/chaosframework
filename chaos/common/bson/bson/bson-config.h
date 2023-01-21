@@ -1,14 +1,17 @@
 #ifndef BSON_CONFIG_H
 #define BSON_CONFIG_H
 
-#include <boost/detail/endian.hpp>
+//#include <boost/detail/endian.hpp>
+#include <boost/predef/other/endian.h>                                                                                                                                                                                                        
 
 /*
  * Define to 1234 for Little Endian, 4321 for Big Endian.
  */
-#if defined(BOOST_LITTLE_ENDIAN)
+//#if defined(BOOST_LITTLE_ENDIAN)
+#if defined(BOOST_ENDIAN_LITTLE_BYTE)
 #define BSON_BYTE_ORDER 1234
-#elif defined(BOOST_BIG_ENDIAN)
+//#elif defined(BOOST_BIG_ENDIAN)
+#elif defined(BOOST_ENDIAN_BIG_BYTE)
 #define BSON_BYTE_ORDER 4321
 #else
 #error "unable to determine system endianness"
