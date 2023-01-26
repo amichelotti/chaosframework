@@ -23,15 +23,15 @@
 
 #include <chaos/common/global.h>
 
-#include <boost/regex.hpp>
+#include <regex>
 #include <boost/algorithm/string.hpp>
 
 #define SDA_INFO INFO_LOG(TreeGroupDataAccess)
 #define SDA_DBG  DBG_LOG(TreeGroupDataAccess)
 #define SDA_ERR  ERR_LOG(TreeGroupDataAccess)
 
-const boost::regex NodePathRegularExpression("(\\/[a-zA-Z0-9_.]+)+");
-const boost::regex NodeNameRegularExpression("([a-zA-Z0-9_.])+");
+const std::regex NodePathRegularExpression("(\\/[a-zA-Z0-9_.]+)+");
+const std::regex NodeNameRegularExpression("([a-zA-Z0-9_.])+");
 
 
 using namespace chaos::metadata_service::persistence::data_access;
@@ -50,8 +50,8 @@ TreeGroupDataAccess::~TreeGroupDataAccess(){}
 //check the three path
 bool TreeGroupDataAccess::checkPathSintax(const std::string& tree_path) {
     bool result = false;
-    boost::cmatch what;
-    if(!(result = boost::regex_match(tree_path.c_str(), what, NodePathRegularExpression))) {
+    std::cmatch what;
+    if(!(result = std::regex_match(tree_path.c_str(), what, NodePathRegularExpression))) {
         //error recognizing the path
         SDA_ERR << "The tree path " << tree_path << " is not well formed";
     }
@@ -61,8 +61,8 @@ bool TreeGroupDataAccess::checkPathSintax(const std::string& tree_path) {
 //check the three path
 bool TreeGroupDataAccess::checkNodeNameSintax(const std::string& node_name) {
     bool result = false;
-    boost::cmatch what;
-    if(!(result = boost::regex_match(node_name.c_str(), what, NodeNameRegularExpression))) {
+    std::cmatch what;
+    if(!(result = std::regex_match(node_name.c_str(), what, NodeNameRegularExpression))) {
         //error recognizing the path
         SDA_ERR << "The node name " << node_name << " is not well formed";
     }

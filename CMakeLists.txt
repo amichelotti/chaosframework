@@ -69,7 +69,6 @@ ENDIF()
 
 ###### Required Libraries
 if (NOT WIN32)
-# CheckConfigureBuild(jsoncpp jsoncpp "-DJSONCPP_WITH_TESTS=OFF;-DJSONCPP_WITH_POST_BUILD_UNITTEST=OFF" https://github.com/bisegni )
 if(CHAOS_MDS)
   SET(CDSLIB ON)
 

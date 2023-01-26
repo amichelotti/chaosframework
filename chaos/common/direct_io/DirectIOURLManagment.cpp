@@ -24,7 +24,7 @@
 #include <regex>
 using namespace std;
 #else
-#include <boost/regex.hpp>
+#include <regex>
 using namespace boost;
 #endif
 #include <boost/format.hpp>
@@ -53,7 +53,6 @@ bool checkURL(const std::string& url){
 
 	regex DirectIOHostIPAndEndpointRegExp(_DirectIOHostIPAndEndpoint);
     regex DirectIOServerDescriptionHostAndEndpointRegExp(_DirectIOServerDescriptionHostAndEndpoint);
-	//boost::smatch match0,match1;
 	return	regex_match(url,DirectIOHostIPAndEndpointRegExp) || regex_match(url,DirectIOServerDescriptionHostAndEndpointRegExp);
 	
 return true;

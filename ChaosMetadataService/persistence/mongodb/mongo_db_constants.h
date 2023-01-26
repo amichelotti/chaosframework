@@ -8,8 +8,6 @@
 
 #include <chaos/common/chaos_constants.h>
 
-#include <boost/format.hpp>
-
 #ifndef CHAOSFramework_mongo_db_constants_h
 #define CHAOSFramework_mongo_db_constants_h
 

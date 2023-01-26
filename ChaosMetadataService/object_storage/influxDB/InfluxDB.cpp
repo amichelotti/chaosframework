@@ -23,7 +23,6 @@
 #include <chaos/common/configuration/GlobalConfiguration.h>
 #include <boost/algorithm/string/join.hpp>
 #include <boost/filesystem.hpp>
-#include <boost/regex.hpp>
 #define INFO INFO_LOG(InfluxDB)
 #define DBG DBG_LOG(InfluxDB)
 #define ERR ERR_LOG(InfluxDB)

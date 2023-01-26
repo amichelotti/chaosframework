@@ -25,7 +25,7 @@
 #include <chaos/common/additional_lib/base64.h>
 #include <chaos/common/utility/TimingUtil.h>
 
-#include <boost/regex.hpp>
+#include <regex>
 #include <boost/foreach.hpp>
 #include <boost/algorithm/string.hpp>
 
@@ -45,8 +45,8 @@ using namespace chaos::metadata_service::persistence::data_access;
 #define SDA_ERR     ERR_LOG(MongoDBScriptDataAccess)
 
 static const std::string    ESCAPE_REPLACE_STRING("\\\\&");
-static const boost::regex   ESCAPE_REPLACE_SEARCH_REGEXP("([\\^\\.\\$\\|\\(\\)\\[\\]\\*\\+\\?\\/\\\\])");
-static const boost::regex   REGEX_EXECUTION_POOL_VALIDATION("[A-Za-z0-9_]+:[A-Za-z0-9\\/_]+");
+static const std::regex   ESCAPE_REPLACE_SEARCH_REGEXP("([\\^\\.\\$\\|\\(\\)\\[\\]\\*\\+\\?\\/\\\\])");
+static const std::regex   REGEX_EXECUTION_POOL_VALIDATION("[A-Za-z0-9_]+:[A-Za-z0-9\\/_]+");
 
 MongoDBScriptDataAccess::MongoDBScriptDataAccess(const ChaosSharedPtr<service_common::persistence::mongodb::MongoDBHAConnectionManager>& _connection):
 MongoDBAccessor(_connection),
@@ -640,14 +640,14 @@ int MongoDBScriptDataAccess::getScriptForExecutionPoolPathList(const ChaosString
     mongo::BSONArrayBuilder bson_find_in;
     try {
         BOOST_FOREACH( std::string pool_path_element, pool_path ) {
-            if(boost::regex_match(pool_path_element,
+            if(std::regex_match(pool_path_element,
                                   REGEX_EXECUTION_POOL_VALIDATION) == false) continue;
             
             //escape xecution ppool path for earchunder the path
-            const std::string result = boost::regex_replace(pool_path_element,
+            const std::string result = std::regex_replace(pool_path_element,
                                                             ESCAPE_REPLACE_SEARCH_REGEXP,
                                                             ESCAPE_REPLACE_STRING,
-                                                            boost::match_default | boost::format_sed);
+                                                             std::regex_constants::match_default |  std::regex_constants::format_sed);
             bson_find_in.appendRegex(CHAOS_FORMAT("%1%[A-Za-z0-9\\/_]*",%result));
         }
         mongo::Query q = BSON("execution_pool_list" << BSON("$in"<< bson_find_in.arr()) <<

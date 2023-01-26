@@ -29,7 +29,7 @@ SET(jnichaos_src JNIChaos.cc)
 ADD_LIBRARY(jnichaos SHARED ${jnichaos_src})
 #set_target_properties(jnichaos PROPERTIES VERSION 1.0.0 SOVERSION 1)
 
-SET(jnichaos_lib boost_program_options boost_system boost_thread boost_chrono boost_regex boost_log boost_log_setup boost_filesystem memcached zmq uv dl)
+SET(jnichaos_lib boost_program_options boost_system boost_thread boost_chrono boost_log boost_log_setup boost_filesystem memcached zmq uv dl)
 separate_arguments(jnichaos_lib)
 TARGET_LINK_LIBRARIES(jnichaos chaos_uitoolkit  chaos_common ${jnichaos_lib})
 

@@ -18,7 +18,7 @@ if(WIN32)
 	 jsonCpp
 	 GIT_REPOSITORY https://github.com/open-source-parsers/jsoncpp.git
 	 
-	 GIT_TAG 1.9.2
+//	 GIT_TAG 1.9.2
      PREFIX "${CMAKE_BINARY_DIR}/ext_dep/libjsoncpp-prefix"
 	 SOURCE_DIR "${CMAKE_BINARY_DIR}/ext_dep/libjsoncpp-src"
 	 BINARY_DIR "${CMAKE_BINARY_DIR}/ext_dep/libjsoncpp-build"
@@ -503,7 +503,6 @@ SET(common_lib_src ${common_lib_src}
                     )
 ENDIF()
 IF(KAFKA_ASIO_ENABLE)
-SET(CMAKE_CXX_STANDARD 11)
 INCLUDE_DIRECTORIES(${CMAKE_INSTALL_PREFIX}/snappy/include message/impl/kafka/asio/ )
 SET(common_lib_src ${common_lib_src} message/impl/kafka/asio/MessagePSKafkaAsioProducer.cpp message/impl/kafka/asio/MessagePSKafkaAsio.cpp message/impl/kafka/asio/MessagePSKafkaAsioConsumer.cpp)
 link_directories(${CMAKE_INSTALL_PREFIX}/snappy/lib ${CMAKE_INSTALL_PREFIX}/snappy/lib64)

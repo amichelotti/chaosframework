@@ -43,7 +43,7 @@
 #include <stdlib.h>
 #include <chaos/common/global.h>
 
-#include <boost/regex.hpp>
+#include <regex>
 #include <boost/asio.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 #define SERVERHOSTNAME "[a-zA-Z0-9]+(.[a-zA-Z0-9]+)+:[0-9]{4,5}"

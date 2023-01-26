@@ -11,7 +11,6 @@
 #include <chaos/common/utility/TimingUtil.h>
 #include <chaos/common/chaos_constants.h>
 
-#include <boost/format.hpp>
 
 #define RETRIVE_MIN_TIME 500
 #define RETRIVE_MAX_TIME 10000

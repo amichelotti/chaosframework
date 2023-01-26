@@ -24,10 +24,10 @@
 
 #include <chaos/common/log/LogManager.h>
 
-#include <boost/regex.hpp>
+
 #include <boost/filesystem.hpp>
 #include <boost/algorithm/string.hpp>
-
+#include <regex>
 #include "GlobalConfiguration.h"
 #include <chaos/common/version.h>
 #include <chaos/common/external_unit/external_unit.h>
@@ -51,7 +51,7 @@ namespace chaos{
                                           const std::string& regex) {
     //no cache server provided
     //clear previosly pair
-    const boost::regex rx(regex);
+    const std::regex rx(regex);
     for(std::vector<std::string>::const_iterator it = kv_vector.begin(),
         end = kv_vector.end();
         it != end;
@@ -60,7 +60,7 @@ namespace chaos{
         const std::string& kv_param_value = *it;
         
         /*if(regex.size() && kv_param_value.size()&&
-           !boost::regex_match(kv_param_value,rx)) {
+           !std::regex_match(kv_param_value,rx)) {
                std::stringstream ss;
                ss<<"Malformed kv parameter string:"<<kv_param_value<<" regex:"<<regex;
                LERR_<<ss.str();
@@ -95,7 +95,7 @@ void GlobalConfiguration::preParseStartupParameters()  {
         addOption<std::string>(InitOption::OPT_CONF_FILE,"File configuration path");
         addOption(InitOption::OPT_VERSION, "Printout version");
         addOption(InitOption::OPT_NODE_DESC, po::value< std::string >()->default_value(""), "A string containing a brief description of the node");
-        addOption(InitOption::OPT_DATA_DIR, po::value< std::string >()->default_value("."), "A data directory where the node can dump data and check points");
+        addOption(InitOption::OPT_DATA_DIR, po::value< std::string >()->default_value("/tmp"), "A data directory where the node can dump data and check points");
 
         addOption(InitOption::OPT_LOG_ON_CONSOLE, po::value< bool >()->zero_tokens(), "Specify when the log must be forwarded on console");
         addOption(InitOption::OPT_LOG_ON_SYSLOG, po::value< bool >()->zero_tokens(), "Specify when the log must be forwarded on syslog server");

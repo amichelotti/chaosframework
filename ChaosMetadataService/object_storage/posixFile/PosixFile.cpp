@@ -23,7 +23,7 @@
 #include <chaos/common/configuration/GlobalConfiguration.h>
 #include <boost/algorithm/string/join.hpp>
 #include <boost/filesystem.hpp>
-#include <boost/regex.hpp>
+#include <regex>
 #define INFO INFO_LOG(PosixFile)
 #define DBG DBG_LOG(PosixFile)
 #define ERR ERR_LOG(PosixFile)
@@ -109,7 +109,7 @@ static int lz4compress(const std::string& src, const std::string& dst) {
   }
   return 0;
 }
-std::vector<std::string> searchFile(const std::string& p, const boost::regex& my_filter) {
+std::vector<std::string> searchFile(const std::string& p, const std::regex& my_filter) {
   std::vector<std::string> all_matching_files;
 
   boost::filesystem::directory_iterator end_itr;  // Default ctor yields past-the-end
@@ -117,12 +117,12 @@ std::vector<std::string> searchFile(const std::string& p, const boost::regex& my
     // Skip if not a file
     if (!boost::filesystem::is_regular_file(i->status())) continue;
 
-    boost::smatch what;
+    std::smatch what;
 
     // Skip if no match for V2:
-    if (!boost::regex_match(i->path().filename().string(), what, my_filter)) continue;
+    if (!std::regex_match(i->path().filename().string(), what, my_filter)) continue;
     // For V3:
-    //if( !boost::regex_match( i->path().filename().string(), what, my_filter ) ) continue;
+    //if( !std::regex_match( i->path().filename().string(), what, my_filter ) ) continue;
 
     // File matches, store it
     all_matching_files.push_back(i->path().string());

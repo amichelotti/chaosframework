@@ -27,7 +27,7 @@ URL::URL() {
     
 }
 
-URL::URL(const std::vector<boost::regex>& _url_reg,
+URL::URL(const std::vector<std::regex>& _url_reg,
 		 const std::string& _url):
 url(_url),
 url_reg(_url_reg) {
@@ -44,7 +44,7 @@ URL::URL(const URL & _orig_url) {
 
 bool URL::ok() {
     bool result = false;
-    for (std::vector<boost::regex>::iterator it = url_reg.begin();
+    for (std::vector<std::regex>::iterator it = url_reg.begin();
          it != url_reg.end() && !result;
          it++) {
         result = regex_match(url, *it);

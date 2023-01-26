@@ -10,14 +10,14 @@
 
 #include <string>
 
-#include <boost/regex.hpp>
+#include <regex>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 
 //! Regular expression for check server endpoint with the sintax hostname:[priority_port:service_port]
-static const boost::regex MemcachedHostNameRegExp("[a-zA-Z0-9]+(.[a-zA-Z0-9]+)+:[0-9]{4,5}");
+static const std::regex MemcachedHostNameRegExp("[a-zA-Z0-9]+(.[a-zA-Z0-9]+)+:[0-9]{4,5}");
 //! Regular expression for check server endpoint with the sintax ip:[priority_port:service_port]
-static const boost::regex MemcachedIPAndPortRegExp("\\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\b:[0-9]{4,5}");
+static const std::regex MemcachedIPAndPortRegExp("\\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\b:[0-9]{4,5}");
 
 
 using namespace chaos::data_service::cache_system;
@@ -64,7 +64,7 @@ bool MemcachedCacheDriver::validateString(std::string& server_description, std::
 	std::string normalized_server_desc = boost::algorithm::to_lower_copy(server_description);
 	
 	//check if the description is well formed
-	if(!regex_match(normalized_server_desc, MemcachedHostNameRegExp) && !regex_match(normalized_server_desc, MemcachedIPAndPortRegExp)) return false;
+	if(!std::regex_match(normalized_server_desc, MemcachedHostNameRegExp) && !std::regex_match(normalized_server_desc, MemcachedIPAndPortRegExp)) return false;
 	
 	boost::algorithm::split(tokens, normalized_server_desc, boost::algorithm::is_any_of(":"), boost::algorithm::token_compress_on);
 	return true;
