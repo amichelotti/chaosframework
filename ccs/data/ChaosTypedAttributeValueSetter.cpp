@@ -98,7 +98,7 @@ ChaosSharedPtr<CDataWrapperKeyValueSetter> ChaosTypedAttributeValueSetter::getCD
         return ChaosSharedPtr<CDataWrapperKeyValueSetter>(new CDataWrapperDoubleKeyValueSetter(chaosAttributeName().toStdString(), chaos_attribute_value_.toDouble(ok)));
         break;
         
-    case chaos::DataType::TYPE_CLUSTER:{
+    case chaos::DataType::TYPE_JSON:{
     	  if(ok) *ok = true;
     	        return ChaosSharedPtr<CDataWrapperKeyValueSetter>(new CDataWrapperClusterKeyValueSetter(chaosAttributeName().toStdString(), chaos_attribute_value_.toString().toStdString()));
     	        break;

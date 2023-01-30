@@ -172,7 +172,7 @@ QVariant FixedOutputChannelDatasetTableModel::getCellData(int row, int column) c
             case chaos::DataType::TYPE_INT64:
                 result = QString("Int64");
                 break;
-            case chaos::DataType::TYPE_CLUSTER:
+            case chaos::DataType::TYPE_JSON:
                 result = QString("cluster");
                 break;
             case chaos::DataType::TYPE_STRING:

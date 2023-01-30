@@ -277,7 +277,7 @@ void AbstractControlUnit::_initPropertyGroup() {
   ds_update_anyway = DS_UPDATE_ANYWAY_DEF;
   //    CDWUniquePtr burst_type_desc(new CDataWrapper());
   //    burst_type_desc->addInt32Value(DataServiceNodeDefinitionKey::DS_HISTORY_BURST_TYPE, DataServiceNodeDefinitionType::DSStorageBurstTypeUndefined);
-  //    pg_abstract_cu.addProperty(DataServiceNodeDefinitionKey::DS_HISTORY_BURST, "Specify if the restore operation need to be done as real operation or not", DataType::TYPE_CLUSTER,0, CDataVariant(burst_type_desc.release()));
+  //    pg_abstract_cu.addProperty(DataServiceNodeDefinitionKey::DS_HISTORY_BURST, "Specify if the restore operation need to be done as real operation or not", DataType::TYPE_JSON,0, CDataVariant(burst_type_desc.release()));
 
   pg_abstract_cu.addProperty(ControlUnitDatapackSystemKey::THREAD_SCHEDULE_DELAY, "Set the control unit step repeat time in microseconds", DataType::TYPE_INT64, 0, CDataVariant((int64_t)1000000));  //set to one seconds
   pg_abstract_cu.addProperty(ControlUnitPropertyKey::INIT_RESTORE_OPTION, "Specify the restore type operatio to do durint initialization phase", DataType::TYPE_INT32, 0, CDataVariant((int32_t)0));
@@ -912,7 +912,7 @@ void         AbstractControlUnit::doInitRpCheckList() {
     /*  std::string cu_load_param = getCUParam();
 
      if (isCUParamInJson()) {
-        getAttributeCache()->addCustomAttribute(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_LOAD_PARAM, cu_load_param.size() + 1, chaos::DataType::TYPE_CLUSTER);
+        getAttributeCache()->addCustomAttribute(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_LOAD_PARAM, cu_load_param.size() + 1, chaos::DataType::TYPE_JSON);
       } else {
         getAttributeCache()->addCustomAttribute(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_LOAD_PARAM, cu_load_param.size() + 1, chaos::DataType::TYPE_STRING);
       }
@@ -1026,7 +1026,7 @@ void         AbstractControlUnit::doInitRpCheckList() {
               case DataType::TYPE_STRING:
                 cdw_unique_ptr->addStringValue(attrName, attrValue);
                 break;
-              case DataType::TYPE_CLUSTER:
+              case DataType::TYPE_JSON:
                 cdw_unique_ptr->addStringValue(attrName, attrValue);
                 break;
               case DataType::TYPE_BYTEARRAY:
@@ -2459,7 +2459,7 @@ void AbstractControlUnit::initAttributeOnSharedAttributeCache(SharedCacheDomain 
           ACULDBG_ << domain << " Init TYPE_INT64 attribute:'" << attribute_names[idx] << "' to:" << val << " 0x" << std::hex << val << std::dec;
           break;
         }
-        case DataType::TYPE_CLUSTER: {
+        case DataType::TYPE_JSON: {
           CDataWrapper tmp;
           tmp.setSerializedJsonData(attributeInfo.defaultValue.c_str());
           attribute_setting.setValueForAttribute(idx, tmp);
@@ -2980,7 +2980,7 @@ CDWUniquePtr AbstractControlUnit::setDatasetAttribute(CDWUniquePtr dataset_attri
               break;
             }
 
-            case DataType::TYPE_CLUSTER: {
+            case DataType::TYPE_JSON: {
               // ChaosUniquePtr<CDataWrapper> str = dataset_attribute_values->getCSDataValue(attr_name);
               CDataWrapper cw;
               try {
@@ -3167,7 +3167,7 @@ int AbstractControlUnit::pushOutputDataset() {
        case DataType::TYPE_FLOAT:
         output_attribute_dataset->addDoubleValue(value_set->name, *value_set->getValuePtr<float>());
         break;
-      case DataType::TYPE_CLUSTER: {
+      case DataType::TYPE_JSON: {
         try {
           output_attribute_dataset->addCSDataValue(value_set->name, *value_set->getValuePtr<CDataWrapper>());
         } catch (...) {

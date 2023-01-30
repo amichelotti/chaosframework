@@ -763,7 +763,7 @@ void CDataWrapper::addVariantValue(const std::string&  key,
     case DataType::TYPE_FLOAT:
       addDoubleValue(key, variant_value.asDouble());
       break;
-    case DataType::TYPE_CLUSTER: {
+    case DataType::TYPE_JSON: {
       addJsonValue(key, variant_value.asString());
       break;
     }
@@ -1187,7 +1187,7 @@ CDataVariant CDataWrapper::getVariantValue(const std::string& key) const {
     }
     case chaos::DataType::TYPE_STRING:
       return CDataVariant(getStringValue(key));
-    case chaos::DataType::TYPE_CLUSTER:
+    case chaos::DataType::TYPE_JSON:
       if (isStringValue(key)) {
         return CDataVariant(getValueType(key), (const void*)getStringValue(key).c_str(), (uint32_t)getStringValue(key).size() + 1);
       } else {
@@ -1328,7 +1328,7 @@ chaos::DataType::DataType CDataWrapper::getValueType(const std::string& key) con
       result = chaos::DataType::TYPE_ACCESS_ARRAY;
       break;
     case BSON_TYPE_DOCUMENT:
-      result = chaos::DataType::TYPE_CLUSTER;
+      result = chaos::DataType::TYPE_JSON;
       break;
     case BSON_TYPE_BINARY:
       result = chaos::DataType::TYPE_BYTEARRAY;

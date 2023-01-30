@@ -117,7 +117,7 @@ void CommandCommonUtility::validateCommandTemplateToDescription(CDWShrdPtr comma
                     is_correct_type = command_template->isStringValue(attribute_name);
                     break;
                     
-                case chaos::DataType::TYPE_CLUSTER:
+                case chaos::DataType::TYPE_JSON:
                     is_correct_type = command_template->isJsonValue(attribute_name);
                     break;
                 case chaos::DataType::TYPE_BYTEARRAY:
@@ -193,7 +193,7 @@ ChaosUniquePtr<chaos::common::data::CDataWrapper> CommandCommonUtility::createCo
                 is_correct_type = command_submission->isDoubleValue(it->first);
                 break;
                 
-             case chaos::DataType::TYPE_CLUSTER:
+             case chaos::DataType::TYPE_JSON:
                 is_correct_type = command_submission->isJsonValue(it->first);
                 break;
             case chaos::DataType::TYPE_STRING:

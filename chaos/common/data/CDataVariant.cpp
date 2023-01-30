@@ -179,7 +179,7 @@ CDataVariant::CDataVariant(const std::string& string_value):_internal_variant(st
     if(tmp->isEmpty()) {
         type=DataType::TYPE_STRING;
     } else {
-        type=DataType::TYPE_CLUSTER;
+        type=DataType::TYPE_JSON;
     }
 }
 
@@ -188,7 +188,7 @@ CDataVariant::CDataVariant(const char * string_value):_internal_variant(std::str
     if(tmp->isEmpty()) {
         type=DataType::TYPE_STRING;
     } else {
-        type=DataType::TYPE_CLUSTER;
+        type=DataType::TYPE_JSON;
     }
 }
 
@@ -197,10 +197,10 @@ type(DataType::TYPE_BYTEARRAY),
 _internal_variant(ChaosSharedPtr<CDataBuffer>(buffer_value.release())) { }
 
 CDataVariant::CDataVariant(CDataWrapper *buffer_value):
-type(DataType::TYPE_CLUSTER),
+type(DataType::TYPE_JSON),
 _internal_variant(ChaosSharedPtr<CDataWrapper>(buffer_value)) { }
 
-CDataVariant::CDataVariant(CDWUniquePtr buffer_value):type(DataType::TYPE_CLUSTER),
+CDataVariant::CDataVariant(CDWUniquePtr buffer_value):type(DataType::TYPE_JSON),
 _internal_variant(ChaosSharedPtr<CDataWrapper>(buffer_value.release())) { }
 
 CDataVariant::CDataVariant(const CDataVariant& to_copy):
@@ -240,7 +240,7 @@ type(_type){
             _internal_variant = *static_cast<const float*>(_value_pointer);
             break;
         }
-        case DataType::TYPE_CLUSTER:{
+        case DataType::TYPE_JSON:{
             CDataWrapper*tmp=new CDataWrapper();
             tmp->setSerializedJsonData(static_cast<const char*>(_value_pointer));
             _internal_variant = ChaosSharedPtr<CDataWrapper>(tmp);

@@ -1202,7 +1202,7 @@ typedef enum DataType {
   TYPE_UINT16 = 0xA,
   TYPE_UINT8 = 0xB,
   TYPE_FLOAT = 0xC,
-  TYPE_CLUSTER = 0xD,
+  TYPE_JSON = 0xD,
   //!modifier to be ored to normal data types
   TYPE_VECTOR_BOOL = 0x100,
   TYPE_VECTOR_INT32  = 0x101,
@@ -1240,7 +1240,7 @@ static std::string inline typeDescriptionByCode(DataType type) {
     case TYPE_STRING:
       return "String";
       //!byte array variable length
-    case TYPE_CLUSTER:
+    case TYPE_JSON:
       return "cluster";
       //!byte array variable length
 
@@ -1266,7 +1266,7 @@ static DataType inline typeCodeByDescription(const std::string& _type_descriptio
   } else if (type_description.compare("string") == 0) {
     return TYPE_STRING;
   } else if (type_description.compare("cluster") == 0) {
-    return TYPE_CLUSTER;
+    return TYPE_JSON;
   } else if (type_description.compare("binary") == 0) {
     return TYPE_BYTEARRAY;
   } else {

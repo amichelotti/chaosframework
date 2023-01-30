@@ -227,7 +227,7 @@ bool AttributeValue::setValue(const void* value_ptr,
            
             break;
         }
-        case DataType::TYPE_CLUSTER:
+        case DataType::TYPE_JSON:
 
         case DataType::TYPE_STRING: {
             const std::string value((const char*)value_ptr,size);
@@ -400,7 +400,7 @@ bool AttributeValue::setValue(const CDataVariant& attribute_value,
                         sizeof(double));*/
             break;
         }
-        case DataType::TYPE_CLUSTER:
+        case DataType::TYPE_JSON:
 
         case DataType::TYPE_STRING: {
             const std::string value = attribute_value.asString();
@@ -535,7 +535,7 @@ void AttributeValue::writeToCDataWrapper( CDataWrapper& data_wrapper) {
             }
             break;
         }
-        case chaos::DataType::TYPE_CLUSTER:{
+        case chaos::DataType::TYPE_JSON:{
             CDataWrapper p;
             if(value_buffer && ((*(const char *)value_buffer)!=0)){
                 p.setSerializedJsonData((const char*)value_buffer);
@@ -588,7 +588,7 @@ std::string AttributeValue::toString() {
         case chaos::DataType::TYPE_BYTEARRAY:{
             return "binary_data";
         }
-        case chaos::DataType::TYPE_CLUSTER:
+        case chaos::DataType::TYPE_JSON:
         case chaos::DataType::TYPE_STRING:{
             return std::string((const char *)value_buffer, size);
         }
@@ -630,7 +630,7 @@ std::string AttributeValue::toString(int double_precision) {
             return "binary_data";
         }
         
-        case chaos::DataType::TYPE_CLUSTER:
+        case chaos::DataType::TYPE_JSON:
         case chaos::DataType::TYPE_STRING:{
             return std::string((const char *)value_buffer, size);
         }

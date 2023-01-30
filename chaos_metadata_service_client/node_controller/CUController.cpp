@@ -228,7 +228,7 @@ int CUController::getAttributeStrValue(string attribute_name, string& attribute_
                     attribute_value = boost::lexical_cast<string>(dataWrapper->getDoubleValue(attribute_name.c_str()));
                     break;
                     
-                case DataType::TYPE_CLUSTER:
+                case DataType::TYPE_JSON:
                 case DataType::TYPE_STRING:
                     attribute_value = boost::lexical_cast<string>(dataWrapper->getStringValue(attribute_name.c_str()));
                     break;
@@ -381,7 +381,7 @@ int CUController::setAttributeToValue(const char *attributeName, const char *att
             attributeValuePack->addBoolValue(attributeName, boolValuePtr);
             break;
         }
-        case DataType::TYPE_CLUSTER:
+        case DataType::TYPE_JSON:
             attributeValuePack->addJsonValue(attributeName, attributeValue);
             break;
             
@@ -442,7 +442,7 @@ int CUController::setAttributeToValue(const char *attributeName, DataType::DataT
             attributeValuePack->addBoolValue(attributeName, *boolValuePtr);
             break;
         }
-        case DataType::TYPE_CLUSTER:{
+        case DataType::TYPE_JSON:{
             
             attributeValuePack->addJsonValue(attributeName,static_cast<const char *>(attributeValue));
             break;
@@ -741,7 +741,7 @@ int CUController::setAttributeValue(string& attributeName, const char* attribute
         case DataType::TYPE_BYTEARRAY:
             attributeValuePack->addBinaryValue(attrname,attributeValue,size);
             return deviceChannel->setAttributeValue(MOVE(attributeValuePack),millisecToWait);
-        case DataType::TYPE_CLUSTER:{
+        case DataType::TYPE_JSON:{
             attributeValuePack->addJsonValue(attrname,attributeValue);
             return deviceChannel->setAttributeValue(MOVE(attributeValuePack),millisecToWait);
         }

@@ -216,7 +216,7 @@ QVariant FixedInputChannelDatasetTableModel::getCellData(int row, int column) co
             case chaos::DataType::TYPE_INT64:
                 result = QString("Int64");
                 break;
-            case chaos::DataType::TYPE_CLUSTER:
+            case chaos::DataType::TYPE_JSON:
                 result = QString("cluster");
                 break;
             case chaos::DataType::TYPE_STRING:
@@ -476,7 +476,7 @@ bool FixedInputChannelDatasetTableModel::setCellData(const QModelIndex& index, c
         CHECK_MAX_MIN_NUMERIC_TYPED_VALUE(double, typed_value)
                 break;
     }
-        case chaos::DataType::TYPE_CLUSTER:
+        case chaos::DataType::TYPE_JSON:
     case chaos::DataType::TYPE_STRING:{
         CHECKTYPE(result, std::string, value)
                 if(!result) {
