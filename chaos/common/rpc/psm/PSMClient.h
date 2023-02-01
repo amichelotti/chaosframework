@@ -2,8 +2,8 @@
 //  PSMClient.h
 //  CHAOSFramework
 //
-//  Created by Bisegni Claudio on 11/03/12.
-//  Copyright (c) 2012 INFN. All rights reserved.
+//  Created by Andrea Michelotti.
+//  Copyright (c) 2020 INFN. All rights reserved.
 //
 
 #ifndef CHAOSFramework_PSMClient_h

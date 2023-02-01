@@ -1,6 +1,7 @@
 /*
- * Copyright 2012, 2017 INFN
+ * Copyright 2020 INFN
  *
+ * Andrea Michelotti
  * Licensed under the EUPL, Version 1.2 or – as soon they
  * will be approved by the European Commission - subsequent
  * versions of the EUPL (the "Licence");
@@ -50,7 +51,7 @@ PSMServer::~PSMServer() {
 //init the server getting the configuration value
 void PSMServer::init(void *init_data) {
     RpcServer::init(init_data);
-    PSMS_LAPP << "initialization";
+    PSMS_LDBG << "initialization";
    try{
     if(!cfg->hasKey(InitOption::OPT_MSG_BROKER_SERVER)){
         throw chaos::CException(-1, "a not empty broker must be given", __PRETTY_FUNCTION__);
@@ -69,13 +70,13 @@ void PSMServer::init(void *init_data) {
     std::string gname;
     if(cfg->hasKey(InitOption::OPT_GROUP_NAME)){
         gname=cfg->getStringValue(InitOption::OPT_GROUP_NAME);
-        PSMS_LAPP << "belong to group:\""<<gname<<"\"";
+        PSMS_LDBG << "belong to group:\""<<gname<<"\"";
 
     } else {
         gname=nodeuid;
     }
 
-    cons = chaos::common::message::MessagePSDriver::getNewConsumerDriver(msgbrokerdrv, gname);
+    cons = chaos::common::message::MessagePSDriver::getConsumerDriver(msgbrokerdrv, gname);
     prod = chaos::common::message::MessagePSDriver::getProducerDriver(msgbrokerdrv);
 
     if (cons.get() == 0) {

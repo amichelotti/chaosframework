@@ -1150,10 +1150,18 @@ void         AbstractControlUnit::doInitRpCheckList() {
     }
   }
   CHAOS_CHECK_LIST_END_SCAN_TO_DO(check_list_sub_service, "_init")
-  std::string command_queue = getDeviceID() + DataPackPrefixID::COMMAND_DATASET_POSTFIX;
-  DataManager::getInstance()->getDataLiveDriverNewInstance()->subscribe(command_queue);
-  DataManager::getInstance()->getDataLiveDriverNewInstance()->addHandler(command_queue, boost::bind(&AbstractControlUnit::consumerHandler, this, _1));
+  
+  //std::string command_queue = getDeviceID() + DataPackPrefixID::COMMAND_DATASET_POSTFIX;
+  //DataManager::getInstance()->getDataLiveDriverNewInstance()->subscribe(command_queue);
+  //DataManager::getInstance()->getDataLiveDriverNewInstance()->addHandler(command_queue, boost::bind(&AbstractControlUnit::consumerHandler, this, _1));
 }
+int AbstractControlUnit::subscribe(const std::string& key,bool subscribeon){
+  int ret=chaos::common::message::MessagePSDriver::getConsumerDriver()->subscribe(key,subscribeon);
+  chaos::common::message::MessagePSDriver::getConsumerDriver()->addHandler(key, boost::bind(&AbstractControlUnit::consumerHandler, this, _1),subscribeon);
+  
+  return ret;
+}
+
 int AbstractControlUnit::setReadoutCheck(const std::string& ioname,bool enable_disable){
         RangeValueInfo attributeInfo;
         if(enable_disable){

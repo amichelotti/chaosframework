@@ -151,7 +151,7 @@ int MessagePSRDKafkaConsumer::subscribe(const std::string& key,bool sub) {
     return ret;
   }
   if (rk == NULL) {
-    errstr = "apply configuration first!";
+    errstr = "apply configuration first! before subscribe:"+key;
     MRDERR_ << errstr;
     return -5;
   }
@@ -214,7 +214,10 @@ void MessagePSRDKafkaConsumer::poll() {
 
   /* consumer_poll() will return either a proper message
         * or a consumer error (rkm->err is set). */
-
+  ele_t d;
+  d.key = rd_kafka_topic_name(rkm->rkt);
+  d.off = rkm->offset;
+  d.par = rkm->partition;
   if (rkm->err) {
     /* Consumer errors are generally to be considered
                 * informational as the consumer will automatically
@@ -227,17 +230,18 @@ void MessagePSRDKafkaConsumer::poll() {
       MRDERR_ << "Consumer error:" << errstr << " err:" << rkm->err;
     }
     stats.errs++;
+    
 
-    if (handlers[ONERROR]) {
-      ele_t d;
-      d.key = rd_kafka_topic_name(rkm->rkt);
-      d.off = rkm->offset;
-      d.par = rkm->partition;
-      d.cd  = chaos::common::data::CDWUniquePtr(new chaos::common::data::CDataWrapper());
-      d.cd->addStringValue("msg", errstr);
-      d.cd->addInt32Value("err", rkm->err);
+    d.cd  = chaos::common::data::CDWUniquePtr(new chaos::common::data::CDataWrapper());
+    d.cd->addStringValue("msg", errstr);
+    d.cd->addInt32Value("err", rkm->err);
+    if(topic_handlers.count(d.key)){
+        topic_handlers[d.key](d);
+    } else if(handlers[ONERROR]){
       handlers[ONERROR](d);
     }
+    
+  
 
     rd_kafka_message_destroy(rkm);
     return;
@@ -255,11 +259,8 @@ void MessagePSRDKafkaConsumer::poll() {
       */
   if (rkm->payload && rkm->len) {
     //  msgs.push_back(t);
-    if (handlers[ONARRIVE]) {
-      ele_t d;
-      d.key = rd_kafka_topic_name(rkm->rkt);
-      d.off = rkm->offset;
-      d.par = rkm->partition;
+    if (handlers[ONARRIVE] || topic_handlers.count(d.key)) {
+     
 
       try {
         d.cd = chaos::common::data::CDWUniquePtr(new chaos::common::data::CDataWrapper((const char*)rkm->payload, rkm->len));
@@ -274,8 +275,12 @@ void MessagePSRDKafkaConsumer::poll() {
           r->setSerializedJsonData((const char*)rkm->payload);
           d.cd = chaos::common::data::CDWUniquePtr(r);
           stats.oks++;
-
-          handlers[ONARRIVE](d);
+          if(topic_handlers.count(d.key)){
+            topic_handlers[d.key](d);
+          } else if(handlers[ONARRIVE]){
+            handlers[ONARRIVE](d);
+          }
+          
           rd_kafka_message_destroy(rkm);
           return;
         } catch (chaos::CException& ee){
@@ -301,8 +306,14 @@ void MessagePSRDKafkaConsumer::poll() {
         rd_kafka_message_destroy(rkm);
         return;
       }
+      if(topic_handlers.count(d.key)){
+            topic_handlers[d.key](d);
+      } else if(handlers[ONARRIVE]){
 
-      handlers[ONARRIVE](d);
+          handlers[ONARRIVE](d);
+        }
+        
+
     } /*else {
       ele_t* ele = new ele_t();
       ele->key   = rd_kafka_topic_name(rkm->rkt);

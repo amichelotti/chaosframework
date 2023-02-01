@@ -744,7 +744,13 @@ class AbstractControlUnit : public DeclareAction,
    * @return int return 0 if succefully handled
    */
   virtual int incomingMessage(const std::string& key,  chaos::common::data::CDWUniquePtr& data);
-
+  /**
+   * @brief Subscribe to a node
+   * 
+   * @param key node
+   * @return int 0 if success
+   */
+  int subscribe(const std::string& key,bool subscribeon=true);
   //!callback for put a veto on property value change request
   virtual bool propertyChangeHandler(const std::string&                       group_name,
                                      const std::string&                       property_name,
