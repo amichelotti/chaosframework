@@ -248,7 +248,7 @@ void MessagePSRDKafkaConsumer::poll() {
   }
   stats.counter++;
 
-  //  MRDDBG_<<" message from:"<<rd_kafka_topic_name(rkm->rkt)<<" par:"<<rkm->partition<<" off:"<<rkm->offset;
+ // MRDDBG_<<" message from:"<<d.key<<" par:"<<d.par<<" off:"<<d.off <<" handler topic:"<<topic_handlers.count(d.key)<<" onarrive:"<<handlers[ONARRIVE];
 
   /* Print the message key. */
   /*  if (rkm->key && is_printable(rkm->key, rkm->key_len))
@@ -309,45 +309,11 @@ void MessagePSRDKafkaConsumer::poll() {
       if(topic_handlers.count(d.key)){
             topic_handlers[d.key](d);
       } else if(handlers[ONARRIVE]){
-
           handlers[ONARRIVE](d);
-        }
+      }
         
 
-    } /*else {
-      ele_t* ele = new ele_t();
-      ele->key   = rd_kafka_topic_name(rkm->rkt);
-      ele->off   = rkm->offset;
-      ele->par   = rkm->partition;
-
-      try {
-        ele->cd = chaos::common::data::CDWUniquePtr(new chaos::common::data::CDataWrapper((const char*)rkm->payload, rkm->len));
-      } catch (chaos::CException& e) {
-        stats.errs++;
-         std::stringstream ss;
-         ss<< rkm->offset << "," << rkm->partition << " invalid chaos packet from:" << rd_kafka_topic_name(rkm->rkt) << " len:" << rkm->len << " msg:" << e.what();
-        MRDERR_ <<ss.str();
-        //<<" string:"<<std::string((const char*)rkm->payload, rkm->len);
-        if (handlers[ONERROR]) {
-          ele_t d;
-          d.key = rd_kafka_topic_name(rkm->rkt);
-          d.off = rkm->offset;
-          d.par = rkm->partition;
-          d.cd  = chaos::common::data::CDWUniquePtr(new chaos::common::data::CDataWrapper());
-          d.cd->addStringValue("msg",ss.str());
-          d.cd->addInt32Value("err",-1);
-
-          handlers[ONERROR](d);
-        }
-        rd_kafka_message_destroy(rkm);
-        return;
-      }
-      msgs.push(ele);
-      que_elem++;
-      stats.oks++;
-      data_ready = true;
-      cond.notify_all();
-    }*/
+    } 
     stats.oks++;
   }
 

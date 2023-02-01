@@ -85,28 +85,8 @@ namespace chaos {
                  * 
                  * @param ev 
                  */
-                 int addHandler(eventTypes ev,msgHandler cb,bool add=true){
-                    if(add){
-                        handlers[ev]=cb;
-                    } else if(handlers.count(ev)){
-                        handlers.erase(ev);
-                    }
-                    return 0;
-                }
-                int addHandler(const std::string& ev,msgHandler cb,bool add=true){
-                    std::string key=ev;
-                     if(key.size()==0){
-                        return -1;
-                    }
-                    std::replace(key.begin(), key.end(), '/', '.');
-                    std::replace(key.begin(), key.end(), ':', '.');
-                    if(add){
-                        topic_handlers[key]=cb;
-                    } else if(topic_handlers.count(key)){
-                        topic_handlers.erase(key);
-                    }
-                    return 0;
-                }
+                int addHandler(eventTypes ev,msgHandler cb,bool add=true);
+                int addHandler(const std::string& ev,msgHandler cb,bool add=true);
                 /**
                  * @brief Enable synchronous if supported
                  * 

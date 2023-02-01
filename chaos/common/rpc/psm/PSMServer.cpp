@@ -85,7 +85,8 @@ void PSMServer::init(void *init_data) {
     cons->addServer(msgbroker);
     prod->addServer(msgbroker);
     // subscribe to the queue of commands
-    cons->addHandler(chaos::common::message::MessagePublishSubscribeBase::ONARRIVE, boost::bind(&PSMServer::messageHandler, this, _1));
+    cons->addHandler(nodeuid + "_cmd", boost::bind(&PSMServer::messageHandler, this, _1));
+    
     cons->addHandler(chaos::common::message::MessagePublishSubscribeBase::ONERROR, boost::bind(&PSMServer::messageError, this, _1));
     cons->setOption("allow.auto.create.topics","true");
     if (cons->applyConfiguration() != 0) {
@@ -164,6 +165,8 @@ void PSMServer::start() {
     if(cfg->hasKey("ismds")){
         PSMS_LAPP << "Subscribing to " <<chaos::common::constants::CHAOS_ADMIN_ADMIN_TOPIC;
         cons->subscribe(chaos::common::constants::CHAOS_ADMIN_ADMIN_TOPIC);
+        cons->addHandler(chaos::common::constants::CHAOS_ADMIN_ADMIN_TOPIC, boost::bind(&PSMServer::messageHandler, this, _1));
+
     }
     PSMS_LAPP << "Subscribing to " << nodeuid + chaos::DataPackPrefixID::COMMAND_DATASET_POSTFIX;
     cons->subscribe(nodeuid + chaos::DataPackPrefixID::COMMAND_DATASET_POSTFIX);

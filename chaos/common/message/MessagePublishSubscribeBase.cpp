@@ -36,7 +36,38 @@ namespace chaos {
             }
              return impl->applyConfiguration();
          }*/
+         int MessagePublishSubscribeBase::addHandler(eventTypes ev,msgHandler cb,bool add){
+                    if(add){
+                     MRDDBG_<<"Register handler "<<ev<<" @"<<std::hex<<cb;
 
+                        handlers[ev]=cb;
+                    } else if(handlers.count(ev)){
+                        MRDDBG_<<"UNRegister handler "<<ev;
+
+                        handlers.erase(ev);
+                    }
+                    return 0;
+                }
+        int MessagePublishSubscribeBase::addHandler(const std::string& ev,msgHandler cb,bool add){
+                    std::string key=ev;
+                     if(key.size()==0){
+                        return -1;
+                    }
+                    std::replace(key.begin(), key.end(), '/', '.');
+                    std::replace(key.begin(), key.end(), ':', '.');
+                    if(add){
+
+                        topic_handlers[key]=cb;
+                        MRDDBG_<<topic_handlers.size()<<" + Register handler on key:"<<ev<<" topic:"<<key<<" @"<<std::hex<<cb;
+
+                    } else if(topic_handlers.count(key)){
+                        topic_handlers.erase(key);
+
+                        MRDDBG_<<topic_handlers.size()<<" - UNRegister handler on key:"<<ev<<" topic:"<<key;
+
+                    }
+                    return 0;
+                }
           int MessagePublishSubscribeBase::applyConfiguration(){
                 MRDDBG_<<"NOT IMPLEMENTED";
 
