@@ -45,7 +45,7 @@ RpcServer(alias){
 }
 
 PSMServer::~PSMServer() {
-    
+ deinit();   
 }
 
 //init the server getting the configuration value
@@ -123,7 +123,7 @@ void PSMServer::messageHandler( chaos::common::message::ele_t& data) {
         PSMS_LDBG << data.cd->getInt32Value(RpcActionDefinitionKey::CS_CMDM_MESSAGE_ID)<<" - Message Received from node:"<<src<<" seq_id:"<<seq_id ;//<< " desc:"<<data.cd->getJSONString();
 
     } else {
-        PSMS_LDBG << "Message Received from node:"<<src<<" seq_id:"<<seq_id<<" sent:"<<(now-ts)<<" ms";//<< " desc:"<<data.cd->getJSONString();
+        PSMS_LDBG << "Message Received from node:\""<<src<<"\" seq_id:"<<seq_id<<" sent:"<<(now-ts)<<" ms";//<< " desc:"<<data.cd->getJSONString();
 
     }
 
@@ -163,12 +163,12 @@ void PSMServer::messageError( chaos::common::message::ele_t& data) {
 //start the rpc adapter
 void PSMServer::start() {
     if(cfg->hasKey("ismds")){
-        PSMS_LAPP << "Subscribing to " <<chaos::common::constants::CHAOS_ADMIN_ADMIN_TOPIC;
+        PSMS_LDBG << "Subscribing to " <<chaos::common::constants::CHAOS_ADMIN_ADMIN_TOPIC;
         cons->subscribe(chaos::common::constants::CHAOS_ADMIN_ADMIN_TOPIC);
         cons->addHandler(chaos::common::constants::CHAOS_ADMIN_ADMIN_TOPIC, boost::bind(&PSMServer::messageHandler, this, _1));
 
     }
-    PSMS_LAPP << "Subscribing to " << nodeuid + chaos::DataPackPrefixID::COMMAND_DATASET_POSTFIX;
+    PSMS_LDBG << "Subscribing to " << nodeuid + chaos::DataPackPrefixID::COMMAND_DATASET_POSTFIX;
     cons->subscribe(nodeuid + chaos::DataPackPrefixID::COMMAND_DATASET_POSTFIX);
     cons->start();
     prod->start();
@@ -176,6 +176,8 @@ void PSMServer::start() {
 
 //start the rpc adapter
 void PSMServer::stop() {
+    PSMS_LDBG << "STOP consumer and producer " << nodeuid + chaos::DataPackPrefixID::COMMAND_DATASET_POSTFIX;
+
     cons->stop();
     prod->stop();
     
@@ -183,6 +185,7 @@ void PSMServer::stop() {
 
 //deinit the rpc adapter
 void PSMServer::deinit() {
-    
-    PSMS_LAPP << "PSMServer deinit";
+    PSMS_LDBG << "PSMServer deinit";
+    stop();
+
 }

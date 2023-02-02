@@ -135,12 +135,14 @@ int IODirectIOPSMsgDriver::addHandler(chaos::common::message::msgHandler cb) {
 
 void IODirectIOPSMsgDriver::deinit() {
   IODirectIODriver::deinit();
+  /*
   if(prod.get()){
     prod->stop();
   }
   if (cons.get()) {
     cons->stop();
   }
+  */
   IODirectIOPSMsgDriver_DLDBG_ << "Deinitialized";
 }
 

@@ -57,6 +57,7 @@ PSMClient::~PSMClient(){
 //    #ifndef CHAOS_PROMETHEUS
 //    delete counter_zmqerror_uptr;
 //    #endif
+deinit();
 }
 
 /*
@@ -118,7 +119,7 @@ void PSMClient::stop() {
 void PSMClient::deinit() {
    
     PSMC_LAPP << "PSM Destroyed";
-
+    stop();
 }
 
 /*
