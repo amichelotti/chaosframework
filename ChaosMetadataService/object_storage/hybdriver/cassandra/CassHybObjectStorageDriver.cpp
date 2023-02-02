@@ -42,7 +42,7 @@ HybBaseDriver(name){}
 
 CassHybObjectStorageDriver::~CassHybObjectStorageDriver(){}
 
-void CassHybObjectStorageDriver::init(void *init_data) throw (chaos::CException) {
+void CassHybObjectStorageDriver::init(void *init_data)  {
     CassError err = CASS_OK;
     MapKVP& obj_stoarge_kvp = metadata_service::ChaosMetadataService::getInstance()->setting.object_storage_setting.key_value_custom_param;
     
@@ -77,7 +77,7 @@ void CassHybObjectStorageDriver::init(void *init_data) throw (chaos::CException)
     HybBaseDriver::init(init_data);
 }
 
-void CassHybObjectStorageDriver::deinit() throw (chaos::CException) {
+void CassHybObjectStorageDriver::deinit()  {
      HybBaseDriver::deinit();
 }
 

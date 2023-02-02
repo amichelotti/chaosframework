@@ -24,7 +24,7 @@
 #include "../../ChaosMetadataService.h"
 #include <boost/algorithm/string.hpp>
 #include <chaos_service_common/DriverPoolManager.h>
-
+#include <regex>
 #include "InfluxDBLogStorageDriver.h"
 #include "InfluxDB.h"
 using namespace chaos;
@@ -49,7 +49,7 @@ AbstractPersistenceDriver(name){}
 
 InfluxDBLogStorageDriver::~InfluxDBLogStorageDriver() {}
 
-void InfluxDBLogStorageDriver::init(void *init_data) throw (chaos::CException) {
+void InfluxDBLogStorageDriver::init(void *init_data)  {
     AbstractPersistenceDriver::init(init_data);
 
     const ChaosStringVector url_list = DriverPoolManager::logSetting.persistence_server_list;
@@ -69,9 +69,9 @@ void InfluxDBLogStorageDriver::init(void *init_data) throw (chaos::CException) {
     int port=8086;
     if(url_list.size()>0){
         std::vector<std::string> ele;
-        boost::regex expr{"(.+):(\\d+)/*(.*)"};
-        boost::smatch what;
-        if (boost::regex_search(url_list[0], what, expr)){
+        std::regex expr{"(.+):(\\d+)/*(.*)"};
+        std::smatch what;
+        if (std::regex_search(url_list[0], what, expr)){
             
             servername=what[1];
             port=atoi(what[2].str().c_str());
@@ -133,7 +133,7 @@ void InfluxDBLogStorageDriver::init(void *init_data) throw (chaos::CException) {
     registerDataAccess<ObjectStorageDataAccess>(new InfluxDB(si));
 }
 
-void InfluxDBLogStorageDriver::deinit() throw (chaos::CException) {
+void InfluxDBLogStorageDriver::deinit()  {
     //call sublcass
     AbstractPersistenceDriver::deinit();
 }

@@ -23,16 +23,14 @@
 #define __CHAOSFramework__AbstractDriver__
 
 #include <string>
-#include <vector>
 
-#include <boost/thread.hpp>
 #include <chaos/common/data/Property.h>
 #include <chaos/common/chaos_errors.h>
 #include <chaos/common/utility/LockableObject.h>
 #include <chaos/common/utility/InizializableService.h>
 #include <chaos/common/thread/TemplatedConcurrentQueue.h>
-#include <chaos/cu_toolkit/driver_manager/driver/DriverTypes.h>
-#include <chaos/cu_toolkit/driver_manager/driver/BaseBypassDriver.h>
+#include "DriverTypes.h"
+#include "BaseBypassDriver.h"
 
 //#include <json/json.h>
 
@@ -74,7 +72,7 @@ namespace chaos{
                     template<typename T>
                     friend class DriverWrapperPlugin;
                     friend class chaos::cu::driver_manager::DriverManager;
-					
+					friend class DriverAccessor;
 					bool driver_need_to_deinitialize;
 					
 					//! unique uuid for the instance
@@ -99,7 +97,7 @@ namespace chaos{
                     bool                            is_json_param;
                    // Json::Reader					json_reader;
                    // Json::Value						json_parameter_document;
-                    
+                    bool bypassEnabled;
                     //! command queue used for receive DrvMsg pack
                     //boost::interprocess::message_queue *commandQueue;
                     ChaosUniquePtr<DriverQueueType> command_queue;
@@ -148,12 +146,11 @@ namespace chaos{
 
 					virtual void driverDeinit();
                     const bool isDriverParamInJson() const;
-                    const bool isBypass()const;
                     /*
                      * called via rpc or via user to implement the bypass
                      * */
-                    void setBypass(bool val);
-                    
+                  
+
                     //enable lock/unlock mutex handling
                     bool exclusive;
                  //   const Json::Value& getDriverParamJsonRootElement() const;
@@ -216,6 +213,8 @@ namespace chaos{
                      * to set last error
                     */
                     void setLastError(const std::string&str);
+                    virtual void setBypass(bool val);
+                    virtual bool isBypass();
                     std::string getLastError(){return lastError;}
                 };
                 

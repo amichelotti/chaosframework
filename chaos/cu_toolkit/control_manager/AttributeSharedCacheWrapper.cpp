@@ -140,7 +140,7 @@ void AttributeSharedCacheWrapper::addCustomAttribute(const std::string&  name,
 	attribute_value_shared_cache->addAttribute(DOMAIN_CUSTOM,
 											   name,
 											   svalue.size()+1,
-											   chaos::DataType::TYPE_CLUSTER);		 
+											   chaos::DataType::TYPE_JSON);		 
 										 }
 // Add a new variable
 void AttributeSharedCacheWrapper::addCustomAttribute(const std::string&  name,

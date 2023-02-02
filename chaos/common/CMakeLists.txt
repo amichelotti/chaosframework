@@ -18,7 +18,7 @@ if(WIN32)
 	 jsonCpp
 	 GIT_REPOSITORY https://github.com/open-source-parsers/jsoncpp.git
 	 
-	 GIT_TAG 1.9.2
+//	 GIT_TAG 1.9.2
      PREFIX "${CMAKE_BINARY_DIR}/ext_dep/libjsoncpp-prefix"
 	 SOURCE_DIR "${CMAKE_BINARY_DIR}/ext_dep/libjsoncpp-src"
 	 BINARY_DIR "${CMAKE_BINARY_DIR}/ext_dep/libjsoncpp-build"
@@ -41,7 +41,7 @@ if(WIN32)
     BUILD_IN_SOURCE 1
     UPDATE_COMMAND ""
     CONFIGURE_COMMAND bootstrap.bat
-    BUILD_COMMAND b2 link=static install --prefix=${CMAKE_INSTALL_PREFIX}/boostinstall
+    BUILD_COMMAND b2 --link=static --without-python --without-mpi --disable-icu --variant=release --cflags=-fPIC --cxxflags=-fPIC install --prefix=${CMAKE_INSTALL_PREFIX}/boostinstall
     INSTALL_COMMAND b2 install --prefix=${CMAKE_INSTALL_PREFIX}/boostinstall
     LOG_DOWNLOAD 1
     LOG_UPDATE 1
@@ -217,6 +217,7 @@ IF (CHAOS_PROMETHEUS)
   add_definitions(-DCHAOS_PROMETHEUS=1)
 ENDIF()
 
+
 IF (CLING_VIRTUAL_MACHINE_ENABLE)
   MESG("Using ${CMAKE_BINARY_DIR}/ext_dep/cling-src for download cling")
   IF(NOT EXISTS ${CMAKE_BINARY_DIR}/ext_dep/cling-src)
@@ -261,6 +262,32 @@ ENDIF()
 
 
 SET(BUILD_LIBRARY )
+
+IF(CHAOS_EPICS_SUPPORT)
+  MESG("Add EPICS SUPPORT")
+  set(ENV{EPICS_HOST_ARCH} "linux-x86_64")
+
+ ExternalProject_Add(
+ 	 epics
+ 	 GIT_REPOSITORY https://github.com/epics-base/epics-base.git
+    GIT_TAG origin/7.0
+      GIT_PROGRESS 1
+      BUILD_IN_SOURCE 1
+      PREFIX "${CMAKE_BINARY_DIR}/ext_dep/epics-prefix"
+      SOURCE_DIR "${CMAKE_BINARY_DIR}/ext_dep/epics-src"
+      PATCH_COMMAND sed -i "s/\#COMMANDLINE_LIBRARY = EPICS/COMMANDLINE_LIBRARY = EPICS/" ${CMAKE_BINARY_DIR}/ext_dep/epics-src/configure/os/CONFIG_SITE.Common.linux-x86_64
+      CONFIGURE_COMMAND sed -i "s/STATIC_BUILD=NO/STATIC_BUILD=YES/g" ${CMAKE_BINARY_DIR}/ext_dep/epics-src/configure/CONFIG_SITE
+
+	    UPDATE_COMMAND    ""
+	    INSTALL_COMMAND   ""
+#      CONFIGURE_COMMAND "make -j 3 INSTALL_LOCATION=${CMAKE_INSTALL_PREFIX} install"
+#      BUILD_COMMAND "make -j 3 INSTALL_LOCATION=${CMAKE_INSTALL_PREFIX} install"
+      BUILD_COMMAND make -j 3  INSTALL_LOCATION=${CMAKE_INSTALL_PREFIX} install
+  )
+
+ 
+ENDIF(CHAOS_EPICS_SUPPORT)
+
 #add_subdirectory(libbson)
 
 # ExternalProject_Add(
@@ -476,7 +503,6 @@ SET(common_lib_src ${common_lib_src}
                     )
 ENDIF()
 IF(KAFKA_ASIO_ENABLE)
-SET(CMAKE_CXX_STANDARD 11)
 INCLUDE_DIRECTORIES(${CMAKE_INSTALL_PREFIX}/snappy/include message/impl/kafka/asio/ )
 SET(common_lib_src ${common_lib_src} message/impl/kafka/asio/MessagePSKafkaAsioProducer.cpp message/impl/kafka/asio/MessagePSKafkaAsio.cpp message/impl/kafka/asio/MessagePSKafkaAsioConsumer.cpp)
 link_directories(${CMAKE_INSTALL_PREFIX}/snappy/lib ${CMAKE_INSTALL_PREFIX}/snappy/lib64)
@@ -620,7 +646,6 @@ ENDIF()
 
 
 
-
 IF(WIN32)
 MESSAGE("WIN32 CMAKE_INSTALL_PREFIX" ${CMAKE_INSTALL_PREFIX} )
 set (BOOST_LIBPATH  ${CMAKE_INSTALL_PREFIX}/boostinstall/lib )
@@ -640,15 +665,22 @@ IF (WIN32)
 ENDIF(WIN32)
 ENDIF()
 
-
+SET(EPICS_LIB)
+IF(CHAOS_EPICS_SUPPORT)
+  foreach(elib libCom.a libpvData.a )
+      #${CMAKE_INSTALL_PREFIX}/lib/linux-x86_64/${elib}
+      SET(EPICS_LIB ${EPICS_LIB} ${elib} )
+  endforeach()
+   MESG("Adding Epics support ${BUILD_LIBRARY}")
+ENDIF()
 
 IF (BUILD_FORCE_STATIC  )
   ADD_LIBRARY(${PROJECT_NAME} STATIC ${common_lib_src})
-  TARGET_LINK_LIBRARIES(${PROJECT_NAME} z lz4 ${FrameworkLib} ${BUILD_LIBRARY})
+  TARGET_LINK_LIBRARIES(${PROJECT_NAME} z lz4 ${EPICS_LIB} ${FrameworkLib} ${BUILD_LIBRARY})
 ELSE (BUILD_FORCE_STATIC)
   ADD_LIBRARY(${PROJECT_NAME} SHARED ${common_lib_src})
   set_target_properties(${PROJECT_NAME} PROPERTIES VERSION 1.0.0 SOVERSION 1)
-  TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC z lz4 ${FrameworkLib} PRIVATE ${BUILD_LIBRARY})
+  TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC z lz4 ${EPICS_LIB} ${FrameworkLib} PRIVATE ${BUILD_LIBRARY})
 ENDIF (BUILD_FORCE_STATIC)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE CLING_VIRTUAL_MACHINE=${CLING_VIRTUAL_MACHINE})
@@ -657,6 +689,9 @@ IF (CHAOS_PROMETHEUS)
 add_dependencies(${PROJECT_NAME} prometheus)
 endif()
 
+IF(CHAOS_EPICS_SUPPORT)
+add_dependencies(${PROJECT_NAME} epics)
+ENDIF()
 
 IF (CLING_VIRTUAL_MACHINE)
   add_dependencies(${PROJECT_NAME} cling)

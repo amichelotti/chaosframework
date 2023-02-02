@@ -22,11 +22,9 @@
 #ifndef __CHAOSFramework__DriverAccessor__
 #define __CHAOSFramework__DriverAccessor__
 
-#include <set>
-#include <boost/atomic/atomic.hpp>
-#include <chaos/cu_toolkit/driver_manager/driver/DriverTypes.h>
+#include "DriverTypes.h"
 #include <chaos/common/thread/TemplatedConcurrentQueue.h>
-#include <chaos/cu_toolkit/driver_manager/DriverManager.h>
+#include "../DriverManager.h"
 namespace chaos_thread_ns = chaos::common::thread;
 
 namespace chaos{
@@ -177,7 +175,8 @@ namespace chaos{
                      * @return 0 if success
                      */
                     int setDrvProperty(const std::string& key, const std::string& value);
-
+                    void setBypass(bool val);
+                    const bool isBypass()const;
                     std::string getUID() const;
                     std::string getDriverName() const;
                     std::string getLastError();

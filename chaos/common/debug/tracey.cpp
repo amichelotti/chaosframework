@@ -3793,19 +3793,19 @@ namespace tracey
 
 //* Custom memory operators (with no exceptions)
 
-void *operator new( size_t size, const std::nothrow_t &t ) throw() {
+void *operator new( size_t size, const std::nothrow_t &t ) {
 	return tracey::watch( tracey::malloc( size ), size );
 }
 
-void *operator new[]( size_t size, const std::nothrow_t &t ) throw() {
+void *operator new[]( size_t size, const std::nothrow_t &t ) {
 	return tracey::watch( tracey::malloc( size ), size );
 }
 
-void operator delete( void *ptr, const std::nothrow_t &t ) throw() {
+void operator delete( void *ptr, const std::nothrow_t &t ) {
 	tracey::free( tracey::forget( ptr ) );
 }
 
-void operator delete[]( void *ptr, const std::nothrow_t &t ) throw() {
+void operator delete[]( void *ptr, const std::nothrow_t &t ) {
 	tracey::free( tracey::forget( ptr ) );
 }
 
@@ -3819,11 +3819,11 @@ void *operator new[]( size_t size ) throw(std::bad_alloc) {
 	return tracey::watch( tracey::malloc( size ), size );
 }
 
-void operator delete( void *ptr ) throw() {
+void operator delete( void *ptr ) {
 	tracey::free( tracey::forget( ptr ) );
 }
 
-void operator delete[]( void *ptr ) throw() {
+void operator delete[]( void *ptr ) {
 	tracey::free( tracey::forget( ptr ) );
 }
 

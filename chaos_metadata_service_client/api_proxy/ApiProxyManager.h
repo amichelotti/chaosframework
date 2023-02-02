@@ -21,16 +21,12 @@
 #ifndef __CHAOSFramework__ApiProxyManager__
 #define __CHAOSFramework__ApiProxyManager__
 
-//#include <chaos/common/message/MultiAddressMessageChannel.h>
-#include <chaos_metadata_service_client/api_proxy/ApiProxy.h>
+#include "ApiProxy.h"
 #include <chaos/common/utility/ObjectInstancer.h>
-//#include <chaos/common/network/NetworkBroker.h>
 #include <chaos/common/utility/LockableObject.h>
 #include <chaos/common/utility/InizializableService.h>
 #include <chaos/common/utility/ObjectFactoryRegister.h>
-#include <string>
-#include <vector>
-#include <iostream>
+
 #define GET_CHAOS_API_PTR(api_name)\
 chaos::metadata_service_client::ChaosMetadataServiceClient::getInstance()->getApiProxy<api_name>()
 

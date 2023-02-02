@@ -34,6 +34,29 @@
 #endif
 #endif
 
+#ifdef EPICS
+namespace epics{
+    namespace pvData{
+        class Structure;
+        class PVUnion;
+        class PVStructure;
+        class PVField;
+#if __cplusplus >= 201103L
+        typedef std::shared_ptr<const Structure> StructureConstPtr;
+        typedef std::shared_ptr<const PVUnion> PVUnionConstPtr;
+        typedef std::shared_ptr<const PVStructure> PVStructureConstPtr;
+        typedef std::shared_ptr<const PVField> PVFieldConstPtr;
+
+
+
+#else
+        typedef std::tr1::shared_ptr<const Structure> StructureConstPtr;
+
+#endif
+    }
+}
+#endif
+
 #if defined(__GNUC__) && (__GNUC__ >= 6) && !defined(__clang__)
 // See libmongoc.hh for details on this diagnostic suppression
 #pragma GCC diagnostic push
@@ -207,6 +230,12 @@ namespace chaos {
                 //get a projection of a vector of keys
                 ChaosUniquePtr<chaos::common::data::CDataWrapper> getCSProjection(const std::vector<std::string>&) const;
 
+                #ifdef EPICS
+                    void setSerializedData(epics::pvData::PVStructureConstPtr ptr);
+                    void setSerializedData(epics::pvData::PVUnionConstPtr ptr);
+                    void decodePVField(epics::pvData::PVFieldConstPtr);
+
+                #endif
                 //add a string value
                 //void addStringValue(const char *, const char *); 
                 /**
@@ -484,6 +513,7 @@ throw chaos::CException(-2, ss.str(), __PRETTY_FUNCTION__);
                 const char* getBSONRawData() const;
                 const int getBSONRawSize() const;
                 chaos::common::data::ChaosBsonShrdPtr getBSONShrPtr() const { return bson;}
+
                 //return the json data
                 //SerializationBuffer* getJSONData();
                 //return the json representation for this data wrapper

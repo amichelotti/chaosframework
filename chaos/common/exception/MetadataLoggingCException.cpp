@@ -27,13 +27,13 @@ using namespace chaos::common::metadata_logging;
 
 MetadataLoggingCException::MetadataLoggingCException(int eCode,
                                                      const char * eMessage,
-                                                     const char * eDomain)throw():
+                                                     const char * eDomain):
 CException(eCode, eMessage, eDomain) {}
 
 MetadataLoggingCException::MetadataLoggingCException(const std::string& log_source,
                                                      int error_code,
                                                      const std::string& error_message,
-                                                     const std::string& error_domain)throw():
+                                                     const std::string& error_domain):
 CException(error_code,
            error_message,
            error_domain) {
@@ -51,9 +51,9 @@ CException(error_code,
     }
 }
 
-MetadataLoggingCException::MetadataLoggingCException(const MetadataLoggingCException& _exception) throw():
+MetadataLoggingCException::MetadataLoggingCException(const MetadataLoggingCException& _exception):
 CException(_exception){}
 
-MetadataLoggingCException::~MetadataLoggingCException() throw() {
+MetadataLoggingCException::~MetadataLoggingCException() {
     
 }

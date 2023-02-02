@@ -728,7 +728,9 @@ int MongoDBControlUnitDataAccess::setInstanceDescription(const std::string& cu_u
         if(instance_description.hasKey(DataServiceNodeDefinitionKey::DS_STORAGE_HISTORY_TIME)) {
             updated_field << DataServiceNodeDefinitionKey::DS_STORAGE_HISTORY_TIME << (long long)instance_description.getInt64Value(DataServiceNodeDefinitionKey::DS_STORAGE_HISTORY_TIME);
         }
-        
+        if(instance_description.hasKey(ControlUnitDatapackSystemKey::CU_LOG_MAX_MS)) {
+            updated_field << ControlUnitDatapackSystemKey::CU_LOG_MAX_MS << (long long)instance_description.getInt64Value(ControlUnitDatapackSystemKey::CU_LOG_MAX_MS);
+        }
         if(instance_description.hasKey(DataServiceNodeDefinitionKey::DS_STORAGE_LIVE_TIME)) {
             updated_field << DataServiceNodeDefinitionKey::DS_STORAGE_LIVE_TIME << (long long)instance_description.getInt64Value(DataServiceNodeDefinitionKey::DS_STORAGE_LIVE_TIME);
         }
@@ -878,6 +880,8 @@ int MongoDBControlUnitDataAccess::getInstanceDescription(const std::string& unit
             if(instance_description.hasField(DataServiceNodeDefinitionKey::DS_STORAGE_TYPE))(*result)->addInt32Value(DataServiceNodeDefinitionKey::DS_STORAGE_TYPE, (int32_t)instance_description.getField(DataServiceNodeDefinitionKey::DS_STORAGE_TYPE).numberInt());
             if(instance_description.hasField(DataServiceNodeDefinitionKey::DS_STORAGE_HISTORY_AGEING))(*result)->addInt32Value(DataServiceNodeDefinitionKey::DS_STORAGE_HISTORY_AGEING, (int32_t)instance_description.getField(DataServiceNodeDefinitionKey::DS_STORAGE_HISTORY_AGEING).numberInt());
             if(instance_description.hasField(DataServiceNodeDefinitionKey::DS_STORAGE_HISTORY_TIME))(*result)->addInt64Value(DataServiceNodeDefinitionKey::DS_STORAGE_HISTORY_TIME, (int64_t)instance_description.getField(DataServiceNodeDefinitionKey::DS_STORAGE_HISTORY_TIME).numberInt());
+            if(instance_description.hasField(ControlUnitDatapackSystemKey::CU_LOG_MAX_MS))(*result)->addInt64Value(ControlUnitDatapackSystemKey::CU_LOG_MAX_MS, (int64_t)instance_description.getField(ControlUnitDatapackSystemKey::CU_LOG_MAX_MS).numberInt());
+
             if(instance_description.hasField(DataServiceNodeDefinitionKey::DS_STORAGE_LIVE_TIME))(*result)->addInt64Value(DataServiceNodeDefinitionKey::DS_STORAGE_LIVE_TIME, (int64_t)instance_description.getField(DataServiceNodeDefinitionKey::DS_STORAGE_LIVE_TIME).numberInt());
             if(instance_description.hasField("control_unit_implementation"))(*result)->addStringValue("control_unit_implementation", instance_description.getStringField("control_unit_implementation"));
             

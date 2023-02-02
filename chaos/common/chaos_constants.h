@@ -199,7 +199,7 @@ static const unsigned int CacheTimeoutinMSec          = 5000;
 static const unsigned int MetricCollectorTimeoutinMSec = 1000;
 static const unsigned int RefreshEndpointMSec          = 60000;
 static const unsigned int SkipDatasetOlderThan         = 5*60000;
-
+static const unsigned int ProcessingQueueTimeoutMSec = 500; //ms
 //!time to wait for queue can accept new data to push in object storage
 /*!
              Mds when receive a new dataset to store on history, it is push on hst sublayer
@@ -788,11 +788,14 @@ static const char* const DS_STORAGE_HISTORY_AGEING = "dsndk_storage_history_agei
          store another datapack into the history system[uint64]
          */
 static const char* const DS_STORAGE_HISTORY_TIME = "dsndk_storage_history_time";
+
 /*!
          storage time [in msecods uint64] the time that need to pass before
          store another datapack into the live system[uint64]
          */
 static const char* const DS_STORAGE_LIVE_TIME   = "dsndk_storage_live_time";
+static const char* const DS_STORAGE_LOG_TIME   = "dsndk_storage_log_time";
+
 static const char* const DS_BROKER_ADDRESS_LIST = "dsndk_broker_list";
 static const char* const DS_SUBSCRIBE_KEY_LIST  = "dsndk_subkey_list";
 
@@ -1199,7 +1202,7 @@ typedef enum DataType {
   TYPE_UINT16 = 0xA,
   TYPE_UINT8 = 0xB,
   TYPE_FLOAT = 0xC,
-  TYPE_CLUSTER = 0xD,
+  TYPE_JSON = 0xD,
   //!modifier to be ored to normal data types
   TYPE_VECTOR_BOOL = 0x100,
   TYPE_VECTOR_INT32  = 0x101,
@@ -1237,7 +1240,7 @@ static std::string inline typeDescriptionByCode(DataType type) {
     case TYPE_STRING:
       return "String";
       //!byte array variable length
-    case TYPE_CLUSTER:
+    case TYPE_JSON:
       return "cluster";
       //!byte array variable length
 
@@ -1263,7 +1266,7 @@ static DataType inline typeCodeByDescription(const std::string& _type_descriptio
   } else if (type_description.compare("string") == 0) {
     return TYPE_STRING;
   } else if (type_description.compare("cluster") == 0) {
-    return TYPE_CLUSTER;
+    return TYPE_JSON;
   } else if (type_description.compare("binary") == 0) {
     return TYPE_BYTEARRAY;
   } else {
@@ -1300,10 +1303,18 @@ typedef enum BinarySubtype {
   SUB_TYPE_UINT64,
   //!C string variable length
   //! no specific encoding
+  SUB_TYPE_SCALAR_INT8,
+  //!Integer 16 bit length
+  SUB_TYPE_SCALAR_INT16,
+  SUB_TYPE_SCALAR_UINT8,
+  //!Integer 16 bit length
+  SUB_TYPE_SCALAR_UINT16,
+  SUB_TYPE_SCALAR_UINT32,
   SUB_TYPE_NONE,
   //! unsigned flag
   SUB_TYPE_UNSIGNED = 0x200,
 } BinarySubtype;
+
 
 //subtype helper macro
 #define CHAOS_SUBTYPE_IS_UNSIGNED(s) ((s & chaos::DataType::SUB_TYPE_UNSIGNED) == chaos::DataType::SUB_TYPE_UNSIGNED)

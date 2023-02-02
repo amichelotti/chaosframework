@@ -26,7 +26,6 @@
 #include <chaos/common/global.h>
 #include <mongo/client/dbclient.h>
 
-#include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 
 #define MDBLDA_INFO INFO_LOG(MongoDBLoggingDataAccess)
@@ -256,6 +255,7 @@ int MongoDBLoggingDataAccess::searchEntryAdvanced(LogEntryList& entry_list,
                      search_string,
                      boost::is_any_of(" "),
                      boost::token_compress_on);
+
         if(criteria_token.size()) {
             for (std::vector<std::string>::iterator it = criteria_token.begin();
                  it != criteria_token.end();

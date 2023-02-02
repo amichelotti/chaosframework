@@ -22,8 +22,8 @@
 #include <chaos/common/utility/UUIDUtil.h>
 #include <string>
 
-#include <chaos/cu_toolkit/driver_manager/driver/AbstractDriver.h>
-#include <chaos/cu_toolkit/driver_manager/driver/DriverAccessor.h>
+#include "AbstractDriver.h"
+#include "DriverAccessor.h"
 
 using namespace chaos::common::data;
 using namespace chaos::common::utility;
@@ -38,7 +38,7 @@ using namespace chaos::cu::driver_manager::driver;
 
  ------------------------------------------------------*/
 AbstractDriver::AbstractDriver(BaseBypassShrdPtr custom_bypass_driver)
-    : accessor_count(0), exclusive(false), bypass_driver(MOVE(custom_bypass_driver)), o_exe(this), is_json_param(false), driver_need_to_deinitialize(false), driver_uuid(UUIDUtil::generateUUIDLite()), command_queue(new DriverQueueType()) {}
+    : accessor_count(0), exclusive(false), bypass_driver(MOVE(custom_bypass_driver)),bypassEnabled(false),o_exe(this), is_json_param(false), driver_need_to_deinitialize(false), driver_uuid(UUIDUtil::generateUUIDLite()), command_queue(new DriverQueueType()) {}
 
 /*------------------------------------------------------
 
@@ -416,12 +416,13 @@ void AbstractDriver::driverDeinit() {
   ADLDBG_ << "base driver " << identification_string << " DEINIT";
 }
 
-const bool AbstractDriver::isBypass() const {
-  return o_exe != this;
+ bool AbstractDriver::isBypass()  {
+  return bypassEnabled;
 }
 
 void AbstractDriver::setBypass(bool bypass) {
   // boost::unique_lock<boost::shared_mutex> lock(accesso_list_shr_mux);
+    bypassEnabled =bypass;
 
   if (bypass) {
     LBypassDriverUnqPtrReadLock rl = bypass_driver.getReadLockObject();

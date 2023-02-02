@@ -76,7 +76,7 @@ void IOCU::unitDefineActionAndDataset() {
   for (int cnt = 0; cnt < ret / sizeof(ddDataSet_t); cnt++) {
     int max_size = driver_dataset[cnt].maxsize;
     int type     = (int)driver_dataset[cnt].type;
-    if (driver_dataset[cnt].type == chaos::DataType::TYPE_CLUSTER) {
+    if (driver_dataset[cnt].type == chaos::DataType::TYPE_JSON) {
       type = chaos::DataType::TYPE_BYTEARRAY;
     }
     if (type & chaos::DataType::TYPE_ACCESS_ARRAY) {

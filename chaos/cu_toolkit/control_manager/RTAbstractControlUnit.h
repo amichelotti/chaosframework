@@ -47,7 +47,6 @@ namespace chaos {
                 friend class AbstractExecutionUnit;
 
                 bool scheduler_run;
-				uint64_t schedule_delay;
 				boost::scoped_ptr<boost::thread>  scheduler_thread;
 
 				/*!
@@ -70,7 +69,8 @@ namespace chaos {
                 //!redefine private for protection
                 AbstractSharedDomainCache* _getAttributeCache();
 			protected:
-                
+                uint64_t schedule_delay;
+
                 /*! default constructor
                  \param _control_unit_param is a string that contains parameter to pass during the contorl unit creation
                  \param _control_unit_drivers driver information

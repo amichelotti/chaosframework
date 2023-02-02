@@ -266,8 +266,10 @@ void AbstractControlUnit::_initPropertyGroup() {
   PropertyGroup& pg_abstract_cu = addGroup(chaos::ControlUnitPropertyKey::P_GROUP_NAME);
   pg_abstract_cu.addProperty(ControlUnitDatapackSystemKey::BYPASS_STATE, "Put control unit in bypass state", DataType::TYPE_BOOLEAN, 0, CDataVariant((bool)false));
   pg_abstract_cu.addProperty(DataServiceNodeDefinitionKey::DS_STORAGE_TYPE, "Set the control unit storage type", DataType::TYPE_INT32, 0, CDataVariant((int32_t)0));
-  pg_abstract_cu.addProperty(DataServiceNodeDefinitionKey::DS_STORAGE_LIVE_TIME, "Set the control unit storage type", DataType::TYPE_INT64, 0, CDataVariant((int64_t)0));
-  pg_abstract_cu.addProperty(DataServiceNodeDefinitionKey::DS_STORAGE_HISTORY_TIME, "Set the control unit storage type", DataType::TYPE_INT64, 0, CDataVariant((int64_t)0));
+  pg_abstract_cu.addProperty(DataServiceNodeDefinitionKey::DS_STORAGE_LIVE_TIME, "Set the interval time between two live packets", DataType::TYPE_INT64, 0, CDataVariant((int64_t)0));
+  pg_abstract_cu.addProperty(DataServiceNodeDefinitionKey::DS_STORAGE_HISTORY_TIME, "Set the interval time between two history packets", DataType::TYPE_INT64, 0, CDataVariant((int64_t)0));
+  pg_abstract_cu.addProperty(DataServiceNodeDefinitionKey::DS_STORAGE_LOG_TIME, "Set the interval time between two log packets", DataType::TYPE_INT64, 0, CDataVariant((int64_t)0));
+
   pg_abstract_cu.addProperty(DataServiceNodeDefinitionKey::DS_UPDATE_ANYWAY, "Update the dataset anyway (ms)", DataType::TYPE_INT32, 0, CDataVariant((int32_t)DS_UPDATE_ANYWAY_DEF));
   pg_abstract_cu.addProperty(ControlUnitDatapackSystemKey::CU_LOG_MAX_MS, "Maximum log rate (ms) 0 always", DataType::TYPE_INT32, 0, CDataVariant((int32_t)CONTROL_UNIT_LOG_MAX_MS_DEF));
   busy=false;bypass=false;
@@ -275,7 +277,7 @@ void AbstractControlUnit::_initPropertyGroup() {
   ds_update_anyway = DS_UPDATE_ANYWAY_DEF;
   //    CDWUniquePtr burst_type_desc(new CDataWrapper());
   //    burst_type_desc->addInt32Value(DataServiceNodeDefinitionKey::DS_HISTORY_BURST_TYPE, DataServiceNodeDefinitionType::DSStorageBurstTypeUndefined);
-  //    pg_abstract_cu.addProperty(DataServiceNodeDefinitionKey::DS_HISTORY_BURST, "Specify if the restore operation need to be done as real operation or not", DataType::TYPE_CLUSTER,0, CDataVariant(burst_type_desc.release()));
+  //    pg_abstract_cu.addProperty(DataServiceNodeDefinitionKey::DS_HISTORY_BURST, "Specify if the restore operation need to be done as real operation or not", DataType::TYPE_JSON,0, CDataVariant(burst_type_desc.release()));
 
   pg_abstract_cu.addProperty(ControlUnitDatapackSystemKey::THREAD_SCHEDULE_DELAY, "Set the control unit step repeat time in microseconds", DataType::TYPE_INT64, 0, CDataVariant((int64_t)1000000));  //set to one seconds
   pg_abstract_cu.addProperty(ControlUnitPropertyKey::INIT_RESTORE_OPTION, "Specify the restore type operatio to do durint initialization phase", DataType::TYPE_INT32, 0, CDataVariant((int32_t)0));
@@ -910,7 +912,7 @@ void         AbstractControlUnit::doInitRpCheckList() {
     /*  std::string cu_load_param = getCUParam();
 
      if (isCUParamInJson()) {
-        getAttributeCache()->addCustomAttribute(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_LOAD_PARAM, cu_load_param.size() + 1, chaos::DataType::TYPE_CLUSTER);
+        getAttributeCache()->addCustomAttribute(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_LOAD_PARAM, cu_load_param.size() + 1, chaos::DataType::TYPE_JSON);
       } else {
         getAttributeCache()->addCustomAttribute(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_LOAD_PARAM, cu_load_param.size() + 1, chaos::DataType::TYPE_STRING);
       }
@@ -1024,7 +1026,7 @@ void         AbstractControlUnit::doInitRpCheckList() {
               case DataType::TYPE_STRING:
                 cdw_unique_ptr->addStringValue(attrName, attrValue);
                 break;
-              case DataType::TYPE_CLUSTER:
+              case DataType::TYPE_JSON:
                 cdw_unique_ptr->addStringValue(attrName, attrValue);
                 break;
               case DataType::TYPE_BYTEARRAY:
@@ -1148,10 +1150,18 @@ void         AbstractControlUnit::doInitRpCheckList() {
     }
   }
   CHAOS_CHECK_LIST_END_SCAN_TO_DO(check_list_sub_service, "_init")
-  std::string command_queue = getDeviceID() + DataPackPrefixID::COMMAND_DATASET_POSTFIX;
-  DataManager::getInstance()->getDataLiveDriverNewInstance()->subscribe(command_queue);
-  DataManager::getInstance()->getDataLiveDriverNewInstance()->addHandler(command_queue, boost::bind(&AbstractControlUnit::consumerHandler, this, _1));
+  
+  //std::string command_queue = getDeviceID() + DataPackPrefixID::COMMAND_DATASET_POSTFIX;
+  //DataManager::getInstance()->getDataLiveDriverNewInstance()->subscribe(command_queue);
+  //DataManager::getInstance()->getDataLiveDriverNewInstance()->addHandler(command_queue, boost::bind(&AbstractControlUnit::consumerHandler, this, _1));
 }
+int AbstractControlUnit::subscribe(const std::string& key,bool subscribeon){
+  int ret=chaos::common::message::MessagePSDriver::getConsumerDriver()->subscribe(key,subscribeon);
+  chaos::common::message::MessagePSDriver::getConsumerDriver()->addHandler(key, boost::bind(&AbstractControlUnit::consumerHandler, this, _1),subscribeon);
+  
+  return ret;
+}
+
 int AbstractControlUnit::setReadoutCheck(const std::string& ioname,bool enable_disable){
         RangeValueInfo attributeInfo;
         if(enable_disable){
@@ -2457,7 +2467,7 @@ void AbstractControlUnit::initAttributeOnSharedAttributeCache(SharedCacheDomain 
           ACULDBG_ << domain << " Init TYPE_INT64 attribute:'" << attribute_names[idx] << "' to:" << val << " 0x" << std::hex << val << std::dec;
           break;
         }
-        case DataType::TYPE_CLUSTER: {
+        case DataType::TYPE_JSON: {
           CDataWrapper tmp;
           tmp.setSerializedJsonData(attributeInfo.defaultValue.c_str());
           attribute_setting.setValueForAttribute(idx, tmp);
@@ -2554,6 +2564,7 @@ void AbstractControlUnit::initSystemAttributeOnSharedAttributeCache() {
 
   //add history time
   domain_attribute_setting.addAttribute(DataServiceNodeDefinitionKey::DS_STORAGE_HISTORY_TIME, 0, DataType::TYPE_INT64);
+  domain_attribute_setting.addAttribute(DataServiceNodeDefinitionKey::DS_STORAGE_LOG_TIME, 0, DataType::TYPE_INT64);
 
   //add update anyway
   domain_attribute_setting.addAttribute(DataServiceNodeDefinitionKey::DS_UPDATE_ANYWAY, DS_UPDATE_ANYWAY_DEF, DataType::TYPE_INT32);
@@ -2806,7 +2817,8 @@ void AbstractControlUnit::_setBypassState(bool bypass_stage,
                                   end = accessor_instances.end();
        it != end;
        it++) {
-    (*it)->send(&cmd, chaos::common::constants::CUTimersTimeoutinMSec);
+   // (*it)->send(&cmd, chaos::common::constants::CUTimersTimeoutinMSec);
+  (*it)->setBypass(bypass_stage);
   }
    ACULDBG_ << "BYPASS COMMAND:"<<bypass_stage;
   setBypassFlag(bypass_stage);
@@ -2976,7 +2988,7 @@ CDWUniquePtr AbstractControlUnit::setDatasetAttribute(CDWUniquePtr dataset_attri
               break;
             }
 
-            case DataType::TYPE_CLUSTER: {
+            case DataType::TYPE_JSON: {
               // ChaosUniquePtr<CDataWrapper> str = dataset_attribute_values->getCSDataValue(attr_name);
               CDataWrapper cw;
               try {
@@ -3009,6 +3021,8 @@ CDWUniquePtr AbstractControlUnit::setDatasetAttribute(CDWUniquePtr dataset_attri
           }
         }
       }
+      w_lock->unlock();
+
       //push the input attribute dataset
       pushInputDataset();
     }
@@ -3072,6 +3086,8 @@ void AbstractControlUnit::propertyUpdatedHandler(const std::string&  group_name,
       *attribute_value_shared_cache->getAttributeValue(DOMAIN_SYSTEM, DataServiceNodeDefinitionKey::DS_STORAGE_LIVE_TIME)->getValuePtr<uint64_t>() = new_value.asUInt64();
     } else if (property_name.compare(DataServiceNodeDefinitionKey::DS_STORAGE_HISTORY_TIME) == 0) {
       *attribute_value_shared_cache->getAttributeValue(DOMAIN_SYSTEM, DataServiceNodeDefinitionKey::DS_STORAGE_HISTORY_TIME)->getValuePtr<uint64_t>() = new_value.asUInt64();
+    }  else if (property_name.compare(DataServiceNodeDefinitionKey::DS_STORAGE_LOG_TIME) == 0) {
+      *attribute_value_shared_cache->getAttributeValue(DOMAIN_SYSTEM, DataServiceNodeDefinitionKey::DS_STORAGE_LOG_TIME)->getValuePtr<uint64_t>() = new_value.asUInt64();
     } else if (property_name.compare(DataServiceNodeDefinitionKey::DS_UPDATE_ANYWAY) == 0) {
       *attribute_value_shared_cache->getAttributeValue(DOMAIN_SYSTEM, DataServiceNodeDefinitionKey::DS_UPDATE_ANYWAY)->getValuePtr<int32_t>() = new_value.asInt32();
       ds_update_anyway                                                                                                                        = new_value.asInt32();
@@ -3143,6 +3159,8 @@ int AbstractControlUnit::pushOutputDataset() {
         output_attribute_dataset->addBoolValue(value_set->name, *value_set->getValuePtr<bool>());
         break;
       case DataType::TYPE_INT32:
+        //ACULDBG_ << value_set->name << " <="<<*value_set->getValuePtr<int32_t>();
+
         output_attribute_dataset->addInt32Value(value_set->name, *value_set->getValuePtr<int32_t>());
         break;
       case DataType::TYPE_INT64:
@@ -3157,7 +3175,7 @@ int AbstractControlUnit::pushOutputDataset() {
        case DataType::TYPE_FLOAT:
         output_attribute_dataset->addDoubleValue(value_set->name, *value_set->getValuePtr<float>());
         break;
-      case DataType::TYPE_CLUSTER: {
+      case DataType::TYPE_JSON: {
         try {
           output_attribute_dataset->addCSDataValue(value_set->name, *value_set->getValuePtr<CDataWrapper>());
         } catch (...) {
@@ -3803,7 +3821,7 @@ void AbstractControlUnit::updateDatasetFromDriverProperty() {
       }
     }
   }
-  getAttributeCache()->setInputDomainAsChanged();
+ // getAttributeCache()->setInputDomainAsChanged();
   getAttributeCache()->setOutputDomainAsChanged();
 }
 

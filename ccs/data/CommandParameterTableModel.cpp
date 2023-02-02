@@ -71,7 +71,7 @@ void CommandParameterTableModel::fillTemplate(chaos::metadata_service_client::ap
                                                                                                               attribute->current_value.toLongLong()));
                 break;
                 
-                case chaos::DataType::TYPE_CLUSTER:
+                case chaos::DataType::TYPE_JSON:
             case chaos::DataType::TYPE_STRING:
                 kv_setter = ChaosSharedPtr<CDataWrapperKeyValueSetter>(new CDataWrapperStringKeyValueSetter(attribute->attribute_name.toStdString(),
                                                                                                                attribute->current_value.toString().toStdString()));
@@ -110,7 +110,7 @@ void CommandParameterTableModel::applyTemplate(const QSharedPointer<chaos::commo
                 case chaos::DataType::TYPE_INT64:
                     attribute->current_value = (qlonglong)command_template->getInt64Value(attribute_name);
                     break;
-                case chaos::DataType::TYPE_CLUSTER:
+                case chaos::DataType::TYPE_JSON:
                 case chaos::DataType::TYPE_STRING:
                  
                     attribute->current_value = QString::fromStdString(command_template->getStringValue(attribute_name));
@@ -199,7 +199,7 @@ QVariant CommandParameterTableModel::getCellData(int row, int column) const {
         case chaos::DataType::TYPE_INT64:
             result = QString("Int64");
             break;
-        case chaos::DataType::TYPE_CLUSTER:
+        case chaos::DataType::TYPE_JSON:
              result = QString("cluster");
             break;
         case chaos::DataType::TYPE_STRING:
@@ -351,7 +351,7 @@ bool CommandParameterTableModel::setCellData(const QModelIndex& index, const QVa
                 break;
 
             }
-            case chaos::DataType::TYPE_CLUSTER:{
+            case chaos::DataType::TYPE_JSON:{
                 CDataWrapper tmp;
                 try {
                     tmp.setSerializedJsonData(value.toString().toStdString().c_str());

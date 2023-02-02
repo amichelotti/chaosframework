@@ -19,7 +19,7 @@
  * permissions and limitations under the Licence.
  */
 
-#include <chaos_metadata_service_client/api_proxy/control_unit/SetInstanceDescription.h>
+#include "SetInstanceDescription.h"
 
 using namespace chaos::common::data;
 using namespace chaos::metadata_service_client::api_proxy;
@@ -58,7 +58,7 @@ ApiProxyResult SetInstanceDescription::execute(SetInstanceDescriptionHelper& api
     instance_description.addStringValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_LOAD_PARAM, api_data.load_parameter);
     instance_description.addStringValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DESC, api_data.desc);
 
-    //add the deafult scheduler delay
+    //add the default scheduler delay
     instance_description.addInt64Value(ControlUnitDatapackSystemKey::THREAD_SCHEDULE_DELAY, api_data.default_schedule_delay);
     instance_description.addInt32Value(DataServiceNodeDefinitionKey::DS_UPDATE_ANYWAY, api_data.update_anyway);
     instance_description.addInt32Value(ControlUnitDatapackSystemKey::CU_LOG_MAX_MS, api_data.max_log_ms);
@@ -72,7 +72,8 @@ ApiProxyResult SetInstanceDescription::execute(SetInstanceDescriptionHelper& api
         instance_description.addInt64Value(DataServiceNodeDefinitionKey::DS_STORAGE_HISTORY_TIME, api_data.history_time);
         //add the live rate
         instance_description.addInt64Value(DataServiceNodeDefinitionKey::DS_STORAGE_LIVE_TIME, api_data.live_time);
-        
+        instance_description.addInt64Value(DataServiceNodeDefinitionKey::DS_STORAGE_LOG_TIME, api_data.log_time);
+
         instance_description.addInt32Value(chaos::ControlUnitPropertyKey::INIT_RESTORE_OPTION, api_data.restore_type);
         instance_description.addBoolValue(chaos::ControlUnitPropertyKey::INIT_RESTORE_APPLY, api_data.restore_apply);
         instance_description.addBoolValue(ControlUnitDatapackSystemKey::BYPASS_STATE,false);

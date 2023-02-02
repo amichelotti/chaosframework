@@ -22,7 +22,7 @@
 #ifndef CHAOSFramework_DriverPluginLoader_h
 #define CHAOSFramework_DriverPluginLoader_h
 #include <chaos/common/plugin/PluginLoader.h>
-#include <chaos/cu_toolkit/driver_manager/driver/AbstractDriverPlugin.h>
+#include "AbstractDriverPlugin.h"
 namespace chaos {
     namespace cu{
         namespace driver_manager {

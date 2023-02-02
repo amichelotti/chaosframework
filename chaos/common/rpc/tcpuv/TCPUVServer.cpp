@@ -204,13 +204,13 @@ TCPUVServer::~TCPUVServer() {
 }
 
 //init the server getting the configuration value
-void TCPUVServer::init(void *init_data) throw(CException) {
+void TCPUVServer::init(void *init_data) 
 	CDataWrapper *adapterConfiguration = reinterpret_cast<CDataWrapper*>(init_data);
 	portNumber = adapterConfiguration->getInt32Value(InitOption::OPT_RPC_SERVER_PORT );
 }
 
 //start the rpc adapter
-void TCPUVServer::start() throw(CException) {
+void TCPUVServer::start() 
 	int err = 0;
     sockaddr_in addr;
     //init the uv loop
@@ -243,7 +243,7 @@ void TCPUVServer::start() throw(CException) {
 }
 
 //start the rpc adapter
-void TCPUVServer::stop() throw(CException) {
+void TCPUVServer::stop() 
 	async_shutdown_loop.data = (void*) this;
     //send shutdown async message
 	uv_async_send(&async_shutdown_loop);
@@ -253,7 +253,7 @@ void TCPUVServer::stop() throw(CException) {
 }
 
 //deinit the rpc adapter
-void TCPUVServer::deinit() throw(CException) {
+void TCPUVServer::deinit() 
 }
 
 void TCPUVServer::runLoop() {

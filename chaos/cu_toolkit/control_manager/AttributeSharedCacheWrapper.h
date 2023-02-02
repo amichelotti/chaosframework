@@ -46,6 +46,7 @@ namespace chaos{
 				T * getRWPtr(SharedCacheDomain domain,
 							 const std::string& attribute_name) {
 					CHAOS_ASSERT(attribute_value_shared_cache)
+					
 					switch(domain) {
 						case DOMAIN_INPUT:
 						  /*	throw CException(-1, "Input variable domain can't be used as read write pointer", __PRETTY_FUNCTION__);
@@ -57,6 +58,10 @@ namespace chaos{
 						default:
 							break;
 					}
+					if(!attribute_value_shared_cache->hasAttribute(domain,attribute_name)){
+						LERR_<<__PRETTY_FUNCTION__<<" cannot find "<<attribute_name<<" in "<<domain;
+						return NULL;
+					}
 					AttributeValue *value_setting = attribute_value_shared_cache->getAttributeValue(domain, attribute_name);
 					return value_setting->getValuePtr<T>();
 				}
@@ -66,6 +71,11 @@ namespace chaos{
 				const T * getROPtr(SharedCacheDomain domain,
 								   const std::string& attribute_name) {
 					CHAOS_ASSERT(attribute_value_shared_cache)
+					if(!attribute_value_shared_cache->hasAttribute(domain,attribute_name)){
+						LERR_<<__PRETTY_FUNCTION__<<" cannot find "<<attribute_name<<" in "<<domain;
+
+						return NULL;
+					}
 					AttributeValue *value_setting = attribute_value_shared_cache->getAttributeValue(domain, attribute_name);
 					
 					return (const T *)value_setting->getValuePtr<T>();

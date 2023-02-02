@@ -75,6 +75,7 @@ mongo::BSONArray MongoDBAccessor::getSearchTokenOnFiled(const std::string& searc
     boost::split(criteria_token, search_string,
                  boost::is_any_of(" "),
                  boost::token_compress_on);
+    
     for (std::vector<std::string>::iterator it = criteria_token.begin();
          it != criteria_token.end();
          it++) {

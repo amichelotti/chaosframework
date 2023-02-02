@@ -61,13 +61,15 @@ namespace chaos {
                 std::set<std::string> servers;
                 std::string id;
                 std::map< eventTypes,msgHandler> handlers;
+                std::map< std::string,msgHandler> topic_handlers;
+
                 msgstats_t stats;
                 boost::atomic<bool>   data_ready;
                 ChaosMutex mutex_cond;
                 ChaosConditionVariable cond;
                 boost::thread th;
                 void thfunc();
-                std::recursive_mutex io;
+                ChaosRecursiveMutex io;
                 uint64_t    counter,oks,errs;
 
                 public:
@@ -83,10 +85,8 @@ namespace chaos {
                  * 
                  * @param ev 
                  */
-                 int addHandler(eventTypes ev,msgHandler cb){
-                    handlers[ev]=cb;
-                    return 0;
-                }
+                int addHandler(eventTypes ev,msgHandler cb,bool add=true);
+                int addHandler(const std::string& ev,msgHandler cb,bool add=true);
                 /**
                  * @brief Enable synchronous if supported
                  * 

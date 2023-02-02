@@ -18,8 +18,8 @@
  * See the Licence for the specific language governing
  * permissions and limitations under the Licence.
  */
-#include <chaos_metadata_service_client/api_proxy/ApiProxyManager.h>
-#include <chaos_metadata_service_client/ChaosMetadataServiceClient.h>
+#include "ApiProxyManager.h"
+#include "../ChaosMetadataServiceClient.h"
 #include <chaos/common/network/NetworkBroker.h>
 
 #define APM_LAPP INFO_LOG(chaos_metadata_service_client)

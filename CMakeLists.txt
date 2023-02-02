@@ -47,7 +47,7 @@ else (WIN32)
 option(CHAOS_MDS "Chaos Data Service" ON)
 option(CHAOS_AGENT "Chaos Agent Service" ON)
 option(CHAOS_DATA_EXPORT "Chaos Data Export" ON)
-option(CHAOS_EXAMPLES "Chaos Examples" ON)
+option(CHAOS_EXAMPLES "Chaos Examples" OFF)
 endif(WIN32)
 
 option(CHAOS_CCS "Chaos CCS Compile needs qt5.6-static-x86_64 installed" OFF)
@@ -69,7 +69,6 @@ ENDIF()
 
 ###### Required Libraries
 if (NOT WIN32)
-# CheckConfigureBuild(jsoncpp jsoncpp "-DJSONCPP_WITH_TESTS=OFF;-DJSONCPP_WITH_POST_BUILD_UNITTEST=OFF" https://github.com/bisegni )
 if(CHAOS_MDS)
   SET(CDSLIB ON)
 
@@ -78,24 +77,7 @@ if(CHAOS_MDS)
 ENDIF()
 endif()
 
-IF(CHAOS_EPICS_SUPPORT)
-  MESG("Add EPICS SUPPORT")
 
- ExternalProject_Add(
- 	 epics
- 	 GIT_REPOSITORY https://github.com/epics-base/epics-base.git
-    GIT_TAG origin/7.0
-      GIT_PROGRESS 1
-      BUILD_IN_SOURCE 1
-      UPDATE_COMMAND ""
-      CONFIGURE_COMMAND ""
-	    UPDATE_COMMAND    ""
-	    INSTALL_COMMAND   ""
-#      CONFIGURE_COMMAND "make -j 3 INSTALL_LOCATION=${CMAKE_INSTALL_PREFIX} install"
-#      BUILD_COMMAND "make -j 3 INSTALL_LOCATION=${CMAKE_INSTALL_PREFIX} install"
-      BUILD_COMMAND make -j 3  INSTALL_LOCATION=${CMAKE_INSTALL_PREFIX} install
-  )
-ENDIF()
 #########
 
 #IF(CHAOS_ARCHITECTURE_TEST)

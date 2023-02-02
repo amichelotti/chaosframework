@@ -24,7 +24,7 @@
 #include <chaos/common/direct_io/DirectIOClientConnection.h>
 #include <chaos/common/utility/UUIDUtil.h>
 
-#include <boost/regex.hpp>
+#include <regex>
 #include <boost/format.hpp>
 #include <boost/algorithm/string.hpp>
 

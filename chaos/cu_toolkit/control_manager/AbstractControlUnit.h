@@ -44,11 +44,11 @@
 #include <chaos/common/utility/AggregatedCheckList.h>
 #include <chaos/common/utility/ArrayPointer.h>
 #include <chaos/common/utility/SWEService.h>
-#include <chaos/cu_toolkit/control_manager/AttributeSharedCacheWrapper.h>
-#include <chaos/cu_toolkit/control_manager/ControlUnitTypes.h>
-#include <chaos/cu_toolkit/control_manager/handler/handler.h>
-#include <chaos/cu_toolkit/data_manager/KeyDataStorage.h>
-#include <chaos/cu_toolkit/driver_manager/DriverErogatorInterface.h>
+#include "AttributeSharedCacheWrapper.h"
+#include "ControlUnitTypes.h"
+#include "handler/handler.h"
+#include "../data_manager/KeyDataStorage.h"
+#include "../driver_manager/DriverErogatorInterface.h"
 #define CUINFO LAPP_ << "[" << __FUNCTION__ << " - " << getDeviceID() << "]"
 #define CUDBG LDBG_ << "[- " << __FUNCTION__ << " - " << getDeviceID() << "]"
 #define CUERR LERR_ << "[" << __PRETTY_FUNCTION__ << " - " << getDeviceID() << "]"
@@ -229,6 +229,16 @@ class AbstractControlUnit : public DeclareAction,
     }
     return chaos::ControlUnitDatapackSystemKey::CU_ALRM_LEVEL;
   }
+
+  //! set the value on the busy flag
+  void setBusyFlag(bool state);
+
+
+  //! set the value on the bypass flag
+  void setBypassFlag(bool state);
+
+  //!return the current value of the busi flag
+  const bool getBusyFlag() const;
 
   inline int stateVariableNameToEnum(const std::string& name) {
     if (name.compare(chaos::ControlUnitDatapackSystemKey::CU_ALRM_LEVEL) == 0) {
@@ -734,7 +744,13 @@ class AbstractControlUnit : public DeclareAction,
    * @return int return 0 if succefully handled
    */
   virtual int incomingMessage(const std::string& key,  chaos::common::data::CDWUniquePtr& data);
-
+  /**
+   * @brief Subscribe to a node
+   * 
+   * @param key node
+   * @return int 0 if success
+   */
+  int subscribe(const std::string& key,bool subscribeon=true);
   //!callback for put a veto on property value change request
   virtual bool propertyChangeHandler(const std::string&                       group_name,
                                      const std::string&                       property_name,
@@ -855,16 +871,6 @@ class AbstractControlUnit : public DeclareAction,
    */
   void setState(const std::string& state,bool update=false);
   
-  //! set the value on the busy flag
-  void setBusyFlag(bool state);
-
-
-  //! set the value on the bypass flag
-  void setBypassFlag(bool state);
-
-  //!return the current value of the busi flag
-  const bool getBusyFlag() const;
-
   //!called when an alarm has been modified in his severity
   void alarmChanged(const std::string& state_variable_tag,
                     const std::string& state_variable_name,

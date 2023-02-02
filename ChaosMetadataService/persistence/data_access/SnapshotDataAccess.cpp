@@ -26,7 +26,6 @@
 #include <chaos/common/network/NetworkBroker.h>
 #include <chaos/common/chaos_types.h>
 
-#include <boost/format.hpp>
 
 using namespace chaos::common::io;
 using namespace chaos::common::utility;

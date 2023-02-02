@@ -49,7 +49,7 @@ AbstractPersistenceDriver(name){}
 
 NewMongoDBObjectStorageDriver::~NewMongoDBObjectStorageDriver() {}
 
-void NewMongoDBObjectStorageDriver::init(void *init_data) throw (chaos::CException) {
+void NewMongoDBObjectStorageDriver::init(void *init_data)  {
     //call sublcass
     AbstractPersistenceDriver::init(init_data);
     ChaosStringVector url_list = ChaosMetadataService::getInstance()->setting.object_storage_setting.url_list;
@@ -81,7 +81,7 @@ void NewMongoDBObjectStorageDriver::init(void *init_data) throw (chaos::CExcepti
     registerDataAccess<ObjectStorageDataAccess>(new MongoDBObjectStorageDataAccess(BaseMongoDBDriver::getPool()));
 }
 
-void NewMongoDBObjectStorageDriver::deinit() throw (chaos::CException) {
+void NewMongoDBObjectStorageDriver::deinit()  {
     //call sublcass
     AbstractPersistenceDriver::deinit();
 }

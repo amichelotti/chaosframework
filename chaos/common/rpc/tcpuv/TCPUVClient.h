@@ -73,7 +73,7 @@ namespace chaos {
 		bool startConnection(NetworkForwardInfo *message_info);
 		bool sendToConnectionInfo(ConnectionInfo *connection_info, NetworkForwardInfo *message_info);
     protected:
-        virtual void processBufferElement(NetworkForwardInfo*, ElementManagingPolicy&) throw(CException);
+        virtual void processBufferElement(NetworkForwardInfo*, ElementManagingPolicy&) ;
 		
 		static void alloc_buffer(uv_handle_t *handle, size_t suggested_size, uv_buf_t* buf);
 		
@@ -101,28 +101,28 @@ namespace chaos {
         /*
          init the rpc adapter
          */
-        void init(void *init_data) throw(CException);
+        void init(void *init_data) ;
         
         /*
          start the rpc adapter
          */
-        void start() throw(CException);
+        void start() ;
 		
         /*
          start the rpc adapter
          */
-        void stop() throw(CException);
+        void stop() ;
         
         /*
          deinit the rpc adapter
          */
-        void deinit() throw(CException);
+        void deinit() ;
         
         /*
          Submit the message to be send to a certain ip, the datawrapper must contains
          the key CS_CMDM_REMOTE_HOST_IP
          */
-        bool submitMessage(NetworkForwardInfo *forwardInfo, bool onThisThread=false) throw(CException);
+        bool submitMessage(NetworkForwardInfo *forwardInfo, bool onThisThread=false) ;
     };
 }
 #

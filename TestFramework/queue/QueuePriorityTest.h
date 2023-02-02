@@ -36,7 +36,7 @@ typedef struct TestPriorityElement {
 class QueuePriorityTest:
 public testing::Test,
 public  chaos::common::pqueue::CObjectProcessingPriorityQueue<TestPriorityElement> {
-    void processBufferElement(ChaosSharedPtr<TestPriorityElement> job) throw(chaos::CException);
+    void processBufferElement(ChaosSharedPtr<TestPriorityElement> job) ;
 protected:
     uint64_t last_sequence;
     int last_priority;

@@ -123,7 +123,7 @@ void AttributeCache::addAttribute(const std::string&                       name,
       size = sizeof(int64_t);
       break;
     case chaos::DataType::TYPE_STRING:
-    case chaos::DataType::TYPE_CLUSTER:
+    case chaos::DataType::TYPE_JSON:
       size = value.asString().size();
       break;
 

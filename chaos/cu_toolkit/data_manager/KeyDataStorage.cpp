@@ -23,7 +23,7 @@
 #include <chaos/common/chaos_constants.h>
 #include <chaos/common/data/CDataVariant.h>
 #include <chaos/common/utility/TimingUtil.h>
-#include <chaos/cu_toolkit/data_manager/KeyDataStorage.h>
+#include "KeyDataStorage.h"
 using namespace std;
 using namespace chaos;
 using namespace chaos::common::data;
@@ -43,9 +43,8 @@ io_data_driver(_io_data_driver),
 storage_type(DataServiceNodeDefinitionType::DSStorageTypeLive),
 override_storage_everride(DataServiceNodeDefinitionType::DSStorageTypeUndefined),
 storage_history_time(0),
-storage_history_time_last_push(0),
+storage_log_time(0),
 storage_live_time(0),
-storage_live_time_last_push(0),
 use_timing_info(true),
 output_key(key + DataPackPrefixID::OUTPUT_DATASET_POSTFIX),
 input_key(key + DataPackPrefixID::INPUT_DATASET_POSTFIX),
@@ -62,6 +61,11 @@ dev_alarm_key(key + DataPackPrefixID::DEV_ALARM_DATASET_POSTFIX){
     map_seq_id.insert(DSSeqIDMapPair(KeyDataStorageDomainHealth, ChaosSharedPtr< ChaosAtomic<int64_t> >(new ChaosAtomic<int64_t>())));
     map_seq_id.insert(DSSeqIDMapPair(KeyDataStorageDomainDevAlarm, ChaosSharedPtr< ChaosAtomic<int64_t> >(new ChaosAtomic<int64_t>())));
     map_seq_id.insert(DSSeqIDMapPair(KeyDataStorageDomainCUAlarm, ChaosSharedPtr< ChaosAtomic<int64_t> >(new ChaosAtomic<int64_t>())));
+    for(int cnt=0;cnt<KeyStorageDomainNumber;cnt++){
+        last_live_push_time[cnt]=0;
+        last_log_push_time[cnt]=0;
+        last_histo_push_time[cnt]=0;
+    }
 }
 
 KeyDataStorage::~KeyDataStorage() {
@@ -83,25 +87,19 @@ std::string KeyDataStorage::getDomainString(const KeyDataStorageDomain dataset_d
     switch(dataset_domain) {
         case DataPackCommonKey::DPCK_DATASET_TYPE_OUTPUT:
             return output_key;
-            break;
         case DataPackCommonKey::DPCK_DATASET_TYPE_INPUT:
             return input_key;
-            break;
         case DataPackCommonKey::DPCK_DATASET_TYPE_SYSTEM:
             return system_key;
-            break;
         case DataPackCommonKey::DPCK_DATASET_TYPE_CUSTOM:
             return custom_key;
-            break;
         case DataPackCommonKey::DPCK_DATASET_TYPE_CU_ALARM:
             return cu_alarm_key;
-            break;
         case DataPackCommonKey::DPCK_DATASET_TYPE_DEV_ALARM:
             return dev_alarm_key;
-            break;
         case DataPackCommonKey::DPCK_DATASET_TYPE_HEALTH:
             return health_key;
-       /* case DataPackCommonKey::DPCK_DATASET_TYPE_COMMAND:
+      /*  case DataPackCommonKey::DPCK_DATASET_TYPE_COMMAND:
             return command_key;*/
     }
     return "";
@@ -113,25 +111,19 @@ std::string KeyDataStorage::getDomainString(const std::string& node_uid,
     switch(dataset_domain) {
         case DataPackCommonKey::DPCK_DATASET_TYPE_OUTPUT:
             return node_uid +  DataPackPrefixID::OUTPUT_DATASET_POSTFIX;
-            break;
         case DataPackCommonKey::DPCK_DATASET_TYPE_INPUT:
             return node_uid +  DataPackPrefixID::INPUT_DATASET_POSTFIX;
-            break;
         case DataPackCommonKey::DPCK_DATASET_TYPE_SYSTEM:
             return node_uid +  DataPackPrefixID::SYSTEM_DATASET_POSTFIX;
-            break;
         case DataPackCommonKey::DPCK_DATASET_TYPE_CUSTOM:
             return node_uid +  DataPackPrefixID::CUSTOM_DATASET_POSTFIX;
-            break;
         case DataPackCommonKey::DPCK_DATASET_TYPE_CU_ALARM:
             return node_uid +  DataPackPrefixID::CU_ALARM_DATASET_POSTFIX;
-            break;
         case DataPackCommonKey::DPCK_DATASET_TYPE_DEV_ALARM:
             return node_uid +  DataPackPrefixID::DEV_ALARM_DATASET_POSTFIX;
             break;
         case DataPackCommonKey::DPCK_DATASET_TYPE_HEALTH:
             return node_uid +  DataPackPrefixID::HEALTH_DATASET_POSTFIX;
-            break;
     }
     return "";
 }
@@ -166,10 +158,7 @@ CDWShrdPtr KeyDataStorage::getNewDataPackForDomain(const KeyDataStorageDomain do
             node_type = DataPackCommonKey::DPCK_DATASET_TYPE_HEALTH;
             break;
     }
-    if(result.get()==NULL){
-        throw chaos::CException(-1, "CANNOT allocate memory for data pack ", __PRETTY_FUNCTION__);
-
-    }
+    
     //add the unique key
     result->addStringValue(DataPackCommonKey::DPCK_DEVICE_ID, key);
     result->addInt32Value(DataPackCommonKey::DPCK_DATASET_TYPE, node_type);
@@ -177,27 +166,37 @@ CDWShrdPtr KeyDataStorage::getNewDataPackForDomain(const KeyDataStorageDomain do
     return result;
 }
 
-int KeyDataStorage::pushDataWithControlOnHistoryTime(const std::string& key,
-                                                     CDWShrdPtr& dataset,
-                                                     DataServiceNodeDefinitionType::DSStorageType storage_type) {
+int KeyDataStorage::pushDataWithControlOnHistoryTime(KeyDataStorageDomain domain,
+                                                     CDWShrdPtr& dataset) {
     
     uint64_t now = TimingUtil::getTimeStampInMicroseconds();
     int effective_storage_type = DataServiceNodeDefinitionType::DSStorageTypeUndefined;
     int err=0;
-    
+    if(domain==KeyDataStorageDomainHealth){
+        err=io_data_driver->storeData(health_key,
+                                      dataset,
+                                      DataServiceNodeDefinitionType::DSStorageTypeLive,
+                                      current_tags());
+        return err;
+    }
     if(storage_type & DataServiceNodeDefinitionType::DSStorageTypeLive ) {
-        if((now - storage_live_time_last_push) >= storage_live_time) {
+        if((now - last_live_push_time[domain]) >= storage_live_time) {
             effective_storage_type |= DataServiceNodeDefinitionType::DSStorageTypeLive;
-            storage_live_time_last_push = now;
+            last_live_push_time[domain] = now;
         }
     }
-    
+    if(storage_type & DataServiceNodeDefinitionType::DSStorageLogHisto ) {
+        if((now - last_log_push_time[domain]) >= storage_log_time) {
+            effective_storage_type |= DataServiceNodeDefinitionType::DSStorageLogHisto;
+            last_log_push_time[domain] = now;
+        }
+    }
     if((storage_type & DataServiceNodeDefinitionType::DSStorageTypeHistory) ) {
         //history is enabled
         if(use_timing_info) {
-            if((now - storage_history_time_last_push) >= storage_history_time) {
+            if((now - last_histo_push_time[domain]) >= storage_history_time) {
                 effective_storage_type |= DataServiceNodeDefinitionType::DSStorageTypeHistory;
-                storage_history_time_last_push = now;
+                last_histo_push_time[domain] = now;
             }
         } else {
             effective_storage_type |= DataServiceNodeDefinitionType::DSStorageTypeHistory;
@@ -206,9 +205,11 @@ int KeyDataStorage::pushDataWithControlOnHistoryTime(const std::string& key,
     if(override_storage_everride!=DataServiceNodeDefinitionType::DSStorageTypeUndefined){
         effective_storage_type|=override_storage_everride;
     }
+   // KeyDataStorageLDBG<<"PUSH STORE_TEST "<<domain<<" pointer:"<<std::hex<<io_data_driver.get()<<" effective_storage_type:"<<std::dec<<effective_storage_type<<" storage_type:"<<storage_type<<" storage_live time:"<<storage_live_time<<" storage_history_time:"<<storage_history_time<<" storage_log_time:"<<storage_log_time;
+
     if(effective_storage_type) {
-        effective_storage_type|=(storage_type&DataServiceNodeDefinitionType::DSStorageLogHisto);
-        err=io_data_driver->storeData(key,
+
+        err=io_data_driver->storeData(getDomainString(domain),
                                       dataset,
                                       static_cast<DataServiceNodeDefinitionType::DSStorageType>(effective_storage_type),
                                       current_tags());
@@ -219,57 +220,17 @@ int KeyDataStorage::pushDataWithControlOnHistoryTime(const std::string& key,
 int KeyDataStorage::pushDataSet(KeyDataStorageDomain domain,
                                 CDWShrdPtr dataset) {
     CHAOS_ASSERT(io_data_driver.get());
-    LChaosStringSetReadLock wl = current_tags.getReadLockObject();
+  //  LChaosStringSetReadLock wl = current_tags.getReadLockObject();
     int err=0;
     //lock for protect the access
     ChaosLockGuard l(mutex_push_data);
-  
-    switch(domain) {
-        case KeyDataStorageDomainOutput:
-            err=pushDataWithControlOnHistoryTime(output_key,
-                                                 dataset,
-                                                 storage_type);
-            break;
-        case KeyDataStorageDomainInput:
-            //input channel need to be push ever either in live and in history
-            err=pushDataWithControlOnHistoryTime(input_key,
-                                          dataset,
-                                          storage_type);
-            break;
-        case KeyDataStorageDomainSystem:
-            //system channel need to be push ever either in live and in history
-            err=io_data_driver->storeData(system_key,
-                                          dataset,
-                                          storage_type,
-                                          current_tags());
-            break;
-        case KeyDataStorageDomainCUAlarm:
-            //system channel need to be push ever either in live and in history
-            err=io_data_driver->storeData(cu_alarm_key,
-                                          dataset,
-                                          storage_type,
-                                          current_tags());
-            break;
-        case KeyDataStorageDomainDevAlarm:
-            //system channel need to be push ever either in live and in history
-            err=io_data_driver->storeData(dev_alarm_key,
-                                          dataset,
-                                          storage_type,
-                                          current_tags());
-            break;
-        case KeyDataStorageDomainHealth:
-            //system channel need to be push ever either in live and in history
-            err=io_data_driver->storeHealthData(health_key,
-                                                dataset,
-                                                DataServiceNodeDefinitionType::DSStorageTypeLive,
-                                                current_tags());
-            break;
-        case KeyDataStorageDomainCustom:
-            err=pushDataWithControlOnHistoryTime(custom_key,
-                                                 dataset,
-                                                 storage_type);
-            break;
+    if(dataset.get()==NULL){
+        KeyDataStorageLDBG<<"Invalid Dataset domain:"<<domain;
+        return -1;
+
     }
+    err=pushDataWithControlOnHistoryTime(domain,dataset);
+   
     return err;
 }
 
@@ -417,6 +378,8 @@ void KeyDataStorage::updateConfiguration(const std::string& conf_name,
         storage_live_time = conf_value.asUInt64();
     } else if(conf_name.compare(DataServiceNodeDefinitionKey::DS_STORAGE_TYPE) == 0){
         storage_type = static_cast<DataServiceNodeDefinitionType::DSStorageType>(conf_value.asInt32());
+    } else if(conf_name.compare(DataServiceNodeDefinitionKey::DS_STORAGE_LOG_TIME) == 0){
+        storage_log_time = conf_value.asUInt64();
     }
     KeyDataStorageLDBG << CHAOS_FORMAT("Set value %1% to property %2% storage_type %3%", %conf_value.asString()%conf_name%storage_type);
 }

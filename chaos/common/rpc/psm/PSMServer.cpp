@@ -1,6 +1,7 @@
 /*
- * Copyright 2012, 2017 INFN
+ * Copyright 2020 INFN
  *
+ * Andrea Michelotti
  * Licensed under the EUPL, Version 1.2 or – as soon they
  * will be approved by the European Commission - subsequent
  * versions of the EUPL (the "Licence");
@@ -44,13 +45,13 @@ RpcServer(alias){
 }
 
 PSMServer::~PSMServer() {
-    
+ deinit();   
 }
 
 //init the server getting the configuration value
 void PSMServer::init(void *init_data) {
     RpcServer::init(init_data);
-    PSMS_LAPP << "initialization";
+    PSMS_LDBG << "initialization";
    try{
     if(!cfg->hasKey(InitOption::OPT_MSG_BROKER_SERVER)){
         throw chaos::CException(-1, "a not empty broker must be given", __PRETTY_FUNCTION__);
@@ -69,13 +70,13 @@ void PSMServer::init(void *init_data) {
     std::string gname;
     if(cfg->hasKey(InitOption::OPT_GROUP_NAME)){
         gname=cfg->getStringValue(InitOption::OPT_GROUP_NAME);
-        PSMS_LAPP << "belong to group:\""<<gname<<"\"";
+        PSMS_LDBG << "belong to group:\""<<gname<<"\"";
 
     } else {
         gname=nodeuid;
     }
 
-    cons = chaos::common::message::MessagePSDriver::getNewConsumerDriver(msgbrokerdrv, gname);
+    cons = chaos::common::message::MessagePSDriver::getConsumerDriver(msgbrokerdrv, gname);
     prod = chaos::common::message::MessagePSDriver::getProducerDriver(msgbrokerdrv);
 
     if (cons.get() == 0) {
@@ -84,7 +85,8 @@ void PSMServer::init(void *init_data) {
     cons->addServer(msgbroker);
     prod->addServer(msgbroker);
     // subscribe to the queue of commands
-    cons->addHandler(chaos::common::message::MessagePublishSubscribeBase::ONARRIVE, boost::bind(&PSMServer::messageHandler, this, _1));
+    cons->addHandler(nodeuid + "_cmd", boost::bind(&PSMServer::messageHandler, this, _1));
+    
     cons->addHandler(chaos::common::message::MessagePublishSubscribeBase::ONERROR, boost::bind(&PSMServer::messageError, this, _1));
     cons->setOption("allow.auto.create.topics","true");
     if (cons->applyConfiguration() != 0) {
@@ -121,7 +123,7 @@ void PSMServer::messageHandler( chaos::common::message::ele_t& data) {
         PSMS_LDBG << data.cd->getInt32Value(RpcActionDefinitionKey::CS_CMDM_MESSAGE_ID)<<" - Message Received from node:"<<src<<" seq_id:"<<seq_id ;//<< " desc:"<<data.cd->getJSONString();
 
     } else {
-        PSMS_LDBG << "Message Received from node:"<<src<<" seq_id:"<<seq_id<<" sent:"<<(now-ts)<<" ms";//<< " desc:"<<data.cd->getJSONString();
+        PSMS_LDBG << "Message Received from node:\""<<src<<"\" seq_id:"<<seq_id<<" sent:"<<(now-ts)<<" ms";//<< " desc:"<<data.cd->getJSONString();
 
     }
 
@@ -161,10 +163,12 @@ void PSMServer::messageError( chaos::common::message::ele_t& data) {
 //start the rpc adapter
 void PSMServer::start() {
     if(cfg->hasKey("ismds")){
-        PSMS_LAPP << "Subscribing to " <<chaos::common::constants::CHAOS_ADMIN_ADMIN_TOPIC;
+        PSMS_LDBG << "Subscribing to " <<chaos::common::constants::CHAOS_ADMIN_ADMIN_TOPIC;
         cons->subscribe(chaos::common::constants::CHAOS_ADMIN_ADMIN_TOPIC);
+        cons->addHandler(chaos::common::constants::CHAOS_ADMIN_ADMIN_TOPIC, boost::bind(&PSMServer::messageHandler, this, _1));
+
     }
-    PSMS_LAPP << "Subscribing to " << nodeuid + chaos::DataPackPrefixID::COMMAND_DATASET_POSTFIX;
+    PSMS_LDBG << "Subscribing to " << nodeuid + chaos::DataPackPrefixID::COMMAND_DATASET_POSTFIX;
     cons->subscribe(nodeuid + chaos::DataPackPrefixID::COMMAND_DATASET_POSTFIX);
     cons->start();
     prod->start();
@@ -172,6 +176,8 @@ void PSMServer::start() {
 
 //start the rpc adapter
 void PSMServer::stop() {
+    PSMS_LDBG << "STOP consumer and producer " << nodeuid + chaos::DataPackPrefixID::COMMAND_DATASET_POSTFIX;
+
     cons->stop();
     prod->stop();
     
@@ -179,6 +185,7 @@ void PSMServer::stop() {
 
 //deinit the rpc adapter
 void PSMServer::deinit() {
-    
-    PSMS_LAPP << "PSMServer deinit";
+    PSMS_LDBG << "PSMServer deinit";
+    stop();
+
 }

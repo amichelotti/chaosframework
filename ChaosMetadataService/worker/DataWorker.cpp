@@ -126,7 +126,7 @@ int DataWorker::submitJobInfo(WorkerJobPtr job_info, int64_t milliseconds_to_wai
     if(job_in_queue >= max_element) {
         DCLDBG_ << "Fifo Full queue :"<<job_in_queue<<", waiting..";
 
-        if(CHAOS_WAIT(push_condition,lock,milliseconds_to_wait) ==false) {
+        if(CHAOS_WAIT_MS(push_condition,lock,milliseconds_to_wait) ==false) {
             DCLERR_ << "Datapack has gone in timeout waiting for queue free more space";
             return -1;
         }

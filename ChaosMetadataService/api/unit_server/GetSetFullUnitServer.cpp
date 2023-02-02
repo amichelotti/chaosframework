@@ -168,6 +168,9 @@ CDWUniquePtr GetSetFullUnitServer::execute(CDWUniquePtr api_data) {
                            if(cuw->hasKey(DataServiceNodeDefinitionKey::DS_STORAGE_LIVE_TIME)) {
                                pg.addProperty(DataServiceNodeDefinitionKey::DS_STORAGE_LIVE_TIME, cuw->getVariantValue(DataServiceNodeDefinitionKey::DS_STORAGE_LIVE_TIME));
                            }
+                           if(cuw->hasKey(DataServiceNodeDefinitionKey::DS_STORAGE_LOG_TIME)) {
+                               pg.addProperty(DataServiceNodeDefinitionKey::DS_STORAGE_LOG_TIME, cuw->getVariantValue(DataServiceNodeDefinitionKey::DS_STORAGE_LOG_TIME));
+                           }
                            if(cuw->hasKey(DataServiceNodeDefinitionKey::DS_UPDATE_ANYWAY)) {
                                pg.addProperty(DataServiceNodeDefinitionKey::DS_UPDATE_ANYWAY, cuw->getVariantValue(DataServiceNodeDefinitionKey::DS_UPDATE_ANYWAY));
                            }

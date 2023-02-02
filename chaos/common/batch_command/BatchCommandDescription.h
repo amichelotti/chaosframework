@@ -59,7 +59,7 @@ result->addParameter(p, d, chaos::DataType::TYPE_DOUBLE, flag);
 #define BATCH_COMMAND_ADD_STRING_PARAM(p, d, flag)\
 result->addParameter(p, d, chaos::DataType::TYPE_STRING, flag);
 #define BATCH_COMMAND_ADD_JSON_PARAM(p, d, flag)\
-result->addParameter(p, d, chaos::DataType::TYPE_CLUSTER, flag);
+result->addParameter(p, d, chaos::DataType::TYPE_JSON, flag);
 #define BATCH_COMMAND_CLOSE_DESCRIPTION()\
 return result;}
 

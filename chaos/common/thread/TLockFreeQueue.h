@@ -70,7 +70,7 @@ class TLockFreeQueue {
       if (timeout_ms > 0) {
         /*boost::system_time const tim =
             boost::get_system_time() + boost::posix_time::milliseconds(timeout_ms);*/
-        if (CHAOS_WAIT(some_read,lock, timeout_ms) == false) {
+        if (CHAOS_WAIT_MS(some_read,lock, timeout_ms) == false) {
           return chaos::ErrorCode::EC_GENERIC_TIMEOUT;
         }
 
@@ -102,6 +102,16 @@ class TLockFreeQueue {
     }
     return ret;
   }
+  int clear(){
+    T* ele=NULL;
+    while(element_queue.pop(ele)){
+      if(ele){
+        delete ele;
+      }
+      size--;
+    }
+    return size;
+  }
   int wait_and_pop(T& popped_value, int timeout_ms = 0) {
     if (element_queue.empty()) {
       ChaosUniqueLock lock(the_mutex);
@@ -109,7 +119,7 @@ class TLockFreeQueue {
       if (timeout_ms > 0) {
        /* boost::system_time const tim =
             boost::get_system_time() + boost::posix_time::milliseconds(timeout_ms);*/
-        if (CHAOS_WAIT(the_condition_variable,lock, timeout_ms)) {
+        if (CHAOS_WAIT_MS(the_condition_variable,lock, timeout_ms)) {
           if (pop(popped_value)) {
             return size;
           }
@@ -125,7 +135,7 @@ class TLockFreeQueue {
       return size;
     }
     
-    LERR_ << "Queue Error popping size:"<<size;
+   // LERR_ << "Queue Error popping size:"<<size;
 
     return -2;
   }

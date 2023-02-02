@@ -26,7 +26,7 @@
 
 #include <mongo/client/dbclient.h>
 
-#include <boost/regex.hpp>
+#include <regex>
 #include <boost/algorithm/string.hpp>
 
 #define MDBTGDA_INFO INFO_LOG(MongoDBTreeGroupDataAccess)

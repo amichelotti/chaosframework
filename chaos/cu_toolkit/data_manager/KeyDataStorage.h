@@ -22,9 +22,6 @@
 #ifndef KeyDataStorage_H
 #define KeyDataStorage_H
 
-#include <map>
-#include <string>
-
 #include <chaos/common/chaos_types.h>
 #include <chaos/common/chaos_constants.h>
 #include <chaos/common/io/IODataDriver.h>
@@ -32,8 +29,6 @@
 #include <chaos/common/utility/ArrayPointer.h>
 #include <chaos/common/utility/LockableObject.h>
 
-#include <boost/thread.hpp>
-#include <boost/atomic.hpp>
 
 namespace chaos_data = chaos::common::data;
 namespace chaos_io = chaos::common::io;
@@ -51,8 +46,8 @@ namespace chaos{
                 KeyDataStorageDomainDevAlarm =DataPackCommonKey::DPCK_DATASET_TYPE_DEV_ALARM,
                 KeyDataStorageDomainCUAlarm =DataPackCommonKey::DPCK_DATASET_TYPE_CU_ALARM,
                 KeyDataStorageDomainLOG =DataPackCommonKey::DPCK_DATASET_TYPE_LOG,
-                KeyDataStorageDomainCMD =DataPackCommonKey::DPCK_DATASET_TYPE_COMMAND
-
+                KeyDataStorageDomainCMD =DataPackCommonKey::DPCK_DATASET_TYPE_COMMAND,
+                KeyStorageDomainNumber
             } KeyDataStorageDomain;
             
             //!define tags set
@@ -88,20 +83,21 @@ namespace chaos{
                 
                 //!define the queur for burst information
                 LChaosStringSet current_tags;
-                
+                int64_t last_live_push_time[KeyStorageDomainNumber];
+                int64_t last_log_push_time[KeyStorageDomainNumber];
+                int64_t last_histo_push_time[KeyStorageDomainNumber];
+
                 //history time
                 uint64_t storage_history_time;
-                uint64_t storage_history_time_last_push;
+                uint64_t storage_log_time;
                 uint64_t storage_live_time;
-                uint64_t storage_live_time_last_push;
                 //when tru the timing information set will be used
                 bool use_timing_info;
                 //mutex to protect access to data io driver
                 ChaosMutex mutex_push_data;
                 // \return 0 if success
-                int pushDataWithControlOnHistoryTime(const std::string& key,
-                                                      chaos::common::data::CDWShrdPtr& dataset,
-                                                      chaos::DataServiceNodeDefinitionType::DSStorageType storage_type);
+                int pushDataWithControlOnHistoryTime(KeyDataStorageDomain,
+                                                      chaos::common::data::CDWShrdPtr& dataset);
                 
                 inline std::string getDomainString(const KeyDataStorageDomain dataset_domain);
                 

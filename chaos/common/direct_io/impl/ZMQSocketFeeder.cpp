@@ -26,7 +26,8 @@
 #include <chaos/common/data/cache/FastHash.h>
 #include <chaos/common/direct_io/impl/ZMQSocketFeeder.h>
 
-#include <boost/regex.hpp>
+//#include <regex>
+#include <regex>
 #include <boost/format.hpp>
 #include <boost/algorithm/string.hpp>
 
@@ -37,9 +38,9 @@
 using namespace chaos::common::direct_io::impl;
 
 //! Regular expression for check server endpoint with the sintax hostname:[priority_port:service_port]
-static const boost::regex DirectIOHostNameRegExp("[a-zA-Z0-9]+(.[a-zA-Z0-9]+)+:[0-9]{4,5}:[0-9]{4,5}");
+static const std::regex DirectIOHostNameRegExp("[a-zA-Z0-9]+(.[a-zA-Z0-9]+)+:[0-9]{4,5}:[0-9]{4,5}");
 //! Regular expression for check server endpoint with the sintax ip:[priority_port:service_port]
-static const boost::regex DirectIOIPAndPortRegExp("\\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\b:[0-9]{4,5}:[0-9]{4,5}");
+static const std::regex DirectIOIPAndPortRegExp("\\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\b:[0-9]{4,5}:[0-9]{4,5}");
 
 ZMQSocketFeeder::ZMQSocketFeeder():socket_slot(NULL), socket_allocated(0) {
 		//allocate array space
@@ -85,7 +86,7 @@ bool ZMQSocketFeeder::addServer(std::string server_desc) {
 	std::string normalized_server_desc = boost::algorithm::to_lower_copy(server_desc);
 	
 	//check if the description is well formed
-	if(!regex_match(server_desc, DirectIOHostNameRegExp) && !regex_match(server_desc, DirectIOIPAndPortRegExp)) return false;
+	if(!std::regex_match(server_desc, DirectIOHostNameRegExp) && !std::regex_match(server_desc, DirectIOIPAndPortRegExp)) return false;
 	
 	//decoplue endpoints
 	decoupleServerDescription(server_desc, socket_slot[socket_allocated]);

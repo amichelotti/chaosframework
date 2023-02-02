@@ -64,6 +64,7 @@ producer_uptr_t MessagePSDriver::getProducerDriver(const std::string& drvname, c
   }
   ret                     = getNewProducerDriver(drvname, k);
   producer_drv_m[drvname] = ret;
+
   if (GlobalConfiguration::getInstance()->hasOption(InitOption::OPT_MSG_OPT)) {
     int val=GlobalConfiguration::getInstance()->getOption<int >(InitOption::OPT_MSG_OPT);
     ret->setMsgOpt((chaos::common::message::MessagePublishSubscribeBase::msgOpt)val);

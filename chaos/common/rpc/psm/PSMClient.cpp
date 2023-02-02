@@ -57,6 +57,7 @@ PSMClient::~PSMClient(){
 //    #ifndef CHAOS_PROMETHEUS
 //    delete counter_zmqerror_uptr;
 //    #endif
+deinit();
 }
 
 /*
@@ -65,7 +66,7 @@ PSMClient::~PSMClient(){
 void PSMClient::init(void *init_data) {
     CDataWrapper *cfg = reinterpret_cast<CDataWrapper*>(init_data);
     seq_id=0;
-    PSMC_LAPP << "initialization";
+    PSMC_LDBG << "initialization";
     if(!cfg->hasKey(InitOption::OPT_MSG_BROKER_SERVER)){
         throw chaos::CException(-1, "a not empty broker must be given", __PRETTY_FUNCTION__);
     }
@@ -82,7 +83,7 @@ void PSMClient::init(void *init_data) {
     std::string msgbroker = cfg->getStringValue(InitOption::OPT_MSG_BROKER_SERVER);
 
     prod = chaos::common::message::MessagePSDriver::getProducerDriver(msgbrokerdrv);
-        PSMC_LAPP << "Initializing producer based on " << msgbroker<<" ("+msgbrokerdrv+")";
+        PSMC_LDBG << "Initializing producer based on " << msgbroker<<" ("+msgbrokerdrv+")";
 
     prod->addServer(msgbroker);
 
@@ -118,7 +119,7 @@ void PSMClient::stop() {
 void PSMClient::deinit() {
    
     PSMC_LAPP << "PSM Destroyed";
-
+    stop();
 }
 
 /*

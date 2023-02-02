@@ -118,7 +118,6 @@ IF (COMPILE_HAZELCAST_LIVE_DRIVER)
      MESG("${HAZELCAST_LIBRARY}")
 ENDIF()
 
-set (CMAKE_CXX_STANDARD 14)
 
 
 MESG("Install c mongodb driver")
@@ -221,12 +220,11 @@ SET(cnd_src
             QueryDataMsgPSConsumer.cpp
             )
 
-SET(service_src  ../chaos_service_common/persistence/mongodb/MongoDBHAConnectionManager.cpp
+ SET(service_src  ../chaos_service_common/persistence/mongodb/MongoDBHAConnectionManager.cpp
                   ../chaos_service_common/persistence/mongodb/MongoDBAccessor.cpp
                   ../chaos_service_common/DriverPoolManager.cpp ../chaos_service_common/health_system/HealtManagerDirect.cpp)
 
-SET(service_src  ${service_src} ../chaos_service_common/persistence/mongodb/mongodb_cxx/MongoDBCXXDriver.cpp)
-
+ SET(service_src  ${service_src} ../chaos_service_common/persistence/mongodb/mongodb_cxx/MongoDBCXXDriver.cpp)
 
 SET(service_src  ${service_src} ../chaos_service_common/persistence/data_access/AbstractDataAccess.cpp
 						../chaos_service_common/persistence/data_access/AbstractPersistenceDriver.cpp
@@ -467,19 +465,19 @@ ENDIF(CHAOS_PROMETHEUS)
 
 IF (BUILD_FORCE_STATIC  )
   ADD_LIBRARY(chaos_cds STATIC ${cnd_src} ${api_src} ${service_src} ${posix_src})
-  TARGET_LINK_LIBRARIES(chaos_cds chaos_common couchbase mongoclient mongocxx bsoncxx)
+  TARGET_LINK_LIBRARIES(chaos_cds chaos_common couchbase mongoclient mongocxx bsoncxx )
 ELSE (BUILD_FORCE_STATIC)
-  ADD_LIBRARY(chaos_cds SHARED ${cnd_src} ${api_src} ${service_src} ${posix_src})
-  set_target_properties(chaos_cds PROPERTIES VERSION 1.0.0 SOVERSION 1)
+  ADD_LIBRARY(chaos_cds SHARED    ${posix_src} ${service_src}  ${api_src} ${cnd_src}) #   
+ # set_target_properties(chaos_cds PROPERTIES VERSION 1.0.0 SOVERSION 1)
 ENDIF (BUILD_FORCE_STATIC)
 
 ADD_EXECUTABLE(${PROJECT_NAME} main.cpp )
 
 #add dependency
-add_dependencies(chaos_cds mongo-cxx-driver)
-add_dependencies(chaos_cds couchbase-c-driver)
+# add_dependencies(chaos_cds mongo-cxx-driver)
+# add_dependencies(chaos_cds couchbase-c-driver)
 
-add_dependencies(${PROJECT_NAME} mongo-cxx-driver)
+# add_dependencies(${PROJECT_NAME} mongo-cxx-driver)
 # add_dependencies(${PROJECT_NAME} cassandra-driver)
 
 FILE(GLOB files "../chaos_service_common/data/node/*.h")
@@ -493,13 +491,15 @@ IF(BUILD_FORCE_STATIC)
   SET(CMAKE_EXE_LINKER_FLAGS "-static -Wl,--whole-archive -lchaos_common -Wl,--no-whole-archive")
 ENDIF()
 
-SET(BUILD_LIBRARY ${FrameworkLib} boost_iostreams)
+SET(BUILD_LIBRARY  boost_iostreams boost_regex)
+# SET(BUILD_LIBRARY )
+
 SET(BUILD_LIBRARY ${BUILD_LIBRARY} lz4)
 
 SET(BUILD_LIBRARY ${BUILD_LIBRARY} chaos_common)
-SET(BUILD_LIBRARY ${BUILD_LIBRARY} boost_random)
+# SET(BUILD_LIBRARY ${BUILD_LIBRARY} boost_random)
 SET(BUILD_LIBRARY ${BUILD_LIBRARY} couchbase)
-SET(BUILD_LIBRARY ${BUILD_LIBRARY} mongoclient)
+SET(BUILD_LIBRARY ${BUILD_LIBRARY} mongoclient )
 
 
 #IF(CERN_ROOT)
@@ -516,7 +516,7 @@ target_compile_definitions(chaos_cds PRIVATE USE_MONGODB3_DRIVER=1)
 # SET(BUILD_LIBRARY ${BUILD_LIBRARY} uv)
 # SET(BUILD_LIBRARY ${BUILD_LIBRARY} cassandra)
 # target_compile_definitions(${PROJECT_NAME} PRIVATE USE_CASSANDRA_DRIVER=1)
-TARGET_LINK_LIBRARIES(chaos_cds ${BUILD_LIBRARY} )
+TARGET_LINK_LIBRARIES(chaos_cds ${BUILD_LIBRARY})
 
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} chaos_cds ${BUILD_LIBRARY})
 

@@ -23,7 +23,7 @@
 #define __CHAOSFramework__061D444_6ECF_448C_8D63_98139B76FA9D_ExternalIODriver_h
 
 #include <chaos/common/chaos_types.h>
-#include <chaos/cu_toolkit/driver_manager/driver/AbstractRemoteIODriver.h>
+#include "AbstractRemoteIODriver.h"
 namespace chaos {
     namespace cu {
         namespace driver_manager {

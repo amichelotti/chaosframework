@@ -100,6 +100,9 @@ CDWUniquePtr SetInstanceDescription::execute(CDWUniquePtr api_data) {
     if(instance_desc->hasKey(DataServiceNodeDefinitionKey::DS_STORAGE_LIVE_TIME)) {
         pg.addProperty(DataServiceNodeDefinitionKey::DS_STORAGE_LIVE_TIME, instance_desc->getVariantValue(DataServiceNodeDefinitionKey::DS_STORAGE_LIVE_TIME));
     }
+    if(instance_desc->hasKey(DataServiceNodeDefinitionKey::DS_STORAGE_LOG_TIME)) {
+        pg.addProperty(DataServiceNodeDefinitionKey::DS_STORAGE_LOG_TIME, instance_desc->getVariantValue(DataServiceNodeDefinitionKey::DS_STORAGE_LOG_TIME));
+    }
     if(instance_desc->hasKey(chaos::ControlUnitPropertyKey::INIT_RESTORE_OPTION)) {
         pg.addProperty(chaos::ControlUnitPropertyKey::INIT_RESTORE_OPTION, instance_desc->getVariantValue(chaos::ControlUnitPropertyKey::INIT_RESTORE_OPTION));
     }

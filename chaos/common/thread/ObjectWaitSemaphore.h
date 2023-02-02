@@ -111,7 +111,7 @@ namespace chaos {
             if(inWait) return NULL;
             inWait = true;
             answered = false;
-            do {} while(CHAOS_WAIT(wait_answer_condition,lock, millisecToWait) && !answered);
+            do {} while(CHAOS_WAIT_MS(wait_answer_condition,lock, millisecToWait) && !answered);
             inWait = false;
             answered = false;
             T result = objecForWait;

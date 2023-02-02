@@ -24,13 +24,9 @@
 
 #include <chaos/common/chaos_types.h>
 #include <chaos/common/utility/ObjectInstancer.h>
-
-//#include <chaos/common/message/MultiAddressMessageChannel.h>
-
-#include <chaos_metadata_service_client/api_proxy/api_types.h>
+#include "api_types.h"
 #include <chaos/common/message/MultiAddressMessageRequestFuture.h>
 
-#include <boost/atomic.hpp>
 
 namespace chaos {
     namespace common{

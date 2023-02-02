@@ -28,7 +28,7 @@
 #ifdef CHAOS_PROMETHEUS
 #include <chaos/common/direct_io/DirectIOClientConnectionMetricCollector.h>
 #endif
-#include <boost/regex.hpp>
+#include <regex>
 #include <boost/format.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
