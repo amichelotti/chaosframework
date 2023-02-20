@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.9)
+cmake_minimum_required(VERSION 3.7)
 project(ChaosMetadataService)
 
 #add module path for permi to find lirary
@@ -128,9 +128,9 @@ ExternalProject_Add(
  PREFIX "${CMAKE_BINARY_DIR}/ext_dep/mongo-c-driver-prefix"
  SOURCE_DIR "${CMAKE_BINARY_DIR}/ext_dep/mongo-c-driver-src"
  BINARY_DIR "${CMAKE_BINARY_DIR}/ext_dep/mongo-c-driver-build"
- BUILD_COMMAND make CFLAGS=${CMAKE_C_FLAGS} CXXFLAGS=${CMAKE_CXX_FLAGS}
+ # BUILD_COMMAND make CFLAGS=${CMAKE_C_FLAGS} CXXFLAGS=${CMAKE_CXX_FLAGS}
  CMAKE_ARGS
-  -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX} -DCMAKE_BUILD_TYPE=Release -DENABLE_AUTOMATIC_INIT_AND_CLEANUP=OFF -DENABLE_BSON=ONLY
+  -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX} -DCMAKE_BUILD_TYPE=Release -DENABLE_AUTOMATIC_INIT_AND_CLEANUP=OFF -DENABLE_TESTS=OFF -DENABLE_EXAMPLES=OFF -DENABLE_BSON=ONLY
  LOG_DOWNLOAD ON
  LOG_CONFIGURE ON
  LOG_BUILD ON)
@@ -144,10 +144,10 @@ ExternalProject_Add(
  PREFIX "${CMAKE_BINARY_DIR}/ext_dep/couchbase-c-driver-prefix"
  SOURCE_DIR "${CMAKE_BINARY_DIR}/ext_dep/couchbase-c-driver-src"
  BINARY_DIR "${CMAKE_BINARY_DIR}/ext_dep/couchbase-c-driver-build"
-INSTALL_COMMAND cp ${CMAKE_BINARY_DIR}/ext_dep/couchbase-c-driver-build/lib/libcouchbaseS.a ${CMAKE_INSTALL_PREFIX}/lib
+INSTALL_COMMAND cp ${CMAKE_BINARY_DIR}/ext_dep/couchbase-c-driver-build/lib/libcouchbase.so ${CMAKE_INSTALL_PREFIX}/lib
  BUILD_COMMAND make CFLAGS=${CMAKE_C_FLAGS} CXXFLAGS=${CMAKE_CXX_FLAGS} install
  CMAKE_ARGS
-  -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX} -DLCB_INSTALL_HEADERS=ON -DCMAKE_BUILD_TYPE=Release -DLCB_NO_TESTS=ON -DLCB_NO_PLUGINS=ON -DLCB_NO_MOCK=ON
+  -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX} -DLCB_INSTALL_HEADERS=ON -DLCB_NO_PLUGINS=ON -DCMAKE_BUILD_TYPE=Release -DLCB_NO_TESTS=ON -DLCB_NO_MOCK=ON -DLCB_NO_SSL=ON
  LOG_DOWNLOAD ON
  LOG_CONFIGURE ON
  LOG_BUILD ON)
@@ -161,7 +161,7 @@ ExternalProject_Add(
  PREFIX "${CMAKE_BINARY_DIR}/ext_dep/mongo-cxx-driver-prefix"
  SOURCE_DIR "${CMAKE_BINARY_DIR}/ext_dep/mongo-cxx-driver-src"
  BINARY_DIR "${CMAKE_BINARY_DIR}/ext_dep/mongo-cxx-driver-build"
- BUILD_COMMAND make CFLAGS=${CMAKE_C_FLAGS} CXXFLAGS=${CMAKE_CXX_FLAGS}
+ # BUILD_COMMAND make CFLAGS=${CMAKE_C_FLAGS} CXXFLAGS=${CMAKE_CXX_FLAGS}
  CMAKE_ARGS
   -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX} -DCMAKE_BUILD_TYPE=Release
  LOG_DOWNLOAD ON
@@ -465,7 +465,7 @@ ENDIF(CHAOS_PROMETHEUS)
 
 IF (BUILD_FORCE_STATIC  )
   ADD_LIBRARY(chaos_cds STATIC ${cnd_src} ${api_src} ${service_src} ${posix_src})
-  TARGET_LINK_LIBRARIES(chaos_cds chaos_common couchbase mongoclient mongocxx bsoncxx )
+  TARGET_LINK_LIBRARIES(chaos_cds PRIVATE chaos_common couchbaseS.a mongoclient mongocxx bsoncxx )
 ELSE (BUILD_FORCE_STATIC)
   ADD_LIBRARY(chaos_cds SHARED    ${posix_src} ${service_src}  ${api_src} ${cnd_src}) #   
  # set_target_properties(chaos_cds PROPERTIES VERSION 1.0.0 SOVERSION 1)
@@ -516,9 +516,9 @@ target_compile_definitions(chaos_cds PRIVATE USE_MONGODB3_DRIVER=1)
 # SET(BUILD_LIBRARY ${BUILD_LIBRARY} uv)
 # SET(BUILD_LIBRARY ${BUILD_LIBRARY} cassandra)
 # target_compile_definitions(${PROJECT_NAME} PRIVATE USE_CASSANDRA_DRIVER=1)
-TARGET_LINK_LIBRARIES(chaos_cds ${BUILD_LIBRARY})
+TARGET_LINK_LIBRARIES(chaos_cds PUBLIC ${BUILD_LIBRARY} PRIVATE jsoncpp.a )
 
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} chaos_cds ${BUILD_LIBRARY})
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} PUBLIC chaos_cds ${BUILD_LIBRARY} )
 
 
 #INSTALL_TARGETS(/bin ${PROJECT_NAME})

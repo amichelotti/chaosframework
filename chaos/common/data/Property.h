@@ -5,7 +5,7 @@
 namespace chaos {
 namespace common {
 namespace data {
-#define PROPERTY_VALUE_KEY "VAL"
+#define PROPERTY_VALUE_KEY "value"
 #define PROPERTY_VALUE_MAX_KEY "max"
 #define PROPERTY_VALUE_MIN_KEY "min"
 #define PROPERTY_VALUE_INC_KEY "inc"
