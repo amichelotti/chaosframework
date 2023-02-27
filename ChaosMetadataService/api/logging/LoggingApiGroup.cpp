@@ -24,6 +24,7 @@
 #include "SearchLogEntry.h"
 #include "GetLogForSourceUID.h"
 #include "GetLogDomainForSourceUID.h"
+#include "DeleteLog.h"
 
 using namespace chaos::metadata_service::api::logging;
 
@@ -36,6 +37,8 @@ AbstractApiGroup(MetadataServerLoggingDefinitionKeyRPC::ACTION_NODE_LOGGING_RPC_
     addApi<SearchLogEntry>();
     addApi<GetLogForSourceUID>();
     addApi<GetLogDomainForSourceUID>();
+    addApi<DeleteLog>();
+
 }
 
 LoggingApiGroup::~LoggingApiGroup() {}

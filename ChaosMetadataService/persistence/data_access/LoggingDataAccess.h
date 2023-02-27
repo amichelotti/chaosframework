@@ -135,8 +135,8 @@ namespace chaos {
                                                        const LogSourceList& source_uids) = 0;
                     
                     //! remove all log for belog to the source id
-                    virtual int eraseLogBeforTS(const std::string& source_uid,
-                                                uint64_t unit_ts) = 0;
+                    virtual int eraseLogBeforTS(const std::string& source_uid="",const std::string& type_id="",
+                                                uint64_t unit_ts=0) = 0;
                 };
             }
         }

@@ -62,6 +62,8 @@
 #include <ChaosMetadataService/api/service/SetVariable.h>
 
 #include <ChaosMetadataService/api/logging/SearchLogEntry.h>
+#include <ChaosMetadataService/api/logging/DeleteLog.h>
+
 #include <chaos_service_common/DriverPoolManager.h>
 
 using namespace chaos::common::cache_system;
@@ -808,6 +810,21 @@ chaos::common::data::CDWUniquePtr ChaosManager::searchLogEntry(const std::string
       pack->finalizeArrayForKey(MetadataServerLoggingDefinitionKeyRPC::PARAM_NODE_LOGGING_LOG_DOMAIN);
     }
     pack->addInt32Value("page_length", page_length);
+    res = node.execute(MOVE(pack));
+    CALC_EXEC_END
+  }
+  return res;
+}
+
+chaos::common::data::CDWUniquePtr ChaosManager::deleteLog(const std::string& uid,const std::string& domains,uint64_t to){
+  CDWUniquePtr res;
+  if (persistence_driver) {
+    DeleteLog node;
+    CALC_EXEC_START;
+    ChaosUniquePtr<chaos::common::data::CDataWrapper> pack(new CDataWrapper());
+    pack->addStringValue(MetadataServerLoggingDefinitionKeyRPC::PARAM_NODE_LOGGING_LOG_SOURCE_IDENTIFIER, uid);    
+    pack->addInt64Value(MetadataServerLoggingDefinitionKeyRPC::PARAM_NODE_LOGGING_LOG_TIMESTAMP, to);
+    pack->addStringValue(MetadataServerLoggingDefinitionKeyRPC::PARAM_NODE_LOGGING_LOG_DOMAIN, domains);
     res = node.execute(MOVE(pack));
     CALC_EXEC_END
   }

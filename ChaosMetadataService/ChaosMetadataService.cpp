@@ -465,7 +465,7 @@ int ChaosMetadataService::removeStorageData(const std::string& control_unit_foun
     }
 
     log(CHAOS_FORMAT("Remove log for cu %1%", % control_unit_found));
-    if ((err = DriverPoolManager::getInstance()->getPersistenceDataAccess<persistence::data_access::LoggingDataAccess>()->eraseLogBeforTS(control_unit_found,
+    if ((err = DriverPoolManager::getInstance()->getPersistenceDataAccess<persistence::data_access::LoggingDataAccess>()->eraseLogBeforTS(control_unit_found,"",
                                                                                                                                           remove_until_ts))) {
       log(CHAOS_FORMAT("Error erasing logging for control unit %1% with error %2%", % control_unit_found % err));
     }

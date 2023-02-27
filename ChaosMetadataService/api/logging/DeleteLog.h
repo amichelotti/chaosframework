@@ -1,6 +1,7 @@
 /*
- * Copyright 2012, 2017 INFN
- *
+ * Copyright 2023 INFN
+ * 
+ * Andrea Michelotti
  * Licensed under the EUPL, Version 1.2 or – as soon they
  * will be approved by the European Commission - subsequent
  * versions of the EUPL (the "Licence");
@@ -19,12 +20,24 @@
  * permissions and limitations under the Licence.
  */
 
-#ifndef __CHAOSFramework__DB96A43_83ED_4C1F_8BA5_9B41D053D5CA_logging_h
-#define __CHAOSFramework__DB96A43_83ED_4C1F_8BA5_9B41D053D5CA_logging_h
+#ifndef __CHAOSFramework__DeleteLog_h
+#define __CHAOSFramework__DeleteLog_h
 
-#include <chaos_metadata_service_client/api_proxy/logging/SearchLogEntry.h>
-#include <chaos_metadata_service_client/api_proxy/logging/GetLogForSourceUID.h>
-#include <chaos_metadata_service_client/api_proxy/logging/GetLogDomainForSourceUID.h>
-#include <chaos_metadata_service_client/api_proxy/logging/DeleteLog.h>
+#include "../AbstractApi.h"
 
-#endif /* __CHAOSFramework__DB96A43_83ED_4C1F_8BA5_9B41D053D5CA_logging_h */
+#include <chaos/common/event/event.h>
+
+namespace chaos {
+    namespace metadata_service {
+        namespace api {
+            namespace logging {
+                
+                
+                CHAOS_MDS_DEFINE_API_CLASS(DeleteLog)
+
+            }
+        }
+    }
+}
+
+#endif /* __CHAOSFramework__DeleteLog_h */
