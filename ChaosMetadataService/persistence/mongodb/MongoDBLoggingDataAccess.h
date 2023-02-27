@@ -77,8 +77,9 @@ namespace chaos {
                                                const data_access::LogSourceList& source_uids);
                     
                     //!inherited method
-                    int eraseLogBeforTS(const std::string& source_uid,
-                                        uint64_t unit_ts);
+                    int eraseLogBeforTS(const std::string& source_uid="",const std::string& log_type="",
+                                        uint64_t unit_ts=0);
+                    
                 };
             }
         }

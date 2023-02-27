@@ -102,6 +102,8 @@ chaos::common::data::CDWUniquePtr startStop(const std::string& uid,bool start);
 chaos::common::data::CDWUniquePtr initDeinit(const std::string& uid,bool ini);
 chaos::common::data::CDWUniquePtr loadUnloadControlUnit(const std::string& uid,bool ini);
 chaos::common::data::CDWUniquePtr searchLogEntry(const std::string& uid,const std::vector<std::string>& domains,uint64_t start,uint64_t end,uint64_t seq,uint32_t page,int sort=-1);
+chaos::common::data::CDWUniquePtr deleteLog(const std::string& uid,const std::string& domains,uint64_t to);
+
 chaos::common::data::CDWUniquePtr searchScript(const std::string& uid,uint64_t start,uint32_t page);
 
 chaos::common::data::CDWUniquePtr saveScript(const chaos::common::data::CDataWrapper& value);

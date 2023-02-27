@@ -372,12 +372,27 @@ int MongoDBLoggingDataAccess::getLogDomainsForSource(LogDomainList& entry_list,
     return err;
 }
 
-int MongoDBLoggingDataAccess::eraseLogBeforTS(const std::string& source_uid,
+int MongoDBLoggingDataAccess::eraseLogBeforTS(const std::string& source_uid,const std::string& log_type,
                                               uint64_t unit_ts) {
     int err = 0;
     try {
-        mongo::BSONObj query = BSON(MetadataServerLoggingDefinitionKeyRPC::PARAM_NODE_LOGGING_LOG_SOURCE_IDENTIFIER << source_uid <<
-                                    MetadataServerLoggingDefinitionKeyRPC::PARAM_NODE_LOGGING_LOG_TIMESTAMP << BSON( "$lte" << mongo::Date_t(unit_ts)));
+        mongo::BSONObjBuilder builder;
+        mongo::BSONArrayBuilder bson_find_token_or;
+
+        if(source_uid.size()){
+            std::string token_for_mongo = source_uid+".*";
+            builder<<MetadataServerLoggingDefinitionKeyRPC::PARAM_NODE_LOGGING_LOG_SOURCE_IDENTIFIER << BSON("$regex" << token_for_mongo<<"$options"<<"i");
+           // builder<<MetadataServerLoggingDefinitionKeyRPC::PARAM_NODE_LOGGING_LOG_SOURCE_IDENTIFIER<<source_uid;
+        }
+    
+        if(log_type.size()){
+            builder<<MetadataServerLoggingDefinitionKeyRPC::PARAM_NODE_LOGGING_LOG_DOMAIN<<log_type;
+ 
+        }
+        if(unit_ts>0){
+            builder<<MetadataServerLoggingDefinitionKeyRPC::PARAM_NODE_LOGGING_LOG_TIMESTAMP << BSON( "$lte" << mongo::Date_t(unit_ts));
+        }
+        mongo::BSONObj query = builder.obj();
         
         DEBUG_CODE(MDBLDA_DBG<<log_message("eraseLog",
                                            "erase",

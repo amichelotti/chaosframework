@@ -246,7 +246,7 @@ SET(api_src  	api/ApiManagement.cpp
 SET(api_src  ${api_src}	api/logging/LoggingApiGroup.cpp
                         api/logging/SubmitEntry.cpp
                         api/logging/SubmitEntryBase.cpp
-
+                        api/logging/DeleteLog.cpp
                         api/logging/SearchLogEntry.cpp
                         api/logging/GetLogForSourceUID.cpp
                         api/logging/GetLogDomainForSourceUID.cpp)
