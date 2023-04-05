@@ -811,7 +811,17 @@ CDBufferUniquePtr CDataWrapper::getBinaryValueAsCDataBuffer(const std::string& k
 
 // check if the key is present in data wrapper
 bool CDataWrapper::hasKey(const std::string& key) const {
-  return bson_has_field(ACCESS_BSON(bson), key.c_str());
+   bson_iter_t iter;
+   bson_iter_t child;
+
+   BSON_ASSERT (bson);
+   if(key.size()==0) return false;
+   if(strchr(key.c_str(),'.')){
+    // if contains . cannot recurse
+    return (bson_iter_init (&iter, ACCESS_BSON(bson)) && bson_iter_find (&iter, key.c_str()));
+   } 
+  return (bson_iter_init (&iter, ACCESS_BSON(bson)) && bson_iter_find_descendant (&iter, key.c_str(), &child));
+   
 }
 
 bool CDataWrapper::isVector(const std::string& key) const {
