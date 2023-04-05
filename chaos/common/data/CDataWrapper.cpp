@@ -816,6 +816,10 @@ bool CDataWrapper::hasKey(const std::string& key) const {
 
    BSON_ASSERT (bson);
    if(key.size()==0) return false;
+   if(strchr(key.c_str(),'.')){
+    // if contains . cannot recurse
+    return (bson_iter_init (&iter, ACCESS_BSON(bson)) && bson_iter_find (&iter, key.c_str()));
+   } 
   return (bson_iter_init (&iter, ACCESS_BSON(bson)) && bson_iter_find_descendant (&iter, key.c_str(), &child));
    
 }

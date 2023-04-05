@@ -99,6 +99,32 @@ TEST(CDataWrapperTest, Performance) {
         data_pack.reset();
     }
 }
+TEST(CDataWrapperTest, haKey) {
+    int idx = 0;
+    CDataWrapper data_pack;
+    data_pack.addBoolValue("bv", (int32_t)0);
+    data_pack.addInt32Value("i32v", (int32_t)0);
+
+    data_pack.addInt32Value("i32v.pippo", (int32_t)0);
+    data_pack.addDoubleValue("dbv", (double)36.6);
+    data_pack.addDoubleValue("dbv.pippo", (double)37.6);
+    ASSERT_TRUE(data_pack.hasKey("bv"));
+    ASSERT_FALSE(data_pack.hasKey("bva"));
+    ASSERT_FALSE(data_pack.hasKey("bv.pippo"));
+    
+    ASSERT_TRUE(data_pack.hasKey("dbv"));
+    ASSERT_FALSE(data_pack.hasKey("dbva"));
+    ASSERT_FALSE(data_pack.hasKey("dbv.pippa"));
+    ASSERT_TRUE(data_pack.hasKey("dbv.pippo"));
+
+    ASSERT_TRUE(data_pack.hasKey("i32v"));
+    ASSERT_FALSE(data_pack.hasKey("i32va"));
+    ASSERT_FALSE(data_pack.hasKey("i32v.pippa"));
+    ASSERT_TRUE(data_pack.hasKey("i32v.pippo"));
+    
+    
+    
+}
 TEST(CDataWrapperTest, TestJsonDouble) {
     const char* test_json_translation="{\"double_key\":[1.0,2.1,-1.0,-0.9]}";
     double test_var[]={1.0,2.1,-1.0,-0.9};
