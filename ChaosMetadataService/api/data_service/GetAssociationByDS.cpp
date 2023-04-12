@@ -53,7 +53,9 @@ CDWUniquePtr GetAssociationByDS::execute(CDWUniquePtr api_data) {
     for(std::vector<ChaosSharedPtr<CDataWrapper> >::iterator it = node_associated.begin();
         it != node_associated.end();
         it++) {
-        result->appendCDataWrapperToArray(*it->get());
+        if(it->get()){
+            result->appendCDataWrapperToArray(*it->get());
+        }
     }
     result->finalizeArrayForKey(chaos::NodeType::NODE_SEARCH_LIST_KEY);
     return result;

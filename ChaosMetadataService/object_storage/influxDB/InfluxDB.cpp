@@ -27,7 +27,6 @@
 #define DBG DBG_LOG(InfluxDB)
 #define ERR ERR_LOG(InfluxDB)
 #include <chaos/common/utility/TimingUtil.h>
-#define MAX_ARRAY_POINTS 512
 using namespace chaos::metadata_service::object_storage;
 
 #if CHAOS_PROMETHEUS
@@ -185,104 +184,129 @@ static const unsigned int DPCK_DATASET_TYPE_LOG = 7;
         case DataType::TYPE_VECTOR_BOOL: {
           uint32_t    size = 0;
           const bool* ptr  = (const bool*)stored_object.getBinaryValue(*i, size);
-          if (ptr) {
-            for (int cnt = 0; (cnt < size / sizeof(bool)) && (cnt < MAX_ARRAY_POINTS); cnt++) {
+          
+          if (ptr && ( size / sizeof(bool)< si.max_array_size)) {
+            for (int cnt = 0; (cnt <size/sizeof(bool)) ; cnt++) {
               measurements << c <<pref<< *i + "." << cnt << "=" << ((ptr[cnt]) ? 't' : 'f');
               first++;
               nmeas++;
             }
+          } else {
+              ERR << "Skipped vector (bool) measurement \"" << *i << "\", size " <<size / sizeof(bool) << " max " << si.max_array_size;
+
           }
           break;
         }
         case DataType::TYPE_VECTOR_INT32: {
           uint32_t       size = 0;
           const int32_t* ptr  = (const int32_t*)stored_object.getBinaryValue(*i, size);
-          if (ptr) {
-            for (int cnt = 0; (cnt < size / sizeof(int32_t)) && (cnt < MAX_ARRAY_POINTS); cnt++) {
+          if (ptr&& ( size / sizeof(int32_t)< si.max_array_size)) {
+            for (int cnt = 0; (cnt < size / sizeof(int32_t)); cnt++) {
               measurements << c << pref<<*i + "." << cnt << "=" << ptr[cnt] << "i";
               first++;
               nmeas++;
             }
+          } else {
+              ERR << "Skipped vector (int32_t) measurement \"" << *i << "\", size " <<size / sizeof(int32_t) << " max " << si.max_array_size;
+
           }
           break;
         }
         case DataType::TYPE_VECTOR_UINT32: {
           uint32_t        size = 0;
           const uint32_t* ptr  = (const uint32_t*)stored_object.getBinaryValue(*i, size);
-          if (ptr) {
-            for (int cnt = 0; (cnt < size / sizeof(int32_t)) && (cnt < MAX_ARRAY_POINTS); cnt++) {
+          if (ptr&& ( size / sizeof(int32_t)< si.max_array_size)) {
+            for (int cnt = 0; (cnt < size / sizeof(int32_t)) ; cnt++) {
               measurements << c <<pref<< *i + "." << cnt << "=" << ptr[cnt] << "i";
               first++;
               nmeas++;
             }
+          } else {
+              ERR << "Skipped vector (uint32_t) measurement \"" << *i << "\", size " <<size / sizeof(uint32_t) << " max " << si.max_array_size;
+
           }
           break;
         }
         case DataType::TYPE_VECTOR_UINT8: {
           uint32_t       size = 0;
           const uint8_t* ptr  = (const uint8_t*)stored_object.getBinaryValue(*i, size);
-          if (ptr) {
-            for (int cnt = 0; (cnt < size / sizeof(uint8_t)) && (cnt < MAX_ARRAY_POINTS); cnt++) {
+          if (ptr&& ( size / sizeof(uint8_t)< si.max_array_size)) {
+            for (int cnt = 0; (cnt < size / sizeof(uint8_t)); cnt++) {
               measurements << c <<pref<< *i + "." << cnt << "=" << ptr[cnt] << "i";
               first++;
               nmeas++;
             }
+          } else {
+              ERR << "Skipped vector (uint8_t) measurement \"" << *i << "\", size " <<size / sizeof(uint8_t) << " max " << si.max_array_size;
+
           }
           break;
         }
         case DataType::TYPE_VECTOR_UINT16: {
           uint32_t        size = 0;
           const uint16_t* ptr  = (const uint16_t*)stored_object.getBinaryValue(*i, size);
-          if (ptr) {
-            for (int cnt = 0; (cnt < size / sizeof(uint16_t)) && (cnt < MAX_ARRAY_POINTS); cnt++) {
+          if (ptr&& ( size / sizeof(uint16_t)< si.max_array_size)) {
+            for (int cnt = 0; (cnt < size / sizeof(uint16_t)) ; cnt++) {
               measurements << c << pref<<*i + "." << cnt << "=" << ptr[cnt] << "i";
               first++;
               nmeas++;
             }
+          } else {
+              ERR << "Skipped vector (uint16_t) measurement \"" << *i << "\", size " <<size / sizeof(uint16_t) << " max " << si.max_array_size;
+
           }
           break;
         }
         case DataType::TYPE_VECTOR_INT16: {
           uint32_t       size = 0;
           const int16_t* ptr  = (const int16_t*)stored_object.getBinaryValue(*i, size);
-          if (ptr) {
-            for (int cnt = 0; (cnt < size / sizeof(int16_t)) && (cnt < MAX_ARRAY_POINTS); cnt++) {
+          if (ptr&& ( size / sizeof(int16_t)< si.max_array_size)) {
+            for (int cnt = 0; (cnt < size / sizeof(int16_t)) ; cnt++) {
               measurements << c <<pref<< *i + "." << cnt << "=" << ptr[cnt] << "i";
               first++;
               nmeas++;
             }
+          } else {
+              ERR << "Skipped vector (int16_t) measurement \"" << *i << "\", size " <<size / sizeof(int16_t) << " max " << si.max_array_size;
+
           }
           break;
         }
         case DataType::TYPE_VECTOR_INT8: {
           uint32_t      size = 0;
           const int8_t* ptr  = (const int8_t*)stored_object.getBinaryValue(*i, size);
-          if (ptr) {
-            for (int cnt = 0; (cnt < size / sizeof(int8_t)) && (cnt < MAX_ARRAY_POINTS); cnt++) {
+          if (ptr&& ( size / sizeof(int8_t)< si.max_array_size)) {
+            for (int cnt = 0; (cnt < size / sizeof(int8_t)); cnt++) {
               measurements << c << pref<<*i + "." << cnt << "=" << ptr[cnt] << "i";
               first++;
               nmeas++;
             }
+          } else {
+              ERR << "Skipped vector (int8_t) measurement \"" << *i << "\", size " <<size / sizeof(int8_t) << " max " << si.max_array_size;
+
           }
           break;
         }
         case DataType::TYPE_VECTOR_INT64: {
           uint32_t       size = 0;
           const int64_t* ptr  = (const int64_t*)stored_object.getBinaryValue(*i, size);
-          if (ptr) {
-            for (int cnt = 0; (cnt < size / sizeof(int64_t)) && (cnt < MAX_ARRAY_POINTS); cnt++) {
+          if (ptr&& ( size / sizeof(int64_t)< si.max_array_size)) {
+            for (int cnt = 0; (cnt < size / sizeof(int64_t)); cnt++) {
               measurements << c << pref<<*i + "." << cnt << "=" << ptr[cnt] << "i";
               first++;
               nmeas++;
             }
+          }else {
+              ERR << "Skipped vector (int64) measurement \"" << *i << "\", size " <<size / sizeof(int64_t) << " max " << si.max_array_size;
+
           }
           break;
         }
         case DataType::TYPE_VECTOR_DOUBLE: {
           uint32_t      size = 0;
           const double* ptr  = (const double*)stored_object.getBinaryValue(*i, size);
-          if (ptr) {
-            for (int cnt = 0; (cnt < size / sizeof(double)) && (cnt < MAX_ARRAY_POINTS); cnt++) {
+          if (ptr&& ( size / sizeof(double)< si.max_array_size)) {
+            for (int cnt = 0; (cnt < size / sizeof(double)); cnt++) {
               if (std::isfinite(ptr[cnt])) {
                 measurements << c << pref<<*i + "." << cnt << "=" << ptr[cnt];
                 first++;
@@ -290,14 +314,17 @@ static const unsigned int DPCK_DATASET_TYPE_LOG = 7;
               }
               //  DBG<< c << *i+"_" <<cnt<< "=" << ptr[cnt];
             }
+          } else {
+              ERR << "Skipped vector (double) measurement \"" << *i << "\", size " <<size / sizeof(double) << " max " << si.max_array_size;
+
           }
           break;
         }
         case DataType::TYPE_VECTOR_FLOAT: {
           uint32_t     size = 0;
           const float* ptr  = (const float*)stored_object.getBinaryValue(*i, size);
-          if (ptr) {
-            for (int cnt = 0; (cnt < size / sizeof(float)) && (cnt < MAX_ARRAY_POINTS); cnt++) {
+          if (ptr&& ( size / sizeof(float)< si.max_array_size)) {
+            for (int cnt = 0; (cnt < size / sizeof(float)) ; cnt++) {
               if (std::isfinite(ptr[cnt])) {
                 measurements << c << pref<<*i + "." << cnt << "=" << ptr[cnt];
                 first++;
@@ -305,6 +332,9 @@ static const unsigned int DPCK_DATASET_TYPE_LOG = 7;
               }
               //  DBG<< c << *i+"_" <<cnt<< "=" << ptr[cnt];
             }
+          } else {
+              ERR << "Skipped vector (float) measurement \"" << *i << "\", size " <<size / sizeof(float) << " max " << si.max_array_size;
+
           }
           break;
         }
@@ -432,7 +462,7 @@ void InfluxDB::push_process() {
       measurements.str("");
     }
 
-    sleep(1);
+    usleep(1000*si.max_time_ms);
   }
 
 }

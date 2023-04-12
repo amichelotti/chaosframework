@@ -46,13 +46,16 @@ CDWUniquePtr GetAllSnapshot::execute(CDWUniquePtr api_data) {
     GET_DATA_ACCESS(SnapshotDataAccess, s_da, -1);
     
     if((err = s_da->getAllSnapshot(snapshots))){
-        LOG_AND_TROW(S_GAS_ERR, -2, "Error getting the snpahsot list");
+        LOG_AND_TROW(S_GAS_ERR, -2, "Error getting the snapshot list");
     }
     
     for(SnapshotListIterator it = snapshots.begin();
         it != snapshots.end();
         it++) {
-        result->appendCDataWrapperToArray(*(*it).get());
+        if((*it).get()){
+
+            result->appendCDataWrapperToArray(*(*it).get());
+        }
     }
     
     result->finalizeArrayForKey("snapshot_list_result");

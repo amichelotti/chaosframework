@@ -95,7 +95,9 @@ CDWUniquePtr QueryDataCloud::execute(CDWUniquePtr api_data) {
         }
 
         for(VectorObject::iterator i=found_object_page.begin();i!=found_object_page.end();i++){
-             result->appendCDataWrapperToArray(*(i->get()));   
+            if(i->get()){
+             result->appendCDataWrapperToArray(*(i->get()));
+            }
         }
 
         

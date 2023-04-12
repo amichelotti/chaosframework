@@ -134,9 +134,13 @@ CDWUniquePtr GetFullDescription::execute(CDWUniquePtr api_data) {
                 //we can retrive the configured attribute
                 ChaosSharedPtr<CDataWrapper> init_ds_attribute = mergeDatasetAttributeWithSetup(element,
                                                                                                 element_configuration);
-                init_dataset->appendCDataWrapperToArray(*init_ds_attribute.get());
+                if(init_ds_attribute.get()){                                                                      
+                    init_dataset->appendCDataWrapperToArray(*init_ds_attribute.get());
+                }
             } else {
-                init_dataset->appendCDataWrapperToArray(*element.get());
+                if(element.get()){
+                    init_dataset->appendCDataWrapperToArray(*element.get());
+                }
             }
         }
     }
