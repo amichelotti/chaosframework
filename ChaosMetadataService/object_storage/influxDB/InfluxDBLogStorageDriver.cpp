@@ -113,7 +113,7 @@ void InfluxDBLogStorageDriver::init(void *init_data)  {
    
     //influxdb_t  asyncdb = influxdb_t( new influxdb::async_api::simple_db(url_list[0], database));
    // asyncdb->with_authentication(user,password);
-    DBG<<"server:"<<servername<<"\nport:"<<port<<"\ndatabase:"<<database<<"\nuser:"<<user<<"\npassw:"<<password<<" retention:"<<exptime<<" path:"<<funcpath<<" max_measures:"<<si.max_mesurements<<" poll time(ms):"<<si.max_time_ms<<" max array size:"<<si.max_array_size;
+    DBG<<"server:"<<servername<<"\nport:"<<port<<"\ndatabase:"<<database<<"\nuser:"<<user<<"\npassw:"<<password<<" retention:"<<exptime<<" path:"<<funcpath<<" max_measures:"<<si.max_mesurements<<" max push time(ms):"<<si.max_time_ms<<" poll time(ms):"<<si.poll_time_ms<<" max array size:"<<si.max_array_size;
     //register the data access implementations
     std::string resp;
     int ret;
