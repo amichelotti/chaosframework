@@ -59,6 +59,8 @@ void InfluxDBLogStorageDriver::init(void *init_data)  {
     const std::string retention = DriverPoolManager::logSetting.persistence_kv_param_map["retention"];
     const std::string max_measure_opt = DriverPoolManager::logSetting.persistence_kv_param_map["max_mesure"];
     const std::string max_measure_ms_opt = DriverPoolManager::logSetting.persistence_kv_param_map["max_time_ms"];
+    const std::string poll_time_ms_opt = DriverPoolManager::logSetting.persistence_kv_param_map["poll_time_ms"];
+
     const std::string max_array_size_opt = DriverPoolManager::logSetting.persistence_kv_param_map["max_array_size"];
 
 
@@ -97,6 +99,9 @@ void InfluxDBLogStorageDriver::init(void *init_data)  {
 
     if(max_measure_ms_opt.size()){
         si.max_time_ms=atoi(max_measure_ms_opt.c_str());
+    }
+    if(poll_time_ms_opt.size()){
+        si.poll_time_ms=atoi(max_measure_ms_opt.c_str());
     }
     if(max_measure_opt.size()){
         si.max_mesurements=atoi(max_measure_opt.c_str());

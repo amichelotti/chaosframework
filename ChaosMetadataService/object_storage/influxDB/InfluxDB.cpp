@@ -404,12 +404,39 @@ int InfluxDB::findObject(const std::string&                                     
   uint64_t seqid = last_record_found_seq.datapack_counter;
   uint64_t runid = last_record_found_seq.run_id;
 
+  std::stringstream ss;
+  ss<<"SELECT ";
+  if(projection_keys.size()==0){
+    ss<<"*";
+  } else {
+    for(ChaosStringSet::iterator i = projection_keys.begin();i!=projection_keys.end();i++){
+      ss<<*i;
+      if((++i)!=projection_keys.end()){
+        ss<<",";
+      }
+      --i;
+    }
+  }
+
+  ss<<" FROM \""<<key<<"\" WHERE time>="<<timestamp_from*1000<<" AND time<"<<timestamp_to*1000;
+  if(meta_tags.size()){
+    ss<<" AND \"tag\"='"<<*meta_tags.begin()<<"'";
+  }
+  if(page_len>0){
+    ss<<" LIMIT "<<page_len;
+  }
+
+  std::string resp;
+  int ret=influxdb_cpp::query(resp,ss.str(),si);
+
+  DBG<<ss.str()<<" returned "<<ret<<" ->"<<resp;
+
 #if CHAOS_PROMETHEUS
 
   // (*gauge_query_time_uptr) = (chaos::common::utility::TimingUtil::getTimeStamp() - ts);
 #endif
 
-  return err;
+  return ret;
 }
 
 //! fast search object into object persistence layer
@@ -462,7 +489,7 @@ void InfluxDB::push_process() {
       measurements.str("");
     }
 
-    usleep(1000*si.max_time_ms);
+    usleep(1000*si.poll_time_ms);
   }
 
 }
