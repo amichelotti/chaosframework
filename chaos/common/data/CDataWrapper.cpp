@@ -1545,6 +1545,38 @@ void CDataWrapper::setSerializedData(pvd::PVStructureConstPtr ptr) {
   setSerializedData(ptr.get());
 
 }*/
+void CDataWrapper::append(const std::string&key,bson_value_t*v){
+  switch(v->value_type){
+     case BSON_TYPE_INT64:
+      append(key,v->value.v_int64);
+      return;
+   
+    case BSON_TYPE_INT32:
+       append(key,v->value.v_int32);
+      return;
+    case BSON_TYPE_BOOL:
+       append(key,v->value.v_bool);
+      return;
+    case BSON_TYPE_DOUBLE:
+       append(key,v->value.v_double);
+      return;
+    case BSON_TYPE_UTF8:{
+      std::string ss(v->value.v_utf8.str,v->value.v_utf8.len);
+      append(key,ss);
+      return;
+    }
+    case BSON_TYPE_BINARY:
+      addBinaryValue(key,(const char*)v->value.v_binary.data,v->value.v_binary.data_len);
+    
+    default:
+     std::stringstream ss;
+    ss << "unespected type, typeid:" << v->value_type;
+    throw CException(v->value_type, ss.str(), __PRETTY_FUNCTION__);
+      break;
+  }
+  
+}
+
 void CDataWrapper::setSerializedData(pvd::PVUnionConstPtr ptr){
  pvd::UnionConstPtr structure_ptr = ptr->getUnion();
 
@@ -1941,6 +1973,25 @@ CMultiTypeDataArrayWrapper::CMultiTypeDataArrayWrapper(const ChaosBsonShrdPtr& _
     }
   }
 }
+CMultiTypeDataArrayWrapper::CMultiTypeDataArrayWrapper(bson_value_t *adoc): array_doc(new bson_t()){
+  bson_iter_t iter;
+   uint32_t       array_len=adoc->value.v_doc.data_len;
+  const uint8_t* array=adoc->value.v_doc.data;
+  
+  if (bson_init_static(array_doc, array, array_len)) {
+      bson_iter_t iter;
+      if (bson_iter_init(&iter, array_doc)) {
+        while (bson_iter_next(&iter)) {
+          // ChaosBsonValuesShrdPtr copy = ChaosBsonValuesShrdPtr(new bson_value_t(), &bsonValueDestroy);
+          // bson_value_t copy;
+          bson_value_t* copy = new bson_value_t();
+          bson_value_copy(bson_iter_value(&iter), copy);
+          values.push_back(copy);
+        }
+      }
+    }
+}                          
+
 std::map<std::string, std::string> CMultiTypeDataArrayWrapper::toKVmap(const std::string kname, const std::string kvalue) const {
   std::map<std::string, std::string> ret;
   for (int cnt = 0; cnt < size(); cnt++) {
@@ -1980,7 +2031,14 @@ std::string CMultiTypeDataArrayWrapper::getCanonicalJSONString() {
   char*  str_c = bson_as_relaxed_extended_json(static_cast<const bson_t*>(array_doc), &str_size);
   return std::string(str_c, str_size);
 }
-
+CMultiTypeDataArrayWrapperSPtr CMultiTypeDataArrayWrapper::getVectorElementAtIndex(const int pos) const {
+  if (values[pos]->value_type != BSON_TYPE_ARRAY) {
+    std::stringstream ss;
+    ss << "type at index [" << pos << "] is not a vector, typeid:" << values[pos]->value_type;
+    throw CException(1, ss.str(), __PRETTY_FUNCTION__);
+  }
+  return CMultiTypeDataArrayWrapperSPtr(new CMultiTypeDataArrayWrapper(values[pos]));
+}
 string CMultiTypeDataArrayWrapper::getStringElementAtIndex(const int pos) const {
   //   CHAOS_ASSERT(values[pos]->value_type == BSON_TYPE_UTF8);
   if (values[pos]->value_type != BSON_TYPE_UTF8) {
@@ -2064,6 +2122,10 @@ bool CMultiTypeDataArrayWrapper::isInt64ElementAtIndex(const int pos) const {
 bool CMultiTypeDataArrayWrapper::isCDataWrapperElementAtIndex(const int pos) const {
   return values[pos]->value_type == BSON_TYPE_DOCUMENT;
 }
+bool CMultiTypeDataArrayWrapper::isArrayElementAtIndex(const int pos) const{
+    return values[pos]->value_type == BSON_TYPE_ARRAY;
+
+}
 
 const char* CMultiTypeDataArrayWrapper::getRawValueAtIndex(const int pos, uint32_t& size) const {
   switch (values[pos]->value_type) {
@@ -2088,7 +2150,13 @@ const char* CMultiTypeDataArrayWrapper::getRawValueAtIndex(const int pos, uint32
     case BSON_TYPE_BINARY:
       size = values[pos]->value.v_binary.data_len;
       return reinterpret_cast<const char*>(values[pos]->value.v_binary.data);
+    case BSON_TYPE_ARRAY:
+      size = values[pos]->value.v_binary.data_len;
+      return reinterpret_cast<const char*>(values[pos]->value.v_binary.data);
     default:
+     std::stringstream ss;
+    ss << "unespected type [" << pos << "], typeid:" << values[pos]->value_type;
+    throw CException(values[pos]->value_type, ss.str(), __PRETTY_FUNCTION__);
       break;
   }
   return NULL;

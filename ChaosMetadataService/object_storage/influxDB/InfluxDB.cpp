@@ -417,8 +417,9 @@ int InfluxDB::findObject(const std::string&                                     
       --i;
     }
   }
+ //std::stringstream stype;stype<<"SHOW FIELD KEYS FROM "<< "\""<<key<<"\"";
 
-  ss<<" FROM \""<<key<<"\" WHERE time>="<<timestamp_from*1000<<" AND time<"<<timestamp_to*1000;
+  ss<<" FROM \""<<key<<"\" WHERE time>="<<timestamp_from*1000000<<" AND time<"<<timestamp_to*1000000;
   if(meta_tags.size()){
     ss<<" AND \"tag\"='"<<*meta_tags.begin()<<"'";
   }
@@ -428,8 +429,75 @@ int InfluxDB::findObject(const std::string&                                     
 
   std::string resp;
   int ret=influxdb_cpp::query(resp,ss.str(),si);
+  //DBG<<ss.str()<<" returned "<<ret<<" ->"<<resp;
 
-  DBG<<ss.str()<<" returned "<<ret<<" ->"<<resp;
+  /*if(ret==0){
+
+  ret=influxdb_cpp::query(resp,ss.str(),si);
+  chaos::common::data::CDataWrapper data;
+  data.setSerializedJsonData(resp.c_str());
+  if(data.hasKey("results")&& data.isVectorValue("results")){
+     chaos::common::data::CMultiTypeDataArrayWrapperSPtr results=data.getVectorValue("results");
+     chaos::common::data::CDWUniquePtr serie=results->getCDataWrapperElementAtIndex(0);
+     if(serie.get()&&serie->hasKey("series")&&serie->isVectorValue("series")){
+       chaos::common::data::CDWUniquePtr cu=cud->getCDataWrapperElementAtIndex(0);
+            if(cu.get()&&cu->hasKey("values")&&){
+              std::string name=cu->getStringValue("name");
+              if(cu->hasKey("columns")&&cu->isVectorValue("columns")){
+
+              }
+
+            }
+     }
+  }*/
+
+    
+  if(ret==0){
+    chaos::common::data::CDataWrapper data;
+    data.setSerializedJsonData(resp.c_str());
+    //DBG<<data.getJSONString();
+
+    if(data.hasKey("results")&& data.isVectorValue("results")){
+     chaos::common::data::CMultiTypeDataArrayWrapperSPtr results=data.getVectorValue("results");
+     chaos::common::data::CDWUniquePtr serie=results->getCDataWrapperElementAtIndex(0);
+     if(serie.get()&&serie->hasKey("series")&&serie->isVectorValue("series")){
+           chaos::common::data::CMultiTypeDataArrayWrapperSPtr cud=serie->getVectorValue("series");
+           chaos::common::data::CDWUniquePtr cu=cud->getCDataWrapperElementAtIndex(0);
+            if(cu.get()&&cu->hasKey("name")){
+              std::string name=cu->getStringValue("name");
+              std::vector<std::string> cols;
+              if(cu->hasKey("columns")&&cu->isVectorValue("columns")){
+                chaos::common::data::CMultiTypeDataArrayWrapperSPtr col=cu->getVectorValue("columns");
+                cols=(std::vector<std::string>)*col;
+              }
+              if(cu->hasKey("values")&&cu->isVectorValue("values")){
+                chaos::common::data::CMultiTypeDataArrayWrapperSPtr vals=cu->getVectorValue("values");
+                for(int cnt=0;cnt<vals->size();cnt++){
+                    chaos::common::data::CDWShrdPtr dd(new chaos::common::data::CDataWrapper());
+                    if(vals->isArrayElementAtIndex(cnt)){
+                        chaos::common::data::CMultiTypeDataArrayWrapperSPtr val=vals->getVectorElementAtIndex(cnt);
+                        for(int cntt=0;cntt<val->size();cntt++){
+                          if(cols[cntt]=="time"){
+                            int64_t ts=chaos::common::utility::TimingUtil::getTimestampFromString(val->getStringElementAtIndex(cntt),"%Y-%m-%dT%H:%M:%S%fZ");
+                            dd->append(chaos::DataPackCommonKey::DPCK_DEVICE_ID,key);
+                            dd->append(chaos::DataPackCommonKey::DPCK_TIMESTAMP,ts);
+                          }
+                          dd->append(cols[cntt],val->getBSONElementAtIndex(cntt));
+                        }
+                 //   DBG<<cnt<<"] "<<dd->getCompliantJSONString();
+   
+                    found_object_page.push_back(dd);
+                    }
+                  
+                }
+              }
+
+            }
+
+     }
+    }
+  }
+  
 
 #if CHAOS_PROMETHEUS
 

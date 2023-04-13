@@ -149,6 +149,13 @@ int queryDataCloud(const std::string& key,
                                        chaos::common::direct_io::channel::opcode_headers::SearchSequence& last_sequence,
                                        chaos::common::data::VectorCDWShrdPtr& found_element_page,
                                        int32_t millisec_to_wait=10000);
+int queryTS(const std::string& key,
+                                       const ChaosStringSet& meta_tags,
+                                       const ChaosStringSet& projection_keys,
+                                       const uint64_t start_ts,
+                                       const uint64_t end_ts,
+                                       const uint32_t page_dimension,
+                                       chaos::common::data::VectorCDWShrdPtr& found_element_page);
 int deleteDataCloud(const std::string& key,
                                        const uint64_t start_ts,
                                        const uint64_t end_ts,int32_t millisec_to_wait=10000);
