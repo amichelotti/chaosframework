@@ -401,9 +401,9 @@ int InfluxDB::findObject(const std::string&                                     
                          chaos::common::direct_io::channel::opcode_headers::SearchSequence& last_record_found_seq) {
   int err = 0;
 
-  uint64_t seqid = last_record_found_seq.datapack_counter;
-  uint64_t runid = last_record_found_seq.run_id;
-
+  uint64_t last_ts=0;
+  last_record_found_seq.run_id=0;
+  
   std::stringstream ss;
   ss<<"SELECT ";
   if(projection_keys.size()==0){
@@ -459,10 +459,13 @@ int InfluxDB::findObject(const std::string&                                     
 
     if(data.hasKey("results")&& data.isVectorValue("results")){
      chaos::common::data::CMultiTypeDataArrayWrapperSPtr results=data.getVectorValue("results");
-     chaos::common::data::CDWUniquePtr serie=results->getCDataWrapperElementAtIndex(0);
+    for(int cnt_res=0;cnt_res<results->size();cnt_res++){
+
+     chaos::common::data::CDWUniquePtr serie=results->getCDataWrapperElementAtIndex(cnt_res);
      if(serie.get()&&serie->hasKey("series")&&serie->isVectorValue("series")){
            chaos::common::data::CMultiTypeDataArrayWrapperSPtr cud=serie->getVectorValue("series");
-           chaos::common::data::CDWUniquePtr cu=cud->getCDataWrapperElementAtIndex(0);
+           for(int cnt_series=0;cnt_series<cud->size();cnt_series++){
+           chaos::common::data::CDWUniquePtr cu=cud->getCDataWrapperElementAtIndex(cnt_series);
             if(cu.get()&&cu->hasKey("name")){
               std::string name=cu->getStringValue("name");
               std::vector<std::string> cols;
@@ -481,18 +484,23 @@ int InfluxDB::findObject(const std::string&                                     
                             int64_t ts=chaos::common::utility::TimingUtil::getTimestampFromString(val->getStringElementAtIndex(cntt),"%Y-%m-%dT%H:%M:%S%fZ");
                             dd->append(chaos::DataPackCommonKey::DPCK_DEVICE_ID,key);
                             dd->append(chaos::DataPackCommonKey::DPCK_TIMESTAMP,ts);
+                            if(ts>last_ts) last_ts=ts;
                           }
                           dd->append(cols[cntt],val->getBSONElementAtIndex(cntt));
                         }
-                 //   DBG<<cnt<<"] "<<dd->getCompliantJSONString();
+                   // DBG<<cnt<<"] "<<dd->getCompliantJSONString();
    
                     found_object_page.push_back(dd);
+                    last_record_found_seq.datapack_counter++;
+                    last_record_found_seq.ts=last_ts;
                     }
                   
                 }
               }
 
             }
+           }
+     }
 
      }
     }
@@ -567,7 +575,46 @@ int InfluxDB::countObject(const std::string& key,
                           const uint64_t     timestamp_from,
                           const uint64_t     timestamp_to,
                           uint64_t&          object_count) {
-  return 0;
+
+  std::stringstream ss;
+  ss<<"SELECT COUNT(*) FROM \""<<key<<"\" WHERE time>="<<timestamp_from*1000000<<" AND time<"<<timestamp_to*1000000;
+  std::string resp;
+  int ret=influxdb_cpp::query(resp,ss.str(),si);                        
+  if(ret==0){
+   // DBG<<"COUNT:"<<resp;
+
+    chaos::common::data::CDataWrapper data;
+    data.setSerializedJsonData(resp.c_str());
+    //DBG<<data.getJSONString();
+
+    if(data.hasKey("results")&& data.isVectorValue("results")){
+     chaos::common::data::CMultiTypeDataArrayWrapperSPtr results=data.getVectorValue("results");
+    for(int cnt_res=0;cnt_res<results->size();cnt_res++){
+
+     chaos::common::data::CDWUniquePtr serie=results->getCDataWrapperElementAtIndex(cnt_res);
+     if(serie.get()&&serie->hasKey("series")&&serie->isVectorValue("series")){
+           chaos::common::data::CMultiTypeDataArrayWrapperSPtr cud=serie->getVectorValue("series");
+           for(int cnt_series=0;cnt_series<cud->size();cnt_series++){
+           chaos::common::data::CDWUniquePtr cu=cud->getCDataWrapperElementAtIndex(cnt_series);
+              if(cu->hasKey("values")&&cu->isVectorValue("values")){
+                chaos::common::data::CMultiTypeDataArrayWrapperSPtr vals=cu->getVectorValue("values");
+                object_count=0;
+
+                 
+                
+
+                if(vals->size()>0){
+                    chaos::common::data::CMultiTypeDataArrayWrapperSPtr val=vals->getVectorElementAtIndex(0);
+                    if(val->size()>1){
+                     // DBG<<"size: "<<vals->size();
+                      object_count=val->getInt32ElementAtIndex(val->size()-1);
+
+                    }
+                  // 0 is time
+                }
+              }}}}}
+  }
+  return ret;
 }
 
 }  // namespace object_storage

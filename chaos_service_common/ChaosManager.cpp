@@ -7,7 +7,6 @@
 #include "ChaosManager.h"
 #include <chaos/common/batch_command/BatchCommandConstants.h>
 #include <ChaosMetadataService/object_storage/abstraction/ObjectStorageDataAccess.h>
-
 #include <ChaosMetadataService/ChaosMetadataService.h>
 #include <ChaosMetadataService/api/node/ClearCommandQueue.h>
 #include <ChaosMetadataService/api/node/CommandTemplateSubmit.h>
@@ -229,20 +228,19 @@ int ChaosManager::init(const chaos::common::data::CDataWrapper& best_available_d
       InizializableService::initImplementation(DriverPoolManager::getInstance(), NULL, "DriverPoolManager", __PRETTY_FUNCTION__);
 
     } catch (...) {
-      DBGETERR << "Error Initializing alla drivers";
+      DBGETERR << "Error Initializing all drivers";
     }
 
     cache_driver = DriverPoolManager::getInstance()->getCacheDrvPtr();
     if (cache_driver == NULL) {
       DBGETERR << "Cannot use direct cache";
-      return -1;
     } else {
       DBGET << "Using direct cache";
     }
     persistence_driver = DriverPoolManager::getInstance()->getPersistenceDrvPtr();
     if (persistence_driver == NULL) {
       DBGETERR << "Cannot use direct persistence";
-      return -2;
+      //return -2;
 
     } else {
       DBGET << "Using direct persistence";
@@ -310,7 +308,6 @@ int ChaosManager::queryTS(const std::string&                     key,
       return -4;
     }
     chaos::common::direct_io::channel::opcode_headers::SearchSequence last_sequence;
-    chaos::common::direct_io::channel::opcode_headers::QueryResultPage found_element_page;
 
         return obj_storage_da->findObject(key,
                                           meta_tags,
@@ -318,11 +315,33 @@ int ChaosManager::queryTS(const std::string&                     key,
                                           start_ts,
                                           end_ts,
                                           page,
-                                          found_element_page,
+                                          elements,
                                           last_sequence);
   }
   return -2;
 }
+int ChaosManager::queryTSCount(const std::string& key,const uint64_t start_ts,const uint64_t end_ts,const ChaosStringSet& tags,const ChaosStringSet&vars){
+if (log_driver) {
+    chaos::metadata_service::object_storage::abstraction::ObjectStorageDataAccess* obj_storage_da = DriverPoolManager::getInstance()->getLogDrv().getDataAccess<chaos::metadata_service::object_storage::abstraction::ObjectStorageDataAccess>();
+    CHAOS_ASSERT(obj_storage_da);
+    if (obj_storage_da == NULL) {
+      DBGETERR << "Cannot retrieve log driver";
+      return -4;
+    }
+  DBGET << "query Count of "<<key <<" from "<<start_ts<<" to "<<end_ts;
+
+
+  uint64_t count_obj=0;
+    obj_storage_da->countObject(key,
+                                          start_ts,
+                                          end_ts,count_obj);
+   return    count_obj;                                    
+  }
+  DBGETERR << "log driver not available "<<key <<" from "<<start_ts<<" to "<<end_ts;
+
+  return -2;
+}
+
 int ChaosManager::queryDataCloud(const std::string&                                                 key,
                                  const ChaosStringSet&                                              meta_tags,
                                  const ChaosStringSet&                                              projection_keys,
@@ -741,6 +760,7 @@ chaos::common::data::CDWUniquePtr ChaosManager::restoreSnapshot(const std::strin
 
 chaos::common::data::CDWUniquePtr ChaosManager::commandTemplateSubmit(const std::string& uid, const std::string& command_alias, const chaos::common::data::CDWUniquePtr& slow_command_data, const SubmissionRuleType::SubmissionRule submission_rule, const uint32_t priority, const uint64_t scheduler_steps_delay, const uint32_t submission_checker_steps_delay) {
   CDWUniquePtr res;
+  CALC_EXEC_START;
 
   CDWUniquePtr message(new CDataWrapper());
   // this key need only to inform mds to redirect to node the slowcomand without porcess it
@@ -757,12 +777,14 @@ chaos::common::data::CDWUniquePtr ChaosManager::commandTemplateSubmit(const std:
     message->appendAllElement(*slow_command_data);
   }
   if (persistence_driver) {
-    CALC_EXEC_START;
 
     CommandTemplateSubmit node;
     res = node.execute(MOVE(message));
-    CALC_EXEC_END
-  }
+  } 
+  
+
+  CALC_EXEC_END
+
   return res;
 }
 

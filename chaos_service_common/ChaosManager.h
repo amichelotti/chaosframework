@@ -16,7 +16,7 @@
 #include <chaos/common/io/IODataDriver.h>
 #include <chaos/common/batch_command/BatchCommandTypes.h>
 #include <chaos/common/property/property.h>
-
+#define MANAGER_NO_DIRECT_ACCESS -1000
 namespace chaos {
   namespace metadata_service{
     class ChaosMetadataService;
@@ -156,6 +156,8 @@ int queryTS(const std::string& key,
                                        const uint64_t end_ts,
                                        const uint32_t page_dimension,
                                        chaos::common::data::VectorCDWShrdPtr& found_element_page);
+int queryTSCount(const std::string& key,const uint64_t start_ts,const uint64_t end_ts,const ChaosStringSet& tags=ChaosStringSet(),const ChaosStringSet&vars=ChaosStringSet());
+                                      
 int deleteDataCloud(const std::string& key,
                                        const uint64_t start_ts,
                                        const uint64_t end_ts,int32_t millisec_to_wait=10000);
