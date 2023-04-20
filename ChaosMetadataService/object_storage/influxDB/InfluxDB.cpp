@@ -27,7 +27,6 @@
 #define DBG DBG_LOG(InfluxDB)
 #define ERR ERR_LOG(InfluxDB)
 #include <chaos/common/utility/TimingUtil.h>
-#define MAX_ARRAY_POINTS 512
 using namespace chaos::metadata_service::object_storage;
 
 #if CHAOS_PROMETHEUS
@@ -185,104 +184,129 @@ static const unsigned int DPCK_DATASET_TYPE_LOG = 7;
         case DataType::TYPE_VECTOR_BOOL: {
           uint32_t    size = 0;
           const bool* ptr  = (const bool*)stored_object.getBinaryValue(*i, size);
-          if (ptr) {
-            for (int cnt = 0; (cnt < size / sizeof(bool)) && (cnt < MAX_ARRAY_POINTS); cnt++) {
+          
+          if (ptr && ( size / sizeof(bool)< si.max_array_size)) {
+            for (int cnt = 0; (cnt <size/sizeof(bool)) ; cnt++) {
               measurements << c <<pref<< *i + "." << cnt << "=" << ((ptr[cnt]) ? 't' : 'f');
               first++;
               nmeas++;
             }
+          } else {
+              ERR << "Skipped vector (bool) measurement \"" << *i << "\", size " <<size / sizeof(bool) << " max " << si.max_array_size;
+
           }
           break;
         }
         case DataType::TYPE_VECTOR_INT32: {
           uint32_t       size = 0;
           const int32_t* ptr  = (const int32_t*)stored_object.getBinaryValue(*i, size);
-          if (ptr) {
-            for (int cnt = 0; (cnt < size / sizeof(int32_t)) && (cnt < MAX_ARRAY_POINTS); cnt++) {
+          if (ptr&& ( size / sizeof(int32_t)< si.max_array_size)) {
+            for (int cnt = 0; (cnt < size / sizeof(int32_t)); cnt++) {
               measurements << c << pref<<*i + "." << cnt << "=" << ptr[cnt] << "i";
               first++;
               nmeas++;
             }
+          } else {
+              ERR << "Skipped vector (int32_t) measurement \"" << *i << "\", size " <<size / sizeof(int32_t) << " max " << si.max_array_size;
+
           }
           break;
         }
         case DataType::TYPE_VECTOR_UINT32: {
           uint32_t        size = 0;
           const uint32_t* ptr  = (const uint32_t*)stored_object.getBinaryValue(*i, size);
-          if (ptr) {
-            for (int cnt = 0; (cnt < size / sizeof(int32_t)) && (cnt < MAX_ARRAY_POINTS); cnt++) {
+          if (ptr&& ( size / sizeof(int32_t)< si.max_array_size)) {
+            for (int cnt = 0; (cnt < size / sizeof(int32_t)) ; cnt++) {
               measurements << c <<pref<< *i + "." << cnt << "=" << ptr[cnt] << "i";
               first++;
               nmeas++;
             }
+          } else {
+              ERR << "Skipped vector (uint32_t) measurement \"" << *i << "\", size " <<size / sizeof(uint32_t) << " max " << si.max_array_size;
+
           }
           break;
         }
         case DataType::TYPE_VECTOR_UINT8: {
           uint32_t       size = 0;
           const uint8_t* ptr  = (const uint8_t*)stored_object.getBinaryValue(*i, size);
-          if (ptr) {
-            for (int cnt = 0; (cnt < size / sizeof(uint8_t)) && (cnt < MAX_ARRAY_POINTS); cnt++) {
+          if (ptr&& ( size / sizeof(uint8_t)< si.max_array_size)) {
+            for (int cnt = 0; (cnt < size / sizeof(uint8_t)); cnt++) {
               measurements << c <<pref<< *i + "." << cnt << "=" << ptr[cnt] << "i";
               first++;
               nmeas++;
             }
+          } else {
+              ERR << "Skipped vector (uint8_t) measurement \"" << *i << "\", size " <<size / sizeof(uint8_t) << " max " << si.max_array_size;
+
           }
           break;
         }
         case DataType::TYPE_VECTOR_UINT16: {
           uint32_t        size = 0;
           const uint16_t* ptr  = (const uint16_t*)stored_object.getBinaryValue(*i, size);
-          if (ptr) {
-            for (int cnt = 0; (cnt < size / sizeof(uint16_t)) && (cnt < MAX_ARRAY_POINTS); cnt++) {
+          if (ptr&& ( size / sizeof(uint16_t)< si.max_array_size)) {
+            for (int cnt = 0; (cnt < size / sizeof(uint16_t)) ; cnt++) {
               measurements << c << pref<<*i + "." << cnt << "=" << ptr[cnt] << "i";
               first++;
               nmeas++;
             }
+          } else {
+              ERR << "Skipped vector (uint16_t) measurement \"" << *i << "\", size " <<size / sizeof(uint16_t) << " max " << si.max_array_size;
+
           }
           break;
         }
         case DataType::TYPE_VECTOR_INT16: {
           uint32_t       size = 0;
           const int16_t* ptr  = (const int16_t*)stored_object.getBinaryValue(*i, size);
-          if (ptr) {
-            for (int cnt = 0; (cnt < size / sizeof(int16_t)) && (cnt < MAX_ARRAY_POINTS); cnt++) {
+          if (ptr&& ( size / sizeof(int16_t)< si.max_array_size)) {
+            for (int cnt = 0; (cnt < size / sizeof(int16_t)) ; cnt++) {
               measurements << c <<pref<< *i + "." << cnt << "=" << ptr[cnt] << "i";
               first++;
               nmeas++;
             }
+          } else {
+              ERR << "Skipped vector (int16_t) measurement \"" << *i << "\", size " <<size / sizeof(int16_t) << " max " << si.max_array_size;
+
           }
           break;
         }
         case DataType::TYPE_VECTOR_INT8: {
           uint32_t      size = 0;
           const int8_t* ptr  = (const int8_t*)stored_object.getBinaryValue(*i, size);
-          if (ptr) {
-            for (int cnt = 0; (cnt < size / sizeof(int8_t)) && (cnt < MAX_ARRAY_POINTS); cnt++) {
+          if (ptr&& ( size / sizeof(int8_t)< si.max_array_size)) {
+            for (int cnt = 0; (cnt < size / sizeof(int8_t)); cnt++) {
               measurements << c << pref<<*i + "." << cnt << "=" << ptr[cnt] << "i";
               first++;
               nmeas++;
             }
+          } else {
+              ERR << "Skipped vector (int8_t) measurement \"" << *i << "\", size " <<size / sizeof(int8_t) << " max " << si.max_array_size;
+
           }
           break;
         }
         case DataType::TYPE_VECTOR_INT64: {
           uint32_t       size = 0;
           const int64_t* ptr  = (const int64_t*)stored_object.getBinaryValue(*i, size);
-          if (ptr) {
-            for (int cnt = 0; (cnt < size / sizeof(int64_t)) && (cnt < MAX_ARRAY_POINTS); cnt++) {
+          if (ptr&& ( size / sizeof(int64_t)< si.max_array_size)) {
+            for (int cnt = 0; (cnt < size / sizeof(int64_t)); cnt++) {
               measurements << c << pref<<*i + "." << cnt << "=" << ptr[cnt] << "i";
               first++;
               nmeas++;
             }
+          }else {
+              ERR << "Skipped vector (int64) measurement \"" << *i << "\", size " <<size / sizeof(int64_t) << " max " << si.max_array_size;
+
           }
           break;
         }
         case DataType::TYPE_VECTOR_DOUBLE: {
           uint32_t      size = 0;
           const double* ptr  = (const double*)stored_object.getBinaryValue(*i, size);
-          if (ptr) {
-            for (int cnt = 0; (cnt < size / sizeof(double)) && (cnt < MAX_ARRAY_POINTS); cnt++) {
+          if (ptr&& ( size / sizeof(double)< si.max_array_size)) {
+            for (int cnt = 0; (cnt < size / sizeof(double)); cnt++) {
               if (std::isfinite(ptr[cnt])) {
                 measurements << c << pref<<*i + "." << cnt << "=" << ptr[cnt];
                 first++;
@@ -290,14 +314,17 @@ static const unsigned int DPCK_DATASET_TYPE_LOG = 7;
               }
               //  DBG<< c << *i+"_" <<cnt<< "=" << ptr[cnt];
             }
+          } else {
+              ERR << "Skipped vector (double) measurement \"" << *i << "\", size " <<size / sizeof(double) << " max " << si.max_array_size;
+
           }
           break;
         }
         case DataType::TYPE_VECTOR_FLOAT: {
           uint32_t     size = 0;
           const float* ptr  = (const float*)stored_object.getBinaryValue(*i, size);
-          if (ptr) {
-            for (int cnt = 0; (cnt < size / sizeof(float)) && (cnt < MAX_ARRAY_POINTS); cnt++) {
+          if (ptr&& ( size / sizeof(float)< si.max_array_size)) {
+            for (int cnt = 0; (cnt < size / sizeof(float)) ; cnt++) {
               if (std::isfinite(ptr[cnt])) {
                 measurements << c << pref<<*i + "." << cnt << "=" << ptr[cnt];
                 first++;
@@ -305,6 +332,9 @@ static const unsigned int DPCK_DATASET_TYPE_LOG = 7;
               }
               //  DBG<< c << *i+"_" <<cnt<< "=" << ptr[cnt];
             }
+          } else {
+              ERR << "Skipped vector (float) measurement \"" << *i << "\", size " <<size / sizeof(float) << " max " << si.max_array_size;
+
           }
           break;
         }
@@ -371,15 +401,118 @@ int InfluxDB::findObject(const std::string&                                     
                          chaos::common::direct_io::channel::opcode_headers::SearchSequence& last_record_found_seq) {
   int err = 0;
 
-  uint64_t seqid = last_record_found_seq.datapack_counter;
-  uint64_t runid = last_record_found_seq.run_id;
+  uint64_t last_ts=0;
+  last_record_found_seq.run_id=0;
+  
+  std::stringstream ss;
+  ss<<"SELECT ";
+  if(projection_keys.size()==0){
+    ss<<"*";
+  } else {
+    for(ChaosStringSet::iterator i = projection_keys.begin();i!=projection_keys.end();i++){
+      ss<<*i;
+      if((++i)!=projection_keys.end()){
+        ss<<",";
+      }
+      --i;
+    }
+  }
+ //std::stringstream stype;stype<<"SHOW FIELD KEYS FROM "<< "\""<<key<<"\"";
+
+  ss<<" FROM \""<<key<<"\" WHERE time>="<<timestamp_from*1000000<<" AND time<"<<timestamp_to*1000000;
+  if(meta_tags.size()){
+    ss<<" AND \"tag\"='"<<*meta_tags.begin()<<"'";
+  }
+  if(page_len>0){
+    ss<<" LIMIT "<<page_len;
+  }
+
+  std::string resp;
+  int ret=influxdb_cpp::query(resp,ss.str(),si);
+  //DBG<<ss.str()<<" returned "<<ret<<" ->"<<resp;
+
+  /*if(ret==0){
+
+  ret=influxdb_cpp::query(resp,ss.str(),si);
+  chaos::common::data::CDataWrapper data;
+  data.setSerializedJsonData(resp.c_str());
+  if(data.hasKey("results")&& data.isVectorValue("results")){
+     chaos::common::data::CMultiTypeDataArrayWrapperSPtr results=data.getVectorValue("results");
+     chaos::common::data::CDWUniquePtr serie=results->getCDataWrapperElementAtIndex(0);
+     if(serie.get()&&serie->hasKey("series")&&serie->isVectorValue("series")){
+       chaos::common::data::CDWUniquePtr cu=cud->getCDataWrapperElementAtIndex(0);
+            if(cu.get()&&cu->hasKey("values")&&){
+              std::string name=cu->getStringValue("name");
+              if(cu->hasKey("columns")&&cu->isVectorValue("columns")){
+
+              }
+
+            }
+     }
+  }*/
+
+    
+  if(ret==0){
+    chaos::common::data::CDataWrapper data;
+    data.setSerializedJsonData(resp.c_str());
+    //DBG<<data.getJSONString();
+
+    if(data.hasKey("results")&& data.isVectorValue("results")){
+     chaos::common::data::CMultiTypeDataArrayWrapperSPtr results=data.getVectorValue("results");
+    for(int cnt_res=0;cnt_res<results->size();cnt_res++){
+
+     chaos::common::data::CDWUniquePtr serie=results->getCDataWrapperElementAtIndex(cnt_res);
+     if(serie.get()&&serie->hasKey("series")&&serie->isVectorValue("series")){
+           chaos::common::data::CMultiTypeDataArrayWrapperSPtr cud=serie->getVectorValue("series");
+           for(int cnt_series=0;cnt_series<cud->size();cnt_series++){
+           chaos::common::data::CDWUniquePtr cu=cud->getCDataWrapperElementAtIndex(cnt_series);
+            if(cu.get()&&cu->hasKey("name")){
+              std::string name=cu->getStringValue("name");
+              std::vector<std::string> cols;
+              if(cu->hasKey("columns")&&cu->isVectorValue("columns")){
+                chaos::common::data::CMultiTypeDataArrayWrapperSPtr col=cu->getVectorValue("columns");
+                cols=(std::vector<std::string>)*col;
+              }
+              if(cu->hasKey("values")&&cu->isVectorValue("values")){
+                chaos::common::data::CMultiTypeDataArrayWrapperSPtr vals=cu->getVectorValue("values");
+                for(int cnt=0;cnt<vals->size();cnt++){
+                    chaos::common::data::CDWShrdPtr dd(new chaos::common::data::CDataWrapper());
+                    if(vals->isArrayElementAtIndex(cnt)){
+                        chaos::common::data::CMultiTypeDataArrayWrapperSPtr val=vals->getVectorElementAtIndex(cnt);
+                        for(int cntt=0;cntt<val->size();cntt++){
+                          if(cols[cntt]=="time"){
+                            int64_t ts=chaos::common::utility::TimingUtil::getTimestampFromString(val->getStringElementAtIndex(cntt),"%Y-%m-%dT%H:%M:%S%fZ");
+                            dd->append(chaos::DataPackCommonKey::DPCK_DEVICE_ID,key);
+                            dd->append(chaos::DataPackCommonKey::DPCK_TIMESTAMP,ts);
+                            if(ts>last_ts) last_ts=ts;
+                          }
+                          dd->append(cols[cntt],val->getBSONElementAtIndex(cntt));
+                        }
+                   // DBG<<cnt<<"] "<<dd->getCompliantJSONString();
+   
+                    found_object_page.push_back(dd);
+                    last_record_found_seq.datapack_counter++;
+                    last_record_found_seq.ts=last_ts;
+                    }
+                  
+                }
+              }
+
+            }
+           }
+     }
+
+     }
+    }
+  }
+  
 
 #if CHAOS_PROMETHEUS
 
   // (*gauge_query_time_uptr) = (chaos::common::utility::TimingUtil::getTimeStamp() - ts);
 #endif
 
-  return err;
+  return ret;
 }
 
 //! fast search object into object persistence layer
@@ -432,7 +565,7 @@ void InfluxDB::push_process() {
       measurements.str("");
     }
 
-    sleep(1);
+    usleep(1000*si.poll_time_ms);
   }
 
 }
@@ -442,7 +575,46 @@ int InfluxDB::countObject(const std::string& key,
                           const uint64_t     timestamp_from,
                           const uint64_t     timestamp_to,
                           uint64_t&          object_count) {
-  return 0;
+
+  std::stringstream ss;
+  ss<<"SELECT COUNT(*) FROM \""<<key<<"\" WHERE time>="<<timestamp_from*1000000<<" AND time<"<<timestamp_to*1000000;
+  std::string resp;
+  int ret=influxdb_cpp::query(resp,ss.str(),si);                        
+  if(ret==0){
+   // DBG<<"COUNT:"<<resp;
+
+    chaos::common::data::CDataWrapper data;
+    data.setSerializedJsonData(resp.c_str());
+    //DBG<<data.getJSONString();
+
+    if(data.hasKey("results")&& data.isVectorValue("results")){
+     chaos::common::data::CMultiTypeDataArrayWrapperSPtr results=data.getVectorValue("results");
+    for(int cnt_res=0;cnt_res<results->size();cnt_res++){
+
+     chaos::common::data::CDWUniquePtr serie=results->getCDataWrapperElementAtIndex(cnt_res);
+     if(serie.get()&&serie->hasKey("series")&&serie->isVectorValue("series")){
+           chaos::common::data::CMultiTypeDataArrayWrapperSPtr cud=serie->getVectorValue("series");
+           for(int cnt_series=0;cnt_series<cud->size();cnt_series++){
+           chaos::common::data::CDWUniquePtr cu=cud->getCDataWrapperElementAtIndex(cnt_series);
+              if(cu->hasKey("values")&&cu->isVectorValue("values")){
+                chaos::common::data::CMultiTypeDataArrayWrapperSPtr vals=cu->getVectorValue("values");
+                object_count=0;
+
+                 
+                
+
+                if(vals->size()>0){
+                    chaos::common::data::CMultiTypeDataArrayWrapperSPtr val=vals->getVectorElementAtIndex(0);
+                    if(val->size()>1){
+                     // DBG<<"size: "<<vals->size();
+                      object_count=val->getInt32ElementAtIndex(val->size()-1);
+
+                    }
+                  // 0 is time
+                }
+              }}}}}
+  }
+  return ret;
 }
 
 }  // namespace object_storage

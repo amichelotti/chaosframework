@@ -49,6 +49,7 @@ DriverPoolManager::~DriverPoolManager() {}
 
 void DriverPoolManager::init(void* init_data) {
   //init cache pool
+  int err=0;
   //InizializableService::initImplementation(cache_pool, NULL, "CacheDriverPool", __PRETTY_FUNCTION__);
   const std::string cache_impl_name = cacheSetting.cache_driver_impl + "CacheDriver";
   if (cacheSetting.cache_driver_impl.size()) {
@@ -64,11 +65,16 @@ void DriverPoolManager::init(void* init_data) {
       cache_driver.init((void*)&cacheSetting, __PRETTY_FUNCTION__);
     } catch (CException& e) {
       cache_driver.reset(NULL,cache_impl_name);
-      throw e;
+      err++;
+      DECODE_CHAOS_EXCEPTION(e);
+
+      //throw e;
     } catch (...) {
       DP_LOG_ERR << " Undefined exception catchd during initialization of cache driver";
 
       cache_driver.reset(NULL,cache_impl_name);
+      err++;
+
     }
   }
   //init dirver instace
@@ -81,11 +87,15 @@ void DriverPoolManager::init(void* init_data) {
       persistence_driver.init((void*)&persistentSetting, __PRETTY_FUNCTION__);
     } catch (CException& e) {
       persistence_driver.reset(NULL,persistence_impl_name);
-      throw e;
+      err++;
+      DECODE_CHAOS_EXCEPTION(e);
+
+     // throw e;
     } catch (...) {
       DP_LOG_ERR << " Undefined exception catchd during initialization of persistent driver";
 
       persistence_driver.reset(NULL,persistence_impl_name);
+      err++;
     }
   }
   const std::string storage_impl_name = objectSetting.persistence_implementation + "ObjectStorageDriver";
@@ -97,10 +107,12 @@ void DriverPoolManager::init(void* init_data) {
       storage_driver.init((void*)&objectSetting, __PRETTY_FUNCTION__);
     } catch (CException& e) {
       storage_driver.reset(NULL,storage_impl_name);
-      throw e;
+      //throw e;
+      err++;
+      DECODE_CHAOS_EXCEPTION(e);
     } catch (...) {
       DP_LOG_ERR << " Undefined exception catchd during initialization of storage driver";
-
+      err++;
       storage_driver.reset(NULL,storage_impl_name);
     }
   }
@@ -109,19 +121,21 @@ void DriverPoolManager::init(void* init_data) {
     log_driver.reset(ObjectFactoryRegister<chaos::service_common::persistence::data_access::AbstractPersistenceDriver>::getInstance()->getNewInstanceByName(log_impl_name),
                      log_impl_name);
     if (log_driver.get() == NULL) {
-      DP_LOG_INFO << " Log driver not defined";
+      DP_LOG_ERR << " Log driver not defined ";
     } else {
       try {
         log_driver.init((void*)&logSetting, __PRETTY_FUNCTION__);
       } catch (CException& ex) {
         log_driver.reset(NULL,log_impl_name);
         DECODE_CHAOS_EXCEPTION(ex)
-
       } catch (...) {
         DP_LOG_ERR << " Undefined exception catchd during initialization of LOG driver";
         log_driver.reset(NULL,log_impl_name);
       }
     }
+  }
+  if(err){
+    throw chaos::CException(err,"Drivers cannot be initialized",__PRETTY_FUNCTION__);
   }
 }
 

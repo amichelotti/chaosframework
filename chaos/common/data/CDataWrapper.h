@@ -118,6 +118,7 @@ namespace chaos {
                 VectorBsonValues values;
                 CMultiTypeDataArrayWrapper(const ChaosBsonShrdPtr& _document_shrd_ptr,
                                            const std::string& key);
+                CMultiTypeDataArrayWrapper(bson_value_t *array_doc);                           
             public:
                 ~CMultiTypeDataArrayWrapper();
                 string getStringElementAtIndex(const int) const;
@@ -142,8 +143,11 @@ namespace chaos {
                 bool isInt32ElementAtIndex(const int) const;
                 bool isInt64ElementAtIndex(const int) const;
                 bool isBoolElementAtIndex(const int) const;
+                bool isArrayElementAtIndex(const int) const;
+
                 int removeElementAtIndex(const int);
                 bool isCDataWrapperElementAtIndex(const int) const;
+                CMultiTypeDataArrayWrapperSPtr getVectorElementAtIndex(const int pos) const;
                 template<class T>
                 T getElementAtIndex(const int pos) const{
                     if(values[pos]->value_type == BSON_TYPE_DOUBLE){
@@ -289,6 +293,8 @@ namespace chaos {
                 void append(const std::string&key,DataType::DataType typ,const char*buf,int len);
                 void append(const std::string& key,const std::vector<std::string>& val);
                 void append(const std::string& key,const std::vector<CDataWrapper>& val);
+                void append(const std::string&key,bson_value_t*v);
+
                 
                 template<typename T>
                 int getVectorValue(const std::string& key,std::vector<T>&vv){

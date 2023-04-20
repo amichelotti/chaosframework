@@ -75,7 +75,9 @@ CDWUniquePtr SearchInstancesByUS::execute(CDWUniquePtr api_data) {
             for (std::vector<ChaosSharedPtr<CDataWrapper> >::iterator it = page_result.begin();
                  it != page_result.end();
                  it++) {
-                result->appendCDataWrapperToArray(*it->get());
+                if(it->get()){
+                    result->appendCDataWrapperToArray(*it->get());
+                }
             }
             result->finalizeArrayForKey(chaos::NodeType::NODE_SEARCH_LIST_KEY);
         }

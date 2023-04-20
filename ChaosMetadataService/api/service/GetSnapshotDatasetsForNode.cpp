@@ -58,7 +58,9 @@ CDWUniquePtr GetSnapshotDatasetsForNode::execute(CDWUniquePtr api_data) {
         it++) {
         CDataWrapper dataset_element;        
         dataset_element.addStringValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_NAME, it->first);
-        dataset_element.addCSDataValue("dataset_value", *it->second);
+        if(it->second){
+            dataset_element.addCSDataValue("dataset_value", *it->second);
+        }
         result->appendCDataWrapperToArray(dataset_element);
     }
 

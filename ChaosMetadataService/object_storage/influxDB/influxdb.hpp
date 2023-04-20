@@ -30,6 +30,11 @@
     #include <arpa/inet.h>
     #define closesocket close
 #endif
+#define MAX_MEASURES 2000 
+#define MAX_TIME 1000 //  max time after that push 
+
+#define MAX_POLL_TIME 300 // default poll 300 ms
+#define MAX_ARRAY_SIZE 512 // default max array size
 
 namespace influxdb_cpp {
     struct server_info {
@@ -43,8 +48,11 @@ namespace influxdb_cpp {
         std::string funcprefix;
         int max_mesurements; //commit when n mesures reach max_measurement
         int max_time_ms; // commit when expired max_time_ms
-        server_info(const std::string& host, int port, const std::string& db = "", const std::string& usr = "", const std::string& pwd = "", const std::string& precision="ms", const std::string& retention="365d", const std::string& prefix="")
-            : host_(host), port_(port), db_(db), usr_(usr), pwd_(pwd), precision_(precision), retention_(retention),funcprefix(prefix),max_mesurements(0),max_time_ms(1000) {}
+        int poll_time_ms; // poll time
+
+        int max_array_size; // push maximum array of this size
+        server_info(const std::string& host, int port, const std::string& db = "", const std::string& usr = "", const std::string& pwd = "", const std::string& precision="ms", const std::string& retention="1095d", const std::string& prefix="")
+            : host_(host), port_(port), db_(db), usr_(usr), pwd_(pwd), precision_(precision), poll_time_ms(MAX_POLL_TIME),max_array_size(MAX_ARRAY_SIZE),retention_(retention),funcprefix(prefix),max_mesurements(MAX_MEASURES),max_time_ms(MAX_TIME) {}
     };
     namespace detail {
         struct meas_caller;

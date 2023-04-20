@@ -82,7 +82,10 @@ CDWUniquePtr SearchLogEntry::execute(CDWUniquePtr api_data) {
         for(LogEntryListIterator it = entry_list.begin();
             it != entry_list.end();
             it++){
-            result->appendCDataWrapperToArray(*LogUtility::convertEntry(*(*it).get()));
+            if((*it).get()){
+
+                result->appendCDataWrapperToArray(*LogUtility::convertEntry(*(*it).get()));
+            }
         }
         result->finalizeArrayForKey("result_list");
     }

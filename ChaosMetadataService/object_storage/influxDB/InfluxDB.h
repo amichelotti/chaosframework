@@ -39,7 +39,6 @@
 //#include "influxdb-cpp-rest/influxdb_raw_db_utf8.h"
 //#include "influxdb-cpp-rest/influxdb_simple_async_api.h"
 #include "influxdb.hpp"
-#define MAX_MEASURES 5000
 
 namespace chaos {
     namespace metadata_service {

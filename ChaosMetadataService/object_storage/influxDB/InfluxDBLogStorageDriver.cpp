@@ -59,13 +59,14 @@ void InfluxDBLogStorageDriver::init(void *init_data)  {
     const std::string retention = DriverPoolManager::logSetting.persistence_kv_param_map["retention"];
     const std::string max_measure_opt = DriverPoolManager::logSetting.persistence_kv_param_map["max_mesure"];
     const std::string max_measure_ms_opt = DriverPoolManager::logSetting.persistence_kv_param_map["max_time_ms"];
+    const std::string poll_time_ms_opt = DriverPoolManager::logSetting.persistence_kv_param_map["poll_time_ms"];
 
-    int max_measure=1000;
-    int max_time_ms=10000;
+    const std::string max_array_size_opt = DriverPoolManager::logSetting.persistence_kv_param_map["max_array_size"];
+
 
     std::string servername="localhost";
     std::string funcpath="";
-    std::string exptime="365d";
+    std::string exptime="1095d";
     int port=8086;
     if(url_list.size()>0){
         std::vector<std::string> ele;
@@ -87,25 +88,32 @@ void InfluxDBLogStorageDriver::init(void *init_data)  {
             port=atoi(ele[1].c_str());
         }*/
     }
-    if(max_measure_ms_opt.size()){
-        max_time_ms=atoi(max_measure_ms_opt.c_str());
-    }
-    if(max_measure_opt.size()){
-        max_measure=atoi(max_measure_opt.c_str());
-    }
     if(database.size()==0){
         ERR<<"You must specify a valid database name";
         throw chaos::CException(-1,"You must specify a valid database name",__FUNCTION__);
     }
-    if(retention.size()){
+     if(retention.size()){
         exptime=retention;
     }
+    influxdb_cpp::server_info si(servername,port,database,user,password,"ms",exptime,funcpath);
+
+    if(max_measure_ms_opt.size()){
+        si.max_time_ms=atoi(max_measure_ms_opt.c_str());
+    }
+    if(poll_time_ms_opt.size()){
+        si.poll_time_ms=atoi(max_measure_ms_opt.c_str());
+    }
+    if(max_measure_opt.size()){
+        si.max_mesurements=atoi(max_measure_opt.c_str());
+    }
+    if(max_array_size_opt.size()){
+        si.max_array_size=atoi(max_array_size_opt.c_str());
+    }
+    
+   
     //influxdb_t  asyncdb = influxdb_t( new influxdb::async_api::simple_db(url_list[0], database));
    // asyncdb->with_authentication(user,password);
-    DBG<<"server:"<<servername<<"\nport:"<<port<<"\ndatabase:"<<database<<"\nuser:"<<user<<"\npassw:"<<password<<" retention:"<<exptime<<" path:"<<funcpath<<" max_measures:"<<max_measure;
-    influxdb_cpp::server_info si(servername,port,database,user,password,"ms",exptime,funcpath);
-    si.max_mesurements=max_measure;
-    si.max_time_ms=max_time_ms;
+    DBG<<"server:"<<servername<<"\nport:"<<port<<"\ndatabase:"<<database<<"\nuser:"<<user<<"\npassw:"<<password<<" retention:"<<exptime<<" path:"<<funcpath<<" max_measures:"<<si.max_mesurements<<" max push time(ms):"<<si.max_time_ms<<" poll time(ms):"<<si.poll_time_ms<<" max array size:"<<si.max_array_size;
     //register the data access implementations
     std::string resp;
     int ret;

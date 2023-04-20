@@ -231,7 +231,9 @@ CDWUniquePtr GetSetFullUnitServer::execute(CDWUniquePtr api_data) {
                             LOG_AND_TROW(US_ACT_ERR, err, boost::str(boost::format("Error fetching the control unit instance description for cuid:%1%") % cu_uid));
                             
                         }
-                        tot_res.appendCDataWrapperToArray(*res);
+                        if(res){
+                            tot_res.appendCDataWrapperToArray(*res);
+                        }
                     }
                 }
                 tot_res.finalizeArrayForKey("cu_desc");
