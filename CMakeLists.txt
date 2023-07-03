@@ -72,8 +72,23 @@ if (NOT WIN32)
 if(CHAOS_MDS)
   SET(CDSLIB ON)
 
+  MESG("Install cxx mongodb driver")
+  # ExternalProject_Add(
+  #  mongo-cxx-driver-legacy
+  #  GIT_REPOSITORY https://github.com/amichelotti/mongo-cxx-driver.git
+  #  GIT_TAG chaos-legacy
+  #  PREFIX "${CMAKE_BINARY_DIR}/ext_dep/mongo-cxx-driver-legacy-prefix"
+  #  SOURCE_DIR "${CMAKE_BINARY_DIR}/ext_dep/mongo-cxx-driver-legacy-src"
+  #  BINARY_DIR "${CMAKE_BINARY_DIR}/ext_dep/mongo-cxx-driver-legacy-build"
+  #  # BUILD_COMMAND make CFLAGS=${CMAKE_C_FLAGS} CXXFLAGS=${CMAKE_CXX_FLAGS}
+  #  CMAKE_ARGS
+  #   -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX} -DCMAKE_BUILD_TYPE=Release
+  #  LOG_DOWNLOAD ON
+  #  LOG_CONFIGURE ON
+  #  LOG_BUILD ON)
 
-CheckConfigureBuild(mongoclient mongo-cxx-driver:legacy-1.0.0-rc0 "--extralib=boost_system;--disable-warnings-as-errors;install-mongoclient" https://github.com/mongodb)
+   
+CheckConfigureBuild(mongoclient mongo-cxx-driver:chaos-legacy "--extralib=boost_system;--disable-warnings-as-errors;install-mongoclient" https://github.com/amichelotti/mongo-cxx-driver.git)
 ENDIF()
 endif()
 
