@@ -87,8 +87,9 @@ if(CHAOS_MDS)
   #  LOG_CONFIGURE ON
   #  LOG_BUILD ON)
 
+CheckConfigureBuild(mongoclient mongo-cxx-driver:legacy-1.0.0-rc0 "--extralib=boost_system;--disable-warnings-as-errors;install-mongoclient" https://github.com/mongodb)
    
-CheckConfigureBuild(mongoclient mongo-cxx-driver:chaos-legacy "--extralib=boost_system;--disable-warnings-as-errors;install-mongoclient" https://github.com/amichelotti)
+#CheckConfigureBuild(mongoclient mongo-cxx-driver:chaos-legacy "--extralib=boost_system;--disable-warnings-as-errors;install-mongoclient" https://github.com/amichelotti)
 ENDIF()
 endif()
 
