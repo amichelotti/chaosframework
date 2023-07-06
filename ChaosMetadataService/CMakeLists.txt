@@ -125,6 +125,7 @@ ExternalProject_Add(
  mongo-c-driver
  GIT_REPOSITORY https://github.com/mongodb/mongo-c-driver.git
  GIT_TAG 1.12.0
+ # GIT_TAG 1.24.0
  PREFIX "${CMAKE_BINARY_DIR}/ext_dep/mongo-c-driver-prefix"
  SOURCE_DIR "${CMAKE_BINARY_DIR}/ext_dep/mongo-c-driver-src"
  BINARY_DIR "${CMAKE_BINARY_DIR}/ext_dep/mongo-c-driver-build"
@@ -156,8 +157,10 @@ MESG("Install cxx mongodb driver")
 ExternalProject_Add(
  mongo-cxx-driver
  DEPENDS mongo-c-driver
- GIT_REPOSITORY https://github.com/mongodb/mongo-cxx-driver
- GIT_TAG r3.3.1
+ # GIT_REPOSITORY https://github.com/mongodb/mongo-cxx-driver
+ GIT_REPOSITORY https://github.com/amichelotti/mongo-cxx-driver
+ #GIT_TAG r3.3.1
+ GIT_TAG mongocxx-chaos
  PREFIX "${CMAKE_BINARY_DIR}/ext_dep/mongo-cxx-driver-prefix"
  SOURCE_DIR "${CMAKE_BINARY_DIR}/ext_dep/mongo-cxx-driver-src"
  BINARY_DIR "${CMAKE_BINARY_DIR}/ext_dep/mongo-cxx-driver-build"
