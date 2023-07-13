@@ -72,7 +72,7 @@ if (NOT WIN32)
 if(CHAOS_MDS)
   SET(CDSLIB ON)
 
-  MESG("Install cxx mongodb driver")
+  MESG("Install cxx mongodb legacy client driver")
   # ExternalProject_Add(
   #  mongo-cxx-driver-legacy
   #  GIT_REPOSITORY https://github.com/amichelotti/mongo-cxx-driver.git

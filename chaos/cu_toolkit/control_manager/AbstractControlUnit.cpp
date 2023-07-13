@@ -3720,16 +3720,20 @@ void AbstractControlUnit::updateDataSet(chaos::common::data::CDataWrapper& cd, c
   std::vector<std::string> props;
   cd.getAllKey(props);
   for (std::vector<std::string>::iterator i = props.begin(); i != props.end(); i++) {
+     std::string name;
+     std::copy_if((*i).begin(),(*i).end(),std::back_inserter(name),[](unsigned char c){return !std::isspace(c);});
+    if(!getAttributeCache()->exist(DOMAIN_OUTPUT,name))
+      continue;
     if (cd.isInt32Value(*i)) {
-      getAttributeCache()->setOutputAttributeValue(*i, cd.getInt32Value(*i));
+      getAttributeCache()->setOutputAttributeValue(name, cd.getInt32Value(*i));
     } else if (cd.isDoubleValue(*i)) {
-      getAttributeCache()->setOutputAttributeValue(*i, cd.getDoubleValue(*i));
+      getAttributeCache()->setOutputAttributeValue(name, cd.getDoubleValue(*i));
     } else if (cd.isInt64Value(*i)) {
-      getAttributeCache()->setOutputAttributeValue(*i, cd.getInt64Value(*i));
+      getAttributeCache()->setOutputAttributeValue(name, cd.getInt64Value(*i));
     } else if (cd.isBoolValue(*i)) {
-      getAttributeCache()->setOutputAttributeValue(*i, cd.getBoolValue(*i));
+      getAttributeCache()->setOutputAttributeValue(name, cd.getBoolValue(*i));
     } else if (cd.isStringValue(*i)) {
-      getAttributeCache()->setOutputAttributeValue(*i, cd.getStringValue(*i));
+      getAttributeCache()->setOutputAttributeValue(name, cd.getStringValue(*i));
     } else if (cd.isVectorValue(*i)) {
       ///
       chaos::common::data::CMultiTypeDataArrayWrapperSPtr v   = cd.getVectorValue(*i);
@@ -3740,31 +3744,31 @@ void AbstractControlUnit::updateDataSet(chaos::common::data::CDataWrapper& cd, c
           for (int cnt = 0; cnt < siz; cnt++) {
             arr[cnt] = v->getInt32ElementAtIndex(cnt);
           }
-          getAttributeCache()->setOutputAttributeValue(*i, (void*)arr, siz * sizeof(int32_t));
+          getAttributeCache()->setOutputAttributeValue(name, (void*)arr, siz * sizeof(int32_t));
         } else if (v->isBoolElementAtIndex(0)) {
           bool arr[siz];
           for (int cnt = 0; cnt < siz; cnt++) {
             arr[cnt] = v->getBoolElementAtIndex(cnt);
           }
-          getAttributeCache()->setOutputAttributeValue(*i, (void*)arr, siz * sizeof(bool));
+          getAttributeCache()->setOutputAttributeValue(name, (void*)arr, siz * sizeof(bool));
         } else if (v->isInt64ElementAtIndex(0)) {
           int64_t arr[siz];
           for (int cnt = 0; cnt < siz; cnt++) {
             arr[cnt] = v->getInt64ElementAtIndex(cnt);
           }
-          getAttributeCache()->setOutputAttributeValue(*i, (void*)arr, siz * sizeof(int64_t));
+          getAttributeCache()->setOutputAttributeValue(name, (void*)arr, siz * sizeof(int64_t));
         } else if (v->isDoubleElementAtIndex(0)) {
           double arr[siz];
           for (int cnt = 0; cnt < siz; cnt++) {
             arr[cnt] = v->getDoubleElementAtIndex(cnt);
           }
-          getAttributeCache()->setOutputAttributeValue(*i, (void*)arr, siz * sizeof(double));
+          getAttributeCache()->setOutputAttributeValue(name, (void*)arr, siz * sizeof(double));
         }
       }
     } else if (cd.isBinaryValue(*i)) {
       uint32_t    size;
       const char* ptr = cd.getBinaryValue(*i, size);
-      getAttributeCache()->setOutputAttributeValue(*i, (void*)ptr, size);
+      getAttributeCache()->setOutputAttributeValue(name, (void*)ptr, size);
     }
   }
 }
@@ -3854,6 +3858,8 @@ void AbstractControlUnit::addAttributesToDataSet(chaos::common::data::CDataWrapp
   std::vector<std::string> props;
   cd.getAllKey(props);
   for (std::vector<std::string>::iterator i = props.begin(); i != props.end(); i++) {
+    std::string name;
+    std::copy_if((*i).begin(),(*i).end(),std::back_inserter(name),[](unsigned char c){return !std::isspace(c);});
     if (cd.isVector(*i)) {
       chaos::common::data::CMultiTypeDataArrayWrapperSPtr v   = cd.getVectorValue(*i);
       int                                                 siz = v->size();
@@ -3861,36 +3867,36 @@ void AbstractControlUnit::addAttributesToDataSet(chaos::common::data::CDataWrapp
         std::stringstream ss;
         ss << siz;
         if (v->isInt32ElementAtIndex(0)) {
-          addBinaryAttributeAsSubtypeToDataSet(*i, "int32 vect:" + ss.str(), chaos::DataType::SUB_TYPE_INT32, siz * sizeof(int32_t), io);
+          addBinaryAttributeAsSubtypeToDataSet(name, "int32 vect:" + ss.str(), chaos::DataType::SUB_TYPE_INT32, siz * sizeof(int32_t), io);
         } else if (v->isBoolElementAtIndex(0)) {
-          addBinaryAttributeAsSubtypeToDataSet(*i, "bool vect:" + ss.str(), chaos::DataType::SUB_TYPE_BOOLEAN, siz, io);
+          addBinaryAttributeAsSubtypeToDataSet(name, "bool vect:" + ss.str(), chaos::DataType::SUB_TYPE_BOOLEAN, siz, io);
         } else if (v->isInt64ElementAtIndex(0)) {
-          addBinaryAttributeAsSubtypeToDataSet(*i, "int64 vect:" + ss.str(), chaos::DataType::SUB_TYPE_INT64, siz * sizeof(int64_t), io);
+          addBinaryAttributeAsSubtypeToDataSet(name, "int64 vect:" + ss.str(), chaos::DataType::SUB_TYPE_INT64, siz * sizeof(int64_t), io);
         } else if (v->isDoubleElementAtIndex(0)) {
-          addBinaryAttributeAsSubtypeToDataSet(*i, "double vect:" + ss.str(), chaos::DataType::SUB_TYPE_DOUBLE, siz * sizeof(double), io);
+          addBinaryAttributeAsSubtypeToDataSet(name, "double vect:" + ss.str(), chaos::DataType::SUB_TYPE_DOUBLE, siz * sizeof(double), io);
         }
       }
     } else if (cd.isInt32Value(*i)) {
-      addAttributeToDataSet(*i, "int32", chaos::DataType::TYPE_INT32, io);
+      addAttributeToDataSet(name, "int32", chaos::DataType::TYPE_INT32, io);
 
     } else if (cd.isInt64Value(*i)) {
-      addAttributeToDataSet(*i, "int64", chaos::DataType::TYPE_INT64, io);
+      addAttributeToDataSet(name, "int64", chaos::DataType::TYPE_INT64, io);
 
     } else if (cd.isDoubleValue(*i)) {
-      addAttributeToDataSet(*i, "double", chaos::DataType::TYPE_DOUBLE, io);
+      addAttributeToDataSet(name, "double", chaos::DataType::TYPE_DOUBLE, io);
 
     } else if (cd.isStringValue(*i)) {
-      addAttributeToDataSet(*i, "string", chaos::DataType::TYPE_STRING, io, cd.getStringValue(*i).size() + 1);
+      addAttributeToDataSet(name, "string", chaos::DataType::TYPE_STRING, io, cd.getStringValue(*i).size() + 1);
 
     } else if (cd.isBoolValue(*i)) {
-      addAttributeToDataSet(*i, "bool", chaos::DataType::TYPE_BOOLEAN, io);
+      addAttributeToDataSet(name, "bool", chaos::DataType::TYPE_BOOLEAN, io);
 
     } else if (cd.isBinaryValue(*i)) {
       uint32_t size;
       cd.getBinaryValue(*i, size);
       std::stringstream ss;
       ss << size;
-      addBinaryAttributeAsSubtypeToDataSet(*i, "binary:" + ss.str(), chaos::DataType::SUB_TYPE_CHAR, size, io);
+      addBinaryAttributeAsSubtypeToDataSet(name, "binary:" + ss.str(), chaos::DataType::SUB_TYPE_CHAR, size, io);
     }
   }
 }
