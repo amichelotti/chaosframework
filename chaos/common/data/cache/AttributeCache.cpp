@@ -221,6 +221,13 @@ AttributeValue* AttributeCache::getValueSettingByName(const std::string& name) {
   }
   return vector_attribute_value[mapAttributeNameIndex[name]].get();
 }
+chaos::DataType::DataType AttributeCache::getType(const std::string& name){
+  if (mapAttributeNameIndex.count(name) == 0) {
+    throw chaos::CFatalException(-1, boost::str(boost::format("No name '%1%' present in Attribute cache") % name), __PRETTY_FUNCTION__);
+  }
+
+  return vector_attribute_value[mapAttributeNameIndex[name]]->type;
+}
 
 VariableIndexType AttributeCache::getNumberOfAttributes() {
   return index;
