@@ -210,6 +210,11 @@ void AttributeSharedCacheWrapper::setCustomAttributeValue(VariableIndexType attr
 												   value,
 												   size);
 }
+chaos::DataType::DataType AttributeSharedCacheWrapper::getType(SharedCacheDomain domain,const std::string&name){
+		AttributeCache& attribute_setting = attribute_value_shared_cache->getSharedDomain(domain);
+		return attribute_setting.getType(name);
+
+}
 
 void AttributeSharedCacheWrapper::setCustomDomainAsChanged() {
 	AttributeCache& cached = attribute_value_shared_cache->getSharedDomain(DOMAIN_CUSTOM);

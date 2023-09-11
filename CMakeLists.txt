@@ -72,8 +72,24 @@ if (NOT WIN32)
 if(CHAOS_MDS)
   SET(CDSLIB ON)
 
+  MESG("Install cxx mongodb legacy client driver")
+  # ExternalProject_Add(
+  #  mongo-cxx-driver-legacy
+  #  GIT_REPOSITORY https://github.com/amichelotti/mongo-cxx-driver.git
+  #  GIT_TAG chaos-legacy
+  #  PREFIX "${CMAKE_BINARY_DIR}/ext_dep/mongo-cxx-driver-legacy-prefix"
+  #  SOURCE_DIR "${CMAKE_BINARY_DIR}/ext_dep/mongo-cxx-driver-legacy-src"
+  #  BINARY_DIR "${CMAKE_BINARY_DIR}/ext_dep/mongo-cxx-driver-legacy-build"
+  #  # BUILD_COMMAND make CFLAGS=${CMAKE_C_FLAGS} CXXFLAGS=${CMAKE_CXX_FLAGS}
+  #  CMAKE_ARGS
+  #   -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX} -DCMAKE_BUILD_TYPE=Release
+  #  LOG_DOWNLOAD ON
+  #  LOG_CONFIGURE ON
+  #  LOG_BUILD ON)
 
- CheckConfigureBuild(mongoclient mongo-cxx-driver:legacy-1.0.0-rc0 "--extralib=boost_system;--disable-warnings-as-errors;install-mongoclient" https://github.com/mongodb)
+CheckConfigureBuild(mongoclient mongo-cxx-driver:legacy-1.0.0-rc0 "--extralib=boost_system;--disable-warnings-as-errors;install-mongoclient" https://github.com/mongodb)
+   
+#CheckConfigureBuild(mongoclient mongo-cxx-driver:chaos-legacy "--extralib=boost_system;--disable-warnings-as-errors;install-mongoclient" https://github.com/amichelotti)
 ENDIF()
 endif()
 
@@ -94,7 +110,7 @@ IF (CHAOS_ONLY_DEPENDECY OR
    ExternalProject_Add(
      googletest
      GIT_REPOSITORY https://github.com/google/googletest.git
-	 GIT_TAG release-1.10.0
+	   GIT_TAG release-1.12.0
      PREFIX "${CMAKE_BINARY_DIR}/ext_dep/googletest-prefix"
      SOURCE_DIR "${CMAKE_BINARY_DIR}/ext_dep/googletest-src"
      BINARY_DIR "${CMAKE_BINARY_DIR}/ext_dep/googletest-build"

@@ -165,7 +165,7 @@ static const unsigned int DPCK_DATASET_TYPE_LOG = 7;
         case DataType::TYPE_DOUBLE: {
           double d = stored_object.getDoubleValue(*i);
           if (std::isfinite(d)) {
-            measurements << c << pref<<*i << "=" << d;
+            measurements << c << pref<<*i << "=" << std::fixed<<d;
             nmeas++;
             first++;
           }
@@ -308,7 +308,7 @@ static const unsigned int DPCK_DATASET_TYPE_LOG = 7;
           if (ptr&& ( size / sizeof(double)< si.max_array_size)) {
             for (int cnt = 0; (cnt < size / sizeof(double)); cnt++) {
               if (std::isfinite(ptr[cnt])) {
-                measurements << c << pref<<*i + "." << cnt << "=" << ptr[cnt];
+                measurements << c << pref<<*i + "." << cnt << "=" << std::fixed<<ptr[cnt];
                 first++;
                 nmeas++;
               }

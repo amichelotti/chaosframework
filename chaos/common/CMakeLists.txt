@@ -282,7 +282,7 @@ IF(CHAOS_EPICS_SUPPORT)
 	    INSTALL_COMMAND   ""
 #      CONFIGURE_COMMAND "make -j 3 INSTALL_LOCATION=${CMAKE_INSTALL_PREFIX} install"
 #      BUILD_COMMAND "make -j 3 INSTALL_LOCATION=${CMAKE_INSTALL_PREFIX} install"
-      BUILD_COMMAND make -j 3  INSTALL_LOCATION=${CMAKE_INSTALL_PREFIX} install
+      BUILD_COMMAND  make -j 3  INSTALL_LOCATION=${CMAKE_INSTALL_PREFIX} install
   )
 
  
@@ -433,7 +433,6 @@ SET(common_lib_src ${common_lib_src}
 
 SET(common_lib_src ${common_lib_src}
                     event/EventClient.cpp
-                    event/AsioImplEventClient
                     event/AsioEventForwarder.cpp
                     event/EventServer.cpp
                     event/AsioImplEventServer.cpp

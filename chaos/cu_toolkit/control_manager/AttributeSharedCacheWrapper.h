@@ -215,7 +215,7 @@ namespace chaos{
 				
 				//!
 				void resetChangedInputIndex();
-				
+				chaos::DataType::DataType getType(SharedCacheDomain domain,const std::string&name);
 				bool exist(SharedCacheDomain domain,const std::string&name);
 				//! Return the names of all variabl einto a determinated domain
 				void getAttributeNames(SharedCacheDomain domain,

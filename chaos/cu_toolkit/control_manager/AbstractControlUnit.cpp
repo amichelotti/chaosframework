@@ -19,22 +19,22 @@
  * permissions and limitations under the Licence.
  */
 
+#include "AbstractControlUnit.h"
 #include <chaos/common/configuration/GlobalConfiguration.h>
 #include <chaos/common/event/channel/InstrumentEventChannel.h>
 #include <chaos/common/global.h>
 #include <chaos/common/healt_system/HealtManager.h>
 #include <chaos/common/property/property.h>
 #include <chaos/common/utility/UUIDUtil.h>
-#include "../command_manager/CommandManager.h"
-#include "AbstractControlUnit.h"
-#include "../data_manager/DataManager.h"
-#include "../driver_manager/DriverManager.h"
+#include <boost/filesystem.hpp>
 #include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid.hpp>             // uuid class
 #include <boost/uuid/uuid_generators.hpp>  // generators
 #include <boost/uuid/uuid_io.hpp>          // streaming operators etc.
-#include <boost/filesystem.hpp>
+#include "../command_manager/CommandManager.h"
+#include "../data_manager/DataManager.h"
+#include "../driver_manager/DriverManager.h"
 
 #include "../windowsCompliant.h"
 using namespace boost::uuids;
@@ -153,17 +153,16 @@ AbstractControlUnit::AbstractControlUnit(const std::string& _control_unit_type,
     , log_maxupdate_ms(CONTROL_UNIT_LOG_MAX_MS_DEF)
     , last_push(0)
     , key_data_storage()
-    , busy(false),bypass(false) {
+    , busy(false)
+    , bypass(false) {
   _initPropertyGroup();
-  //!try to decode parameter string has json document
+  //! try to decode parameter string has json document
   is_control_unit_json_param = CDataWrapper::isJSON(control_unit_param);
-  //initialize check list
-if(base_data_path==""){
-      base_data_path=GlobalConfiguration::getInstance()->getOption< std::string>(InitOption::OPT_DATA_DIR);
-
+  // initialize check list
+  if (base_data_path == "") {
+    base_data_path = GlobalConfiguration::getInstance()->getOption<std::string>(InitOption::OPT_DATA_DIR);
   }
   _initChecklist();
-  
 }
 
 //! Contructor with driver
@@ -198,30 +197,31 @@ AbstractControlUnit::AbstractControlUnit(const std::string&           _control_u
     , timestamp_acq_cached_value()
     , timestamp_hw_acq_cached_value()
     , thread_schedule_daly_cached_value()
-    , key_data_storage(), busy(false),bypass(false) {
+    , key_data_storage()
+    , busy(false)
+    , bypass(false) {
   _initPropertyGroup();
-  //!try to decode parameter string has json document
+  //! try to decode parameter string has json document
   is_control_unit_json_param = CDataWrapper::isJSON(control_unit_param);
-  if(base_data_path==""){
-      base_data_path=GlobalConfiguration::getInstance()->getOption< std::string>(InitOption::OPT_DATA_DIR);
-
+  if (base_data_path == "") {
+    base_data_path = GlobalConfiguration::getInstance()->getOption<std::string>(InitOption::OPT_DATA_DIR);
   }
-  //copy array
+  // copy array
   for (int idx = 0; idx < _control_unit_drivers.size(); idx++) {
     control_unit_drivers.push_back(_control_unit_drivers[idx]);
   }
 
-  //initialize check list
+  // initialize check list
   _initChecklist();
 }
 
 void AbstractControlUnit::_initDrivers() {
   ACULDBG_ << "Initializating Driver Accessors";
-  //at this point and before the unit implementation init i need to get
-  //the infromation about the needed drivers
+  // at this point and before the unit implementation init i need to get
+  // the infromation about the needed drivers
   std::vector<DrvRequestInfo> unit_needed_drivers;
 
-  //got the needded driver definition
+  // got the needded driver definition
   unitDefineDriver(unit_needed_drivers);
 
   accessor_instances.clear();
@@ -237,7 +237,7 @@ void AbstractControlUnit::setCUClass(const std::string& cl) {
 }
 
 void AbstractControlUnit::_initChecklist() {
-  //init checklists
+  // init checklists
   check_list_sub_service.addCheckList("_init");
   check_list_sub_service.getSharedCheckList("_init")->addElement(INIT_RPC_PHASE_CALL_INIT_STATE);
   check_list_sub_service.getSharedCheckList("_init")->addElement(INIT_RPC_PHASE_INIT_SHARED_CACHE);
@@ -272,14 +272,15 @@ void AbstractControlUnit::_initPropertyGroup() {
 
   pg_abstract_cu.addProperty(DataServiceNodeDefinitionKey::DS_UPDATE_ANYWAY, "Update the dataset anyway (ms)", DataType::TYPE_INT32, 0, CDataVariant((int32_t)DS_UPDATE_ANYWAY_DEF));
   pg_abstract_cu.addProperty(ControlUnitDatapackSystemKey::CU_LOG_MAX_MS, "Maximum log rate (ms) 0 always", DataType::TYPE_INT32, 0, CDataVariant((int32_t)CONTROL_UNIT_LOG_MAX_MS_DEF));
-  busy=false;bypass=false;
+  busy             = false;
+  bypass           = false;
   log_maxupdate_ms = CONTROL_UNIT_LOG_MAX_MS_DEF;
   ds_update_anyway = DS_UPDATE_ANYWAY_DEF;
   //    CDWUniquePtr burst_type_desc(new CDataWrapper());
   //    burst_type_desc->addInt32Value(DataServiceNodeDefinitionKey::DS_HISTORY_BURST_TYPE, DataServiceNodeDefinitionType::DSStorageBurstTypeUndefined);
   //    pg_abstract_cu.addProperty(DataServiceNodeDefinitionKey::DS_HISTORY_BURST, "Specify if the restore operation need to be done as real operation or not", DataType::TYPE_JSON,0, CDataVariant(burst_type_desc.release()));
 
-  pg_abstract_cu.addProperty(ControlUnitDatapackSystemKey::THREAD_SCHEDULE_DELAY, "Set the control unit step repeat time in microseconds", DataType::TYPE_INT64, 0, CDataVariant((int64_t)1000000));  //set to one seconds
+  pg_abstract_cu.addProperty(ControlUnitDatapackSystemKey::THREAD_SCHEDULE_DELAY, "Set the control unit step repeat time in microseconds", DataType::TYPE_INT64, 0, CDataVariant((int64_t)1000000));  // set to one seconds
   pg_abstract_cu.addProperty(ControlUnitPropertyKey::INIT_RESTORE_OPTION, "Specify the restore type operatio to do durint initialization phase", DataType::TYPE_INT32, 0, CDataVariant((int32_t)0));
   pg_abstract_cu.addProperty(ControlUnitPropertyKey::INIT_RESTORE_APPLY, "Specify if the restore operation need to be done as real operation or not", DataType::TYPE_BOOLEAN, 0, CDataVariant((bool)false));
 
@@ -291,13 +292,13 @@ void AbstractControlUnit::_initPropertyGroup() {
      Destructor a new CU with an identifier
      */
 AbstractControlUnit::~AbstractControlUnit() {
-  //clear the accessor of the driver
+  // clear the accessor of the driver
   for (int idx = 0;
        idx != accessor_instances.size();
        idx++) {
     driver_manager::DriverManager::getInstance()->releaseAccessor(accessor_instances[idx]);
   }
-  //clear the vector
+  // clear the vector
   accessor_instances.clear();
 }
 
@@ -358,39 +359,39 @@ void AbstractControlUnit::_defineActionAndDataset(CDataWrapper& setup_configurat
     setDeviceID(control_unit_id);
   }
 
-  //add the CU isntance, this can be redefinide by user in the unitDefineActionAndDataset method
-  //for let the CU have the same instance at every run
+  // add the CU isntance, this can be redefinide by user in the unitDefineActionAndDataset method
+  // for let the CU have the same instance at every run
   setup_configuration.addStringValue(NodeDefinitionKey::NODE_RPC_DOMAIN, control_unit_instance);
 
-  //if we have a control key we attach it
+  // if we have a control key we attach it
   setup_configuration.addStringValue("mds_control_key", control_key);
 
-  //add the control unit type with semantonc type::subtype
+  // add the control unit type with semantonc type::subtype
   setup_configuration.addStringValue(NodeDefinitionKey::NODE_TYPE, NodeType::NODE_TYPE_CONTROL_UNIT);
   setup_configuration.addStringValue(NodeDefinitionKey::NODE_SUB_TYPE, control_unit_type);
-  //check if as been setuped a file for configuration
-  //LCU_ << "Check if as been setup a json file path to configura CU:" << CU_IDENTIFIER_C_STREAM;
-  //loadCDataWrapperForJsonFile(setup_configuration);
+  // check if as been setuped a file for configuration
+  // LCU_ << "Check if as been setup a json file path to configura CU:" << CU_IDENTIFIER_C_STREAM;
+  // loadCDataWrapperForJsonFile(setup_configuration);
 
-  //first call the setup abstract method used by the implementing CU to define action, dataset and other
-  //usefull value
+  // first call the setup abstract method used by the implementing CU to define action, dataset and other
+  // usefull value
   unitDefineActionAndDataset();
 
   addStateVariable(StateVariableTypeAlarmCU, "packet_send_error", "Notify when a CU cannot push datasset");
   addStateVariable(StateVariableTypeAlarmCU, "packet_lost", "Notify when a packet is definitively lost");
 
-  //call method to dinamically add other things to the dataset
+  // call method to dinamically add other things to the dataset
   _completeDatasetAttribute();
 
-  //for now we need only to add custom action for expose to rpc
-  //input element of the dataset
+  // for now we need only to add custom action for expose to rpc
+  // input element of the dataset
   AbstActionDescShrPtr
       action_description = addActionDescritionInstance<AbstractControlUnit>(this,
                                                                             &AbstractControlUnit::_setDatasetAttribute,
                                                                             ControlUnitNodeDomainAndActionRPC::CONTROL_UNIT_APPLY_INPUT_DATASET_ATTRIBUTE_CHANGE_SET,
                                                                             "method for setting the input element for the dataset");
 
-  //expose updateConfiguration Methdo to rpc
+  // expose updateConfiguration Methdo to rpc
   action_description = addActionDescritionInstance<AbstractControlUnit>(this,
                                                                         &AbstractControlUnit::updateConfiguration,
                                                                         NodeDomainAndActionRPC::ACTION_UPDATE_PROPERTY,
@@ -463,29 +464,29 @@ void AbstractControlUnit::_defineActionAndDataset(CDataWrapper& setup_configurat
                                                                         "Execute a storage burst on control unit");
   action_description->addParam(ControlUnitNodeDomainAndActionRPC::ACTION_DATASET_TAG_MANAGEMENT_ADD_LIST, DataType::TYPE_ACCESS_ARRAY, "List of tag to be added to the control unit dataset");
   action_description->addParam(ControlUnitNodeDomainAndActionRPC::ACTION_DATASET_TAG_MANAGEMENT_REMOVE_LIST, DataType::TYPE_ACCESS_ARRAY, "List of tag to be removed to the control unit dataset");
-  //grab dataset description
+  // grab dataset description
   DatasetDB::fillDataWrapperWithDataSetDescription(setup_configuration);
 
   //    //get action description
   //    getActionDescrionsInDataWrapper(setup_configuration);
 
-  //add property description
+  // add property description
   PropertyCollector::fillDescription("property", setup_configuration);
 }
 chaos::common::data::CDWUniquePtr AbstractControlUnit::getProperty(chaos::common::data::CDWUniquePtr data) {
-  bool sync=true;
-   chaos::common::data::CDWUniquePtr ret ;
-  if(data.get()&&data->hasKey("sync")){
-    sync=data->getBoolValue("sync");
+  bool                              sync = true;
+  chaos::common::data::CDWUniquePtr ret;
+  if (data.get() && data->hasKey("sync")) {
+    sync = data->getBoolValue("sync");
   }
-  if(data.get()&&data->hasKey("name")){
-    std::string name=data->getStringValue("name");
-    ret=syncRead(name);
-    ACULDBG_ << "get CU property :" <<name<<" ="<< ((ret.get()) ? ret->getJSONString() : "");
+  if (data.get() && data->hasKey("name")) {
+    std::string name = data->getStringValue("name");
+    ret              = syncRead(name);
+    ACULDBG_ << "get CU property :" << name << " =" << ((ret.get()) ? ret->getJSONString() : "");
 
     return ret;
   }
-  ret= getProperties(sync);
+  ret = getProperties(sync);
   ACULDBG_ << "get CU properties:" << ((ret.get()) ? ret->getJSONString() : "");
   return ret;
 }
@@ -495,17 +496,17 @@ chaos::common::data::CDWUniquePtr AbstractControlUnit::setProperty(chaos::common
   }
   return getProperties();
 }
- 
-int AbstractControlUnit::setStateMask(const std::string& name,bool maskunmask){
+
+int AbstractControlUnit::setStateMask(const std::string& name, bool maskunmask) {
   AlarmCatalog&     catalogcu  = map_variable_catalog[StateVariableTypeAlarmCU];
   AlarmCatalog&     catalogdev = map_variable_catalog[StateVariableTypeAlarmDEV];
   AlarmDescription* alarmc     = catalogcu.getAlarmByName(name);
   AlarmDescription* alarmv     = catalogdev.getAlarmByName(name);
-  int mask=0xFF;
-  if(maskunmask){
-    mask=0;
+  int               mask       = 0xFF;
+  if (maskunmask) {
+    mask = 0;
   }
-  int found=0;
+  int found = 0;
   if (alarmc != NULL) {
     ACULDBG_ << "Set CU alarm \"" << name << "\" mask to:" << mask;
 
@@ -517,21 +518,20 @@ int AbstractControlUnit::setStateMask(const std::string& name,bool maskunmask){
 
     alarmv->setMask(mask);
     found++;
-
   }
   return found;
 }
- 
-int AbstractControlUnit::setStateAllMask(bool maskunmask){
-  AlarmCatalog&     catalogcu  = map_variable_catalog[StateVariableTypeAlarmCU];
-  AlarmCatalog&     catalogdev = map_variable_catalog[StateVariableTypeAlarmDEV];
-  int mask=0xFF;
-  if(maskunmask){
-    mask=0;
+
+int AbstractControlUnit::setStateAllMask(bool maskunmask) {
+  AlarmCatalog& catalogcu  = map_variable_catalog[StateVariableTypeAlarmCU];
+  AlarmCatalog& catalogdev = map_variable_catalog[StateVariableTypeAlarmDEV];
+  int           mask       = 0xFF;
+  if (maskunmask) {
+    mask = 0;
   }
   catalogcu.setAllAlarmMask(mask);
-   catalogdev.setAllAlarmMask(mask);
-  return (catalogcu.size()+catalogdev.size());
+  catalogdev.setAllAlarmMask(mask);
+  return (catalogcu.size() + catalogdev.size());
 }
 void AbstractControlUnit::setAlarmMask(const std::string& name, uint32_t mask) {
   AlarmCatalog&     catalogcu  = map_variable_catalog[StateVariableTypeAlarmCU];
@@ -549,139 +549,134 @@ void AbstractControlUnit::setAlarmMask(const std::string& name, uint32_t mask) {
     alarmv->setMask(mask);
   }
 }
-  int AbstractControlUnit::clearData(const std::string& keyname){
-     ChaosSharedPtr<SharedCacheLockDomain> w_lock = attribute_value_shared_cache->getLockOnDomain((SharedCacheDomain)DOMAIN_CUSTOM, true);
-    w_lock->lock();
+int AbstractControlUnit::clearData(const std::string& keyname) {
+  ChaosSharedPtr<SharedCacheLockDomain> w_lock = attribute_value_shared_cache->getLockOnDomain((SharedCacheDomain)DOMAIN_CUSTOM, true);
+  w_lock->lock();
 
-    std::string fname = control_unit_id;
-    replace(fname.begin(), fname.end(), '/', '_');
-    std::stringstream ss;
-    ss << base_data_path<<"/"<<fname;
-    boost::filesystem::path p(ss.str());
-    if ((boost::filesystem::exists(p))) {
-      boost::filesystem::remove(p);
-    }
-    /* no still possible
-    if(getAttributeCache()->exist(DOMAIN_CUSTOM,keyname)){
-        getAttributeCache()->removeCustomAttribute(keyname);
-        fillCachedValueVector(attribute_value_shared_cache->getSharedDomain(DOMAIN_CUSTOM),
-                                  cache_custom_attribute_vector);
-        getAttributeCache()->setCustomDomainAsChanged();
-      pushCustomDataset();
-      
-    }
-    */
-
-    w_lock->unlock();
-    return 0;
-
+  std::string fname = control_unit_id;
+  replace(fname.begin(), fname.end(), '/', '_');
+  std::stringstream ss;
+  ss << base_data_path << "/" << fname;
+  boost::filesystem::path p(ss.str());
+  if ((boost::filesystem::exists(p))) {
+    boost::filesystem::remove(p);
   }
-
-  int AbstractControlUnit::saveData(const std::string& keyname,const chaos::common::data::CDataWrapper& d){
-    ChaosSharedPtr<SharedCacheLockDomain> w_lock = attribute_value_shared_cache->getLockOnDomain((SharedCacheDomain)DOMAIN_CUSTOM, true);
-    w_lock->lock();
-
-    std::string fname = control_unit_id;
-    replace(fname.begin(), fname.end(), '/', '_');
-    std::stringstream ss;
-    ss << base_data_path<<"/"<<fname;
-    boost::filesystem::path p(ss.str());
-    if ((boost::filesystem::exists(p) == false)) {
-          try {
-            if ((boost::filesystem::create_directories(p) == false) && ((boost::filesystem::exists(p) == false))) {
-              ACULERR_ << "cannot create directory:" << p ;
-              return -3;
-            } else {
-              ACULDBG_ << " CREATED DIR:" << p;
-            }
-          } catch (boost::filesystem::filesystem_error& e) {
-            ACULERR_ << " Exception creating directory:" << e.what();
-            return -1;
-          }
-          //
-      }
-    ss<<"/"+keyname;
-    std::ofstream fs;
-    fs.open(ss.str().c_str());
-    if(!fs.is_open()){
-        ACULERR_ << " cannot create " << ss.str();
-        return -5;
-    }
-    fs<<d.getJSONString();
-
-    fs.close();
-    if(!getAttributeCache()->exist(DOMAIN_CUSTOM,keyname)){
-      getAttributeCache()->addCustomAttribute(keyname, d);
-      ACULDBG_ << "CREATE custom attribute:'"<<keyname<<"'";
-
-    } 
-    getAttributeCache()->setCustomAttributeValue(keyname, d);
-
-    
-    ACULDBG_ << keyname<<" wrote " <<ss.str()<<" size:"<<d.getJSONString().size() << "in "<<ss.str().c_str();
-
-    fillCachedValueVector(attribute_value_shared_cache->getSharedDomain(DOMAIN_CUSTOM),
-                                  cache_custom_attribute_vector);
-    getAttributeCache()->setCustomDomainAsChanged();
+  /* no still possible
+  if(getAttributeCache()->exist(DOMAIN_CUSTOM,keyname)){
+      getAttributeCache()->removeCustomAttribute(keyname);
+      fillCachedValueVector(attribute_value_shared_cache->getSharedDomain(DOMAIN_CUSTOM),
+                                cache_custom_attribute_vector);
+      getAttributeCache()->setCustomDomainAsChanged();
     pushCustomDataset();
-    return 0;
+
   }
-  
-  chaos::common::data::CDWUniquePtr AbstractControlUnit::loadData(const std::string& keyname){
-    ChaosSharedPtr<SharedCacheLockDomain> w_lock = attribute_value_shared_cache->getLockOnDomain((SharedCacheDomain)DOMAIN_CUSTOM, true);
-    w_lock->lock();
-    chaos::common::data::CDWUniquePtr ret;
-    std::string fname = control_unit_id;
-    replace(fname.begin(), fname.end(), '/', '_');
-    std::stringstream ss;
-    ss <<base_data_path <<"/"<<fname<<"/"+keyname;
-    std::ifstream fs;
-    fs.open(ss.str().c_str());
-    if(fs.is_open()){
-      std::stringstream buffer;
-      buffer << fs.rdbuf();
-      chaos::common::data::CDataWrapper*w=new chaos::common::data::CDataWrapper();
-      if(w){
-        try {
-          w->setSerializedJsonData(buffer.str().c_str());
-          ret.reset(w);
-          if(!getAttributeCache()->exist(DOMAIN_CUSTOM,keyname)){
-              ACULDBG_ << "CREATE custom attribute:'"<<keyname<<"' "<<w->getJSONString();
+  */
 
-            getAttributeCache()->addCustomAttribute(keyname, *w);
-          } 
-            getAttributeCache()->setCustomAttributeValue(keyname, *w);
+  w_lock->unlock();
+  return 0;
+}
 
-            getAttributeCache()->setCustomDomainAsChanged();
+int AbstractControlUnit::saveData(const std::string& keyname, const chaos::common::data::CDataWrapper& d) {
+  ChaosSharedPtr<SharedCacheLockDomain> w_lock = attribute_value_shared_cache->getLockOnDomain((SharedCacheDomain)DOMAIN_CUSTOM, true);
+  w_lock->lock();
 
-           fillCachedValueVector(attribute_value_shared_cache->getSharedDomain(DOMAIN_CUSTOM),
-                                  cache_custom_attribute_vector);
-           pushCustomDataset();
-      
-          ACULDBG_ << keyname<<" read: " <<ss.str()<<" size:"<<buffer.str().size();
-        } catch(...){
-            ACULERR_ << " parsing JSON " << buffer.str();
-
-        }
+  std::string fname = control_unit_id;
+  replace(fname.begin(), fname.end(), '/', '_');
+  std::stringstream ss;
+  ss << base_data_path << "/" << fname;
+  boost::filesystem::path p(ss.str());
+  if ((boost::filesystem::exists(p) == false)) {
+    try {
+      if ((boost::filesystem::create_directories(p) == false) && ((boost::filesystem::exists(p) == false))) {
+        ACULERR_ << "cannot create directory:" << p;
+        return -3;
+      } else {
+        ACULDBG_ << " CREATED DIR:" << p;
       }
-
+    } catch (boost::filesystem::filesystem_error& e) {
+      ACULERR_ << " Exception creating directory:" << e.what();
+      return -1;
     }
-    return ret;
+    //
   }
+  ss << "/" + keyname;
+  std::ofstream fs;
+  fs.open(ss.str().c_str());
+  if (!fs.is_open()) {
+    ACULERR_ << " cannot create " << ss.str();
+    return -5;
+  }
+  fs << d.getJSONString();
+
+  fs.close();
+  if (!getAttributeCache()->exist(DOMAIN_CUSTOM, keyname)) {
+    getAttributeCache()->addCustomAttribute(keyname, d);
+    ACULDBG_ << "CREATE custom attribute:'" << keyname << "'";
+  }
+  getAttributeCache()->setCustomAttributeValue(keyname, d);
+
+  ACULDBG_ << keyname << " wrote " << ss.str() << " size:" << d.getJSONString().size() << "in " << ss.str().c_str();
+
+  fillCachedValueVector(attribute_value_shared_cache->getSharedDomain(DOMAIN_CUSTOM),
+                        cache_custom_attribute_vector);
+  getAttributeCache()->setCustomDomainAsChanged();
+  pushCustomDataset();
+  return 0;
+}
+
+chaos::common::data::CDWUniquePtr AbstractControlUnit::loadData(const std::string& keyname) {
+  ChaosSharedPtr<SharedCacheLockDomain> w_lock = attribute_value_shared_cache->getLockOnDomain((SharedCacheDomain)DOMAIN_CUSTOM, true);
+  w_lock->lock();
+  chaos::common::data::CDWUniquePtr ret;
+  std::string                       fname = control_unit_id;
+  replace(fname.begin(), fname.end(), '/', '_');
+  std::stringstream ss;
+  ss << base_data_path << "/" << fname << "/" + keyname;
+  std::ifstream fs;
+  fs.open(ss.str().c_str());
+  if (fs.is_open()) {
+    std::stringstream buffer;
+    buffer << fs.rdbuf();
+    chaos::common::data::CDataWrapper* w = new chaos::common::data::CDataWrapper();
+    if (w) {
+      try {
+        w->setSerializedJsonData(buffer.str().c_str());
+        ret.reset(w);
+        if (!getAttributeCache()->exist(DOMAIN_CUSTOM, keyname)) {
+          ACULDBG_ << "CREATE custom attribute:'" << keyname << "' " << w->getJSONString();
+
+          getAttributeCache()->addCustomAttribute(keyname, *w);
+        }
+        getAttributeCache()->setCustomAttributeValue(keyname, *w);
+
+        getAttributeCache()->setCustomDomainAsChanged();
+
+        fillCachedValueVector(attribute_value_shared_cache->getSharedDomain(DOMAIN_CUSTOM),
+                              cache_custom_attribute_vector);
+        pushCustomDataset();
+
+        ACULDBG_ << keyname << " read: " << ss.str() << " size:" << buffer.str().size();
+      } catch (...) {
+        ACULERR_ << " parsing JSON " << buffer.str();
+      }
+    }
+  }
+  return ret;
+}
 chaos::common::data::CDWUniquePtr AbstractControlUnit::clearAlarm(chaos::common::data::CDWUniquePtr data) {
   if (data.get()) {
     if (!data->hasKey("value")) {
       data->addInt32Value("value", 0);
     }
-     if (!data->hasKey("all")) {
-      data->addBoolValue("all",true);
+    if (!data->hasKey("all")) {
+      data->addBoolValue("all", true);
     }
     return setAlarm(MOVE(data));
   }
   return data;
 }
 chaos::common::data::CDWUniquePtr AbstractControlUnit::setAlarm(chaos::common::data::CDWUniquePtr data) {
-    ACULDBG_ << "Set Alarm "<< (data.get()?data->getJSONString():" NO DATA");
+  ACULDBG_ << "Set Alarm " << (data.get() ? data->getJSONString() : " NO DATA");
 
   if (data.get()) {
     bool              mod           = false;
@@ -725,30 +720,27 @@ chaos::common::data::CDWUniquePtr AbstractControlUnit::setAlarm(chaos::common::d
       }
       if (data->hasKey("mask") && data->isInt32Value("mask")) {
         uint32_t val = data->getInt32Value("mask");
-        mod=true;
+        mod          = true;
         ACULDBG_ << "Set mask of all Alarms to :" << val;
         catalogcu.setAllAlarmMask(val);
         catalogdev.setAllAlarmMask(val);
-
-        
       }
     }
     if (mod) {
       AttributeCache& output_cache = attribute_value_shared_cache->getSharedDomain(DOMAIN_SYSTEM);
       output_cache.getValueSettingByName(stateVariableEnumToName(StateVariableTypeAlarmCU))->setValue(CDataVariant(catalogcu.maxLevel()));
       output_cache.getValueSettingByName(stateVariableEnumToName(StateVariableTypeAlarmDEV))->setValue(CDataVariant(catalogdev.maxLevel()));
-      //output_cache.getValueSettingByName(stateVariableEnumToName(variable_type))->setValue(CDataVariant(catalog.maxLevel()));
+      // output_cache.getValueSettingByName(stateVariableEnumToName(variable_type))->setValue(CDataVariant(catalog.maxLevel()));
       pushDevAlarmDataset();
       pushCUAlarmDataset();
       pushSystemDataset();
       HealtManager::getInstance()->addNodeMetricValue(control_unit_id,
-                                                  ControlUnitHealtDefinitionValue::CU_HEALT_OUTPUT_ALARM_LEVEL,
-                                                  std::max(catalogcu.maxLevel(), catalogdev.maxLevel()));
+                                                      ControlUnitHealtDefinitionValue::CU_HEALT_OUTPUT_ALARM_LEVEL,
+                                                      std::max(catalogcu.maxLevel(), catalogdev.maxLevel()));
 
       HealtManager::getInstance()->addNodeMetricValue(control_unit_id,
-                                                  ControlUnitHealtDefinitionValue::CU_HEALT_OUTPUT_ALARM_MASKED,
-                                                  catalogcu.countMask()+ catalogdev.countMask());
-
+                                                      ControlUnitHealtDefinitionValue::CU_HEALT_OUTPUT_ALARM_MASKED,
+                                                      catalogcu.countMask() + catalogdev.countMask());
     }
   }
 
@@ -812,7 +804,7 @@ void AbstractControlUnit::unitDefineDriver(std::vector<DrvRequestInfo>& neededDr
   for (ControlUnitDriverListIterator iter = control_unit_drivers.begin();
        iter != control_unit_drivers.end();
        iter++) {
-    //copy driver info to the system array reference
+    // copy driver info to the system array reference
     neededDriver.push_back(*iter);
   }
 }
@@ -834,17 +826,17 @@ void AbstractControlUnit::unitDefineCustomAttribute() {
     cnt++;
   }
 
- /* if (cnt) {
-    //        drv.finalizeArrayForKey(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_INFO);
-    ACULDBG_ << " Adding driver properties to custom dataset " << chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_INFO << ":" << drv.getJSONString();
+  /* if (cnt) {
+     //        drv.finalizeArrayForKey(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_INFO);
+     ACULDBG_ << " Adding driver properties to custom dataset " << chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_INFO << ":" << drv.getJSONString();
 
-    getAttributeCache()->addCustomAttribute(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_INFO, drv);
-    getAttributeCache()->setCustomAttributeValue(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_INFO, drv);
-  } else if (drv_info.get()) {
-    ACULDBG_ << " Adding driver info to custom dataset " << chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_CU_INFO << ":" << drv_info->getJSONString();
-    getAttributeCache()->addCustomAttribute(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_CU_INFO, *drv_info.get());
-    getAttributeCache()->setCustomAttributeValue(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_CU_INFO, *drv_info.get());
-  }*/
+     getAttributeCache()->addCustomAttribute(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_INFO, drv);
+     getAttributeCache()->setCustomAttributeValue(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_INFO, drv);
+   } else if (drv_info.get()) {
+     ACULDBG_ << " Adding driver info to custom dataset " << chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_CU_INFO << ":" << drv_info->getJSONString();
+     getAttributeCache()->addCustomAttribute(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_CU_INFO, *drv_info.get());
+     getAttributeCache()->setCustomAttributeValue(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_CU_INFO, *drv_info.get());
+   }*/
 }
 
 void AbstractControlUnit::_undefineActionAndDataset() {
@@ -868,10 +860,10 @@ void         AbstractControlUnit::doInitRpCheckList() {
   packet_lost   = 0;
   push_tot_size = 0;
 
-  //rpc initialize service
+  // rpc initialize service
   CHAOS_CHECK_LIST_START_SCAN_TO_DO(check_list_sub_service, "_init") {
     CHAOS_CHECK_LIST_DONE(check_list_sub_service, "_init", INIT_RPC_PHASE_CALL_INIT_STATE) {
-      //call init sequence
+      // call init sequence
       init(NULL);
       break;
     }
@@ -909,28 +901,28 @@ void         AbstractControlUnit::doInitRpCheckList() {
       break;
     }
     CHAOS_CHECK_LIST_DONE(check_list_sub_service, "_init", INIT_RPC_PHASE_CALL_UNIT_DEFINE_ATTRIBUTE) {
-    /*  std::string cu_load_param = getCUParam();
+      /*  std::string cu_load_param = getCUParam();
 
-     if (isCUParamInJson()) {
-        getAttributeCache()->addCustomAttribute(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_LOAD_PARAM, cu_load_param.size() + 1, chaos::DataType::TYPE_JSON);
-      } else {
-        getAttributeCache()->addCustomAttribute(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_LOAD_PARAM, cu_load_param.size() + 1, chaos::DataType::TYPE_STRING);
-      }
-      getAttributeCache()->setCustomAttributeValue(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_LOAD_PARAM, (void*)cu_load_param.c_str(), cu_load_param.size() + 1);
+       if (isCUParamInJson()) {
+          getAttributeCache()->addCustomAttribute(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_LOAD_PARAM, cu_load_param.size() + 1, chaos::DataType::TYPE_JSON);
+        } else {
+          getAttributeCache()->addCustomAttribute(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_LOAD_PARAM, cu_load_param.size() + 1, chaos::DataType::TYPE_STRING);
+        }
+        getAttributeCache()->setCustomAttributeValue(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_LOAD_PARAM, (void*)cu_load_param.c_str(), cu_load_param.size() + 1);
 
-      //define the implementations custom variable
-      AbstractControlUnit::unitDefineCustomAttribute();
-      */
+        //define the implementations custom variable
+        AbstractControlUnit::unitDefineCustomAttribute();
+        */
       unitDefineCustomAttribute();
       getAttributeCache()->setCustomDomainAsChanged();
       fillCachedValueVector(attribute_value_shared_cache->getSharedDomain(DOMAIN_CUSTOM),
-                                  cache_custom_attribute_vector);
+                            cache_custom_attribute_vector);
       pushCustomDataset();
-      
+
       break;
     }
     CHAOS_CHECK_LIST_DONE(check_list_sub_service, "_init", INIT_RPC_PHASE_CREATE_FAST_ACCESS_CASCHE_VECTOR) {
-      //create fast vector access for cached value
+      // create fast vector access for cached value
       fillCachedValueVector(attribute_value_shared_cache->getSharedDomain(DOMAIN_OUTPUT),
                             cache_output_attribute_vector);
 
@@ -945,7 +937,7 @@ void         AbstractControlUnit::doInitRpCheckList() {
       break;
     }
     CHAOS_CHECK_LIST_DONE(check_list_sub_service, "_init", INIT_RPC_PHASE_CALL_UNIT_INIT) {
-      //initialize implementations
+      // initialize implementations
       unitInit();
       setStateVariableSeverity(StateVariableTypeAlarmCU, "packet_lost", chaos::common::alarm::MultiSeverityAlarmLevelClear);
       setStateVariableSeverity(StateVariableTypeAlarmCU, "packet_send_error", chaos::common::alarm::MultiSeverityAlarmLevelClear);
@@ -953,15 +945,15 @@ void         AbstractControlUnit::doInitRpCheckList() {
       break;
     }
     CHAOS_CHECK_LIST_DONE(check_list_sub_service, "_init", INIT_RPC_PHASE_UPDATE_CONFIGURATION) {
-      //call update param function
+      // call update param function
       updateConfiguration(MOVE(init_configuration->clone()));
-      //check if we need to do a restore on first start
+      // check if we need to do a restore on first start
       PropertyGroupShrdPtr cug = PropertyCollector::getGroup(chaos::ControlUnitPropertyKey::P_GROUP_NAME);
       if (cug.get()) {
         if (cug->hasProperty(chaos::ControlUnitPropertyKey::INIT_RESTORE_APPLY) &&
             cug->getProperty(chaos::ControlUnitPropertyKey::INIT_RESTORE_APPLY).getPropertyValue().isValid() &&
             cug->getProperty(chaos::ControlUnitPropertyKey::INIT_RESTORE_APPLY).getPropertyValue().asBool()) {
-          //we need to add to stsart phase the restore one
+          // we need to add to stsart phase the restore one
           check_list_sub_service.getSharedCheckList("_start")->addElement(START_RPC_PHASE_RESTORE_ON_FIRST_START);
         }
       }
@@ -972,7 +964,7 @@ void         AbstractControlUnit::doInitRpCheckList() {
         for (std::map<std::string, std::string>::iterator i = props.begin(); i != props.end(); i++) {
           ACULDBG_ << "Set CU property \"" << i->first << "\" to:" << i->second;
 
-          chaos::common::data::Property<AbstractControlUnit>::setProperty(i->first, i->second,true);
+          chaos::common::data::Property<AbstractControlUnit>::setProperty(i->first, i->second, true);
         }
       }
       // try to call handler as setdataset attribute
@@ -983,13 +975,13 @@ void         AbstractControlUnit::doInitRpCheckList() {
           cu_ds_init.reset(new CDataWrapper());
 
           cdw_unique_ptr->addStringValue(NodeDefinitionKey::NODE_UNIQUE_ID, getCUID());
-          //get the entity for device
+          // get the entity for device
           CMultiTypeDataArrayWrapperSPtr elementsDescriptions = dataset_object->getVectorValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_DESCRIPTION);
 
           for (int idx = 0; idx < elementsDescriptions->size(); idx++) {
-            //next element in dataset
+            // next element in dataset
             CDWUniquePtr elementDescription = elementsDescriptions->getCDataWrapperElementAtIndex(idx);
-            //attribute name
+            // attribute name
 
             if (!elementDescription->hasKey(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_NAME) ||
                 !elementDescription->hasKey(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_ATTRIBUTE_TYPE) ||
@@ -1041,15 +1033,15 @@ void         AbstractControlUnit::doInitRpCheckList() {
             }
           }
 
-         /* if (cu_ds_init.get()) {
-            ACULDBG_ << "INIT ATTRIBUTES:" << cu_ds_init->getJSONString();
+          /* if (cu_ds_init.get()) {
+             ACULDBG_ << "INIT ATTRIBUTES:" << cu_ds_init->getJSONString();
 
-            getAttributeCache()->addCustomAttribute(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_INITIALIZATION, *(cu_ds_init.get()));
-            getAttributeCache()->setCustomAttributeValue(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_INITIALIZATION, *(cu_ds_init.get()));
+             getAttributeCache()->addCustomAttribute(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_INITIALIZATION, *(cu_ds_init.get()));
+             getAttributeCache()->setCustomAttributeValue(chaos::ControlUnitNodeDefinitionKey::CONTROL_UNIT_DATASET_INITIALIZATION, *(cu_ds_init.get()));
 
-            fillCachedValueVector(attribute_value_shared_cache->getSharedDomain(DOMAIN_CUSTOM),
-                                  cache_custom_attribute_vector);
-          }*/
+             fillCachedValueVector(attribute_value_shared_cache->getSharedDomain(DOMAIN_CUSTOM),
+                                   cache_custom_attribute_vector);
+           }*/
           CDWUniquePtr res = setDatasetAttribute(MOVE(cdw_unique_ptr));
         }
       }
@@ -1058,12 +1050,12 @@ void         AbstractControlUnit::doInitRpCheckList() {
       limitTocheck.clear();
       attribute_value_shared_cache->getSharedDomain(DOMAIN_INPUT).getAttributeNames(inp);
       for (ChaosStringVector::iterator i = inp.begin(); i != inp.end(); i++) {
-        setReadoutCheck(*i,true);        
+        setReadoutCheck(*i, true);
       }
       inp.clear();
       attribute_value_shared_cache->getSharedDomain(DOMAIN_OUTPUT).getAttributeNames(inp);
       for (ChaosStringVector::iterator i = inp.begin(); i != inp.end(); i++) {
-        setLimCheck(*i,true);
+        setLimCheck(*i, true);
       }
 
       // set masks if any
@@ -1078,8 +1070,8 @@ void         AbstractControlUnit::doInitRpCheckList() {
       break;
     }
     CHAOS_CHECK_LIST_DONE(check_list_sub_service, "_init", INIT_RPC_PHASE_PUSH_DATASET) {
-      //init on shared cache the all the dataaset with the default value
-      //set first timestamp for simulate the run step
+      // init on shared cache the all the dataaset with the default value
+      // set first timestamp for simulate the run step
       int err;
       *timestamp_acq_cached_value->getValuePtr<uint64_t>() = TimingUtil::getTimeStamp();
       attribute_value_shared_cache->getSharedDomain(DOMAIN_SYSTEM).markAllAsChanged();
@@ -1150,125 +1142,125 @@ void         AbstractControlUnit::doInitRpCheckList() {
     }
   }
   CHAOS_CHECK_LIST_END_SCAN_TO_DO(check_list_sub_service, "_init")
-  
-  //std::string command_queue = getDeviceID() + DataPackPrefixID::COMMAND_DATASET_POSTFIX;
-  //DataManager::getInstance()->getDataLiveDriverNewInstance()->subscribe(command_queue);
-  //DataManager::getInstance()->getDataLiveDriverNewInstance()->addHandler(command_queue, boost::bind(&AbstractControlUnit::consumerHandler, this, _1));
+
+  // std::string command_queue = getDeviceID() + DataPackPrefixID::COMMAND_DATASET_POSTFIX;
+  // DataManager::getInstance()->getDataLiveDriverNewInstance()->subscribe(command_queue);
+  // DataManager::getInstance()->getDataLiveDriverNewInstance()->addHandler(command_queue, boost::bind(&AbstractControlUnit::consumerHandler, this, _1));
 }
-int AbstractControlUnit::subscribe(const std::string& key,bool subscribeon){
-  int ret=chaos::common::message::MessagePSDriver::getConsumerDriver()->subscribe(key,subscribeon);
-  chaos::common::message::MessagePSDriver::getConsumerDriver()->addHandler(key, boost::bind(&AbstractControlUnit::consumerHandler, this, _1),subscribeon);
-  
+int AbstractControlUnit::subscribe(const std::string& key, bool subscribeon) {
+  int ret = chaos::common::message::MessagePSDriver::getConsumerDriver()->subscribe(key, subscribeon);
+  chaos::common::message::MessagePSDriver::getConsumerDriver()->addHandler(key, boost::bind(&AbstractControlUnit::consumerHandler, this, _1), subscribeon);
+
   return ret;
 }
 
-int AbstractControlUnit::setReadoutCheck(const std::string& ioname,bool enable_disable){
-        RangeValueInfo attributeInfo;
-        if(enable_disable){
-          if(ioTocheck.count(ioname)){
-            ACULDBG_<<"check on "<<ioname<<" Already enabled";
-            return 0;
-          }
+int AbstractControlUnit::setReadoutCheck(const std::string& ioname, bool enable_disable) {
+  RangeValueInfo attributeInfo;
+  if (enable_disable) {
+    if (ioTocheck.count(ioname)) {
+      ACULDBG_ << "check on " << ioname << " Already enabled";
+      return 0;
+    }
+  } else {
+    checkmap_t::iterator i = ioTocheck.find(ioname);
+    if (i == ioTocheck.end()) {
+      ACULDBG_ << "check on " << ioname << " Already disabled";
+      return 0;
+    }
+    ACULDBG_ << "check on " << ioname << " disabled";
+
+    ioTocheck.erase(i);
+    return ioTocheck.size();
+  }
+
+  getAttributeRangeValueInfo(ioname, attributeInfo);
+  // ACULDBG_ << *i << " DOMAIN INPUT DIR:"<<attributeInfo.dir<<" warning:" << attributeInfo.warningThreshold<<" error:"<<attributeInfo.errorThreshold;
+
+  if (attributeInfo.dir == chaos::DataType::Bidirectional) {
+    // if(attributeInfo.)
+    checkAttribute_t a;
+
+    if (attributeInfo.warningThreshold.size() || attributeInfo.errorThreshold.size()) {
+      std::stringstream ss;
+      bool              error_set = false;
+      ss << "Notify when '" << ioname << "'";
+      if (attributeInfo.warningThreshold.size() > 0) {
+        if (attributeInfo.warningThreshold == "0") {
+          ss << " warning if set!=readout ,";
+
         } else {
-          checkmap_t::iterator i=ioTocheck.find(ioname);
-          if(i==ioTocheck.end()){
-              ACULDBG_<<"check on "<<ioname<<" Already disabled";
-              return 0;
-          }
-          ACULDBG_<<"check on "<<ioname<<" disabled";
-
-          ioTocheck.erase(i);
-          return ioTocheck.size();
+          ss << " warning if |set-readout| > " << atof(attributeInfo.warningThreshold.c_str()) << ",";
         }
-        
-        getAttributeRangeValueInfo(ioname, attributeInfo);
-        //ACULDBG_ << *i << " DOMAIN INPUT DIR:"<<attributeInfo.dir<<" warning:" << attributeInfo.warningThreshold<<" error:"<<attributeInfo.errorThreshold;
+        error_set = true;
+      }
+      if (attributeInfo.errorThreshold.size() > 0) {
+        if (attributeInfo.errorThreshold == "0") {
+          ss << " error if set!=readout ,";
 
-        if (attributeInfo.dir == chaos::DataType::Bidirectional) {
-          //if(attributeInfo.)
-          checkAttribute_t a;
-
-          if (attributeInfo.warningThreshold.size() || attributeInfo.errorThreshold.size()) {
-            std::stringstream ss;
-            bool              error_set = false;
-            ss << "Notify when '" << ioname << "'";
-            if (attributeInfo.warningThreshold.size() > 0) {
-              if (attributeInfo.warningThreshold == "0") {
-                ss << " warning if set!=readout ,";
-
-              } else {
-                ss << " warning if |set-readout| > " << atof(attributeInfo.warningThreshold.c_str()) << ",";
-              }
-              error_set = true;
-            }
-            if (attributeInfo.errorThreshold.size() > 0) {
-              if (attributeInfo.errorThreshold == "0") {
-                ss << " error if set!=readout ,";
-
-              } else {
-                ss << " error if |set-readout| > " << atof(attributeInfo.errorThreshold.c_str());
-              }
-              error_set = true;
-            }
-            if (error_set) {
-              addStateVariable(StateVariableTypeAlarmCU, ioname + "_out_of_set", ss.str());
-            }
-
-            a.i_idx = attribute_value_shared_cache->getSharedDomain(DOMAIN_INPUT).getIndexForName(ioname);
-            a.o_idx = attribute_value_shared_cache->getSharedDomain(DOMAIN_OUTPUT).getIndexForName(ioname)              ;
-            a.range = attributeInfo;
-
-            ioTocheck[ioname]=a;
-            ACULDBG_ << "ENABLING CHECK " << ioTocheck.size() << " " << ioname << " set (" << a.i_idx << ") read (" << a.o_idx << ") :" << ss.str();
-          }
+        } else {
+          ss << " error if |set-readout| > " << atof(attributeInfo.errorThreshold.c_str());
         }
-        return ioTocheck.size();
+        error_set = true;
+      }
+      if (error_set) {
+        addStateVariable(StateVariableTypeAlarmCU, ioname + "_out_of_set", ss.str());
+      }
+
+      a.i_idx = attribute_value_shared_cache->getSharedDomain(DOMAIN_INPUT).getIndexForName(ioname);
+      a.o_idx = attribute_value_shared_cache->getSharedDomain(DOMAIN_OUTPUT).getIndexForName(ioname);
+      a.range = attributeInfo;
+
+      ioTocheck[ioname] = a;
+      ACULDBG_ << "ENABLING CHECK " << ioTocheck.size() << " " << ioname << " set (" << a.i_idx << ") read (" << a.o_idx << ") :" << ss.str();
+    }
+  }
+  return ioTocheck.size();
 }
-int AbstractControlUnit::setLimCheck(const std::string& ioname,bool enable_disable){
-        RangeValueInfo attributeInfo;
-        if(enable_disable){
-          if(limitTocheck.count(ioname)){
-            ACULDBG_<<"check limit on "<<ioname<<" Already enabled";
-            return 0;
-          }
-        } else {
-          checkmap_t::iterator i=limitTocheck.find(ioname);
-          if(i==limitTocheck.end()){
-              ACULDBG_<<"limit check on "<<ioname<<" Already disabled";
-              return 0;
-          }
-          ACULDBG_<<"limit check on "<<ioname<<" disabled";
+int AbstractControlUnit::setLimCheck(const std::string& ioname, bool enable_disable) {
+  RangeValueInfo attributeInfo;
+  if (enable_disable) {
+    if (limitTocheck.count(ioname)) {
+      ACULDBG_ << "check limit on " << ioname << " Already enabled";
+      return 0;
+    }
+  } else {
+    checkmap_t::iterator i = limitTocheck.find(ioname);
+    if (i == limitTocheck.end()) {
+      ACULDBG_ << "limit check on " << ioname << " Already disabled";
+      return 0;
+    }
+    ACULDBG_ << "limit check on " << ioname << " disabled";
 
-          limitTocheck.erase(i);
-          return limitTocheck.size();
-        }
-        getAttributeRangeValueInfo(ioname, attributeInfo);
+    limitTocheck.erase(i);
+    return limitTocheck.size();
+  }
+  getAttributeRangeValueInfo(ioname, attributeInfo);
 
-        bool limitcheck = false;
-        if (attributeInfo.maxRange.size() || attributeInfo.warningMaxRange.size()) {
-          std::stringstream ss;
-          ss << " Error if " << ioname << " > " << attributeInfo.maxRange << ", warning if > " << attributeInfo.warningMaxRange;
-          addStateVariable(StateVariableTypeAlarmCU, ioname + "_out_max_range", ss.str());
-          limitcheck = true;
-          ACULDBG_ << "ENABLING OUTPUT LIMIT CHECK " << limitTocheck.size() << " " << ss.str();
-        }
-        if (attributeInfo.minRange.size() || attributeInfo.warningMinRange.size()) {
-          std::stringstream ss;
-          ss << " Error if  " << ioname << " < " << attributeInfo.minRange << ", warning if > " << attributeInfo.warningMinRange;
-          addStateVariable(StateVariableTypeAlarmCU, ioname + "_out_min_range", ss.str());
-          limitcheck = true;
-          ACULDBG_ << "ENABLING OUTPUT LIMIT CHECK " << limitTocheck.size() << " " << ss.str();
-        }
-        if (limitcheck) {
-          checkAttribute_t a;
-          a.range = attributeInfo;
+  bool limitcheck = false;
+  if (attributeInfo.maxRange.size() || attributeInfo.warningMaxRange.size()) {
+    std::stringstream ss;
+    ss << " Error if " << ioname << " > " << attributeInfo.maxRange << ", warning if > " << attributeInfo.warningMaxRange;
+    addStateVariable(StateVariableTypeAlarmCU, ioname + "_out_max_range", ss.str());
+    limitcheck = true;
+    ACULDBG_ << "ENABLING OUTPUT LIMIT CHECK " << limitTocheck.size() << " " << ss.str();
+  }
+  if (attributeInfo.minRange.size() || attributeInfo.warningMinRange.size()) {
+    std::stringstream ss;
+    ss << " Error if  " << ioname << " < " << attributeInfo.minRange << ", warning if > " << attributeInfo.warningMinRange;
+    addStateVariable(StateVariableTypeAlarmCU, ioname + "_out_min_range", ss.str());
+    limitcheck = true;
+    ACULDBG_ << "ENABLING OUTPUT LIMIT CHECK " << limitTocheck.size() << " " << ss.str();
+  }
+  if (limitcheck) {
+    checkAttribute_t a;
+    a.range = attributeInfo;
 
-          a.o_idx = attribute_value_shared_cache->getSharedDomain(DOMAIN_OUTPUT).getIndexForName(ioname);
+    a.o_idx = attribute_value_shared_cache->getSharedDomain(DOMAIN_OUTPUT).getIndexForName(ioname);
 
-          a.i_idx = -1;
-          limitTocheck[ioname]=a;
-        }
-        return limitTocheck.size();
+    a.i_idx              = -1;
+    limitTocheck[ioname] = a;
+  }
+  return limitTocheck.size();
 }
 
 std::string AbstractControlUnit::dsDefaultValue(const std::string& inputds) {
@@ -1289,44 +1281,44 @@ void AbstractControlUnit::dsInitSetFromReadout() {
             switch (attr_info.valueType) {
               case DataType::TYPE_BOOLEAN: {
                 bool val = *cache_output_attribute_vector[cntt]->getValuePtr<bool>();
-                ACULDBG_<< "Input '"<< name << "' Init TYPE_BOOLEAN to:" << val;
+                ACULDBG_ << "Input '" << name << "' Init TYPE_BOOLEAN to:" << val;
 
-                cache_input_attribute_vector[cnt]->setValue(cache_output_attribute_vector[cntt]->value_buffer,cache_output_attribute_vector[cntt]->size);
+                cache_input_attribute_vector[cnt]->setValue(cache_output_attribute_vector[cntt]->value_buffer, cache_output_attribute_vector[cntt]->size);
 
                 break;
               }
               case DataType::TYPE_DOUBLE: {
                 double val = *cache_output_attribute_vector[cntt]->getValuePtr<double>();
-                ACULDBG_<< "Input '"<< name << "' Init TYPE_DOUBLE to:" << val;
-                cache_input_attribute_vector[cnt]->setValue(cache_output_attribute_vector[cntt]->value_buffer,cache_output_attribute_vector[cntt]->size);
+                ACULDBG_ << "Input '" << name << "' Init TYPE_DOUBLE to:" << val;
+                cache_input_attribute_vector[cnt]->setValue(cache_output_attribute_vector[cntt]->value_buffer, cache_output_attribute_vector[cntt]->size);
 
                 break;
               }
               case DataType::TYPE_FLOAT: {
                 float val = *cache_output_attribute_vector[cntt]->getValuePtr<float>();
-                ACULDBG_<< "Input '"<< name << "' Init TYPE_FLOAT to:" << val;
-                cache_input_attribute_vector[cnt]->setValue(cache_output_attribute_vector[cntt]->value_buffer,cache_output_attribute_vector[cntt]->size);
+                ACULDBG_ << "Input '" << name << "' Init TYPE_FLOAT to:" << val;
+                cache_input_attribute_vector[cnt]->setValue(cache_output_attribute_vector[cntt]->value_buffer, cache_output_attribute_vector[cntt]->size);
 
                 break;
               }
               case DataType::TYPE_INT32: {
                 int32_t val = *cache_output_attribute_vector[cntt]->getValuePtr<int32_t>();
-                ACULDBG_<< "Input '"<< name << "' Init TYPE_INT32 to:" << val;
-                cache_input_attribute_vector[cnt]->setValue(cache_output_attribute_vector[cntt]->value_buffer,cache_output_attribute_vector[cntt]->size);
+                ACULDBG_ << "Input '" << name << "' Init TYPE_INT32 to:" << val;
+                cache_input_attribute_vector[cnt]->setValue(cache_output_attribute_vector[cntt]->value_buffer, cache_output_attribute_vector[cntt]->size);
 
                 break;
               }
               case DataType::TYPE_INT64: {
                 int64_t val = *cache_output_attribute_vector[cntt]->getValuePtr<int64_t>();
-                ACULDBG_<< "Input '"<< name << "' Init TYPE_INT64 to:" << val;
-                cache_input_attribute_vector[cnt]->setValue(cache_output_attribute_vector[cntt]->value_buffer,cache_output_attribute_vector[cntt]->size);
+                ACULDBG_ << "Input '" << name << "' Init TYPE_INT64 to:" << val;
+                cache_input_attribute_vector[cnt]->setValue(cache_output_attribute_vector[cntt]->value_buffer, cache_output_attribute_vector[cntt]->size);
 
                 break;
               }
-              case DataType::TYPE_STRING:{
+              case DataType::TYPE_STRING: {
                 char* val = cache_output_attribute_vector[cntt]->getValuePtr<char>();
-                ACULDBG_<< "Input '"<< name << "' Init TYPE_STRING to:" << val;
-                cache_input_attribute_vector[cnt]->setValue(cache_output_attribute_vector[cntt]->value_buffer,cache_output_attribute_vector[cntt]->size);
+                ACULDBG_ << "Input '" << name << "' Init TYPE_STRING to:" << val;
+                cache_input_attribute_vector[cnt]->setValue(cache_output_attribute_vector[cntt]->value_buffer, cache_output_attribute_vector[cntt]->size);
 
                 break;
               }
@@ -1343,22 +1335,22 @@ void AbstractControlUnit::dsInitSetFromReadout() {
 }
 
 void AbstractControlUnit::doInitSMCheckList() {
-  //rpc initialize service
+  // rpc initialize service
   CHAOS_CHECK_LIST_START_SCAN_TO_DO(check_list_sub_service, "init") {
     CHAOS_CHECK_LIST_DONE(check_list_sub_service, "init", INIT_SM_PHASE_INIT_DB) {
-      //cast to the CDatawrapper instance
+      // cast to the CDatawrapper instance
       ACULDBG_ << "Initialize CU Database for device:" << DatasetDB::getDeviceID();
       run_id = CDW_GET_INT64_WITH_DEFAULT(init_configuration, ControlUnitNodeDefinitionKey::CONTROL_UNIT_RUN_ID, 0);
       DatasetDB::addAttributeToDataSetFromDataWrapper(*init_configuration);
       break;
     }
     CHAOS_CHECK_LIST_DONE(check_list_sub_service, "init", INIT_SM_PHASE_CREATE_DATA_STORAGE) {
-      //call init sequence
-      //call update param function
-      //initialize key data storage for device id
-      //ACULDBG_ << "Create KeyDataStorage device:" << DatasetDB::getDeviceID();
+      // call init sequence
+      // call update param function
+      // initialize key data storage for device id
+      // ACULDBG_ << "Create KeyDataStorage device:" << DatasetDB::getDeviceID();
       key_data_storage.reset(DataManager::getInstance()->getKeyDataStorageNewInstanceForKey(DatasetDB::getDeviceID()));
-      aligned_ex_done=false;
+      aligned_ex_done = false;
       ACULDBG_ << "Call KeyDataStorage init implementation for deviceID:" << DatasetDB::getDeviceID() << " init:" << ((init_configuration.get()) ? init_configuration->getJSONString() : "NULL CONFIG");
       key_data_storage->init(init_configuration.get());
       break;
@@ -1399,9 +1391,9 @@ void AbstractControlUnit::setDriverInfo(const chaos::common::data::CDataWrapper&
 void AbstractControlUnit::doStartSMCheckList() {
   CHAOS_CHECK_LIST_START_SCAN_TO_DO(check_list_sub_service, "start") {
     CHAOS_CHECK_LIST_DONE(check_list_sub_service, "start", START_SM_PHASE_STAT_TIMER) {
-      //register timer for push statistic
+      // register timer for push statistic
       chaos::common::async_central::AsyncCentralManager::getInstance()->addTimer(this, 0, chaos::common::constants::CUTimersTimeoutinMSec);
-      //get timestamp for first pushes metric acquisition
+      // get timestamp for first pushes metric acquisition
       last_push_rate_grap_ts = TimingUtil::getTimeStamp();
     }
   }
@@ -1409,10 +1401,10 @@ void AbstractControlUnit::doStartSMCheckList() {
 }
 
 void AbstractControlUnit::redoInitRpCheckList(bool throw_exception) {
-  //rpc initialize service
+  // rpc initialize service
   CHAOS_CHECK_LIST_START_SCAN_DONE(check_list_sub_service, "_init") {
     CHAOS_CHECK_LIST_REDO(check_list_sub_service, "_init", INIT_RPC_PHASE_CALL_INIT_STATE) {
-      //saftely deinititalize the abstract control unit
+      // saftely deinititalize the abstract control unit
       CHEK_IF_NEED_TO_THROW(throw_exception, deinit();)
       break;
     }
@@ -1438,7 +1430,7 @@ void AbstractControlUnit::redoInitRpCheckList(bool throw_exception) {
       break;
     }
     CHAOS_CHECK_LIST_REDO(check_list_sub_service, "_init", INIT_RPC_PHASE_CREATE_FAST_ACCESS_CASCHE_VECTOR) {
-      //clear all cache sub_structure
+      // clear all cache sub_structure
       CHEK_IF_NEED_TO_THROW(throw_exception,
                             cache_output_attribute_vector.clear();
                             cache_input_attribute_vector.clear();
@@ -1467,7 +1459,7 @@ void AbstractControlUnit::redoInitSMCheckList(bool throw_exception) {
       break;
     }
     CHAOS_CHECK_LIST_REDO(check_list_sub_service, "init", INIT_SM_PHASE_CREATE_DATA_STORAGE) {
-      //remove key data storage
+      // remove key data storage
       CHEK_IF_NEED_TO_THROW(
           throw_exception,
           if (key_data_storage.get()) {
@@ -1487,7 +1479,7 @@ void AbstractControlUnit::redoStartRpCheckList(bool throw_exception) {
       CHEK_IF_NEED_TO_THROW(throw_exception, stop();)
       break;
     }
-    //unit sto need to go after the abstract cu has been stopped
+    // unit sto need to go after the abstract cu has been stopped
     CHAOS_CHECK_LIST_REDO(check_list_sub_service, "_start", START_RPC_PHASE_UNIT) {
       CHEK_IF_NEED_TO_THROW(throw_exception, unitStop();)
     }
@@ -1495,16 +1487,11 @@ void AbstractControlUnit::redoStartRpCheckList(bool throw_exception) {
   CHAOS_CHECK_LIST_END_SCAN_DONE(check_list_sub_service, "_start")
 }
 
-void AbstractControlUnit::redoStartSMCheckList(bool throw_exception) {
-  CHAOS_CHECK_LIST_START_SCAN_DONE(check_list_sub_service, "start") {
-    CHAOS_CHECK_LIST_REDO(check_list_sub_service, "start", START_SM_PHASE_STAT_TIMER) {
-      //remove timer for push statistics
-      CHEK_IF_NEED_TO_THROW(throw_exception, chaos::common::async_central::AsyncCentralManager::getInstance()->removeTimer(this);)
-    }
-  }
-  CHAOS_CHECK_LIST_END_SCAN_DONE(check_list_sub_service, "start")
-}
-
+void AbstractControlUnit::redoStartSMCheckList(bool throw_exception){
+    CHAOS_CHECK_LIST_START_SCAN_DONE(check_list_sub_service, "start"){
+        CHAOS_CHECK_LIST_REDO(check_list_sub_service, "start", START_SM_PHASE_STAT_TIMER){
+            // remove timer for push statistics
+            CHEK_IF_NEED_TO_THROW(throw_exception, chaos::common::async_central::AsyncCentralManager::getInstance()->removeTimer(this);)}} CHAOS_CHECK_LIST_END_SCAN_DONE(check_list_sub_service, "start")}
 //----------------------------------------- protected initi/deinit method ------------------------------------------------
 #pragma mark RPC State Machine method
 CDWUniquePtr AbstractControlUnit::_init(CDWUniquePtr init_configuration) {
@@ -1517,7 +1504,7 @@ CDWUniquePtr AbstractControlUnit::_init(CDWUniquePtr init_configuration) {
       LOG_AND_TROW_FORMATTED(ACULERR_, -2, "Recoverable error state need to be recovered for %1%", % __PRETTY_FUNCTION__)
     }
 
-    //if(getServiceState() != CUStateKey::DEINIT) throw CException(-1, DatasetDB::getDeviceID()+" need to be in deinit", __PRETTY_FUNCTION__);
+    // if(getServiceState() != CUStateKey::DEINIT) throw CException(-1, DatasetDB::getDeviceID()+" need to be in deinit", __PRETTY_FUNCTION__);
     if (!attribute_value_shared_cache) {
       LOG_AND_TROW_FORMATTED(ACULERR_, -3, "No Shared cache implementation found for %1%[%2%]", % DatasetDB::getDeviceID() % __PRETTY_FUNCTION__);
     }
@@ -1536,7 +1523,7 @@ CDWUniquePtr AbstractControlUnit::_init(CDWUniquePtr init_configuration) {
   }
 
   try {
-    //update configuraiton and own it
+    // update configuraiton and own it
     this->init_configuration = MOVE(init_configuration);
 
     HealtManager::getInstance()->addNodeMetricValue(control_unit_id,
@@ -1545,7 +1532,7 @@ CDWUniquePtr AbstractControlUnit::_init(CDWUniquePtr init_configuration) {
                                                     true);
     doInitRpCheckList();
 
-    //set healt to init
+    // set healt to init
     HealtManager::getInstance()->addNodeMetricValue(control_unit_id,
                                                     NodeHealtDefinitionKey::NODE_HEALT_STATUS,
                                                     NodeHealtDefinitionValue::NODE_HEALT_STATUS_INIT,
@@ -1561,7 +1548,7 @@ CDWUniquePtr AbstractControlUnit::_init(CDWUniquePtr init_configuration) {
                                                  ex.errorCode,
                                                  ex.errorMessage,
                                                  ex.errorDomain);
-    //go in falta error
+    // go in falta error
     SWEService::goInFatalError(this,
                                loggable_exception,
                                "AbstractControlUnit",
@@ -1581,7 +1568,7 @@ CDWUniquePtr AbstractControlUnit::_start(CDWUniquePtr startParam) {
     if (getServiceState() == CUStateKey::RECOVERABLE_ERROR) {
       LOG_AND_TROW_FORMATTED(ACULERR_, -1, "Recoverable error state need to be recovered for %1%", % __PRETTY_FUNCTION__)
     }
-    //call start method of the startable interface
+    // call start method of the startable interface
     if (!SWEService::startImplementation(this, "AbstractControlUnit", __PRETTY_FUNCTION__)) {
       LOG_AND_TROW_FORMATTED(ACULERR_, -1, "Control Unit %1% can't be started [state mismatch]!", % DatasetDB::getDeviceID());
     }
@@ -1603,7 +1590,7 @@ CDWUniquePtr AbstractControlUnit::_start(CDWUniquePtr startParam) {
 
     doStartRpCheckList();
 
-    //set healt to start
+    // set healt to start
     HealtManager::getInstance()->addNodeMetricValue(control_unit_id,
                                                     NodeHealtDefinitionKey::NODE_HEALT_STATUS,
                                                     NodeHealtDefinitionValue::NODE_HEALT_STATUS_START,
@@ -1619,7 +1606,7 @@ CDWUniquePtr AbstractControlUnit::_start(CDWUniquePtr startParam) {
                                                  ex.errorCode,
                                                  ex.errorMessage,
                                                  ex.errorDomain);
-    //go in falta error
+    // go in falta error
     SWEService::goInFatalError(this, loggable_exception, "AbstractControlUnit", __PRETTY_FUNCTION__);
     throw loggable_exception;
   }
@@ -1639,7 +1626,7 @@ CDWUniquePtr AbstractControlUnit::_stop(CDWUniquePtr stopParam) {
              LOG_AND_TROW_FORMATTED(ACULERR_, -1, "Recoverable error state need to be recovered for %1%", %__PRETTY_FUNCTION__)
              }
              */
-    //first we start the deinitializaiton of the implementation unit
+    // first we start the deinitializaiton of the implementation unit
     if (!SWEService::stopImplementation(this, "AbstractControlUnit", __PRETTY_FUNCTION__)) {
       LOG_AND_TROW_FORMATTED(ACULERR_, -1, "Control Unit %1% can't be stopped [state mismatch]!", % DatasetDB::getDeviceID());
     }
@@ -1657,7 +1644,7 @@ CDWUniquePtr AbstractControlUnit::_stop(CDWUniquePtr stopParam) {
   }
 
   try {
-    //set healt to start
+    // set healt to start
     HealtManager::getInstance()->addNodeMetricValue(control_unit_id,
                                                     NodeHealtDefinitionKey::NODE_HEALT_STATUS,
                                                     NodeHealtDefinitionValue::NODE_HEALT_STATUS_STOPING,
@@ -1698,7 +1685,7 @@ CDWUniquePtr AbstractControlUnit::_stop(CDWUniquePtr stopParam) {
                                                  ex.errorCode,
                                                  ex.errorMessage,
                                                  ex.errorDomain);
-    //go in falta error
+    // go in falta error
     SWEService::goInFatalError(this, loggable_exception, "AbstractControlUnit", __PRETTY_FUNCTION__);
     throw loggable_exception;
   }
@@ -1732,7 +1719,7 @@ CDWUniquePtr AbstractControlUnit::_deinit(CDWUniquePtr deinitParam) {
                                     ex.errorDomain);
   }
 
-  //first we start the deinitializaiton of the implementation unit
+  // first we start the deinitializaiton of the implementation unit
   try {
     HealtManager::getInstance()->addNodeMetricValue(control_unit_id,
                                                     NodeHealtDefinitionKey::NODE_HEALT_STATUS,
@@ -1741,7 +1728,7 @@ CDWUniquePtr AbstractControlUnit::_deinit(CDWUniquePtr deinitParam) {
 
     redoInitRpCheckList();
 
-    //set healt to deinit
+    // set healt to deinit
     HealtManager::getInstance()->addNodeMetricValue(control_unit_id,
                                                     NodeHealtDefinitionKey::NODE_HEALT_STATUS,
                                                     NodeHealtDefinitionValue::NODE_HEALT_STATUS_DEINIT,
@@ -1766,7 +1753,7 @@ CDWUniquePtr AbstractControlUnit::_deinit(CDWUniquePtr deinitParam) {
                                                  ex.errorMessage,
                                                  ex.errorDomain);
 
-    //go in falta error
+    // go in falta error
     SWEService::goInFatalError(this, loggable_exception, "AbstractControlUnit", __PRETTY_FUNCTION__);
     throw loggable_exception;
   }
@@ -1777,7 +1764,7 @@ CDWUniquePtr AbstractControlUnit::_deinit(CDWUniquePtr deinitParam) {
 CDWUniquePtr AbstractControlUnit::_recover(CDWUniquePtr gdeinitParam) {
   if (getServiceState() != CUStateKey::RECOVERABLE_ERROR) throw MetadataLoggingCException(getCUID(), -1, DatasetDB::getDeviceID() + " need to be recoverable errore in the way to be recoverable!", __PRETTY_FUNCTION__);
 
-  //first we start the deinitializaiton of the implementation unit
+  // first we start the deinitializaiton of the implementation unit
   try {
     if (SWEService::recoverError(this, "AbstractControlUnit", __PRETTY_FUNCTION__)) {
     } else {
@@ -1793,7 +1780,7 @@ CDWUniquePtr AbstractControlUnit::_recover(CDWUniquePtr gdeinitParam) {
                                                  ex.errorCode,
                                                  ex.errorMessage,
                                                  ex.errorDomain);
-    //go in falta error
+    // go in falta error
     SWEService::goInFatalError(this, loggable_exception, "AbstractControlUnit", __PRETTY_FUNCTION__);
     throw loggable_exception;
   }
@@ -1820,9 +1807,9 @@ void AbstractControlUnit::fillRestoreCacheWithDatasetFromTag(chaos::cu::data_man
 }
 
 void AbstractControlUnit::checkForRestoreOnInit() {
-  //now we can launch the restore the current input attrite, remeber that
-  //input attribute are composed by mds so the type of restore data(static conf or live) is manage at mds leve
-  //control unit in case off pply true need only to launch the restore on current input dataset set.
+  // now we can launch the restore the current input attrite, remeber that
+  // input attribute are composed by mds so the type of restore data(static conf or live) is manage at mds leve
+  // control unit in case off pply true need only to launch the restore on current input dataset set.
   try {
     ChaosUniquePtr<AttributeValueSharedCache> restore_cache(new AttributeValueSharedCache());
     if (!restore_cache.get()) throw MetadataLoggingCException(getCUID(), -3, "failed to allocate restore cache", __PRETTY_FUNCTION__);
@@ -1831,7 +1818,7 @@ void AbstractControlUnit::checkForRestoreOnInit() {
     AttributeCache& ac_dst = restore_cache->getSharedDomain(DOMAIN_INPUT);
     ac_src.copyToAttributeCache(ac_dst);
 
-    //unitRestoreToSnapshot
+    // unitRestoreToSnapshot
     if (unitRestoreToSnapshot(restore_cache.get())) {
       metadataLogging(chaos::common::metadata_logging::StandardLoggingChannel::LogLevelInfo,
                       "Restore to initilization value run successfully");
@@ -1839,7 +1826,7 @@ void AbstractControlUnit::checkForRestoreOnInit() {
       metadataLogging(chaos::common::metadata_logging::StandardLoggingChannel::LogLevelError,
                       "Restore to initilization value has fault");
 
-      //input attribute already already updated
+      // input attribute already already updated
     }
   } catch (MetadataLoggingCException& ex) {
     throw;
@@ -1858,7 +1845,7 @@ void AbstractControlUnit::checkForRestoreOnInit() {
      */
 CDWUniquePtr AbstractControlUnit::_unitRestoreToSnapshot(CDWUniquePtr restoreParam) {
   int err = 0;
-  //check
+  // check
   if (!restoreParam.get() || !restoreParam->hasKey(NodeDomainAndActionRPC::ACTION_NODE_RESTORE_PARAM_TAG)) return CDWUniquePtr();
 
   if (getServiceState() != CUStateKey::START) {
@@ -1871,22 +1858,22 @@ CDWUniquePtr AbstractControlUnit::_unitRestoreToSnapshot(CDWUniquePtr restorePar
   if (!restore_cache.get()) throw MetadataLoggingCException(getCUID(), -3, "failed to allocate restore cache", __PRETTY_FUNCTION__);
 
   ChaosSharedPtr<CDataWrapper> dataset_at_tag;
-  //get tag alias
+  // get tag alias
   const std::string restore_snapshot_tag = restoreParam->getStringValue(NodeDomainAndActionRPC::ACTION_NODE_RESTORE_PARAM_TAG);
 
   metadataLogging(chaos::common::metadata_logging::StandardLoggingChannel::LogLevelInfo,
                   CHAOS_FORMAT("Start restoring snapshot tag for: %1%", % restore_snapshot_tag));
 
   attribute_value_shared_cache->getAttributeValue(DOMAIN_SYSTEM, ControlUnitDatapackSystemKey::SETPOINT_TAG)->setStringValue(restore_snapshot_tag, true, true);
-  *attribute_value_shared_cache->getAttributeValue(DOMAIN_SYSTEM, ControlUnitDatapackSystemKey::SETPOINT_STATE)->getValuePtr<int32_t>() = ControlUnitNodeDefinitionType::SetpointRestoreStarted;  //start
+  *attribute_value_shared_cache->getAttributeValue(DOMAIN_SYSTEM, ControlUnitDatapackSystemKey::SETPOINT_STATE)->getValuePtr<int32_t>() = ControlUnitNodeDefinitionType::SetpointRestoreStarted;  // start
 
   attribute_value_shared_cache->getSharedDomain(DOMAIN_SYSTEM).markAllAsChanged();
   pushSystemDataset();
 
-  //load snapshot to restore
+  // load snapshot to restore
   if ((err = key_data_storage->loadRestorePoint(restore_snapshot_tag))) {
     ACULERR_ << "Error loading dataset form snapshot tag: " << restore_snapshot_tag;
-    *attribute_value_shared_cache->getAttributeValue(DOMAIN_SYSTEM, ControlUnitDatapackSystemKey::SETPOINT_STATE)->getValuePtr<int32_t>() = ControlUnitNodeDefinitionType::SetpointErrorOnInit;  //error
+    *attribute_value_shared_cache->getAttributeValue(DOMAIN_SYSTEM, ControlUnitDatapackSystemKey::SETPOINT_STATE)->getValuePtr<int32_t>() = ControlUnitNodeDefinitionType::SetpointErrorOnInit;  // error
 
     attribute_value_shared_cache->getSharedDomain(DOMAIN_SYSTEM).markAllAsChanged();
     pushSystemDataset();
@@ -1896,27 +1883,27 @@ CDWUniquePtr AbstractControlUnit::_unitRestoreToSnapshot(CDWUniquePtr restorePar
     restore_cache->init(NULL);
 
     for (int idx = 0; idx < 4; idx++) {
-      //dataset loading sucessfull
+      // dataset loading sucessfull
       dataset_at_tag = key_data_storage->getDatasetFromRestorePoint(restore_snapshot_tag,
                                                                     (KeyDataStorageDomain)idx);
       if (dataset_at_tag.get()) {
-        //fill cache with dataset key/value
+        // fill cache with dataset key/value
         fillRestoreCacheWithDatasetFromTag((KeyDataStorageDomain)idx,
                                            *dataset_at_tag.get(),
                                            *restore_cache.get());
         ACULDBG_ << CHAOS_FORMAT("Dataset restored from tag %1% -> %2%: %3%", % restore_snapshot_tag % datasetTypeToHuman(idx) % dataset_at_tag->getJSONString());
       }
     }
-    *attribute_value_shared_cache->getAttributeValue(DOMAIN_SYSTEM, ControlUnitDatapackSystemKey::SETPOINT_STATE)->getValuePtr<int32_t>() = ControlUnitNodeDefinitionType::SetpointRestoreRunning;  //running
+    *attribute_value_shared_cache->getAttributeValue(DOMAIN_SYSTEM, ControlUnitDatapackSystemKey::SETPOINT_STATE)->getValuePtr<int32_t>() = ControlUnitNodeDefinitionType::SetpointRestoreRunning;  // running
     attribute_value_shared_cache->getSharedDomain(DOMAIN_SYSTEM).markAllAsChanged();
     pushSystemDataset();
 
     try {
-      //unitRestoreToSnapshot
+      // unitRestoreToSnapshot
       if (unitRestoreToSnapshot(restore_cache.get())) {
         metadataLogging(chaos::common::metadata_logging::StandardLoggingChannel::LogLevelInfo,
                         CHAOS_FORMAT("Restore for %1% has been run successfully", % restore_snapshot_tag));
-        *attribute_value_shared_cache->getAttributeValue(DOMAIN_SYSTEM, ControlUnitDatapackSystemKey::SETPOINT_STATE)->getValuePtr<int32_t>() = ControlUnitNodeDefinitionType::SetpointRestoreReached;  //end
+        *attribute_value_shared_cache->getAttributeValue(DOMAIN_SYSTEM, ControlUnitDatapackSystemKey::SETPOINT_STATE)->getValuePtr<int32_t>() = ControlUnitNodeDefinitionType::SetpointRestoreReached;  // end
         attribute_value_shared_cache->getSharedDomain(DOMAIN_SYSTEM).markAllAsChanged();
         pushSystemDataset();
 
@@ -1924,21 +1911,21 @@ CDWUniquePtr AbstractControlUnit::_unitRestoreToSnapshot(CDWUniquePtr restorePar
         metadataLogging(chaos::common::metadata_logging::StandardLoggingChannel::LogLevelError,
                         CHAOS_FORMAT("Restore for %1% has been faulted", % restore_snapshot_tag));
 
-        *attribute_value_shared_cache->getAttributeValue(DOMAIN_SYSTEM, ControlUnitDatapackSystemKey::SETPOINT_STATE)->getValuePtr<int32_t>() = ControlUnitNodeDefinitionType::SetpointErrorOnStart;  //error
+        *attribute_value_shared_cache->getAttributeValue(DOMAIN_SYSTEM, ControlUnitDatapackSystemKey::SETPOINT_STATE)->getValuePtr<int32_t>() = ControlUnitNodeDefinitionType::SetpointErrorOnStart;  // error
         attribute_value_shared_cache->getSharedDomain(DOMAIN_SYSTEM).markAllAsChanged();
         pushSystemDataset();
-        //input dataset need to be update
+        // input dataset need to be update
         AttributeCache& ac_src = restore_cache->getSharedDomain(DOMAIN_INPUT);
         AttributeCache& ac_dst = attribute_value_shared_cache->getSharedDomain(DOMAIN_INPUT);
         ac_src.copyToAttributeCache(ac_dst);
       }
     } catch (MetadataLoggingCException& ex) {
-      *attribute_value_shared_cache->getAttributeValue(DOMAIN_SYSTEM, ControlUnitDatapackSystemKey::SETPOINT_STATE)->getValuePtr<int32_t>() = ControlUnitNodeDefinitionType::SetpointErrorOnRunning;  //error
+      *attribute_value_shared_cache->getAttributeValue(DOMAIN_SYSTEM, ControlUnitDatapackSystemKey::SETPOINT_STATE)->getValuePtr<int32_t>() = ControlUnitNodeDefinitionType::SetpointErrorOnRunning;  // error
       attribute_value_shared_cache->getSharedDomain(DOMAIN_SYSTEM).markAllAsChanged();
       pushSystemDataset();
       throw;
     } catch (CException& ex) {
-      *attribute_value_shared_cache->getAttributeValue(DOMAIN_SYSTEM, ControlUnitDatapackSystemKey::SETPOINT_STATE)->getValuePtr<int32_t>() = ControlUnitNodeDefinitionType::SetpointErrorException;  //error
+      *attribute_value_shared_cache->getAttributeValue(DOMAIN_SYSTEM, ControlUnitDatapackSystemKey::SETPOINT_STATE)->getValuePtr<int32_t>() = ControlUnitNodeDefinitionType::SetpointErrorException;  // error
       attribute_value_shared_cache->getSharedDomain(DOMAIN_SYSTEM).markAllAsChanged();
       pushSystemDataset();
       MetadataLoggingCException loggable_exception(getCUID(),
@@ -1949,7 +1936,7 @@ CDWUniquePtr AbstractControlUnit::_unitRestoreToSnapshot(CDWUniquePtr restorePar
       DECODE_CHAOS_EXCEPTION(loggable_exception);
     }
 
-    //end
+    // end
     try {
       restore_cache->deinit();
     } catch (MetadataLoggingCException& ex) {
@@ -1984,8 +1971,8 @@ CDWUniquePtr AbstractControlUnit::_setDatasetAttribute(CDWUniquePtr dataset_attr
     if (SWEService::getServiceState() == CUStateKey::DEINIT) {
       throw MetadataLoggingCException(getCUID(), -3, "The Control Unit is in deinit state", __PRETTY_FUNCTION__);
     }
-    ACULDBG_<<"Setdataset:"<<dataset_attribute_values->getJSONString();
-    //send dataset attribute change pack to control unit implementation
+    ACULDBG_ << "Setdataset:" << dataset_attribute_values->getJSONString();
+    // send dataset attribute change pack to control unit implementation
     result = setDatasetAttribute(MOVE(dataset_attribute_values));
   } catch (CException& ex) {
     throw;
@@ -1995,7 +1982,7 @@ CDWUniquePtr AbstractControlUnit::_setDatasetAttribute(CDWUniquePtr dataset_attr
 #pragma mark State Machine method
 // Startable Service method
 void AbstractControlUnit::init(void* init_data) {
-  //allocate metadata loggin channel for alarm
+  // allocate metadata loggin channel for alarm
   alarm_logging_channel = (AlarmLoggingChannel*)MetadataLoggingManager::getInstance()->getChannel("AlarmLoggingChannel");
   if (alarm_logging_channel == NULL) {
     LOG_AND_TROW(ACULERR_, -1, "Alarm logging channel not found");
@@ -2006,22 +1993,21 @@ void AbstractControlUnit::init(void* init_data) {
     LOG_AND_TROW(ACULERR_, -2, "Standard logging channel not found");
   }
   standard_logging_channel->setLogLevel(common::metadata_logging::StandardLoggingChannel::LogLevelInfo);
-  //the init of the implementation unit goes after the infrastructure one
+  // the init of the implementation unit goes after the infrastructure one
   doInitSMCheckList();
 }
 
 // Startable Service method
 void AbstractControlUnit::start() {
-  setStateVariableSeverity(StateVariableTypeAlarmDEV,chaos::common::alarm::MultiSeverityAlarmLevelClear);
-  setStateVariableSeverity(StateVariableTypeAlarmCU,chaos::common::alarm::MultiSeverityAlarmLevelClear);
+  setStateVariableSeverity(StateVariableTypeAlarmDEV, chaos::common::alarm::MultiSeverityAlarmLevelClear);
+  setStateVariableSeverity(StateVariableTypeAlarmCU, chaos::common::alarm::MultiSeverityAlarmLevelClear);
   doStartSMCheckList();
 }
 
 // Startable Service method
 void AbstractControlUnit::stop() {
-
-  setStateVariableSeverity(StateVariableTypeAlarmDEV,chaos::common::alarm::MultiSeverityAlarmLevelClear);
-  setStateVariableSeverity(StateVariableTypeAlarmCU,chaos::common::alarm::MultiSeverityAlarmLevelClear);
+  setStateVariableSeverity(StateVariableTypeAlarmDEV, chaos::common::alarm::MultiSeverityAlarmLevelClear);
+  setStateVariableSeverity(StateVariableTypeAlarmCU, chaos::common::alarm::MultiSeverityAlarmLevelClear);
   redoStartSMCheckList();
 }
 
@@ -2043,7 +2029,7 @@ void AbstractControlUnit::deinit() {
 void AbstractControlUnit::recoverableErrorFromState(int last_state, chaos::CException& ex) {
   ACULERR_ << "recoverableErrorFromState with state:" << last_state;
 
-  //update healt tstatus to report recoverable error
+  // update healt tstatus to report recoverable error
   HealtManager::getInstance()->addNodeMetricValue(control_unit_id,
                                                   NodeHealtDefinitionKey::NODE_HEALT_STATUS,
                                                   NodeHealtDefinitionValue::NODE_HEALT_STATUS_RERROR,
@@ -2060,7 +2046,7 @@ void AbstractControlUnit::recoverableErrorFromState(int last_state, chaos::CExce
                                                   NodeHealtDefinitionKey::NODE_HEALT_LAST_ERROR_DOMAIN,
                                                   ex.errorDomain,
                                                   true);
-  //we stop the run action
+  // we stop the run action
   CHAOS_NOT_THROW(stop();)
 }
 
@@ -2098,7 +2084,7 @@ bool AbstractControlUnit::beforeRecoverErrorFromState(int last_state) {
                                                   NodeHealtDefinitionKey::NODE_HEALT_LAST_ERROR_DOMAIN,
                                                   "",
                                                   true);
-  //restart the cotnrol unit
+  // restart the cotnrol unit
   CHAOS_NOT_THROW(start();)
   return true;
 }
@@ -2130,8 +2116,8 @@ void AbstractControlUnit::fatalErrorFromState(int last_state, chaos::CException&
                                                   true);
   switch (last_state) {
     case CUStateKey::INIT:
-      //deinit
-      //CHAOS_NOT_THROW(redoInitSMCheckList(false);)
+      // deinit
+      // CHAOS_NOT_THROW(redoInitSMCheckList(false);)
       deinit();
       CHAOS_NOT_THROW(redoInitRpCheckList(false);)
       break;
@@ -2139,18 +2125,18 @@ void AbstractControlUnit::fatalErrorFromState(int last_state, chaos::CException&
 
       break;
     case CUStateKey::START:
-      //stop
-      //CHAOS_NOT_THROW(redoStartSMCheckList(false);)
+      // stop
+      // CHAOS_NOT_THROW(redoStartSMCheckList(false);)
       stop();
       CHAOS_NOT_THROW(redoStartRpCheckList(false);)
-      //deinit
-      //CHAOS_NOT_THROW(redoInitSMCheckList(false);)
+      // deinit
+      // CHAOS_NOT_THROW(redoInitSMCheckList(false);)
       /*            deinit();
                 CHAOS_NOT_THROW(redoInitRpCheckList(false);)*/
       break;
     case CUStateKey::STOP:
       break;
-  }  //update healt tstatus to report recoverable error
+  }  // update healt tstatus to report recoverable error
   HealtManager::getInstance()->addNodeMetricValue(control_unit_id,
                                                   NodeHealtDefinitionKey::NODE_HEALT_STATUS,
                                                   NodeHealtDefinitionValue::NODE_HEALT_STATUS_FERROR,
@@ -2250,7 +2236,7 @@ int AbstractControlUnit::checkFn(double sval, double rval, const chaos::common::
   //  checkLimFn(rval,i);
 
   double res = fabs(sval - rval);
- // ACULAPP_ << i.name << " CHECK :" << rval << " setpoint :" << sval << " threshold:" << atof(i.errorThreshold.c_str()) << " res:" << res;
+  // ACULAPP_ << i.name << " CHECK :" << rval << " setpoint :" << sval << " threshold:" << atof(i.errorThreshold.c_str()) << " res:" << res;
 
   if (i.errorThreshold.size()) {
     if (i.errorThreshold.c_str() == "0") {
@@ -2285,7 +2271,7 @@ int AbstractControlUnit::checkFn(double sval, double rval, const chaos::common::
       return err;
     }
   }
-  //ACULAPP_ << i.name << " CLEAR CHECK :" << rval << " setpoint :" << sval << " threshold:" << atof(i.errorThreshold.c_str()) << " res:" << res;
+  // ACULAPP_ << i.name << " CLEAR CHECK :" << rval << " setpoint :" << sval << " threshold:" << atof(i.errorThreshold.c_str()) << " res:" << res;
 
   setStateVariableSeverity(StateVariableTypeAlarmCU, alrm, chaos::common::alarm::MultiSeverityAlarmLevelClear);
 
@@ -2297,14 +2283,14 @@ int AbstractControlUnit::checkAlarms() {
 
 int AbstractControlUnit::checkStdAlarms() {
   checkmap_t::iterator i;
-  int                                     alarms = 0;
-  //ACULDBG_ << "CHECK TO PERFORM :"<<ioTocheck.size();
+  int                  alarms = 0;
+  // ACULDBG_ << "CHECK TO PERFORM :"<<ioTocheck.size();
   for (i = ioTocheck.begin(); i != ioTocheck.end(); i++) {
     int level = 0;
-    //std::string alrm  = i->range.name + "_out_of_set";
-    //   setStateVariableSeverity(StateVariableTypeAlarmCU, alrm, (common::alarm::MultiSeverityAlarmLevel)2);
-    // ACULDBG_ << "NAME :"<<i->range.name<<" INPUT VAL:"<<i->input<<" OUTPUT VAL:"<<i->output;
-    // ACULDBG_ << "INAME :"<<i->input->name<<" ONAME :"<<i->output->name;
+    // std::string alrm  = i->range.name + "_out_of_set";
+    //    setStateVariableSeverity(StateVariableTypeAlarmCU, alrm, (common::alarm::MultiSeverityAlarmLevel)2);
+    //  ACULDBG_ << "NAME :"<<i->range.name<<" INPUT VAL:"<<i->input<<" OUTPUT VAL:"<<i->output;
+    //  ACULDBG_ << "INAME :"<<i->input->name<<" ONAME :"<<i->output->name;
     double          res;
     AttributeValue* inp = cache_input_attribute_vector[i->second.i_idx];
     AttributeValue* out = cache_output_attribute_vector[i->second.o_idx];
@@ -2312,18 +2298,18 @@ int AbstractControlUnit::checkStdAlarms() {
       CDataWrapper t;
       fillCDatawrapperWithCachedValue(cache_input_attribute_vector,t);
     }*/
-   //   ACULDBG_ << i->first << " |SETPOINT-READOUT|CHECKING..." << " threshold:" << atof(i->second.range.warningThreshold.c_str());
+    //   ACULDBG_ << i->first << " |SETPOINT-READOUT|CHECKING..." << " threshold:" << atof(i->second.range.warningThreshold.c_str());
 
     if (inp == NULL || out == NULL) {
       continue;
     }
     switch (inp->type) {
       case DataType::TYPE_BOOLEAN: {
-        int32_t sval    = (int32_t)*(inp->getValuePtr<bool>());
-        int32_t rval = (int32_t)*(out->getValuePtr<bool>());
-       //   ACULDBG_ << i->first << " |SETPOINT-READOUT|CHECK readout:" << rval << " setpoint:" << sval << " threshold:" << atof(i->second.range.warningThreshold.c_str());
+        int32_t sval = (int32_t) * (inp->getValuePtr<bool>());
+        int32_t rval = (int32_t) * (out->getValuePtr<bool>());
+        //   ACULDBG_ << i->first << " |SETPOINT-READOUT|CHECK readout:" << rval << " setpoint:" << sval << " threshold:" << atof(i->second.range.warningThreshold.c_str());
 
-        level        = checkFn(sval, rval, i->second.range);
+        level = checkFn(sval, rval, i->second.range);
 
         break;
       }
@@ -2369,7 +2355,7 @@ int AbstractControlUnit::checkStdAlarms() {
   for (i = limitTocheck.begin(); i != limitTocheck.end(); i++) {
     int    level = 0;
     double res;
-    
+
     AttributeValue* val = NULL;
     int             dir = -1;
     if (i->second.i_idx >= 0) {
@@ -2401,7 +2387,7 @@ int AbstractControlUnit::checkStdAlarms() {
         }
         case DataType::TYPE_FLOAT: {
           float sval = *(val->getValuePtr<float>());
-          level       = checkLimFn(sval, i->second.range, dir);
+          level      = checkLimFn(sval, i->second.range, dir);
 
           break;
         }
@@ -2417,7 +2403,7 @@ int AbstractControlUnit::checkStdAlarms() {
 
 void AbstractControlUnit::initAttributeOnSharedAttributeCache(SharedCacheDomain         domain,
                                                               std::vector<std::string>& attribute_names) {
-  //add input attribute to shared setting
+  // add input attribute to shared setting
   CHAOS_ASSERT(attribute_value_shared_cache)
   RangeValueInfo  attributeInfo;
   AttributeCache& attribute_setting = attribute_value_shared_cache->getSharedDomain(domain);
@@ -2434,7 +2420,7 @@ void AbstractControlUnit::initAttributeOnSharedAttributeCache(SharedCacheDomain 
 
     if (!attributeInfo.defaultValue.size()) continue;
 
-    //setting value using index (the index into the sharedAttributeSetting are sequencial to the inserted order)
+    // setting value using index (the index into the sharedAttributeSetting are sequencial to the inserted order)
     try {
       switch (attributeInfo.valueType) {
         case DataType::TYPE_BOOLEAN: {
@@ -2456,13 +2442,13 @@ void AbstractControlUnit::initAttributeOnSharedAttributeCache(SharedCacheDomain 
           break;
         }
         case DataType::TYPE_INT32: {
-          int32_t val = strtoul(attributeInfo.defaultValue.c_str(), 0, 0);  //boost::lexical_cast<int32_t>(attributeInfo.defaultValue);
+          int32_t val = strtoul(attributeInfo.defaultValue.c_str(), 0, 0);  // boost::lexical_cast<int32_t>(attributeInfo.defaultValue);
           attribute_setting.setValueForAttribute(idx, &val, sizeof(int32_t));
           ACULDBG_ << domain << " Init TYPE_INT32 attribute:'" << attribute_names[idx] << "' to:" << val << " 0x" << std::hex << val << std::dec;
           break;
         }
         case DataType::TYPE_INT64: {
-          int64_t val = strtoll(attributeInfo.defaultValue.c_str(), 0, 0);  //boost::lexical_cast<int64_t>(attributeInfo.defaultValue);
+          int64_t val = strtoll(attributeInfo.defaultValue.c_str(), 0, 0);  // boost::lexical_cast<int64_t>(attributeInfo.defaultValue);
           attribute_setting.setValueForAttribute(idx, &val, sizeof(int64_t));
           ACULDBG_ << domain << " Init TYPE_INT64 attribute:'" << attribute_names[idx] << "' to:" << val << " 0x" << std::hex << val << std::dec;
           break;
@@ -2499,10 +2485,10 @@ void AbstractControlUnit::completeOutputAttribute() {
   ACULDBG_ << "Complete the shared cache output attribute";
   AttributeCache& domain_attribute_setting = attribute_value_shared_cache->getSharedDomain(DOMAIN_OUTPUT);
 
-  //add timestamp
+  // add timestamp
   domain_attribute_setting.addAttribute(DataPackCommonKey::DPCK_TIMESTAMP, sizeof(uint64_t), DataType::TYPE_INT64);
   timestamp_acq_cached_value = domain_attribute_setting.getValueSettingForIndex(domain_attribute_setting.getIndexForName(DataPackCommonKey::DPCK_TIMESTAMP));
-  if(use_custom_high_resolution_timestamp){
+  if (use_custom_high_resolution_timestamp) {
     domain_attribute_setting.addAttribute(DataPackCommonKey::DPCK_HIGH_RESOLUTION_TIMESTAMP, sizeof(uint64_t), DataType::TYPE_INT64);
     timestamp_hw_acq_cached_value = domain_attribute_setting.getValueSettingForIndex(domain_attribute_setting.getIndexForName(DataPackCommonKey::DPCK_HIGH_RESOLUTION_TIMESTAMP));
   }
@@ -2514,7 +2500,7 @@ void AbstractControlUnit::completeInputAttribute() {
 AbstractSharedDomainCache* AbstractControlUnit::_getAttributeCache() {
   return attribute_value_shared_cache;
 }
-int AbstractControlUnit::incomingMessage(const std::string& key,  chaos::common::data::CDWUniquePtr& data) {
+int AbstractControlUnit::incomingMessage(const std::string& key, chaos::common::data::CDWUniquePtr& data) {
   ACULDBG_ << "message from :" << key << " data:" << (data.get() ? data->getJSONString() : "NONE");
   return 0;
 }
@@ -2522,56 +2508,55 @@ int AbstractControlUnit::incomingMessage(const std::string& key,  chaos::common:
 void AbstractControlUnit::initSystemAttributeOnSharedAttributeCache() {
   AttributeCache& domain_attribute_setting = attribute_value_shared_cache->getSharedDomain(DOMAIN_SYSTEM);
 
-  //add schedule time
+  // add schedule time
   ACULDBG_ << "Adding system attribute on shared cache";
   domain_attribute_setting.addAttribute(ControlUnitDatapackSystemKey::THREAD_SCHEDULE_DELAY, 0, DataType::TYPE_INT64);
   thread_schedule_daly_cached_value = domain_attribute_setting.getValueSettingForIndex(domain_attribute_setting.getIndexForName(ControlUnitDatapackSystemKey::THREAD_SCHEDULE_DELAY));
 
-  //add busy state
+  // add busy state
   domain_attribute_setting.addAttribute("busy", 0, DataType::TYPE_BOOLEAN);
-  busy=false;
-  
+  busy = false;
 
-  //add bypass state
+  // add bypass state
   domain_attribute_setting.addAttribute(ControlUnitDatapackSystemKey::BYPASS_STATE, 0, DataType::TYPE_BOOLEAN);
 
-  //add AlarmCU state
+  // add AlarmCU state
   domain_attribute_setting.addAttribute(chaos::ControlUnitDatapackSystemKey::CU_ALRM_LEVEL, 0, DataType::TYPE_INT32);
 
-  //add AlarmDev state
+  // add AlarmDev state
   domain_attribute_setting.addAttribute(chaos::ControlUnitDatapackSystemKey::DEV_ALRM_LEVEL, 0, DataType::TYPE_INT32);
 
-  //add burst operation state
+  // add burst operation state
   domain_attribute_setting.addAttribute(ControlUnitDatapackSystemKey::BURST_STATE, 0, DataType::TYPE_BOOLEAN);
 
-  //add burst operation state
+  // add burst operation state
   domain_attribute_setting.addAttribute(ControlUnitDatapackSystemKey::BURST_CNT_DOWN, 0, DataType::TYPE_INT32);
 
-  //add burst operation tag
+  // add burst operation tag
   domain_attribute_setting.addAttribute(ControlUnitDatapackSystemKey::BURST_TAG, 0, DataType::TYPE_STRING);
 
-  //add setpoint operation state
+  // add setpoint operation state
   domain_attribute_setting.addAttribute(ControlUnitDatapackSystemKey::SETPOINT_STATE, 0, DataType::TYPE_INT32);
 
-  //add setpoint operation tag
+  // add setpoint operation tag
   domain_attribute_setting.addAttribute(ControlUnitDatapackSystemKey::SETPOINT_TAG, 0, DataType::TYPE_STRING);
 
-  //add storage type
+  // add storage type
   domain_attribute_setting.addAttribute(DataServiceNodeDefinitionKey::DS_STORAGE_TYPE, 0, DataType::TYPE_INT32);
 
-  //add live time
+  // add live time
   domain_attribute_setting.addAttribute(DataServiceNodeDefinitionKey::DS_STORAGE_LIVE_TIME, 0, DataType::TYPE_INT64);
 
-  //add history time
+  // add history time
   domain_attribute_setting.addAttribute(DataServiceNodeDefinitionKey::DS_STORAGE_HISTORY_TIME, 0, DataType::TYPE_INT64);
   domain_attribute_setting.addAttribute(DataServiceNodeDefinitionKey::DS_STORAGE_LOG_TIME, 0, DataType::TYPE_INT64);
 
-  //add update anyway
+  // add update anyway
   domain_attribute_setting.addAttribute(DataServiceNodeDefinitionKey::DS_UPDATE_ANYWAY, DS_UPDATE_ANYWAY_DEF, DataType::TYPE_INT32);
 
   domain_attribute_setting.addAttribute(ControlUnitDatapackSystemKey::CU_LOG_MAX_MS, CONTROL_UNIT_LOG_MAX_MS_DEF, DataType::TYPE_INT32);
 
-  //command status
+  // command status
   domain_attribute_setting.addAttribute(DataPackSystemKey::DP_SYS_QUEUED_CMD, 0, DataType::TYPE_INT32);
   domain_attribute_setting.addAttribute(DataPackSystemKey::DP_SYS_STACK_CMD, 0, DataType::TYPE_INT32);
   domain_attribute_setting.addAttribute(ControlUnitDatapackSystemKey::RUNNING_COMMAND_ALIAS, 0, DataType::TYPE_STRING);
@@ -2587,7 +2572,7 @@ void AbstractControlUnit::initSystemAttributeOnSharedAttributeCache() {
   str_ptr = domain_attribute_setting.getValueSettingForIndex(domain_attribute_setting.getIndexForName(chaos::ControlUnitDatapackSystemKey::CU_CLASS_TYPE))->getValuePtr<char>();
   strncpy(str_ptr, hn.c_str(), hn.size());
 
-  //add unit type
+  // add unit type
   domain_attribute_setting.addAttribute(DataPackSystemKey::DP_SYS_UNIT_TYPE, (uint32_t)control_unit_type.size(), DataType::TYPE_STRING);
   str_ptr = domain_attribute_setting.getValueSettingForIndex(domain_attribute_setting.getIndexForName(DataPackSystemKey::DP_SYS_UNIT_TYPE))->getValuePtr<char>();
   strncpy(str_ptr, control_unit_type.c_str(), control_unit_type.size());
@@ -2683,7 +2668,7 @@ CDWUniquePtr AbstractControlUnit::_datasetTagManagement(CDWUniquePtr data) {
      */
 CDWUniquePtr AbstractControlUnit::_getInfo(CDWUniquePtr getStatedParam) {
   CreateNewDataWrapper(stateResult, );
-  //set the string representing the type of the control unit
+  // set the string representing the type of the control unit
   stateResult->addStringValue(NodeDefinitionKey::NODE_TYPE, NodeType::NODE_TYPE_CONTROL_UNIT);
   stateResult->addStringValue(NodeDefinitionKey::NODE_SUB_TYPE, control_unit_type);
   return stateResult;
@@ -2701,40 +2686,38 @@ void AbstractControlUnit::useCustomHigResolutionTimestamp(bool _use_custom_high_
 }
 
 void AbstractControlUnit::setHigResolutionAcquistionTimestamp(uint64_t high_resolution_timestamp) {
-    if (timestamp_hw_acq_cached_value) {
-
-      *timestamp_hw_acq_cached_value->getValuePtr<uint64_t>() = high_resolution_timestamp;
-    }
-  
-}
-  void AbstractControlUnit::setOutputTimestamp(uint64_t timestamp){
-    *timestamp_acq_cached_value->getValuePtr<uint64_t>()=timestamp;
+  if (timestamp_hw_acq_cached_value) {
+    *timestamp_hw_acq_cached_value->getValuePtr<uint64_t>() = high_resolution_timestamp;
   }
+}
+void AbstractControlUnit::setOutputTimestamp(uint64_t timestamp) {
+  *timestamp_acq_cached_value->getValuePtr<uint64_t>() = timestamp;
+}
 
 void AbstractControlUnit::_updateRunScheduleDelay(uint64_t new_scehdule_delay) {
   if (*thread_schedule_daly_cached_value->getValuePtr<uint64_t>() == new_scehdule_delay) return;
-  //we need to update the value
+  // we need to update the value
   *thread_schedule_daly_cached_value->getValuePtr<uint64_t>() = new_scehdule_delay;
   thread_schedule_daly_cached_value->markAsChanged();
 }
 
-//!timer for update push metric
+//! timer for update push metric
 void AbstractControlUnit::_updatePushRateMetric() {
   uint64_t rate_acq_ts      = TimingUtil::getTimeStamp();
-  double   time_offset      = (double(rate_acq_ts - last_push_rate_grap_ts)) / 1000.0;                    //time in seconds
-  double   output_ds_rate   = (time_offset > 0) ? push_dataset_counter / time_offset : 0;                 //rate in seconds
-  int32_t  output_size_rate = (push_dataset_counter > 0) ? push_dataset_size / push_dataset_counter : 0;  //rate in seconds
+  double   time_offset      = (double(rate_acq_ts - last_push_rate_grap_ts)) / 1000.0;                    // time in seconds
+  double   output_ds_rate   = (time_offset > 0) ? push_dataset_counter / time_offset : 0;                 // rate in seconds
+  int32_t  output_size_rate = (push_dataset_counter > 0) ? push_dataset_size / push_dataset_counter : 0;  // rate in seconds
   HealtManager::getInstance()->addNodeMetricValue(control_unit_id,
                                                   ControlUnitHealtDefinitionValue::CU_HEALT_OUTPUT_DATASET_PUSH_RATE,
                                                   output_ds_rate);
 
   HealtManager::getInstance()->addNodeMetricValue(control_unit_id,
                                                   ControlUnitHealtDefinitionValue::CU_HEALT_OUTPUT_ALARM_LEVEL,
-                                                  std::max((map_variable_catalog.count(StateVariableTypeAlarmCU)?map_variable_catalog[StateVariableTypeAlarmCU].maxLevel():0), (map_variable_catalog.count(StateVariableTypeAlarmDEV)?map_variable_catalog[StateVariableTypeAlarmDEV].maxLevel():0)));
+                                                  std::max((map_variable_catalog.count(StateVariableTypeAlarmCU) ? map_variable_catalog[StateVariableTypeAlarmCU].maxLevel() : 0), (map_variable_catalog.count(StateVariableTypeAlarmDEV) ? map_variable_catalog[StateVariableTypeAlarmDEV].maxLevel() : 0)));
 
   HealtManager::getInstance()->addNodeMetricValue(control_unit_id,
                                                   ControlUnitHealtDefinitionValue::CU_HEALT_OUTPUT_ALARM_MASKED,
-                                                  (map_variable_catalog.count(StateVariableTypeAlarmCU)?map_variable_catalog[StateVariableTypeAlarmCU].countMask():0)+ (map_variable_catalog.count(StateVariableTypeAlarmDEV)?map_variable_catalog[StateVariableTypeAlarmDEV].countMask():0));
+                                                  (map_variable_catalog.count(StateVariableTypeAlarmCU) ? map_variable_catalog[StateVariableTypeAlarmCU].countMask() : 0) + (map_variable_catalog.count(StateVariableTypeAlarmDEV) ? map_variable_catalog[StateVariableTypeAlarmDEV].countMask() : 0));
 
   HealtManager::getInstance()->addNodeMetricValue(control_unit_id,
                                                   ControlUnitHealtDefinitionValue::CU_HEALT_OUTPUT_DATASET_TSOFF,
@@ -2758,24 +2741,24 @@ void AbstractControlUnit::_updatePushRateMetric() {
   setStateVariableSeverity(StateVariableTypeAlarmCU, "packet_lost", chaos::common::alarm::MultiSeverityAlarmLevelClear);
   setStateVariableSeverity(StateVariableTypeAlarmCU, "packet_send_error", chaos::common::alarm::MultiSeverityAlarmLevelClear);
 
-  //keep track of acquire timestamp
+  // keep track of acquire timestamp
   last_push_rate_grap_ts = rate_acq_ts;
-  //reset pushe count
+  // reset pushe count
   push_dataset_counter = 0;
   push_dataset_size    = 0;
 }
 
-//!put abstract control unit state machine in recoverable error
+//! put abstract control unit state machine in recoverable error
 void AbstractControlUnit::_goInRecoverableError(chaos::CException recoverable_exception) {
-  //change state machine
+  // change state machine
   if (SWEService::goInRecoverableError(this, recoverable_exception, "AbstractControlUnit", __PRETTY_FUNCTION__)) {
-    //update healt the status to report recoverable error
+    // update healt the status to report recoverable error
   }
 }
 
-//!put abstract control unit state machine in fatal error
+//! put abstract control unit state machine in fatal error
 void AbstractControlUnit::_goInFatalError(chaos::CException recoverable_exception) {
-  //change state machine
+  // change state machine
   if (SWEService::goInFatalError(this, recoverable_exception, "AbstractControlUnit", __PRETTY_FUNCTION__)) {
     fatalErrorHandler(recoverable_exception);
   }
@@ -2795,7 +2778,7 @@ void AbstractControlUnit::fatalErrorHandler(const chaos::CException& ex) {
 void AbstractControlUnit::_completeDatasetAttribute() {
   // alarms
 
-  //add global alarm checn
+  // add global alarm checn
   /*
          DatasetDB::addAttributeToDataSet(stateVariableEnumToName(StateVariableTypeAlarmCU),
          "Activated when some warning has been issued",
@@ -2812,24 +2795,24 @@ void AbstractControlUnit::_setBypassState(bool bypass_stage,
                                           bool high_priority) {
   DrvMsg cmd;
   cmd.opcode = bypass_stage ? OpcodeType::OP_SET_BYPASS : OpcodeType::OP_CLEAR_BYPASS;
-  //broadcast bypass to all driver instances allocated by control unit
+  // broadcast bypass to all driver instances allocated by control unit
   for (VInstantitedDriverIterator it  = accessor_instances.begin(),
                                   end = accessor_instances.end();
        it != end;
        it++) {
-   // (*it)->send(&cmd, chaos::common::constants::CUTimersTimeoutinMSec);
-  (*it)->setBypass(bypass_stage);
+    // (*it)->send(&cmd, chaos::common::constants::CUTimersTimeoutinMSec);
+    (*it)->setBypass(bypass_stage);
   }
-   ACULDBG_ << "BYPASS COMMAND:"<<bypass_stage;
+  ACULDBG_ << "BYPASS COMMAND:" << bypass_stage;
   setBypassFlag(bypass_stage);
 
-  //update dateset
+  // update dateset
 }
-//!handler calledfor restor a control unit to a determinate point
+//! handler calledfor restor a control unit to a determinate point
 bool AbstractControlUnit::unitRestoreToSnapshot(AbstractSharedDomainCache* const snapshot_cache) {
   return true;
 }
-void AbstractControlUnit::setState(const std::string& state,bool update){
+void AbstractControlUnit::setState(const std::string& state, bool update) {
   HealtManager::getInstance()->addNodeMetricValue(control_unit_id,
                                                   NodeHealtDefinitionKey::NODE_HEALT_STATUS,
                                                   state,
@@ -2926,63 +2909,63 @@ CDWUniquePtr AbstractControlUnit::setDatasetAttribute(CDWUniquePtr dataset_attri
   std::vector<std::string> in_attribute_name;
 
   try {
-    //call pre handler
+    // call pre handler
     if (unitInputAttributePreChangeHandler(dataset_attribute_values)) {
-      //first call attribute handler
+      // first call attribute handler
       dataset_attribute_manager.executeHandlers(dataset_attribute_values.get());
     }
 
-    //get all input attribute name for input and bidirectional directions
+    // get all input attribute name for input and bidirectional directions
     getDatasetAttributesName(DataType::Input, in_attribute_name);
     getDatasetAttributesName(DataType::Bidirectional, in_attribute_name);
     attribute_value_shared_cache->getAttributeNames(DOMAIN_CUSTOM, in_attribute_name);
     if (dataset_attribute_values->hasKey(NodeDefinitionKey::NODE_UNIQUE_ID)) {
-      //get the contrl unit id
+      // get the contrl unit id
       std::string node_id = dataset_attribute_values->getStringValue(NodeDefinitionKey::NODE_UNIQUE_ID);
-      //compare the message device id and the local
+      // compare the message device id and the local
       for (std::vector<std::string>::iterator iter = in_attribute_name.begin();
            iter != in_attribute_name.end();
            iter++) {
-        //execute attribute handler
+        // execute attribute handler
         const char* attr_name = iter->c_str();
 
-        //check if the attribute name is present
+        // check if the attribute name is present
         if (dataset_attribute_values->hasKey(attr_name)) {
-          //check if attribute has been accepted
+          // check if attribute has been accepted
           if (dataset_attribute_manager.getHandlerResult(*iter) == false) continue;
 
           AttributeValue* attribute_cache_value = attribute_value_shared_cache->getAttributeValue(DOMAIN_INPUT, attr_name);
 
-          //get attribute info
+          // get attribute info
           getAttributeRangeValueInfo(*iter, attributeInfo);
 
-          //call handler
+          // call handler
           switch (attribute_cache_value->type) {
             case DataType::TYPE_BOOLEAN: {
-              bool bv = dataset_attribute_values->getValue<bool>(attr_name);  //dataset_attribute_values->getBoolValue(attr_name);
+              bool bv = dataset_attribute_values->getValue<bool>(attr_name);  // dataset_attribute_values->getBoolValue(attr_name);
               attribute_cache_value->setValue(&bv, sizeof(bool));
               break;
             }
             case DataType::TYPE_INT32: {
-              int32_t i32v = dataset_attribute_values->getValue<int32_t>(attr_name);  //dataset_attribute_values->getInt32Value(attr_name);
+              int32_t i32v = dataset_attribute_values->getValue<int32_t>(attr_name);  // dataset_attribute_values->getInt32Value(attr_name);
               CHECK_FOR_RANGE_VALUE(int32_t, i32v, attr_name)
               attribute_cache_value->setValue(&i32v, sizeof(int32_t));
               break;
             }
             case DataType::TYPE_INT64: {
-              int64_t i64v = dataset_attribute_values->getValue<int64_t>(attr_name);  //dataset_attribute_values->getInt64Value(attr_name);
+              int64_t i64v = dataset_attribute_values->getValue<int64_t>(attr_name);  // dataset_attribute_values->getInt64Value(attr_name);
               CHECK_FOR_RANGE_VALUE(int64_t, i64v, attr_name)
               attribute_cache_value->setValue(&i64v, sizeof(int64_t));
               break;
             }
             case DataType::TYPE_DOUBLE: {
-              double dv = dataset_attribute_values->getValue<double>(attr_name);  //dataset_attribute_values->getDoubleValue(attr_name);
+              double dv = dataset_attribute_values->getValue<double>(attr_name);  // dataset_attribute_values->getDoubleValue(attr_name);
               CHECK_FOR_RANGE_VALUE(double, dv, attr_name)
               attribute_cache_value->setValue(&dv, sizeof(double));
               break;
             }
             case DataType::TYPE_FLOAT: {
-              float dv = dataset_attribute_values->getValue<float>(attr_name);  //dataset_attribute_values->getDoubleValue(attr_name);
+              float dv = dataset_attribute_values->getValue<float>(attr_name);  // dataset_attribute_values->getDoubleValue(attr_name);
               CHECK_FOR_RANGE_VALUE(float, dv, attr_name)
               attribute_cache_value->setValue(&dv, sizeof(float));
               break;
@@ -3005,14 +2988,14 @@ CDWUniquePtr AbstractControlUnit::setDatasetAttribute(CDWUniquePtr dataset_attri
             }
             case DataType::TYPE_STRING: {
               std::string str = dataset_attribute_values->getStringValue(attr_name);
-              //CHECK_FOR_STRING_RANGE_VALUE(str, attr_name)
+              // CHECK_FOR_STRING_RANGE_VALUE(str, attr_name)
               attribute_cache_value->setValue(str.c_str(), (uint32_t)str.size() + 1);
               break;
             }
             case DataType::TYPE_BYTEARRAY: {
               chaos::common::data::CDBufferUniquePtr bin      = dataset_attribute_values->getBinaryValueAsCDataBuffer(attr_name);
               uint32_t                               bin_size = bin->getBufferSize();
-              const char*                            binv     = bin->getBuffer();  //dataset_attribute_values->getBinaryValue(attr_name, bin_size);
+              const char*                            binv     = bin->getBuffer();  // dataset_attribute_values->getBinaryValue(attr_name, bin_size);
               attribute_cache_value->setValue(binv, bin_size);
               break;
             }
@@ -3023,14 +3006,14 @@ CDWUniquePtr AbstractControlUnit::setDatasetAttribute(CDWUniquePtr dataset_attri
       }
       w_lock->unlock();
 
-      //push the input attribute dataset
+      // push the input attribute dataset
       pushInputDataset();
     }
 
-    //inform the subclass for the change
+    // inform the subclass for the change
     unitInputAttributeChangedHandler();
   } catch (CException& ex) {
-    //inform the subclass for the change
+    // inform the subclass for the change
     unitInputAttributeChangedHandler();
     throw;
   }
@@ -3041,7 +3024,7 @@ CDWUniquePtr AbstractControlUnit::setDatasetAttribute(CDWUniquePtr dataset_attri
      Update the configuration for all descendant tree in the Control Unit class structure
      */
 CDWUniquePtr AbstractControlUnit::updateConfiguration(CDWUniquePtr update_pack) {
-  //check to see if the device can ben initialized
+  // check to see if the device can ben initialized
   if (SWEService::getServiceState() != chaos::CUStateKey::INIT &&
       SWEService::getServiceState() != chaos::CUStateKey::START) {
     ACULERR_ << "device:" << DatasetDB::getDeviceID() << " not initialized";
@@ -3054,9 +3037,9 @@ CDWUniquePtr AbstractControlUnit::updateConfiguration(CDWUniquePtr update_pack) 
   ACULDBG_ << "properties " << DatasetDB::getDeviceID() << " :" << pg_sdw.serialize()->getJSONString();
   key_data_storage->updateConfiguration(update_pack.get());
 
-  //update the property
+  // update the property
   PropertyCollector::applyValue(pg_sdw());
-  //mark all cache as changed
+  // mark all cache as changed
   attribute_value_shared_cache->getSharedDomain(DOMAIN_SYSTEM).markAllAsChanged();
 
   pushSystemDataset();
@@ -3075,9 +3058,9 @@ void AbstractControlUnit::propertyUpdatedHandler(const std::string&  group_name,
                                                  const CDataVariant& old_value,
                                                  const CDataVariant& new_value) {
   if (group_name.compare("property_abstract_control_unit") == 0) {
-    //update property on driver
+    // update property on driver
     key_data_storage->updateConfiguration(property_name, new_value);
-    //reflect modification on dataset
+    // reflect modification on dataset
     if (property_name.compare(ControlUnitDatapackSystemKey::BYPASS_STATE) == 0) {
       _setBypassState(new_value.asBool());
     } else if (property_name.compare(DataServiceNodeDefinitionKey::DS_STORAGE_TYPE) == 0) {
@@ -3086,7 +3069,7 @@ void AbstractControlUnit::propertyUpdatedHandler(const std::string&  group_name,
       *attribute_value_shared_cache->getAttributeValue(DOMAIN_SYSTEM, DataServiceNodeDefinitionKey::DS_STORAGE_LIVE_TIME)->getValuePtr<uint64_t>() = new_value.asUInt64();
     } else if (property_name.compare(DataServiceNodeDefinitionKey::DS_STORAGE_HISTORY_TIME) == 0) {
       *attribute_value_shared_cache->getAttributeValue(DOMAIN_SYSTEM, DataServiceNodeDefinitionKey::DS_STORAGE_HISTORY_TIME)->getValuePtr<uint64_t>() = new_value.asUInt64();
-    }  else if (property_name.compare(DataServiceNodeDefinitionKey::DS_STORAGE_LOG_TIME) == 0) {
+    } else if (property_name.compare(DataServiceNodeDefinitionKey::DS_STORAGE_LOG_TIME) == 0) {
       *attribute_value_shared_cache->getAttributeValue(DOMAIN_SYSTEM, DataServiceNodeDefinitionKey::DS_STORAGE_LOG_TIME)->getValuePtr<uint64_t>() = new_value.asUInt64();
     } else if (property_name.compare(DataServiceNodeDefinitionKey::DS_UPDATE_ANYWAY) == 0) {
       *attribute_value_shared_cache->getAttributeValue(DOMAIN_SYSTEM, DataServiceNodeDefinitionKey::DS_UPDATE_ANYWAY)->getValuePtr<int32_t>() = new_value.asInt32();
@@ -3117,18 +3100,18 @@ int AbstractControlUnit::pushOutputDataset() {
   AttributeCache&                       output_attribute_cache = attribute_value_shared_cache->getSharedDomain(DOMAIN_OUTPUT);
   ChaosSharedPtr<SharedCacheLockDomain> r_lock                 = attribute_value_shared_cache->getLockOnDomain(DOMAIN_OUTPUT, false);
   r_lock->lock();
-  uint64_t tscor = *timestamp_acq_cached_value->getValuePtr<uint64_t>();//TimingUtil::getTimeStamp();//TimingUtil::getTimeCorStamp();
+  uint64_t tscor = *timestamp_acq_cached_value->getValuePtr<uint64_t>();  // TimingUtil::getTimeStamp();//TimingUtil::getTimeCorStamp();
   if ((tscor - last_push) < ds_update_anyway) {
-    //check if something as changed
+    // check if something as changed
     if (!output_attribute_cache.hasChanged()) {
-      //ACULDBG_ << " Nothing changed in "<<(tscor - last_push)<<" ms";
+      // ACULDBG_ << " Nothing changed in "<<(tscor - last_push)<<" ms";
 
       return err;
     }
   }
-  if((aligned_ex_done==false)&&(push_dataset_counter==1)){
+  if ((aligned_ex_done == false) && (push_dataset_counter == 1)) {
     dsInitSetFromReadout();
-    aligned_ex_done=true;
+    aligned_ex_done = true;
   }
   last_push                           = tscor;
   CDWShrdPtr output_attribute_dataset = key_data_storage->getNewDataPackForDomain(KeyDataStorageDomainOutput);
@@ -3136,20 +3119,20 @@ int AbstractControlUnit::pushOutputDataset() {
     ACULERR_ << " Cannot allocate packet.. err:" << err;
     return err;
   }
-  if ((busy == false)&&(bypass==false)) {
+  if ((busy == false) && (bypass == false)) {
     checkAlarms();
   } /*else {
     ACULDBG_<<"Check disable because busy:"<<busy<<" bypass:"<<bypass;
   }*/
 
   output_attribute_dataset->addInt64Value(ControlUnitDatapackCommonKey::RUN_ID, run_id);
- // output_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_TIMESTAMP,tscor);
-  //output_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_HIGH_RESOLUTION_TIMESTAMP, *timestamp_hw_acq_cached_value->getValuePtr<uint64_t>());
-  //ACULDBG_<<"TIME DIFF:"<<(tscor-(*timestamp_hw_acq_cached_value->getValuePtr<uint64_t>()/1000));
+  // output_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_TIMESTAMP,tscor);
+  // output_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_HIGH_RESOLUTION_TIMESTAMP, *timestamp_hw_acq_cached_value->getValuePtr<uint64_t>());
+  // ACULDBG_<<"TIME DIFF:"<<(tscor-(*timestamp_hw_acq_cached_value->getValuePtr<uint64_t>()/1000));
 
-  //add all other output channel
+  // add all other output channel
   for (int idx = 0;
-       idx < ((int)cache_output_attribute_vector.size());  //the device id and timestamp in added out of this list
+       idx < ((int)cache_output_attribute_vector.size());  // the device id and timestamp in added out of this list
        idx++) {
     //
     AttributeValue* value_set = cache_output_attribute_vector[idx];
@@ -3159,7 +3142,7 @@ int AbstractControlUnit::pushOutputDataset() {
         output_attribute_dataset->addBoolValue(value_set->name, *value_set->getValuePtr<bool>());
         break;
       case DataType::TYPE_INT32:
-        //ACULDBG_ << value_set->name << " <="<<*value_set->getValuePtr<int32_t>();
+        // ACULDBG_ << value_set->name << " <="<<*value_set->getValuePtr<int32_t>();
 
         output_attribute_dataset->addInt32Value(value_set->name, *value_set->getValuePtr<int32_t>());
         break;
@@ -3172,7 +3155,7 @@ int AbstractControlUnit::pushOutputDataset() {
       case DataType::TYPE_DOUBLE:
         output_attribute_dataset->addDoubleValue(value_set->name, *value_set->getValuePtr<double>());
         break;
-       case DataType::TYPE_FLOAT:
+      case DataType::TYPE_FLOAT:
         output_attribute_dataset->addDoubleValue(value_set->name, *value_set->getValuePtr<float>());
         break;
       case DataType::TYPE_JSON: {
@@ -3184,7 +3167,7 @@ int AbstractControlUnit::pushOutputDataset() {
         break;
       }
       case DataType::TYPE_STRING:
-        //DEBUG_CODE(ACULDBG_ << value_set->name<<"-"<<value_set->getValuePtr<const char>();)
+        // DEBUG_CODE(ACULDBG_ << value_set->name<<"-"<<value_set->getValuePtr<const char>();)
         output_attribute_dataset->addStringValue(value_set->name, value_set->getValuePtr<const char>());
         break;
       case DataType::TYPE_BYTEARRAY:
@@ -3200,9 +3183,9 @@ int AbstractControlUnit::pushOutputDataset() {
         break;
     }
   }
-  //manage the burst information
+  // manage the burst information
   manageBurstQueue();
-  //now we nede to push the outputdataset
+  // now we nede to push the outputdataset
   int psiz = output_attribute_dataset->getBSONRawSize();
   push_dataset_size += psiz;
   push_tot_size += psiz;
@@ -3223,35 +3206,35 @@ int AbstractControlUnit::pushOutputDataset() {
 
     // inform higher levels...
   }
-  //update counter
+  // update counter
   push_dataset_counter++;
 
-  //reset chagned attribute into output dataset
+  // reset chagned attribute into output dataset
   if (!err) {
     output_attribute_cache.resetChangedIndex();
   }
   return err;
 }
 
-//push system dataset
+// push system dataset
 int AbstractControlUnit::pushInputDataset() {
   int             err                   = 0;
   AttributeCache& input_attribute_cache = attribute_value_shared_cache->getSharedDomain(DOMAIN_INPUT);
   if (!input_attribute_cache.hasChanged()) return err;
-  //get the cdatawrapper for the pack
- // int64_t    cur_us                  = TimingUtil::getTimeStampInMicroseconds();
+  // get the cdatawrapper for the pack
+  // int64_t    cur_us                  = TimingUtil::getTimeStampInMicroseconds();
   CDWShrdPtr input_attribute_dataset = key_data_storage->getNewDataPackForDomain(KeyDataStorageDomainInput);
   if (input_attribute_dataset.get()) {
     input_attribute_dataset->addInt64Value(ControlUnitDatapackCommonKey::RUN_ID, run_id);
-    //input dataset timestamp is added only when pushed on cache
-   // input_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_TIMESTAMP, TimingUtil::getTimeCorStamp());
-   input_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_TIMESTAMP, TimingUtil::getTimeStamp());
-   
-   // input_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_HIGH_RESOLUTION_TIMESTAMP, cur_us);
-    //fill the dataset
+    // input dataset timestamp is added only when pushed on cache
+    // input_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_TIMESTAMP, TimingUtil::getTimeCorStamp());
+    input_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_TIMESTAMP, TimingUtil::getTimeStamp());
+
+    // input_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_HIGH_RESOLUTION_TIMESTAMP, cur_us);
+    // fill the dataset
     fillCDatawrapperWithCachedValue(cache_input_attribute_vector, *input_attribute_dataset);
 
-    //push out the system dataset
+    // push out the system dataset
     err = key_data_storage->pushDataSet(data_manager::KeyDataStorageDomainInput, MOVE(input_attribute_dataset));
     if (!err) {
       input_attribute_cache.resetChangedIndex();
@@ -3262,26 +3245,26 @@ int AbstractControlUnit::pushInputDataset() {
   return err;
 }
 
-//push system dataset
+// push system dataset
 int AbstractControlUnit::pushCustomDataset() {
   int             err                    = 0;
   AttributeCache& custom_attribute_cache = attribute_value_shared_cache->getSharedDomain(DOMAIN_CUSTOM);
   if (!custom_attribute_cache.hasChanged()) return err;
-  //get the cdatawrapper for the pack
- // int64_t cur_us = TimingUtil::getTimeStampInMicroseconds();
+  // get the cdatawrapper for the pack
+  // int64_t cur_us = TimingUtil::getTimeStampInMicroseconds();
   if (key_data_storage.get()) {
     CDWShrdPtr custom_attribute_dataset = key_data_storage->getNewDataPackForDomain(KeyDataStorageDomainCustom);
     if (custom_attribute_dataset.get()) {
       custom_attribute_dataset->addInt64Value(ControlUnitDatapackCommonKey::RUN_ID, run_id);
-      //input dataset timestamp is added only when pushed on cache
+      // input dataset timestamp is added only when pushed on cache
       custom_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_TIMESTAMP, TimingUtil::getTimeStamp());
-    //  custom_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_HIGH_RESOLUTION_TIMESTAMP, cur_us);
+      //  custom_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_HIGH_RESOLUTION_TIMESTAMP, cur_us);
 
-      //fill the dataset
+      // fill the dataset
       fillCDatawrapperWithCachedValue(cache_custom_attribute_vector, *custom_attribute_dataset);
-      ACULDBG_ << " Push custom:"<<custom_attribute_dataset->getJSONString();
+      ACULDBG_ << " Push custom:" << custom_attribute_dataset->getJSONString();
 
-      //push out the system dataset
+      // push out the system dataset
       err = key_data_storage->pushDataSet(data_manager::KeyDataStorageDomainCustom, MOVE(custom_attribute_dataset));
 
       if (!err) {
@@ -3299,12 +3282,12 @@ int AbstractControlUnit::pushSystemDataset() {
   AttributeCache& system_attribute_cache = attribute_value_shared_cache->getSharedDomain(DOMAIN_SYSTEM);
   uint64_t        tscor                  = TimingUtil::getTimeStamp();
   if ((tscor - last_push) < ds_update_anyway) {
-    //check if something as changed
+    // check if something as changed
     if (!system_attribute_cache.hasChanged()) {
       return err;
     }
   }
-  //get the cdatawrapper for the pack
+  // get the cdatawrapper for the pack
   int64_t cur_us = TimingUtil::getTimeStampInMicroseconds();
   if (key_data_storage.get() == NULL) {
     ACULERR_ << " key data storage not allocated";
@@ -3314,13 +3297,13 @@ int AbstractControlUnit::pushSystemDataset() {
   CDWShrdPtr system_attribute_dataset = key_data_storage->getNewDataPackForDomain(KeyDataStorageDomainSystem);
   if (system_attribute_dataset.get()) {
     system_attribute_dataset->addInt64Value(ControlUnitDatapackCommonKey::RUN_ID, run_id);
-    //input dataset timestamp is added only when pushed on cache
+    // input dataset timestamp is added only when pushed on cache
     system_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_TIMESTAMP, tscor);
-   // system_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_HIGH_RESOLUTION_TIMESTAMP, cur_us);
-    //fill the dataset
+    // system_attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_HIGH_RESOLUTION_TIMESTAMP, cur_us);
+    // fill the dataset
     fillCDatawrapperWithCachedValue(cache_system_attribute_vector, *system_attribute_dataset);
-    //ACULDBG_ << system_attribute_dataset->getJSONString();
-    //push out the system dataset
+    // ACULDBG_ << system_attribute_dataset->getJSONString();
+    // push out the system dataset
     err = key_data_storage->pushDataSet(data_manager::KeyDataStorageDomainSystem, MOVE(system_attribute_dataset));
     if (!err) {
       system_attribute_cache.resetChangedIndex();
@@ -3336,11 +3319,11 @@ CDWShrdPtr AbstractControlUnit::writeCatalogOnCDataWrapper(AlarmCatalog& catalog
   }
   CDWShrdPtr attribute_dataset = key_data_storage->getNewDataPackForDomain((KeyDataStorageDomain)dataset_type);
   if (attribute_dataset) {
-    //fill datapack with
+    // fill datapack with
     //! the dataaset can be pushed also in other moment
     attribute_dataset->addInt64Value(DataPackCommonKey::DPCK_TIMESTAMP, TimingUtil::getTimeStamp());
     attribute_dataset->addInt64Value(ControlUnitDatapackCommonKey::RUN_ID, run_id);
-    //scan all alarm ad create the datapack
+    // scan all alarm ad create the datapack
     size_t alarm_size = catalog.size();
     for (unsigned int idx = 0;
          idx < alarm_size;
@@ -3367,7 +3350,7 @@ int AbstractControlUnit::pushDevAlarmDataset() {
   CDWShrdPtr attribute_dataset = writeCatalogOnCDataWrapper(catalog,
                                                             DataPackCommonKey::DPCK_DATASET_TYPE_DEV_ALARM);
   if (attribute_dataset && key_data_storage.get()) {
-    //push out the system dataset
+    // push out the system dataset
     err = key_data_storage->pushDataSet(KeyDataStorageDomainDevAlarm, MOVE(attribute_dataset));
   }
   return err;
@@ -3379,7 +3362,7 @@ int AbstractControlUnit::pushCUAlarmDataset() {
   CDWShrdPtr attribute_dataset = writeCatalogOnCDataWrapper(catalog,
                                                             DataPackCommonKey::DPCK_DATASET_TYPE_CU_ALARM);
   if (attribute_dataset && key_data_storage.get()) {
-    //push out the system dataset
+    // push out the system dataset
     err = key_data_storage->pushDataSet(KeyDataStorageDomainCUAlarm, MOVE(attribute_dataset));
   }
   return err;
@@ -3408,8 +3391,8 @@ void AbstractControlUnit::manageBurstQueue() {
           break;
       }
       old_ts = 0;
-      //set the tag for burst
-      ACULDBG_ << "======= Start Burst tag:'" << current_burst->dataset_burst->tag << "' info:"<<current_burst->dataset_burst->loginfo<<" =======";
+      // set the tag for burst
+      ACULDBG_ << "======= Start Burst tag:'" << current_burst->dataset_burst->tag << "' info:" << current_burst->dataset_burst->loginfo << " =======";
       key_data_storage->addTag(current_burst->dataset_burst->tag);
       key_data_storage->setTimingConfigurationBehaviour(false);
       key_data_storage->setOverrideStorageType(DataServiceNodeDefinitionType::DSStorageTypeHistory);
@@ -3418,27 +3401,27 @@ void AbstractControlUnit::manageBurstQueue() {
       *attribute_value_shared_cache->getAttributeValue(DOMAIN_SYSTEM, ControlUnitDatapackSystemKey::BURST_CNT_DOWN)->getValuePtr<int32_t>() = current_burst->remaining();
 
       attribute_value_shared_cache->getSharedDomain(DOMAIN_SYSTEM).markAllAsChanged();
-      if(current_burst->dataset_burst->loginfo!=""){
+      if (current_burst->dataset_burst->loginfo != "") {
         std::stringstream ss;
-        ss<<"Start Tagging '"<<current_burst->dataset_burst->tag<<"'\n"<<current_burst->dataset_burst->loginfo;
-        
-        metadataLogging(chaos::common::metadata_logging::StandardLoggingChannel::LogLevelInfo,ss.str());
+        ss << "Start Tagging '" << current_burst->dataset_burst->tag << "'\n"
+           << current_burst->dataset_burst->loginfo;
+
+        metadataLogging(chaos::common::metadata_logging::StandardLoggingChannel::LogLevelInfo, ss.str());
       }
       pushSystemDataset();
       // mark also setpoints
       attribute_value_shared_cache->getSharedDomain(DOMAIN_INPUT).markAllAsChanged();
       pushInputDataset();
-      
     }
   } else {
     int64_t tim = *timestamp_acq_cached_value->getValuePtr<int64_t>();
     if (!current_burst->active(tim)) {
-      //remove the tag for the burst
+      // remove the tag for the burst
       ACULDBG_ << "======= End Burst tag:'" << current_burst->dataset_burst->tag << "' =======";
-      if(current_burst->dataset_burst->loginfo!=""){
+      if (current_burst->dataset_burst->loginfo != "") {
         std::stringstream ss;
-        ss<<"End Tagging '"<<current_burst->dataset_burst->tag<<"'";
-        metadataLogging(chaos::common::metadata_logging::StandardLoggingChannel::LogLevelInfo,ss.str());
+        ss << "End Tagging '" << current_burst->dataset_burst->tag << "'";
+        metadataLogging(chaos::common::metadata_logging::StandardLoggingChannel::LogLevelInfo, ss.str());
       }
       key_data_storage->removeTag(current_burst->dataset_burst->tag);
       key_data_storage->setTimingConfigurationBehaviour(true);
@@ -3448,7 +3431,7 @@ void AbstractControlUnit::manageBurstQueue() {
       *attribute_value_shared_cache->getAttributeValue(DOMAIN_SYSTEM, ControlUnitDatapackSystemKey::BURST_CNT_DOWN)->getValuePtr<int32_t>() = 0;
 
       attribute_value_shared_cache->getSharedDomain(DOMAIN_SYSTEM).markAllAsChanged();
-      //we need to remove it
+      // we need to remove it
       current_burst.reset();
       pushSystemDataset();
     } else {
@@ -3473,9 +3456,9 @@ void AbstractControlUnit::fillCDatawrapperWithCachedValue(std::vector<AttributeV
   }
 }
 
-//!timer for update push metric
+//! timer for update push metric
 void AbstractControlUnit::timeout() {
-  //update push metric
+  // update push metric
   _updatePushRateMetric();
 }
 
@@ -3486,7 +3469,7 @@ bool AbstractControlUnit::isInputAttributeChangeAuthorizedByHandler(const std::s
 void AbstractControlUnit::copyInitConfiguraiton(CDataWrapper& copy) {
   if (init_configuration.get() == NULL) return;
 
-  //copy all key
+  // copy all key
   init_configuration->copyAllTo(copy);
 }
 
@@ -3496,12 +3479,12 @@ void         AbstractControlUnit::addStateVariable(StateVariableType  variable_t
                                            const std::string& state_variable_description,
                                            int32_t            max_freq_ms) {
   if (map_variable_catalog.count(variable_type) == 0) {
-    //add new catalog
+    // add new catalog
     map_variable_catalog.insert(MapStateVariablePair(variable_type, AlarmCatalog(stateVariableEnumToName(variable_type))));
-  } 
-  
+  }
+
   AlarmCatalog& catalog = map_variable_catalog[variable_type];
-  if(catalog.getAlarmByName(state_variable_name)){
+  if (catalog.getAlarmByName(state_variable_name)) {
     // already present
     return;
   }
@@ -3509,7 +3492,7 @@ void         AbstractControlUnit::addStateVariable(StateVariableType  variable_t
                                           state_variable_name,
                                           state_variable_description,
                                           max_freq_ms));
-  //add this instance as
+  // add this instance as
   catalog.addAlarmHandler(state_variable_name,
                           this);
 }
@@ -3533,11 +3516,11 @@ bool AbstractControlUnit::setStateVariableSeverity(StateVariableType            
   GET_CAT_OR_EXIT(variable_type, false)
   AlarmDescription* alarm = catalog.getAlarmByName(state_variable_name);
   if (alarm == NULL) {
-    ACULERR_<<"Alarm \""<<state_variable_name<<"\" not found level:"<<(int)state_variable_severity;
+    ACULERR_ << "Alarm \"" << state_variable_name << "\" not found level:" << (int)state_variable_severity;
     return false;
   }
   alarm->setCurrentSeverity(state_variable_severity);
-  //update global alarm output attribute
+  // update global alarm output attribute
   /*
          AttributeCache& output_cache = attribute_value_shared_cache->getSharedDomain(DOMAIN_OUTPUT);
          output_cache.getValueSettingByName(stateVariableEnumToName(variable_type))->setValue(CDataVariant(catalog.max()));
@@ -3556,7 +3539,7 @@ bool AbstractControlUnit::setStateVariableSeverity(StateVariableType            
   AlarmDescription* alarm = catalog.getAlarmByOrderedID(state_variable_ordered_id);
   if (alarm == NULL) return false;
   alarm->setCurrentSeverity(state_variable_severity);
-  //update global alarm output attribute
+  // update global alarm output attribute
   /*
          AttributeCache& output_cache = attribute_value_shared_cache->getSharedDomain(DOMAIN_OUTPUT);
          output_cache.getValueSettingByName(stateVariableEnumToName(variable_type))->setValue(CDataVariant(catalog.isCatalogClear()==false));
@@ -3598,10 +3581,10 @@ void AbstractControlUnit::alarmChanged(const std::string& state_variable_tag,
   MultiSeverityAlarm* alarm_ms = (MultiSeverityAlarm*)alarm;
   CHAOS_ASSERT(alarm);
 
-  //update alarm log
+  // update alarm log
   if ((log_maxupdate_ms == 0) ||
       (alarm_logging_channel && (log_maxupdate_ms > 0) && ((alarm->getLastUpdateTimestamp() - alarm_ms->last_log_ms) > log_maxupdate_ms))) {
-    ACULDBG_ << "Log State "<<state_variable_name<<" severity:"<<(int32_t)state_variable_severity<<" last modified:"<<( alarm->getLastUpdateTimestamp() -alarm_ms->last_log_ms)<<" ms freq:"<<alarm_ms->max_freq_log_ms;
+    ACULDBG_ << "Log State " << state_variable_name << " severity:" << (int32_t)state_variable_severity << " last modified:" << (alarm->getLastUpdateTimestamp() - alarm_ms->last_log_ms) << " ms freq:" << alarm_ms->max_freq_log_ms;
 
     alarm_logging_channel->logAlarm(getCUID(),
                                     "AbstractControlUnit",
@@ -3611,12 +3594,12 @@ void AbstractControlUnit::alarmChanged(const std::string& state_variable_tag,
 
   switch ((StateVariableType)variable_type) {
     case StateVariableTypeAlarmCU:
-      //update dataset alarm on cds
+      // update dataset alarm on cds
       pushCUAlarmDataset();
       break;
 
     case StateVariableTypeAlarmDEV:
-      //update dataset alarm on cds
+      // update dataset alarm on cds
       pushDevAlarmDataset();
       break;
   }
@@ -3628,37 +3611,32 @@ void AbstractControlUnit::alarmChanged(const std::string& state_variable_tag,
 }
 
 void AbstractControlUnit::setBusyFlag(bool state) {
-  if(state!=busy){
+  if (state != busy) {
     AttributeCache& system_cache = attribute_value_shared_cache->getSharedDomain(DOMAIN_SYSTEM);
     busy                         = state;
     if (system_cache.hasName("busy")) {
       system_cache.getValueSettingByName("busy")->setValue(CDataVariant(state));
     }
     pushSystemDataset();
-
   }
 }
 void AbstractControlUnit::setBypassFlag(bool state) {
- 
-  if(state!=bypass){
-     AttributeCache& system_cache = attribute_value_shared_cache->getSharedDomain(DOMAIN_SYSTEM);
-      if (system_cache.hasName(ControlUnitDatapackSystemKey::BYPASS_STATE)) {
-        system_cache.getValueSettingByName(ControlUnitDatapackSystemKey::BYPASS_STATE)->setValue(CDataVariant(state));
-      }
-    ACULDBG_ << "Bypass:"<<state <<" old:"<<bypass;
-    if(state){
+  if (state != bypass) {
+    AttributeCache& system_cache = attribute_value_shared_cache->getSharedDomain(DOMAIN_SYSTEM);
+    if (system_cache.hasName(ControlUnitDatapackSystemKey::BYPASS_STATE)) {
+      system_cache.getValueSettingByName(ControlUnitDatapackSystemKey::BYPASS_STATE)->setValue(CDataVariant(state));
+    }
+    ACULDBG_ << "Bypass:" << state << " old:" << bypass;
+    if (state) {
       metadataLogging(chaos::common::metadata_logging::StandardLoggingChannel::LogLevelInfo,
                       "Bypass enabled");
     } else {
       metadataLogging(chaos::common::metadata_logging::StandardLoggingChannel::LogLevelInfo,
                       "Bypass disabled");
     }
-    bypass=state;
+    bypass = state;
     pushSystemDataset();
-
   }
-  
-
 }
 const bool AbstractControlUnit::getBusyFlag() const {
   AttributeCache& system_cache = attribute_value_shared_cache->getSharedDomain(DOMAIN_SYSTEM);
@@ -3673,15 +3651,16 @@ void AbstractControlUnit::metadataLogging(const std::string&                    
                                           const chaos::common::metadata_logging::StandardLoggingChannel::LogLevel log_level,
                                           const std::string&                                                      message) {
   if (standard_logging_channel == NULL) return;
-  //also messages must be tagged
+  // also messages must be tagged
   std::string tag;
-  if (current_burst.get()&&current_burst->dataset_burst.get()) {
-    tag =current_burst->dataset_burst->tag;
+  if (current_burst.get() && current_burst->dataset_burst.get()) {
+    tag = current_burst->dataset_burst->tag;
   }
   standard_logging_channel->logMessage(getCUID(),
                                        subject,
                                        log_level,
-                                       message,tag);
+                                       message,
+                                       tag);
   switch (log_level) {
     case StandardLoggingChannel::LogLevelInfo:
       ACULDBG_ << "LOGINFO"
@@ -3713,58 +3692,83 @@ void AbstractControlUnit::metadataLogging(const StandardLoggingChannel::LogLevel
                   message);
 }
 
-void AbstractControlUnit::consumerHandler( chaos::common::message::ele_t& data) {
+void AbstractControlUnit::consumerHandler(chaos::common::message::ele_t& data) {
   incomingMessage(data.key, data.cd);
 }
 void AbstractControlUnit::updateDataSet(chaos::common::data::CDataWrapper& cd, chaos::DataType::DataSetAttributeIOAttribute io) {
   std::vector<std::string> props;
   cd.getAllKey(props);
   for (std::vector<std::string>::iterator i = props.begin(); i != props.end(); i++) {
-    if (cd.isInt32Value(*i)) {
-      getAttributeCache()->setOutputAttributeValue(*i, cd.getInt32Value(*i));
-    } else if (cd.isDoubleValue(*i)) {
-      getAttributeCache()->setOutputAttributeValue(*i, cd.getDoubleValue(*i));
-    } else if (cd.isInt64Value(*i)) {
-      getAttributeCache()->setOutputAttributeValue(*i, cd.getInt64Value(*i));
-    } else if (cd.isBoolValue(*i)) {
-      getAttributeCache()->setOutputAttributeValue(*i, cd.getBoolValue(*i));
-    } else if (cd.isStringValue(*i)) {
-      getAttributeCache()->setOutputAttributeValue(*i, cd.getStringValue(*i));
-    } else if (cd.isVectorValue(*i)) {
-      ///
-      chaos::common::data::CMultiTypeDataArrayWrapperSPtr v   = cd.getVectorValue(*i);
-      int                                                 siz = v->size();
-      if (siz > 0) {
-        if (v->isInt32ElementAtIndex(0)) {
-          int32_t arr[siz];
-          for (int cnt = 0; cnt < siz; cnt++) {
-            arr[cnt] = v->getInt32ElementAtIndex(cnt);
+    std::string name;
+    std::copy_if((*i).begin(), (*i).end(), std::back_inserter(name), [](unsigned char c) { return !std::isspace(c); });
+    if (!getAttributeCache()->exist(DOMAIN_OUTPUT, name)) {
+      ACULDBG_ << "%% WARN skipping \"" << *i << "\" [\"" << name << "\"] = cd:" << cd.getJSONString();
+
+      continue;
+    }
+    chaos::DataType::DataType type = getAttributeCache()->getType(DOMAIN_OUTPUT, name);
+    switch (type) {
+      case chaos::DataType::TYPE_BOOLEAN: {
+        getAttributeCache()->setOutputAttributeValue(name, cd.getBoolValue(*i));
+        break;
+      }
+      case chaos::DataType::TYPE_DOUBLE: {
+        double v = cd.getDoubleValue(*i);
+        getAttributeCache()->setOutputAttributeValue(name, v);
+      //  ACULDBG_ << " \"" << *i << "\" [\"" << name << "\"] = " << std::fixed << v << " cd:" << cd.getCompliantJSONString();
+        break;
+      }
+      case chaos::DataType::TYPE_INT32: {
+        getAttributeCache()->setOutputAttributeValue(name, cd.getInt32Value(*i));
+        break;
+      }
+      case chaos::DataType::TYPE_INT64: {
+        getAttributeCache()->setOutputAttributeValue(name, cd.getInt64Value(*i));
+
+        break;
+      }
+      case chaos::DataType::TYPE_STRING: {
+        getAttributeCache()->setOutputAttributeValue(name, cd.getStringValue(*i));
+        break;
+      }
+      default: {
+        if (cd.isVectorValue(*i)) {
+          ///
+          chaos::common::data::CMultiTypeDataArrayWrapperSPtr v   = cd.getVectorValue(*i);
+          int                                                 siz = v->size();
+          if (siz > 0) {
+            if (v->isInt32ElementAtIndex(0)) {
+              int32_t arr[siz];
+              for (int cnt = 0; cnt < siz; cnt++) {
+                arr[cnt] = v->getInt32ElementAtIndex(cnt);
+              }
+              getAttributeCache()->setOutputAttributeValue(name, (void*)arr, siz * sizeof(int32_t));
+            } else if (v->isBoolElementAtIndex(0)) {
+              bool arr[siz];
+              for (int cnt = 0; cnt < siz; cnt++) {
+                arr[cnt] = v->getBoolElementAtIndex(cnt);
+              }
+              getAttributeCache()->setOutputAttributeValue(name, (void*)arr, siz * sizeof(bool));
+            } else if (v->isInt64ElementAtIndex(0)) {
+              int64_t arr[siz];
+              for (int cnt = 0; cnt < siz; cnt++) {
+                arr[cnt] = v->getInt64ElementAtIndex(cnt);
+              }
+              getAttributeCache()->setOutputAttributeValue(name, (void*)arr, siz * sizeof(int64_t));
+            } else if (v->isDoubleElementAtIndex(0)) {
+              double arr[siz];
+              for (int cnt = 0; cnt < siz; cnt++) {
+                arr[cnt] = v->getDoubleElementAtIndex(cnt);
+              }
+              getAttributeCache()->setOutputAttributeValue(name, (void*)arr, siz * sizeof(double));
+            }
           }
-          getAttributeCache()->setOutputAttributeValue(*i, (void*)arr, siz * sizeof(int32_t));
-        } else if (v->isBoolElementAtIndex(0)) {
-          bool arr[siz];
-          for (int cnt = 0; cnt < siz; cnt++) {
-            arr[cnt] = v->getBoolElementAtIndex(cnt);
-          }
-          getAttributeCache()->setOutputAttributeValue(*i, (void*)arr, siz * sizeof(bool));
-        } else if (v->isInt64ElementAtIndex(0)) {
-          int64_t arr[siz];
-          for (int cnt = 0; cnt < siz; cnt++) {
-            arr[cnt] = v->getInt64ElementAtIndex(cnt);
-          }
-          getAttributeCache()->setOutputAttributeValue(*i, (void*)arr, siz * sizeof(int64_t));
-        } else if (v->isDoubleElementAtIndex(0)) {
-          double arr[siz];
-          for (int cnt = 0; cnt < siz; cnt++) {
-            arr[cnt] = v->getDoubleElementAtIndex(cnt);
-          }
-          getAttributeCache()->setOutputAttributeValue(*i, (void*)arr, siz * sizeof(double));
+        } else if (cd.isBinaryValue(*i)) {
+          uint32_t    size;
+          const char* ptr = cd.getBinaryValue(*i, size);
+          getAttributeCache()->setOutputAttributeValue(name, (void*)ptr, size);
         }
       }
-    } else if (cd.isBinaryValue(*i)) {
-      uint32_t    size;
-      const char* ptr = cd.getBinaryValue(*i, size);
-      getAttributeCache()->setOutputAttributeValue(*i, (void*)ptr, size);
     }
   }
 }
@@ -3796,7 +3800,7 @@ void AbstractControlUnit::updateDatasetFromDriverProperty() {
           if ((type == chaos::DataType::Bidirectional) || (type == chaos::DataType::Output)) {
             chaos::DataType::DataType dstype = cd->getValueType(PROPERTY_VALUE_KEY);
 
-            //getAttributeCache()->setOutputAttributeValue(attrname,cd->getVariantValue(PROPERTY_VALUE_KEY));
+            // getAttributeCache()->setOutputAttributeValue(attrname,cd->getVariantValue(PROPERTY_VALUE_KEY));
             if (dstype == chaos::DataType::TYPE_DOUBLE) {
               getAttributeCache()->setOutputAttributeValue(attrname, cd->getDoubleValue(PROPERTY_VALUE_KEY));
 
@@ -3821,7 +3825,7 @@ void AbstractControlUnit::updateDatasetFromDriverProperty() {
       }
     }
   }
- // getAttributeCache()->setInputDomainAsChanged();
+  // getAttributeCache()->setInputDomainAsChanged();
   getAttributeCache()->setOutputDomainAsChanged();
 }
 
@@ -3854,6 +3858,8 @@ void AbstractControlUnit::addAttributesToDataSet(chaos::common::data::CDataWrapp
   std::vector<std::string> props;
   cd.getAllKey(props);
   for (std::vector<std::string>::iterator i = props.begin(); i != props.end(); i++) {
+    std::string name;
+    std::copy_if((*i).begin(), (*i).end(), std::back_inserter(name), [](unsigned char c) { return !std::isspace(c); });
     if (cd.isVector(*i)) {
       chaos::common::data::CMultiTypeDataArrayWrapperSPtr v   = cd.getVectorValue(*i);
       int                                                 siz = v->size();
@@ -3861,36 +3867,53 @@ void AbstractControlUnit::addAttributesToDataSet(chaos::common::data::CDataWrapp
         std::stringstream ss;
         ss << siz;
         if (v->isInt32ElementAtIndex(0)) {
-          addBinaryAttributeAsSubtypeToDataSet(*i, "int32 vect:" + ss.str(), chaos::DataType::SUB_TYPE_INT32, siz * sizeof(int32_t), io);
+          ACULDBG_ << "Adding \"" << name << "\" as int32[] dir:" << io << " items:" << siz;
+
+          addBinaryAttributeAsSubtypeToDataSet(name, "int32 vect:" + ss.str(), chaos::DataType::SUB_TYPE_INT32, siz * sizeof(int32_t), io);
         } else if (v->isBoolElementAtIndex(0)) {
-          addBinaryAttributeAsSubtypeToDataSet(*i, "bool vect:" + ss.str(), chaos::DataType::SUB_TYPE_BOOLEAN, siz, io);
+          ACULDBG_ << "Adding \"" << name << "\" as bool[] dir:" << io << " items:" << siz;
+
+          addBinaryAttributeAsSubtypeToDataSet(name, "bool vect:" + ss.str(), chaos::DataType::SUB_TYPE_BOOLEAN, siz, io);
         } else if (v->isInt64ElementAtIndex(0)) {
-          addBinaryAttributeAsSubtypeToDataSet(*i, "int64 vect:" + ss.str(), chaos::DataType::SUB_TYPE_INT64, siz * sizeof(int64_t), io);
+          ACULDBG_ << "Adding \"" << name << "\" as int64[] dir:" << io << " items:" << siz;
+
+          addBinaryAttributeAsSubtypeToDataSet(name, "int64 vect:" + ss.str(), chaos::DataType::SUB_TYPE_INT64, siz * sizeof(int64_t), io);
         } else if (v->isDoubleElementAtIndex(0)) {
-          addBinaryAttributeAsSubtypeToDataSet(*i, "double vect:" + ss.str(), chaos::DataType::SUB_TYPE_DOUBLE, siz * sizeof(double), io);
+          ACULDBG_ << "Adding \"" << name << "\" as double[] dir:" << io << " items:" << siz;
+
+          addBinaryAttributeAsSubtypeToDataSet(name, "double vect:" + ss.str(), chaos::DataType::SUB_TYPE_DOUBLE, siz * sizeof(double), io);
         }
       }
     } else if (cd.isInt32Value(*i)) {
-      addAttributeToDataSet(*i, "int32", chaos::DataType::TYPE_INT32, io);
+      ACULDBG_ << "Adding \"" << name << "\" as int32 dir:" << io;
+
+      addAttributeToDataSet(name, "int32", chaos::DataType::TYPE_INT32, io);
 
     } else if (cd.isInt64Value(*i)) {
-      addAttributeToDataSet(*i, "int64", chaos::DataType::TYPE_INT64, io);
+      ACULDBG_ << "Adding \"" << name << "\" as int64 dir:" << io;
+      addAttributeToDataSet(name, "int64", chaos::DataType::TYPE_INT64, io);
 
     } else if (cd.isDoubleValue(*i)) {
-      addAttributeToDataSet(*i, "double", chaos::DataType::TYPE_DOUBLE, io);
+      ACULDBG_ << "Adding \"" << name << "\" as double dir:" << io;
+      addAttributeToDataSet(name, "double", chaos::DataType::TYPE_DOUBLE, io);
 
     } else if (cd.isStringValue(*i)) {
-      addAttributeToDataSet(*i, "string", chaos::DataType::TYPE_STRING, io, cd.getStringValue(*i).size() + 1);
+      ACULDBG_ << "Adding \"" << name << "\" as string dir:" << io << " size:" << cd.getStringValue(*i).size();
+      addAttributeToDataSet(name, "string", chaos::DataType::TYPE_STRING, io, cd.getStringValue(*i).size() + 1);
 
     } else if (cd.isBoolValue(*i)) {
-      addAttributeToDataSet(*i, "bool", chaos::DataType::TYPE_BOOLEAN, io);
+      ACULDBG_ << "Adding \"" << name << "\" as bool dir:" << io;
+
+      addAttributeToDataSet(name, "bool", chaos::DataType::TYPE_BOOLEAN, io);
 
     } else if (cd.isBinaryValue(*i)) {
       uint32_t size;
       cd.getBinaryValue(*i, size);
       std::stringstream ss;
       ss << size;
-      addBinaryAttributeAsSubtypeToDataSet(*i, "binary:" + ss.str(), chaos::DataType::SUB_TYPE_CHAR, size, io);
+      ACULDBG_ << "Adding \"" << name << "\" as BINARY dir:" << io << " size:" << size;
+
+      addBinaryAttributeAsSubtypeToDataSet(name, "binary:" + ss.str(), chaos::DataType::SUB_TYPE_CHAR, size, io);
     }
   }
 }

@@ -89,6 +89,9 @@ namespace chaos{
                                               chaos::AllocationStrategy copy);
                                               
                     bool hasName(const std::string& name);
+
+                    chaos::DataType::DataType getType(const std::string& name);
+
                     
                     VariableIndexType getIndexForName(const std::string& name );
                     
