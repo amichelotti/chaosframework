@@ -165,7 +165,7 @@ static const unsigned int DPCK_DATASET_TYPE_LOG = 7;
         case DataType::TYPE_DOUBLE: {
           double d = stored_object.getDoubleValue(*i);
           if (std::isfinite(d)) {
-            measurements << c << pref<<*i << "=" << std::fixed<<d;
+            measurements << c << pref<<*i << "=" << /*std::fixed<<*/d;
             nmeas++;
             first++;
           }
@@ -556,7 +556,8 @@ void InfluxDB::push_process() {
           DBG << "exeeded measurements "<<si.max_mesurements<<" sending " << nmeas << " measurements, " << measurements.str().size() << " bytes, " << nmeas * 1000 / (now - last_insert) << " mesure/s";
         }
       } else {
-        ERR << "Error sending " << nmeas << " measurements, " << measurements.str().size() << " bytes, " << nmeas * 1000 / (now - last_insert) << " mesure/s, error code:" << ret;
+        ERR << "Error sending " << nmeas << " measurements, " << measurements.str().size() << " bytes, " << nmeas * 1000 / (now - last_insert) << " mesure/s, error code:" << ret<< " returned:"<<sret;
+
       }
       last_insert = now;
 
