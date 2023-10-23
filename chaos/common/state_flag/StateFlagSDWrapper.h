@@ -23,10 +23,10 @@
 #define __CHAOSFramework_A4A802EC_5299_484B_AFF5_2FF3271807C2_StateFlagSDWrapper_h
 
 #include <chaos/common/state_flag/StateFlag.h>
-
+#include <chaos/common/ChaosCommon.h>
 #include <chaos/common/data/TemplatedDataSDWrapper.h>
 
-#include <boost/algorithm/string.hpp>
+//#include <boost/algorithm/string.hpp>
 
 namespace chaos {
     namespace common {
@@ -65,10 +65,13 @@ namespace chaos {
                 dataWrapped().flag_description.name = CDW_GET_SRT_WITH_DEFAULT(serialized_data, NodeStateFlagDefinitionKey::NODE_SF_NAME, "");
                 //check if we have a catalog name
                 ChaosStringVector splitted_name;
-                boost::split( splitted_name,
+               /* boost::split( splitted_name,
                              dataWrapped().flag_description.name ,
                              boost::is_any_of("/"),
-                             boost::token_compress_on);
+                             boost::token_compress_on);*/
+
+                splitted_name=chaos::split(dataWrapped().flag_description.name, "/", true);
+
                 if(splitted_name.size() > 1) {
                     dataWrapped().flag_description.name = splitted_name[splitted_name.size()-1];
                 }

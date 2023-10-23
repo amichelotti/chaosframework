@@ -42,6 +42,8 @@
 
 //! Default chaos namespace used to group all common api
 namespace chaos {
+    std::vector<std::string> split(const std::string& str, const std::string& delimiter, bool compress = true);
+    
     struct __file_remover__ {
         const char*name;
         __file_remover__(const char*_name):name(_name){}
@@ -157,4 +159,5 @@ namespace chaos {
        
     };
 }
+
 #endif

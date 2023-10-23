@@ -223,16 +223,16 @@ SET(cnd_src
             QueryDataMsgPSConsumer.cpp
             )
 
- SET(service_src  ../chaos_service_common/persistence/mongodb/MongoDBHAConnectionManager.cpp
-                  ../chaos_service_common/persistence/mongodb/MongoDBAccessor.cpp
-                  ../chaos_service_common/DriverPoolManager.cpp ../chaos_service_common/health_system/HealtManagerDirect.cpp)
+  SET(service_src  ../chaos_service_common/persistence/mongodb/MongoDBHAConnectionManager.cpp
+                   ../chaos_service_common/persistence/mongodb/MongoDBAccessor.cpp
+                   ../chaos_service_common/DriverPoolManager.cpp ../chaos_service_common/health_system/HealtManagerDirect.cpp)
 
- SET(service_src  ${service_src} ../chaos_service_common/persistence/mongodb/mongodb_cxx/MongoDBCXXDriver.cpp)
+  SET(service_src  ${service_src} ../chaos_service_common/persistence/mongodb/mongodb_cxx/MongoDBCXXDriver.cpp)
 
-SET(service_src  ${service_src} ../chaos_service_common/persistence/data_access/AbstractDataAccess.cpp
-						../chaos_service_common/persistence/data_access/AbstractPersistenceDriver.cpp
-            ../chaos_service_common/ChaosManager.cpp
-            ../chaos_service_common/ChaosServiceToolkit.cpp)
+ SET(service_src  ${service_src} ../chaos_service_common/persistence/data_access/AbstractDataAccess.cpp
+ 						../chaos_service_common/persistence/data_access/AbstractPersistenceDriver.cpp
+             ../chaos_service_common/ChaosManager.cpp
+             ../chaos_service_common/ChaosServiceToolkit.cpp)
 
 SET(cnd_src  ${cnd_src}	cron_job/MDSCronusManager.cpp
                         cron_job/MDSCronJob.cpp
@@ -409,9 +409,9 @@ SET(api_src  ${api_src} object_storage/mongodb_3/MongoDBObjectStorageDataAccess.
 
 
                         #POSIX FILE
-SET(posix_src  object_storage/posixFile/PosixFile.cpp
-object_storage/posixFile/PosixFileObjectStorageDriver.cpp
-object_storage/posixFile/BsonFStream.cpp object_storage/posixFile/FileLock.cpp)
+ SET(posix_src  object_storage/posixFile/PosixFile.cpp
+ object_storage/posixFile/PosixFileObjectStorageDriver.cpp
+ object_storage/posixFile/BsonFStream.cpp object_storage/posixFile/FileLock.cpp)
 
 
 SET(api_src  ${api_src} object_storage/influxDB/InfluxDB.cpp

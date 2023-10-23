@@ -1,5 +1,6 @@
 {
     "C_Cpp.default.configurationProvider": "go2sh.cmake-integration",
+    "cmake.parallelJobs": 4,
     "fileHeaderCommentHelper.languageConfigs": {
         "language_cpp":{
             "template": [

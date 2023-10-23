@@ -26,8 +26,9 @@
 
 
 #include <boost/filesystem.hpp>
-#include <boost/algorithm/string.hpp>
+//#include <boost/algorithm/string.hpp>
 #include <regex>
+#include <chaos/common/ChaosCommon.h>
 #include "GlobalConfiguration.h"
 #include <chaos/common/version.h>
 #include <chaos/common/external_unit/external_unit.h>
@@ -70,10 +71,12 @@ namespace chaos{
                     std::vector<std::string> kv_splitted;
                     
                     //get new pair
-                    boost::algorithm::split(kv_splitted,
+                   /* boost::algorithm::split(kv_splitted,
                                             kv_param_value,
                                             boost::algorithm::is_any_of(":"),
-                                            boost::algorithm::token_compress_on);
+                                            boost::algorithm::token_compress_on);*/
+
+                    kv_splitted=chaos::split(kv_param_value,":",true);
                     // add key/value pair
                     if((kv_splitted.size()>1)&&(kv_splitted[0].size())){
                      kvmap.insert(make_pair(kv_splitted[0], kv_splitted[1]));
