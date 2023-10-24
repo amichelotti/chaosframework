@@ -493,22 +493,22 @@ void ChaosAbstractCommon::logError(const std::string &uid, const std::string &ms
   }
 }
 namespace chaos {
-std::vector<std::string> split(const std::string &str, const std::string &delimiter, bool compress) {
-  std::vector<std::string> tokens;
-  std::regex               re(delimiter);
-  std::sregex_iterator     it(str.begin(), str.end(), re);
-  std::sregex_iterator     end;
+std::vector<std::string> split(const std::string &s, const std::string &delimiter, bool compress) {
+ std::vector<std::string> tokens;
+    size_t start = 0, end = 0;
 
-  while (it != end) {
-    auto token = it->prefix();
-    if (compress && (token.length() == 0)) {
-      // Skip empty tokens.
-    } else {
-      tokens.push_back(token.str());
+    while ((end = s.find_first_of(delimiter, start)) != std::string::npos) {
+        if (end != start) {
+            tokens.push_back(s.substr(start, end - start));
+        }
+        start = end + 1;
     }
-    ++it;
-  }
 
-  return tokens;
+    if (start < s.length()) {
+        tokens.push_back(s.substr(start));
+    }
+
+    return tokens;
+
 }
 }  // namespace chaos
