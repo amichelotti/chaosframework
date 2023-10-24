@@ -30,7 +30,7 @@
 
 #include <chaos/common/network/NetworkBroker.h>
 
-#include <boost/algorithm/string.hpp>
+//#include <boost/algorithm/string.hpp>
 
 #include <fstream>
 
@@ -98,9 +98,10 @@ void ExternaCommandExecutor::deinit()  {
 void ExternaCommandExecutor::readLine(const std::string& new_read_line) {
     int err = 0;
     ChaosStringVector tokens;
-    boost::split(tokens,
+    /*boost::split(tokens,
                  new_read_line,
-                 boost::is_any_of(" "));
+                 boost::is_any_of(" "));*/
+    tokens=chaos::split(new_read_line," ");
     INFO << CHAOS_FORMAT("External command received = %1% number fo tockes %2%", %new_read_line%tokens.size());
     
     //tokens 0 need to be the command to execute

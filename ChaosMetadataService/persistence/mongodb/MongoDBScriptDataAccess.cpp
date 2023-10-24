@@ -25,7 +25,8 @@
 #include <chaos/common/additional_lib/base64.h>
 #include <chaos/common/utility/TimingUtil.h>
 
-#include <boost/algorithm/string.hpp>
+//#include <boost/algorithm/string.hpp>
+#include <chaos/common/ChaosCommon.h>
 #include <boost/foreach.hpp>
 #include <regex>
 
@@ -954,7 +955,8 @@ mongo::Query MongoDBScriptDataAccess::getNextPagedQueryForInstance(uint64_t     
     bson_find_and << BSON("seq" << BSON("$lt" << (long long)last_sequence_before_this_page));
   }
 
-  boost::split(criteria_token, search_string, boost::is_any_of(" "), boost::token_compress_on);
+  //boost::split(criteria_token, search_string, boost::is_any_of(" "), boost::token_compress_on);
+  criteria_token = chaos::split(search_string," ");
   for (std::vector<std::string>::iterator it = criteria_token.begin();
        it != criteria_token.end();
        it++) {

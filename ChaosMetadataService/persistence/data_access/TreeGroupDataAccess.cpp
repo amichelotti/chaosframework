@@ -24,8 +24,8 @@
 #include <chaos/common/global.h>
 
 #include <regex>
-#include <boost/algorithm/string.hpp>
-
+//#include <boost/algorithm/string.hpp>
+#include <chaos/common/ChaosCommon.h>
 #define SDA_INFO INFO_LOG(TreeGroupDataAccess)
 #define SDA_DBG  DBG_LOG(TreeGroupDataAccess)
 #define SDA_ERR  ERR_LOG(TreeGroupDataAccess)
@@ -77,9 +77,11 @@ bool TreeGroupDataAccess::estractNodeFromPath(const std::string& node_path,
     // split the path in the node elements the first slash in path realize an empty string as
     // first element in tree_path_node vector so root only path give a vector of two element
     // with an empty string as first element
-    boost::split(tree_path_node,
+    /*boost::split(tree_path_node,
                  node_path, boost::is_any_of("/"),
-                 boost::token_compress_on );
+                 boost::token_compress_on );*/
+
+    tree_path_node=chaos::split(node_path, "/");
     //estract the node name that is the element in the front of the vector
     node_name = tree_path_node.back();
     

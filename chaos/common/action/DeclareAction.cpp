@@ -21,7 +21,7 @@
 
 #include <chaos/common/action/DeclareAction.h>
 #include <chaos/common/chaos_constants.h>
-
+#include <chaos/common/global.h>
 using namespace chaos;
 using namespace boost;
 namespace chaos_data = chaos::common::data;

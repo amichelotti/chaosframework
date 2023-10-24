@@ -22,7 +22,7 @@
 #ifndef CHAOSFramework_chaos_types_h
 #define CHAOSFramework_chaos_types_h
 
-#include <boost/ptr_container/ptr_container.hpp>
+//#include <boost/ptr_container/ptr_container.hpp>
 #include <boost/thread.hpp>
 
 #include <set>
@@ -50,6 +50,7 @@
 #include <future>
 #include <chrono>
 #include <functional>
+#include <mutex>
 template<typename T>
 using ChaosAtomic = std::atomic<T>;
 template<typename T>

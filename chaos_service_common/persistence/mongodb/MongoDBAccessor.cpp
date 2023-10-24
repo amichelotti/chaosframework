@@ -23,8 +23,8 @@
 #include <chaos/common/global.h>
 
 #include <chaos_service_common/persistence/mongodb/MongoDBAccessor.h>
-
-#include <boost/algorithm/string.hpp>
+#include <chaos/common/ChaosCommon.h>
+//#include <boost/algorithm/string.hpp>
 
 #define MDBACC_INFO INFO_LOG(MongoDBAccessor)
 #define MDBACC_DBG  DBG_LOG(MongoDBAccessor)
@@ -72,9 +72,10 @@ mongo::BSONArray MongoDBAccessor::getSearchTokenOnFiled(const std::string& searc
     mongo::BSONArrayBuilder bson_find_or;
     std::vector<std::string> criteria_token;
     
-    boost::split(criteria_token, search_string,
+    /*boost::split(criteria_token, search_string,
                  boost::is_any_of(" "),
-                 boost::token_compress_on);
+                 boost::token_compress_on);*/
+    criteria_token= chaos::split(search_string," ");
     
     for (std::vector<std::string>::iterator it = criteria_token.begin();
          it != criteria_token.end();

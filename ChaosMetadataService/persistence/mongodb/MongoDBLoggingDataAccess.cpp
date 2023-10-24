@@ -26,8 +26,8 @@
 #include <chaos/common/global.h>
 #include <mongo/client/dbclient.h>
 
-#include <boost/algorithm/string.hpp>
-
+//#include <boost/algorithm/string.hpp>
+#include <chaos/common/ChaosCommon.h>
 #define MDBLDA_INFO INFO_LOG(MongoDBLoggingDataAccess)
 #define MDBLDA_DBG  DBG_LOG(MongoDBLoggingDataAccess)
 #define MDBLDA_ERR  ERR_LOG(MongoDBLoggingDataAccess)
@@ -251,10 +251,11 @@ int MongoDBLoggingDataAccess::searchEntryAdvanced(LogEntryList& entry_list,
     
     if(search_string.size()) {
         mongo::BSONArrayBuilder bson_find_token_or;
-        boost::split(criteria_token,
+        /*boost::split(criteria_token,
                      search_string,
                      boost::is_any_of(" "),
-                     boost::token_compress_on);
+                     boost::token_compress_on);*/
+        criteria_token=chaos::split(search_string," ");
 
         if(criteria_token.size()) {
             for (std::vector<std::string>::iterator it = criteria_token.begin();

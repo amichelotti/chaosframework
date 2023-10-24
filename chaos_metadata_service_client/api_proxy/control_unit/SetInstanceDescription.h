@@ -29,8 +29,8 @@ namespace chaos {
         namespace api_proxy {
             namespace control_unit {
                 
-                typedef boost::ptr_vector<common::data::CDataWrapper>           CDWList;
-                typedef boost::ptr_vector<common::data::CDataWrapper>::iterator CDWListIterator;
+                typedef std::vector<std::unique_ptr<common::data::CDataWrapper> >        CDWList;
+                typedef std::vector<std::unique_ptr<common::data::CDataWrapper>>::iterator CDWListIterator;
                 
                 class SetInstanceDescription;
                 

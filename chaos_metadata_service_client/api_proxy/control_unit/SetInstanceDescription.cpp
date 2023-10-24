@@ -83,7 +83,7 @@ ApiProxyResult SetInstanceDescription::execute(SetInstanceDescriptionHelper& api
         for(CDWListIterator it = api_data.driver_descriptions.begin();
             it != api_data.driver_descriptions.end();
             it++) {
-            instance_description.appendCDataWrapperToArray(*it);
+            instance_description.appendCDataWrapperToArray(*it->get());
         }
         instance_description.finalizeArrayForKey(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_DESCRIPTION);
     }
@@ -92,7 +92,7 @@ ApiProxyResult SetInstanceDescription::execute(SetInstanceDescriptionHelper& api
         for(CDWListIterator it = api_data.attribute_value_descriptions.begin();
             it != api_data.attribute_value_descriptions.end();
             it++) {
-            instance_description.appendCDataWrapperToArray(*it);
+            instance_description.appendCDataWrapperToArray(*it->get());
         }
         instance_description.finalizeArrayForKey("attribute_value_descriptions");
     }
@@ -157,7 +157,7 @@ void SetInstanceDescriptionHelper::addDriverDescription(const std::string& drive
     dd->addStringValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_DESCRIPTION_INIT_PARAMETER, driver_init_parameter);
     dd->addStringValue(ControlUnitNodeDefinitionKey::CONTROL_UNIT_DRIVER_PROP, driver_props);
 
-    driver_descriptions.push_back(dd.release());
+    driver_descriptions.push_back(MOVE(dd));
 }
 
 //! clear all previously added driver descriptions
@@ -167,7 +167,7 @@ void SetInstanceDescriptionHelper::clearAllDriverDescriptions() {
 void SetInstanceDescriptionHelper::addAttributeConfig(const chaos::common::data::CDataWrapper&attrs){
         CDWUniquePtr attr(new CDataWrapper());
         attrs.copyAllTo(*attr.get());
-        attribute_value_descriptions.push_back(attr.release());
+        attribute_value_descriptions.push_back(MOVE(attr));
 }
 
 //! add an attribute range value description for the default value and range
@@ -193,7 +193,7 @@ void SetInstanceDescriptionHelper::addAttributeConfig(const std::string& attribu
 
    
 
-    attribute_value_descriptions.push_back(attr.release());
+    attribute_value_descriptions.push_back(MOVE(attr));
     
 }
 //! remove all previously added attribute range value description

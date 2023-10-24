@@ -1539,7 +1539,6 @@ int CDataWrapper::setBson(const bson_iter_t* v, const CDataWrapper* val) {
   }
   return -1;
 }
-#ifdef EPICS
 /*
 void CDataWrapper::setSerializedData(pvd::PVStructureConstPtr ptr) {
   setSerializedData(ptr.get());
@@ -1570,12 +1569,13 @@ void CDataWrapper::append(const std::string&key,bson_value_t*v){
     
     default:
      std::stringstream ss;
-    ss << "unespected type, typeid:" << v->value_type;
+    ss << "unexpected type, typeid:" << v->value_type;
     throw CException(v->value_type, ss.str(), __PRETTY_FUNCTION__);
       break;
   }
   
 }
+#ifdef EPICS
 
 void CDataWrapper::setSerializedData(pvd::PVUnionConstPtr ptr){
  pvd::UnionConstPtr structure_ptr = ptr->getUnion();

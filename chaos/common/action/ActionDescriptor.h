@@ -181,7 +181,7 @@ namespace chaos {
          */
         chaos::common::data::CDWUniquePtr call(chaos::common::data::CDWUniquePtr action_data)   {
             //call the action with param
-            CHAOS_ASSERT(objectReference)
+            CHAOS_ASSERT(objectReference);
             ChaosUniqueLock wl(mutex_execution_lock, CHAOS_DEFER_LOCK);
             if(isShared() == false){wl.lock();};
             return ((*objectReference).*actionPointer)(MOVE(action_data));

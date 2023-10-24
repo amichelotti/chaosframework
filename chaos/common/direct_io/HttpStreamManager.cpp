@@ -1,7 +1,8 @@
 #include "HttpStreamManager.h"
 #include "impl/mjpeg_streamer.hpp"
 #include <chaos/common/configuration/GlobalConfiguration.h>
-#include <boost/algorithm/string.hpp>
+//#include <boost/algorithm/string.hpp>
+#include <chaos/common/ChaosCommon.h>
 #define DIODMC_INFO INFO_LOG(HttpStreamManager)
 #define DIODMC_DBG_ DBG_LOG(HttpStreamManager)
 #define DIODMC_ERR_ ERR_LOG(HttpStreamManager)
@@ -25,7 +26,8 @@ namespace chaos {
                if(init_data){
                    std::string tos(((const char*)init_data));
 
-                   	boost::algorithm::split(server_desc_tokens, tos, boost::algorithm::is_any_of(":"), boost::algorithm::token_compress_on);
+                   	//boost::algorithm::split(server_desc_tokens, tos, boost::algorithm::is_any_of(":"), boost::algorithm::token_compress_on);
+                    server_desc_tokens=chaos::split( tos, ":", true);
                     port=atoi(server_desc_tokens[1].c_str());
                     workers=atoi(server_desc_tokens[2].c_str());
                  //  sscanf((const char*)init_data,"%s:%d:%d",ip,&port,&workers);
