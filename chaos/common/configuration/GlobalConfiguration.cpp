@@ -493,7 +493,7 @@ void GlobalConfiguration::addOptionZeroTokens(const char* name,
 /**
  *return the cdatawrapper that contains the global configuraiton
  */
-chaos_data::CDataWrapper *GlobalConfiguration::getConfiguration(){
+chaos::common::data::CDataWrapper *GlobalConfiguration::getConfiguration(){
     return configuration.get();
 }
 

@@ -271,7 +271,7 @@ x = hasOption(y);
         /**
          *return the cdatawrapper that contains the global configuration
          */
-        chaos_data::CDataWrapper *getConfiguration();
+        chaos::common::data::CDataWrapper *getConfiguration();
         
         /**
          * @param conf the cdatawrapper that contains the global configuration
